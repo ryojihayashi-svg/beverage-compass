@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#FBF8F3">
+<title>林ファミリーイングリッシュ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*:before,*:after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; min-height: 100%; background: #FBF8F3; color: #2A2520; font-family: 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
+  #root { min-height: 100vh; min-height: 100dvh; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script>
+(function () {
+  const e = React.createElement;
+  const { useState, useEffect, useMemo, useRef } = React;
+
+  // ---------- Design tokens ----------
+  const C = {
+    bg:      '#FBF8F3',
+    card:    '#FFFFFF',
+    soft:    '#F4ECDD',
+    softer:  '#FAF3E5',
+    text:    '#2A2520',
+    sub:     '#8C7F6D',
+    line:    '#E8DFD0',
+    accent:  '#C97D3B',
+    forest:  '#4A6840',
+    ocean:   '#3D6FA0',
+    sun:     '#D4A22F',
+    rose:    '#C97A8A',
+    danger:  '#C2604E',
+    success: '#7DA66E',
+  };
+  const SERIF = '"Fraunces", "Noto Serif JP", Georgia, serif';
+
+  // ---------- Family profiles ----------
+  // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
+  const PROFILES = [
+    { id: 'father', name: '父',   subtitle: '英検準1級・指南役',   emoji: '🌲', color: C.forest, role: 'learner', level: 5 },
+    { id: 'son1',   name: '長男', subtitle: '高2・英検2級',          emoji: '🎯', color: C.ocean,  role: 'learner', level: 4 },
+    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',   emoji: '⚽', color: C.accent, role: 'learner', level: 2 },
+    { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',   emoji: '🌟', color: C.sun,    role: 'learner', level: 1 },
+    { id: 'mother', name: '母',   subtitle: '観覧・応援担当',         emoji: '💐', color: C.rose,   role: 'viewer' },
+  ];
+
+  // ---------- App ----------
+  function App() {
+    const [route, setRoute] = useState({ name: 'profiles' });
+    const [activeId, setActiveId] = useState(null);
+    const profile = PROFILES.find(p => p.id === activeId) || null;
+
+    if (route.name === 'profiles') {
+      return e(ProfileSelect, { onPick: (id) => { setActiveId(id); setRoute({ name: 'home' }); } });
+    }
+    if (route.name === 'home' && profile) {
+      return e(HomePage, { profile, onBack: () => setRoute({ name: 'profiles' }) });
+    }
+    return null;
+  }
+
+  // ---------- Profile selection ----------
+  function ProfileSelect({ onPick }) {
+    return e('div', {
+      style: {
+        maxWidth: 480, margin: '0 auto', padding: '48px 22px 96px',
+        animation: 'fadeIn .45s ease',
+      }
+    },
+      // Header
+      e('div', { style: { textAlign: 'center', marginBottom: 40 } },
+        e('div', {
+          style: {
+            fontFamily: SERIF, fontSize: 44, fontWeight: 800,
+            letterSpacing: '-0.025em', color: C.text, lineHeight: 1,
+          }
+        }, 'Hayashi'),
+        e('div', {
+          style: {
+            fontFamily: SERIF, fontSize: 38, fontWeight: 600,
+            letterSpacing: '-0.02em', color: C.accent,
+            fontStyle: 'italic', marginTop: 2, lineHeight: 1.05,
+          }
+        }, 'Family English'),
+        e('div', {
+          style: {
+            marginTop: 16, fontSize: 12, color: C.sub,
+            letterSpacing: '0.18em', fontWeight: 500,
+          }
+        }, '林ファミリーイングリッシュ'),
+      ),
+
+      e('div', {
+        style: {
+          fontSize: 13, color: C.sub, textAlign: 'center',
+          marginBottom: 18, letterSpacing: '0.06em',
+        }
+      }, 'だれが学びますか？'),
+
+      // Cards
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+        PROFILES.map(p => e(ProfileCard, { key: p.id, profile: p, onClick: () => onPick(p.id) })),
+      ),
+
+      // Footer note
+      e('div', {
+        style: {
+          marginTop: 32, textAlign: 'center', fontSize: 11,
+          color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
+        }
+      }, 'v0.1 — プロトタイプ'),
+    );
+  }
+
+  function ProfileCard({ profile, onClick }) {
+    const [pressed, setPressed] = useState(false);
+    const isViewer = profile.role === 'viewer';
+    return e('button', {
+      onClick,
+      onPointerDown: () => setPressed(true),
+      onPointerUp:   () => setPressed(false),
+      onPointerLeave:() => setPressed(false),
+      style: {
+        display: 'flex', alignItems: 'center', gap: 16,
+        background: C.card, padding: '16px 18px',
+        borderRadius: 20, textAlign: 'left', width: '100%',
+        border: '1px solid ' + C.line,
+        boxShadow: pressed
+          ? '0 1px 2px rgba(42,37,32,0.05)'
+          : '0 6px 18px rgba(42,37,32,0.05), 0 1px 2px rgba(42,37,32,0.04)',
+        transform: pressed ? 'scale(0.985)' : 'scale(1)',
+        transition: 'transform .15s ease, box-shadow .25s ease',
+      }
+    },
+      // Avatar
+      e('div', {
+        style: {
+          width: 56, height: 56, borderRadius: 18,
+          background: profile.color + '1F',
+          color: profile.color,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 28, flexShrink: 0,
+          border: '1px solid ' + profile.color + '33',
+        }
+      }, profile.emoji),
+
+      // Name + subtitle
+      e('div', { style: { flex: 1, minWidth: 0 } },
+        e('div', {
+          style: {
+            fontSize: 17, fontWeight: 700, color: C.text,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }
+        },
+          profile.name,
+          isViewer && e('span', {
+            style: {
+              fontSize: 10, fontWeight: 600,
+              padding: '2px 8px', borderRadius: 999,
+              background: profile.color + '1F', color: profile.color,
+              letterSpacing: '0.08em',
+            }
+          }, '観覧'),
+        ),
+        e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3 } }, profile.subtitle),
+      ),
+
+      e('div', {
+        style: {
+          color: profile.color, fontSize: 22, fontWeight: 300,
+          opacity: 0.8, paddingRight: 4,
+        }
+      }, '›'),
+    );
+  }
+
+  // ---------- Home (placeholder for next step) ----------
+  function HomePage({ profile, onBack }) {
+    const isViewer = profile.role === 'viewer';
+    return e('div', {
+      style: {
+        maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
+        animation: 'fadeIn .35s ease',
+      }
+    },
+      // Top bar
+      e('div', {
+        style: {
+          display: 'flex', alignItems: 'center', gap: 4,
+          marginBottom: 22,
+        }
+      },
+        e('button', {
+          onClick: onBack,
+          style: {
+            fontSize: 22, color: C.sub, padding: '8px 10px 8px 0',
+            lineHeight: 1,
+          }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em' } }, 'プロファイルを切り替える'),
+      ),
+
+      // Hero card
+      e('div', {
+        style: {
+          background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
+          color: '#fff',
+          padding: '26px 24px',
+          borderRadius: 24,
+          marginBottom: 18,
+          boxShadow: '0 10px 28px ' + profile.color + '33',
+        }
+      },
+        e('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+          e('div', {
+            style: {
+              fontSize: 30, width: 48, height: 48, borderRadius: 14,
+              background: 'rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }
+          }, profile.emoji),
+          e('div', null,
+            e('div', {
+              style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 }
+            }, isViewer ? 'VIEWER' : 'TODAY'),
+            e('div', {
+              style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, marginTop: 2 }
+            }, 'Hi, ' + profile.name + '.'),
+          ),
+        ),
+        e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 14, lineHeight: 1.5 } },
+          isViewer ? 'みんなの学習を見守って、応援しましょう。' : '今日もちょっとずつ。続けることがいちばん。'),
+      ),
+
+      // Placeholder
+      e('div', {
+        style: {
+          background: C.softer,
+          border: '1px dashed ' + C.line,
+          borderRadius: 20,
+          padding: '32px 22px',
+          textAlign: 'center',
+          color: C.sub,
+        }
+      },
+        e('div', { style: { fontSize: 28, marginBottom: 8 } }, '🛠️'),
+        e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 } }, '次のステップで実装予定'),
+        e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
+          isViewer
+            ? '・家族の学習フィード／応援メッセージ'
+            : '・単語カード（30語サンプル）／瞬間英作文／テスト／AI質問'),
+      ),
+    );
+  }
+
+  // ---------- Mount ----------
+  ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+})();
+</script>
+</body>
+</html>
