@@ -508,6 +508,28 @@
 
   const REACT_EMOJIS = ['❤️', '🙏', '🤗', '🔥', '👍'];
 
+  // ---------- User-composed support messages (localStorage) ----------
+  // Mother (or anyone with isCheerleader) can create messages from inside the app.
+  // They live alongside the dummy seed messages and use the same shape.
+  const SUPPORT_MSG_KEY = 'hfe_support_msgs_v1';
+  function loadUserMessages() {
+    try { return JSON.parse(localStorage.getItem(SUPPORT_MSG_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function saveUserMessages(arr) {
+    try { localStorage.setItem(SUPPORT_MSG_KEY, JSON.stringify(arr || [])); }
+    catch (err) { console.warn('saveUserMessages failed', err); }
+  }
+  function addUserMessage(msg) {
+    const all = loadUserMessages();
+    all.unshift(msg);
+    saveUserMessages(all);
+  }
+  function deleteUserMessage(id) {
+    const all = loadUserMessages().filter(m => m.id !== id);
+    saveUserMessages(all);
+  }
+
   function reactionsKey(memberId)  { return 'hfe_reactions_v1_' + memberId; }
   function loadReactions(memberId) {
     try { return JSON.parse(localStorage.getItem(reactionsKey(memberId)) || '{}'); }
@@ -1994,17 +2016,220 @@
     );
   }
 
-  // ---------- Support Messages (mother's reward box, dummy data) ----------
+  // ---------- Message Compose Form (cheerleader → recipient) ----------
+  function MessageCompose({ sender, onCancel, onSubmit }) {
+    const [toId, setToId]         = useState('');                 // '' === whole family
+    const [body, setBody]         = useState('');
+    const [hue, setHue]           = useState('rose');
+    const [unlockCond, setUnlock] = useState('open_now');
+
+    const recipients = PROFILES.filter(p => p.id !== sender.id);  // can address anyone but self
+    const HUES = [
+      { id: 'rose',   color: C.rose,   label: 'ピンク' },
+      { id: 'orange', color: C.accent, label: 'オレンジ' },
+      { id: 'sun',    color: C.sun,    label: 'イエロー' },
+      { id: 'ocean',  color: C.ocean,  label: 'ブルー' },
+      { id: 'forest', color: C.forest, label: 'グリーン' },
+    ];
+    const UNLOCKS = [
+      { id: 'open_now',         label: 'すぐに開ける' },
+      { id: 'session_complete', label: '🎯 今日の20問クリアで開く' },
+      { id: 'streak_3',         label: '🔥 3日連続クリアで開く' },
+      { id: 'streak_7',         label: '⭐ 7日連続クリアで開く' },
+    ];
+
+    const canSubmit = body.trim().length > 0;
+
+    function submit() {
+      if (!canSubmit) return;
+      const now = new Date().toISOString();
+      const msg = {
+        id:               'usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        fromMemberId:     sender.id,
+        toMemberId:       toId || null,
+        message:          body.trim(),
+        imageHue:         hue,
+        createdAt:        now,
+        unlockedAt:       unlockCond === 'open_now' ? now : null,
+        unlockCondition:  unlockCond,
+      };
+      onSubmit(msg);
+    }
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onCancel,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '応援メッセージに戻る'),
+      ),
+
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '✏️'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, '応援を作る'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+          '誰に、どんな言葉を、いつ届けますか？'),
+      ),
+
+      // ----- Recipient -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, '宛先'),
+        e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+          e('button', {
+            onClick: () => setToId(''),
+            style: chipButtonStyle(toId === '', sender.color),
+          }, '👨‍👩‍👧‍👦 家族みんな'),
+          recipients.map(r => e('button', {
+            key: r.id, onClick: () => setToId(r.id),
+            style: chipButtonStyle(toId === r.id, r.color),
+          }, r.emoji + ' ' + getDisplayName(r))),
+        ),
+      ),
+
+      // ----- Message body -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, 'メッセージ'),
+        e('textarea', {
+          value: body,
+          onChange: (ev) => setBody(ev.target.value),
+          placeholder: '今日もよくがんばってるね。\n大好きだよ。',
+          rows: 4,
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            border: '1px solid ' + C.line, background: C.card,
+            fontSize: 15, fontFamily: 'inherit', color: C.text,
+            lineHeight: 1.6, resize: 'vertical', outline: 'none',
+            minHeight: 100,
+          }
+        }),
+        e('div', {
+          style: { fontSize: 11, color: C.sub, marginTop: 6, textAlign: 'right' }
+        }, body.length + ' 文字'),
+      ),
+
+      // ----- Hue -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, 'カードの色'),
+        e('div', { style: { display: 'flex', gap: 10 } },
+          HUES.map(h => e('button', {
+            key: h.id, onClick: () => setHue(h.id),
+            title: h.label,
+            style: {
+              width: 40, height: 40, borderRadius: 999,
+              background: 'linear-gradient(135deg, ' + h.color + ' 0%, ' + h.color + 'AA 100%)',
+              border: hue === h.id ? '3px solid ' + C.text : '3px solid ' + C.card,
+              boxShadow: hue === h.id
+                ? '0 0 0 2px ' + h.color + '55, 0 4px 10px ' + h.color + '44'
+                : '0 2px 6px rgba(42,37,32,0.08)',
+              cursor: 'pointer', transition: 'all .2s ease',
+            }
+          })),
+        ),
+      ),
+
+      // ----- Unlock condition -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, 'いつ開けられる？'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          UNLOCKS.map(u => e('button', {
+            key: u.id, onClick: () => setUnlock(u.id),
+            style: {
+              padding: '12px 14px', borderRadius: 12, textAlign: 'left',
+              background: unlockCond === u.id ? sender.color + '14' : C.card,
+              border: '1px solid ' + (unlockCond === u.id ? sender.color : C.line),
+              color: C.text, fontSize: 13, fontWeight: 600,
+              transition: 'all .2s ease',
+            }
+          },
+            e('span', {
+              style: {
+                display: 'inline-block', width: 16, height: 16, borderRadius: 999,
+                marginRight: 10, verticalAlign: 'middle',
+                background: unlockCond === u.id ? sender.color : 'transparent',
+                border: '2px solid ' + (unlockCond === u.id ? sender.color : C.line),
+              }
+            }),
+            u.label,
+          )),
+        ),
+      ),
+
+      // ----- Actions -----
+      e('div', { style: { display: 'flex', gap: 10 } },
+        e('button', {
+          onClick: onCancel,
+          style: {
+            flex: 1, padding: '14px 0', borderRadius: 14,
+            background: C.card, color: C.sub, border: '1px solid ' + C.line,
+            fontSize: 14, fontWeight: 600,
+          }
+        }, 'キャンセル'),
+        e('button', {
+          onClick: submit,
+          disabled: !canSubmit,
+          style: {
+            flex: 2, padding: '14px 0', borderRadius: 14,
+            background: canSubmit ? sender.color : C.line,
+            color: '#fff', border: '1px solid ' + (canSubmit ? sender.color : C.line),
+            fontSize: 14, fontWeight: 700,
+            boxShadow: canSubmit ? '0 6px 16px ' + sender.color + '55' : 'none',
+            cursor: canSubmit ? 'pointer' : 'not-allowed',
+          }
+        }, '送る'),
+      ),
+    );
+  }
+
+  function chipButtonStyle(active, color) {
+    return {
+      padding: '8px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
+      background: active ? color + '14' : C.card,
+      color: active ? color : C.sub,
+      border: '1px solid ' + (active ? color : C.line),
+      transition: 'all .2s ease', cursor: 'pointer',
+    };
+  }
+
+  // ---------- Support Messages (cheerleader can compose; learners react) ----------
   function SupportMessages({ profile, onBack }) {
     const isMother = profile.isCheerleader === true;
-    const allMessages = useMemo(buildDummyMessages, []);
+    const dummyMessages = useMemo(buildDummyMessages, []);
+    const [userMessages, setUserMessages] = useState(() => loadUserMessages());
+    const [composeMode, setComposeMode] = useState(false);
 
-    // Recipients see only their messages or family-wide; mother sees all.
+    // Combined list: user's own + dummy seed
+    const allMessages = useMemo(() => userMessages.concat(dummyMessages), [userMessages, dummyMessages]);
+
+    function refreshUserMessages() { setUserMessages(loadUserMessages()); }
+    function handleSubmitNew(msg) {
+      addUserMessage(msg);
+      refreshUserMessages();
+      setComposeMode(false);
+    }
+    function handleDelete(id) {
+      if (!confirm('このメッセージを削除しますか？')) return;
+      deleteUserMessage(id);
+      refreshUserMessages();
+    }
+
+    // Recipients see only their messages or family-wide; cheerleaders see all.
     const visible = useMemo(() => {
       const list = isMother
         ? allMessages
         : allMessages.filter(m => m.toMemberId === null || m.toMemberId === profile.id);
-      // Sort: unlocked first (newest first), locked at the bottom (newest first).
       return list.slice().sort((a, b) => {
         const au = !!a.unlockedAt, bu = !!b.unlockedAt;
         if (au !== bu) return au ? -1 : 1;
@@ -2013,6 +2238,15 @@
     }, [allMessages, isMother, profile.id]);
 
     const [reactions, setReactions] = useState(() => loadReactions(profile.id));
+
+    // ============ COMPOSE FORM ============
+    if (composeMode) {
+      return e(MessageCompose, {
+        sender: profile,
+        onCancel: () => setComposeMode(false),
+        onSubmit: handleSubmitNew,
+      });
+    }
 
     function react(messageId, emoji) {
       const next = Object.assign({}, reactions);
@@ -2050,9 +2284,9 @@
             : getDisplayName(motherProfile) + 'からの一言メッセージ。'),
       ),
 
-      // Mother's compose CTA (placeholder)
+      // Cheerleader compose CTA
       isMother && e('button', {
-        onClick: () => alert('応援メッセージ作成は次のフェーズで実装します'),
+        onClick: () => setComposeMode(true),
         style: {
           width: '100%', padding: '14px 0', borderRadius: 14,
           background: motherProfile.color, color: '#fff',
@@ -2127,6 +2361,16 @@
                   recipient ? getDisplayName(recipient) : '家族みんな'),
                 e('span', { style: { flex: 1 } }),
                 e('span', { style: { fontSize: 11 } }, timeAgo(m.createdAt)),
+                isMother && m.id && m.id.indexOf('usr_') === 0 && e('button', {
+                  onClick: () => handleDelete(m.id),
+                  title: '削除',
+                  style: {
+                    width: 22, height: 22, borderRadius: 999,
+                    background: C.softer, color: C.sub, border: '1px solid ' + C.line,
+                    fontSize: 11, lineHeight: 1, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }
+                }, '✕'),
               ),
 
               // Content
