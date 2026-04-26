@@ -3274,7 +3274,7 @@
           style: { fontSize: 14, color: C.sub, lineHeight: 1.5, fontFamily: SANS_UI }
         }, '今日もちょっとずつ、続けることがいちばん。'),
         e('div', {
-          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 22, fontWeight: 600, color: C.text, marginTop: 6, lineHeight: 1.4 }
+          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, marginTop: 6, lineHeight: 1.4 }
         }, 'A little every day is what matters most.'),
       ),
 
@@ -3286,7 +3286,7 @@
         }
       },
         e('div', {
-          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
+          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
                    display: 'flex', alignItems: 'center', gap: 10 }
         },
           e('span', { style: { flex: 1 } }, todayPhrase.en),
@@ -3402,7 +3402,7 @@
     }
 
     const levelChips = ['all','1','2','3','4','5'];
-    const levelLabel = { all: 'All', '1':'L1', '2':'L2', '3':'L3', '4':'L4', '5':'L5' };
+    const levelLabel = { all: 'すべて', '1':'レベル 1', '2':'レベル 2', '3':'レベル 3', '4':'レベル 4', '5':'レベル 5' };
 
     const statusInfo = {
       new:      { label: '未学習', color: C.sub      },
@@ -3501,7 +3501,7 @@
                   fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
                   background: profile.color + '1A', color: profile.color, letterSpacing: '0.06em',
                 }
-              }, 'L' + current.level),
+              }, 'レベル ' + current.level),
               e('span', {
                 style: {
                   fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
@@ -3779,7 +3779,7 @@
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
               background: C.softer, color: C.sub, fontFamily: SANS_UI,
             }
-          }, 'L' + (it.level || 1)),
+          }, 'レベル ' + (it.level || 1)),
         ),
         // Prompt: Japanese
         e('div', { style: { padding: '4px 0' } },
@@ -4077,7 +4077,7 @@
                             fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
                             background: C.softer, color: C.sub, flexShrink: 0,
                           }
-                        }, 'L' + it.level),
+                        }, 'レベル ' + it.level),
                       ),
                       e('div', {
                         style: {
@@ -4142,7 +4142,7 @@
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
-            }, 'L' + current.level),
+            }, 'レベル ' + current.level),
             current.pos && e('span', {
               style: {
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
@@ -5229,26 +5229,25 @@
       // Build the level-picker options. Respect profile.maxLevel by graying
       // out levels above the cap (e.g., Yoshinari can't pick L3-L5).
       const levelOpts = [
-        { value: 'auto', label: 'おまかせ', desc: 'あなたのレベルに合わせて' },
-        { value: 1, label: 'L1', desc: '超基礎・英検5/4級' },
-        { value: 2, label: 'L2', desc: '中学基礎・英検4/3級' },
-        { value: 3, label: 'L3', desc: '中3完了・英検3/準2級' },
-        { value: 4, label: 'L4', desc: '高校標準・英検2級' },
-        { value: 5, label: 'L5', desc: '高校発展・英検準1級' },
+        { value: 'auto', label: 'おまかせ',  desc: 'あなたのレベルに合わせて' },
+        { value: 1,      label: 'レベル 1', desc: '超基礎・英検5/4級' },
+        { value: 2,      label: 'レベル 2', desc: '中学基礎・英検4/3級' },
+        { value: 3,      label: 'レベル 3', desc: '中3完了・英検3/準2級' },
+        { value: 4,      label: 'レベル 4', desc: '高校標準・英検2級' },
+        { value: 5,      label: 'レベル 5', desc: '高校発展・英検準1級' },
       ];
       const maxLv = profile.maxLevel;
       return e('div', { style: pageStyle },
         topBar,
-        e('div', { style: { padding: '24px 4px 20px' } },
-          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '✍️'),
+        e('div', { style: { padding: '20px 4px 18px' } },
           e('div', {
-            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.15 }
-          }, 'Sprint Composition'),
-          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, '瞬間英作文'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
             '日本語を見て、すぐに英語に直す練習。\nレベルを選んで ' + COMP_COUNT + ' 問チャレンジしよう。'),
         ),
         e(ProgressChips, { profile, style: { marginBottom: 18 } }),
-        // Level picker
+        // Level picker (single label per row, no monogram square)
         e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
@@ -5271,25 +5270,14 @@
                 border: '1px solid ' + (isActive ? profile.color : C.line),
                 cursor: isLocked ? 'default' : 'pointer',
                 opacity: isLocked ? 0.4 : 1,
-                transition: 'all .15s ease',
               }
             },
-              e('div', {
-                style: {
-                  width: 40, height: 40, borderRadius: 12,
-                  background: isActive ? profile.color : C.softer,
-                  color: isActive ? '#fff' : C.sub,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 700, flexShrink: 0,
-                }
-              }, opt.label),
               e('div', { style: { flex: 1, minWidth: 0 } },
-                e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } },
-                  opt.value === 'auto' ? 'おまかせ' : opt.label),
+                e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, opt.label),
                 e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
-                  isLocked ? '🔒 まだ解放されていません' : opt.desc),
+                  isLocked ? 'まだ解放されていません' : opt.desc),
               ),
-              isActive && e('div', { style: { fontSize: 14, color: profile.color, flexShrink: 0 } }, '✓'),
+              isActive && e('div', { style: { fontSize: 16, color: profile.color, flexShrink: 0, fontWeight: 700 } }, '✓'),
             );
           })
         ),
@@ -5393,7 +5381,7 @@
               }, s.en),
             ),
             e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
-              isPhrase ? '会話' : ('L' + (s.level || 2))),
+              isPhrase ? '会話' : ('レベル ' + (s.level || 2))),
           );
         }),
       );
@@ -5434,7 +5422,7 @@
               fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
               background: profile.color + '1A', color: profile.color,
             }
-          }, 'L' + current.level),
+          }, 'レベル ' + current.level),
           e('span', {
             style: {
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
@@ -6081,10 +6069,10 @@
         }
       },
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 10 }
+          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4, marginBottom: 8 }
         }, msg.ja),
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 18, fontWeight: 500, color: C.sub, fontStyle: 'italic', lineHeight: 1.4 }
+          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 600, color: C.text, lineHeight: 1.4 }
         }, msg.en),
       ),
       // Plain score line
@@ -6282,7 +6270,7 @@
                   background: C.softer, color: C.gold, fontFamily: SANS_UI,
                   letterSpacing: '0.06em', flexShrink: 0,
                 }
-              }, 'L' + v.level),
+              }, 'レベル ' + v.level),
               e(SpeakerBtn, { onClick: () => speak(v.en), color: profile.color, size: 30 }),
             )),
           ),
@@ -6357,7 +6345,6 @@
               borderRadius: 14, padding: '40px 22px', textAlign: 'center', color: C.sub,
             }
           },
-            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '✍️'),
             e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
               'まだ覚えた英作文はありません'),
             e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
@@ -6389,7 +6376,7 @@
                     fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
                   }
-                }, 'L' + s.level),
+                }, 'レベル ' + s.level),
                 e(SpeakerBtn, { onClick: () => speak(s.en), color: profile.color, size: 30 }),
               ),
             )),
@@ -6717,21 +6704,25 @@
                 key: p.id,
                 style: {
                   background: C.card, border: '1px solid ' + C.line,
-                  borderRadius: 14, padding: '12px 14px',
+                  borderRadius: 14, padding: '14px 14px',
                 }
               },
                 e('div', {
-                  style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 4,
+                  style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
                            letterSpacing: '0.08em', fontFamily: SANS_UI }
                 }, SCENE_LABELS[p.scene]),
-                e('div', { style: { fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4, lineHeight: 1.4 } }, p.ja),
+                // English first — large, plain dark text. Phrasebook-style.
                 e('div', {
-                  style: { fontSize: 14, color: C.sub, fontFamily: SERIF, fontStyle: 'italic',
-                           lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 8 }
+                  style: { fontSize: 19, color: C.text, fontFamily: SERIF, fontWeight: 600,
+                           lineHeight: 1.35, display: 'flex', alignItems: 'center', gap: 10 }
                 },
                   e('span', { style: { flex: 1 } }, p.en),
                   e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 32 }),
                 ),
+                // Japanese gloss — smaller, lighter, but still readable.
+                e('div', {
+                  style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.4 }
+                }, p.ja),
               )),
             ),
         // Start practice
