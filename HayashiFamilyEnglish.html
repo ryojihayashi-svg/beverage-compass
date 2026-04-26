@@ -1564,6 +1564,14 @@
     { id:'s283', level:2, grammar:'Who + be',              ja:'一番の友達は誰ですか？',                    en:'Who is your best friend?' },
     { id:'s284', level:2, grammar:'What + 過去',           ja:'朝食に何を食べましたか？',                  en:'What did you eat for breakfast?' },
     { id:'s285', level:2, grammar:'How + 過去',            ja:'今日はどうでしたか？',                      en:'How was your day?' },
+
+    // ========== Friend / Toranomon / Aoyama FC / Yutenji / Pigs (s286-s291) ==========
+    { id:'s286', level:1, grammar:'be動詞',                ja:'トッシーは親友です。',                      en:'Tosshi is my best friend.' },
+    { id:'s287', level:3, grammar:'used to + often',       ja:'僕はよく虎ノ門のパスタ屋さんに行ってました。', en:'I used to often go to the pasta restaurant in Toranomon.' },
+    { id:'s288', level:3, grammar:'got better at',         ja:'僕は青山FCでサッカーをして上手になりました。', en:'I got better at soccer by playing at Aoyama FC.' },
+    { id:'s289', level:2, grammar:'be + comfortable',      ja:'祐天寺の家は快適です。',                    en:'Our house in Yutenji is comfortable.' },
+    { id:'s290', level:1, grammar:'be動詞 + 形容詞',       ja:'2匹の豚は可愛いです。',                     en:'The two pigs are cute.' },
+    { id:'s291', level:1, grammar:'be動詞 + name',         ja:'豚の名前はウリとゴマです。',                en:"The pigs' names are Uri and Goma." },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
@@ -2404,6 +2412,21 @@
         position: 'relative',
       }
     },
+      // Reload button (top-right, just left of gear)
+      e('button', {
+        onClick: () => { try { window.location.reload(); } catch {} },
+        style: {
+          position: 'absolute', top: 18, right: 64,
+          width: 38, height: 38, borderRadius: 999,
+          background: C.softer, border: '1px solid ' + C.line,
+          fontSize: 16, color: C.sub,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        },
+        title: 'アプリを再読み込み',
+        'aria-label': '再読み込み',
+      }, '🔄'),
+
       // Settings gear (top-right)
       e('button', {
         onClick: onOpenSettings,
@@ -2547,8 +2570,20 @@
           onClick: onBackToProfiles,
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em' } },
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
           'プロファイルを切り替える'),
+        e('button', {
+          onClick: () => { try { window.location.reload(); } catch {} },
+          title: 'アプリを再読み込み',
+          'aria-label': '再読み込み',
+          style: {
+            width: 36, height: 36, borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 14, color: C.sub,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          },
+        }, '🔄'),
       ),
 
       // Hero card
