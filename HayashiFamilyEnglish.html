@@ -5051,36 +5051,50 @@
     const [apiKeyMsg, setApiKeyMsg] = useState('');
     const [photos, setPhotos] = useState(() => loadFamilyPhotos());
     const [photoErr, setPhotoErr] = useState('');
+    const [photoMsg, setPhotoMsg] = useState('');   // transient success message
     const [photoBusy, setPhotoBusy] = useState(false);
     const photoInputRef = useRef(null);
 
     async function addFamilyPhotos(files) {
       if (!files || files.length === 0) return;
       setPhotoErr('');
+      setPhotoMsg('');
       setPhotoBusy(true);
-      const next = photos.slice();
+      // Always start from the freshest list on disk so a quick second tap
+      // doesn't overwrite the result of the first one (avoids the stale-
+      // closure issue where two rapid Add taps see the same `photos` from
+      // the render they were defined in).
+      const next = loadFamilyPhotos().slice();
+      let added = 0;
+      let oversized = 0;
       try {
         for (const file of Array.from(files)) {
           try {
             const dataUrl = await compressImageToDataUrl(file, 1200, 0.78);
             if (dataUrl.length > 1_400_000) {
-              setPhotoErr('1枚が大きすぎます（圧縮後 ' + Math.round(dataUrl.length / 1024) + ' KB）。');
+              oversized++;
               continue;
             }
             next.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), url: dataUrl });
+            added++;
           } catch {
             setPhotoErr('一部の写真を読み込めませんでした。');
           }
         }
         setPhotos(next);
-        saveFamilyPhotos(next);
+        saveFamilyPhotos(next);   // writes localStorage + stamps + cloud-pushes
+        if (added > 0) setPhotoMsg(added + ' 枚追加して保存しました。');
+        if (oversized > 0) setPhotoErr(oversized + ' 枚はファイルが大きすぎたので追加できませんでした。');
       } finally {
         setPhotoBusy(false);
         if (photoInputRef.current) photoInputRef.current.value = '';
+        // Auto-clear the success line after 4s so it doesn't pile up.
+        setTimeout(() => setPhotoMsg(''), 4000);
       }
     }
     function removeFamilyPhoto(id) {
-      const next = photos.filter(p => p.id !== id);
+      if (!confirm('この写真を削除しますか？\n\n（20問終わったあとに表示される写真の中から外されます。元には戻せません。）')) return;
+      const next = loadFamilyPhotos().filter(p => p.id !== id);
       setPhotos(next);
       saveFamilyPhotos(next);
     }
@@ -5360,18 +5374,31 @@
 
       // ----- Family photo gallery -----
       e('div', { style: { marginTop: 32 } },
+        // Section header — title + live photo count
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.18em', textTransform: 'uppercase',
-            color: C.sub, marginBottom: 10, paddingLeft: 4,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 6, paddingLeft: 4,
           }
-        }, 'Family Photos'),
+        },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+              letterSpacing: '0.18em', textTransform: 'uppercase', color: C.sub,
+            }
+          }, 'Family Photos'),
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.text,
+              fontVariantNumeric: 'tabular-nums',
+            }
+          }, photos.length + ' 枚'),
+        ),
         e('div', {
           style: { fontSize: 12, color: C.sub, marginBottom: 12, paddingLeft: 4, lineHeight: 1.6 }
-        }, '20問終わったあとや、いろんな場面でランダムに表示される写真です。家族の写真や、好きなブタの写真など、何枚でも追加できます。'),
+        }, '練習が終わるたびに、ここから1枚がランダムで表示されます。家族の写真でも、ブタの写真でも、何枚でも追加できます。'),
 
-        // Hidden input + add button
+        // Hidden input + big add button
         e('input', {
           ref: photoInputRef, type: 'file', accept: 'image/*', multiple: true,
           style: { display: 'none' },
@@ -5381,14 +5408,23 @@
           onClick: () => { if (photoInputRef.current) photoInputRef.current.click(); },
           disabled: photoBusy,
           style: {
-            width: '100%', padding: '14px 0', borderRadius: 14,
-            background: photoBusy ? C.softer : C.card,
-            color: C.text, border: '1px dashed ' + C.line,
-            fontSize: 13, fontWeight: 600, fontFamily: SANS_UI,
-            marginBottom: 12, cursor: photoBusy ? 'default' : 'pointer',
+            width: '100%', padding: '16px 0', borderRadius: 14,
+            background: photoBusy ? C.softer : C.brand,
+            color: photoBusy ? C.sub : '#fff',
+            border: '1px solid ' + (photoBusy ? C.line : C.brand),
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+            letterSpacing: '0.04em',
+            marginBottom: 10, cursor: photoBusy ? 'default' : 'pointer',
           }
-        }, photoBusy ? '読み込み中…' : '＋ 写真を追加（複数可）'),
+        }, photoBusy ? '読み込み中…' : '＋ 写真を追加'),
 
+        // Transient success / error lines
+        photoMsg && e('div', {
+          style: {
+            fontSize: 12, color: C.success, marginBottom: 10, paddingLeft: 4,
+            fontWeight: 600,
+          }
+        }, '✓ ' + photoMsg),
         photoErr && e('div', {
           style: {
             fontSize: 12, color: C.danger, marginBottom: 10, paddingLeft: 4,
@@ -5399,8 +5435,8 @@
           ? e('div', {
               style: {
                 fontSize: 12, color: C.sub, textAlign: 'center',
-                padding: '20px 0', background: C.softer, borderRadius: 12,
-                marginBottom: 4,
+                padding: '24px 0', background: C.softer, borderRadius: 12,
+                marginTop: 4,
               }
             }, 'まだ写真がありません')
           : e('div', {
@@ -5408,6 +5444,7 @@
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: 8,
+                marginTop: 4,
               }
             },
               photos.map(p => e('div', {
@@ -5427,12 +5464,14 @@
                 e('button', {
                   onClick: () => removeFamilyPhoto(p.id),
                   'aria-label': '削除',
+                  title: '削除',
                   style: {
-                    position: 'absolute', top: 4, right: 4,
-                    width: 24, height: 24, borderRadius: 999,
-                    background: 'rgba(0,0,0,0.55)', color: '#fff',
-                    fontSize: 12, lineHeight: 1, cursor: 'pointer',
+                    position: 'absolute', top: 6, right: 6,
+                    width: 28, height: 28, borderRadius: 999,
+                    background: 'rgba(0,0,0,0.6)', color: '#fff',
+                    fontSize: 14, lineHeight: 1, cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: 'none',
                   }
                 }, '×'),
               )),
