@@ -1485,6 +1485,33 @@
       this.recordDaily(memberId, isCorrect);
     },
 
+    // Family activity feed (shared across members on this device — Supabase
+    // would replace this with cross-device sync). Newest first, capped at 100.
+    pushFeed(memberId, kind, payload) {
+      let arr = [];
+      try { arr = JSON.parse(localStorage.getItem('hfe_feed_v1') || '[]'); } catch {}
+      arr.unshift({
+        id: 'f_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        memberId, kind, payload: payload || {},
+        at: new Date().toISOString(),
+      });
+      arr = arr.slice(0, 100);
+      try { localStorage.setItem('hfe_feed_v1', JSON.stringify(arr)); } catch {}
+    },
+    getFeed() {
+      try { return JSON.parse(localStorage.getItem('hfe_feed_v1') || '[]'); }
+      catch { return []; }
+    },
+    addFeedReaction(feedId, memberId, emoji) {
+      let arr = this.getFeed();
+      const item = arr.find(x => x.id === feedId);
+      if (!item) return;
+      if (!item.reactions) item.reactions = {};
+      if (item.reactions[memberId] === emoji) delete item.reactions[memberId];
+      else item.reactions[memberId] = emoji;
+      try { localStorage.setItem('hfe_feed_v1', JSON.stringify(arr)); } catch {}
+    },
+
     // Evaluate which achievements `memberId` has just earned, given an
     // optional `opts` describing the latest event. Returns an array of
     // achievement ids newly earned during this call (so the UI can
@@ -2054,10 +2081,17 @@
         onBackToProfiles:   () => setRoute({ name: 'profiles' }),
         onPickFeature:      (id) => setRoute({ name: 'feature', feature: id }),
         onOpenAchievements: () => setRoute({ name: 'achievements' }),
+        onOpenFeed:         () => setRoute({ name: 'feed' }),
       });
     }
     if (route.name === 'achievements') {
       return e(AchievementsScreen, {
+        profile,
+        onBack: () => setRoute({ name: 'home' }),
+      });
+    }
+    if (route.name === 'feed') {
+      return e(FamilyFeedScreen, {
         profile,
         onBack: () => setRoute({ name: 'home' }),
       });
@@ -2209,11 +2243,12 @@
   }
 
   // ---------- English Learning Home ----------
-  function EnglishHome({ profile, onBackToProfiles, onPickFeature, onOpenAchievements }) {
+  function EnglishHome({ profile, onBackToProfiles, onPickFeature, onOpenAchievements, onOpenFeed }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
     const earnedAchievements = ((db.load(profile.id).achievements) || {});
     const earnedCount = Object.keys(earnedAchievements).length;
+    const feedCount = db.getFeed().length;
 
     return e('div', {
       style: {
@@ -2323,6 +2358,35 @@
           e('div', {
             style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
           }, earnedCount + ' / ' + ACHIEVEMENTS.length + ' 獲得'),
+        ),
+        e('div', { style: { color: C.sub, fontSize: 18 } }, '›'),
+      ),
+
+      // Family feed quick-access
+      e('button', {
+        onClick: onOpenFeed,
+        style: {
+          width: '100%', marginTop: 10, padding: '14px 16px',
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 12,
+        },
+      },
+        e('div', {
+          style: {
+            width: 40, height: 40, borderRadius: 12,
+            background: profile.color + '18', color: profile.color,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, border: '1px solid ' + profile.color + '44', flexShrink: 0,
+          }
+        }, '📰'),
+        e('div', { style: { flex: 1 } },
+          e('div', {
+            style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }
+          }, '家族の今'),
+          e('div', {
+            style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+          }, feedCount === 0 ? 'まだ投稿はありません' : feedCount + ' 件のアクティビティ'),
         ),
         e('div', { style: { color: C.sub, fontSize: 18 } }, '›'),
       ),
@@ -2631,9 +2695,12 @@
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        setNewBadges(db.evaluateAchievements(profile.id, {
+        const badges = db.evaluateAchievements(profile.id, {
           daily20Done: true, perfectSession: correctCount === total && total > 0,
-        }));
+        });
+        setNewBadges(badges);
+        db.pushFeed(profile.id, 'session_done', { feature: 'daily20', correct: correctCount, total, accuracy: acc });
+        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -3027,10 +3094,13 @@
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = newResults.length > 0 ? Math.round(correctCount * 100 / newResults.length) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        setNewBadges(db.evaluateAchievements(profile.id, {
+        const badges = db.evaluateAchievements(profile.id, {
           mistakeReviewSession: true,
           perfectSession: correctCount === newResults.length && newResults.length > 0,
-        }));
+        });
+        setNewBadges(badges);
+        db.pushFeed(profile.id, 'session_done', { feature: 'mistakes', correct: correctCount, total: newResults.length, accuracy: acc });
+        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -4123,9 +4193,12 @@
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        setNewBadges(db.evaluateAchievements(profile.id, {
+        const badges = db.evaluateAchievements(profile.id, {
           perfectSession: correctCount === total && total > 0,
-        }));
+        });
+        setNewBadges(badges);
+        db.pushFeed(profile.id, 'session_done', { feature: 'composition', correct: correctCount, total, accuracy: acc });
+        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -4856,6 +4929,143 @@
                 }, '🔊'),
               ),
             )),
+          ),
+    );
+  }
+
+  // ---------- Family Feed Screen ----------
+  // Renders activity entries posted across the family (session done, badges
+  // earned). Each entry can receive emoji reactions from any member on this
+  // device (per-feed-id, per-member-id; toggle on second tap).
+  function FamilyFeedScreen({ profile, onBack }) {
+    const [tick, setTick] = useState(0);
+    const items = db.getFeed();
+    const memberById = (id) => PROFILES.find(p => p.id === id) || PROFILES[0];
+
+    function describe(item) {
+      const m = memberById(item.memberId);
+      const name = getDisplayName(m);
+      if (item.kind === 'session_done') {
+        const featLabel =
+          item.payload.feature === 'daily20'     ? '今日の20問' :
+          item.payload.feature === 'composition' ? '瞬間英作文' :
+          item.payload.feature === 'mistakes'    ? '間違い復習' : 'セッション';
+        return {
+          icon: item.payload.accuracy >= 70 ? '🎯' : '🌱',
+          headline: name + ' が ' + featLabel + ' を完了',
+          subline: item.payload.correct + ' / ' + item.payload.total +
+            '・精度 ' + (item.payload.accuracy || 0) + '%',
+        };
+      }
+      if (item.kind === 'achievement') {
+        const a = ACHIEVEMENT_BY_ID[item.payload.achievementId];
+        return {
+          icon: a ? a.icon : '🏅',
+          headline: name + ' が「' + (a ? a.label : 'バッジ') + '」を獲得',
+          subline: a ? a.desc : '',
+        };
+      }
+      return { icon: '📰', headline: name + ' のアクティビティ', subline: '' };
+    }
+
+    function react(itemId, emoji) {
+      db.addFeedReaction(itemId, profile.id, emoji);
+      setTick(t => t + 1);
+    }
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '家族の今'),
+      ),
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '📰'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, 'Family Feed'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+          items.length === 0
+            ? 'まだ投稿はありません。練習を完了するとここに流れます。'
+            : items.length + ' 件のアクティビティ'),
+      ),
+      // List
+      items.length === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+            }
+          },
+            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
+            e('div', { style: { fontSize: 13, lineHeight: 1.7 } },
+              '誰かが学習を完了すると、ここに自動でカードが流れます。'),
+          )
+        : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+            items.map(item => {
+              const m = memberById(item.memberId);
+              const d = describe(item);
+              const myReaction = item.reactions && item.reactions[profile.id];
+              return e('div', {
+                key: item.id,
+                style: {
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 18, padding: '14px 16px',
+                  boxShadow: '0 4px 12px rgba(42,37,32,0.04)',
+                }
+              },
+                // Header row
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  e('div', {
+                    style: {
+                      width: 36, height: 36, borderRadius: 12,
+                      background: m.color + '22', color: m.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 20, flexShrink: 0,
+                      border: '1px solid ' + m.color + '33',
+                    }
+                  }, m.emoji),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600 } }, getDisplayName(m)),
+                    e('div', { style: { fontSize: 11, color: C.sub, opacity: 0.7 } }, timeAgo(item.at)),
+                  ),
+                  e('div', { style: { fontSize: 22 } }, d.icon),
+                ),
+                // Content
+                e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 } },
+                  d.headline),
+                d.subline && e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 10 } }, d.subline),
+                // Reactions row
+                e('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
+                  REACT_EMOJIS.map(em => e('button', {
+                    key: em, onClick: () => react(item.id, em),
+                    style: {
+                      padding: '5px 10px', borderRadius: 999, fontSize: 13,
+                      background: myReaction === em ? m.color + '22' : C.softer,
+                      border: '1px solid ' + (myReaction === em ? m.color : C.line),
+                      color: C.text, cursor: 'pointer',
+                      transform: myReaction === em ? 'scale(1.05)' : 'scale(1)',
+                      transition: 'all .15s ease',
+                    }
+                  }, em)),
+                ),
+                // Other members' reactions summary
+                item.reactions && Object.keys(item.reactions).length > 1 && e('div', {
+                  style: { fontSize: 11, color: C.sub, marginTop: 6 }
+                },
+                  Object.entries(item.reactions)
+                    .filter(([id]) => id !== profile.id)
+                    .map(([id, em]) => {
+                      const r = memberById(id);
+                      return getDisplayName(r) + ' ' + em;
+                    }).join(' / ')
+                ),
+              );
+            })
           ),
     );
   }
