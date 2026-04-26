@@ -13,13 +13,16 @@
 // behaviour needs to invalidate previously-cached files.
 // ============================================================================
 
-const CACHE_VERSION = 'hfe-v4-2026-04-26';
+const CACHE_VERSION = 'hfe-v5-2026-04-26';
 
 // Files to proactively cache on install. Everything else is cached lazily
 // the first time it's requested while online.
 const PRECACHE_URLS = [
   './HayashiFamilyEnglish.html',
   './hfe-icon.svg',
+  './hfe-icon-180.png',
+  './hfe-icon-192.png',
+  './hfe-icon-512.png',
   // React 18 from CDN (used by the app at runtime)
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
