@@ -59,7 +59,7 @@
     { id: 'son1',   name: '長男', subtitle: '高2・英検2級',          emoji: '🎯', color: C.ocean,  role: 'learner', level: 4 },
     { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',   emoji: '⚽', color: C.accent, role: 'learner', level: 2 },
     { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',   emoji: '🌟', color: C.sun,    role: 'learner', level: 1 },
-    { id: 'mother', name: '母',   subtitle: '観覧・応援担当',         emoji: '💐', color: C.rose,   role: 'viewer' },
+    { id: 'mother', name: '母',   subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.rose,   role: 'learner', level: 2, isCheerleader: true },
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
@@ -404,7 +404,7 @@
     son1:   { weeklyCorrect:  98, totalCorrect: 540, accuracy: 76, streakDays:  8 },
     son2:   { weeklyCorrect:  46, totalCorrect: 210, accuracy: 64, streakDays:  3 },
     son3:   { weeklyCorrect:  72, totalCorrect: 168, accuracy: 70, streakDays:  5 },
-    mother: { cheers: 38 },
+    mother: { weeklyCorrect:  38, totalCorrect: 195, accuracy: 78, streakDays:  4 },
   };
 
   // ---------- Dummy support messages (mother → children, until Supabase) ----------
@@ -1912,7 +1912,7 @@
 
   // ---------- Support Messages (mother's reward box, dummy data) ----------
   function SupportMessages({ profile, onBack }) {
-    const isMother = profile.role === 'viewer';
+    const isMother = profile.isCheerleader === true;
     const allMessages = useMemo(buildDummyMessages, []);
 
     // Recipients see only their messages or family-wide; mother sees all.
