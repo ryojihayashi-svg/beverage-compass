@@ -56,6 +56,19 @@
     { id: 'mother', name: '母',   subtitle: '観覧・応援担当',         emoji: '💐', color: C.rose,   role: 'viewer' },
   ];
 
+  // ---------- Feature tiles for English Learning Home ----------
+  // forLearner=true: shown to family members who study (father, sons)
+  // forViewer=true:  shown to mother (viewer-only)
+  const FEATURES = [
+    { id: 'daily20',  label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',       primary: true,  forLearner: true,  forViewer: false },
+    { id: 'vocab',    label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                     forLearner: true,  forViewer: false },
+    { id: 'mistakes', label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                  forLearner: true,  forViewer: false },
+    { id: 'ranking',  label: '家族ランキング', emoji: '🏆', desc: '今週のがんばり',                       forLearner: true,  forViewer: true  },
+    { id: 'support',  label: '応援メッセージ', emoji: '💌', desc: 'みんなへの一言',                       forLearner: true,  forViewer: true  },
+  ];
+
+  const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
+
   // ---------- App ----------
   function App() {
     const [route, setRoute] = useState({ name: 'profiles' });
@@ -63,10 +76,25 @@
     const profile = PROFILES.find(p => p.id === activeId) || null;
 
     if (route.name === 'profiles') {
-      return e(ProfileSelect, { onPick: (id) => { setActiveId(id); setRoute({ name: 'home' }); } });
+      return e(ProfileSelect, {
+        onPick: (id) => { setActiveId(id); setRoute({ name: 'home' }); },
+      });
     }
-    if (route.name === 'home' && profile) {
-      return e(HomePage, { profile, onBack: () => setRoute({ name: 'profiles' }) });
+    if (!profile) return null;
+
+    if (route.name === 'home') {
+      return e(EnglishHome, {
+        profile,
+        onBackToProfiles: () => setRoute({ name: 'profiles' }),
+        onPickFeature:    (id) => setRoute({ name: 'feature', feature: id }),
+      });
+    }
+    if (route.name === 'feature') {
+      return e(ComingSoon, {
+        profile,
+        feature: FEATURE_BY_ID[route.feature],
+        onBack:  () => setRoute({ name: 'home' }),
+      });
     }
     return null;
   }
@@ -186,9 +214,11 @@
     );
   }
 
-  // ---------- Home (placeholder for next step) ----------
-  function HomePage({ profile, onBack }) {
+  // ---------- English Learning Home ----------
+  function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
     const isViewer = profile.role === 'viewer';
+    const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
+
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
@@ -197,29 +227,21 @@
     },
       // Top bar
       e('div', {
-        style: {
-          display: 'flex', alignItems: 'center', gap: 4,
-          marginBottom: 22,
-        }
+        style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 22 }
       },
         e('button', {
-          onClick: onBack,
-          style: {
-            fontSize: 22, color: C.sub, padding: '8px 10px 8px 0',
-            lineHeight: 1,
-          }
+          onClick: onBackToProfiles,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em' } }, 'プロファイルを切り替える'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em' } },
+          'プロファイルを切り替える'),
       ),
 
       // Hero card
       e('div', {
         style: {
           background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
-          color: '#fff',
-          padding: '26px 24px',
-          borderRadius: 24,
-          marginBottom: 18,
+          color: '#fff', padding: '26px 24px', borderRadius: 24, marginBottom: 22,
           boxShadow: '0 10px 28px ' + profile.color + '33',
         }
       },
@@ -232,35 +254,122 @@
             }
           }, profile.emoji),
           e('div', null,
-            e('div', {
-              style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 }
-            }, isViewer ? 'VIEWER' : 'TODAY'),
-            e('div', {
-              style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, marginTop: 2 }
-            }, 'Hi, ' + profile.name + '.'),
+            e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } },
+              isViewer ? 'VIEWER' : 'TODAY'),
+            e('div', { style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, marginTop: 2 } },
+              'Hi, ' + profile.name + '.'),
           ),
         ),
         e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 14, lineHeight: 1.5 } },
-          isViewer ? 'みんなの学習を見守って、応援しましょう。' : '今日もちょっとずつ。続けることがいちばん。'),
+          isViewer
+            ? 'みんなの学習を見守って、応援しましょう。'
+            : '今日もちょっとずつ。続けることがいちばん。'),
       ),
 
-      // Placeholder
+      // Section label
       e('div', {
         style: {
-          background: C.softer,
-          border: '1px dashed ' + C.line,
-          borderRadius: 20,
-          padding: '32px 22px',
-          textAlign: 'center',
-          color: C.sub,
+          fontSize: 12, color: C.sub, letterSpacing: '0.12em',
+          fontWeight: 600, marginBottom: 10, paddingLeft: 4,
+        }
+      }, 'ENGLISH LEARNING'),
+
+      // Feature tiles
+      e('div', {
+        style: {
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
         }
       },
-        e('div', { style: { fontSize: 28, marginBottom: 8 } }, '🛠️'),
-        e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 } }, '次のステップで実装予定'),
+        visibleFeatures.map(f => e(FeatureTile, {
+          key: f.id, feature: f, accent: profile.color,
+          onClick: () => onPickFeature(f.id),
+          fullWidth: f.primary,
+        })),
+      ),
+    );
+  }
+
+  function FeatureTile({ feature, accent, onClick, fullWidth }) {
+    const [pressed, setPressed] = useState(false);
+    const isPrimary = !!feature.primary;
+    return e('button', {
+      onClick,
+      onPointerDown: () => setPressed(true),
+      onPointerUp:   () => setPressed(false),
+      onPointerLeave:() => setPressed(false),
+      style: {
+        gridColumn: fullWidth ? '1 / -1' : 'auto',
+        background: isPrimary ? accent : C.card,
+        color: isPrimary ? '#fff' : C.text,
+        border: '1px solid ' + (isPrimary ? accent : C.line),
+        borderRadius: 18, padding: '18px 16px',
+        textAlign: 'left', minHeight: 96,
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12,
+        boxShadow: pressed
+          ? '0 1px 2px rgba(42,37,32,0.06)'
+          : (isPrimary
+              ? '0 8px 22px ' + accent + '40'
+              : '0 4px 14px rgba(42,37,32,0.05), 0 1px 2px rgba(42,37,32,0.04)'),
+        transform: pressed ? 'scale(0.985)' : 'scale(1)',
+        transition: 'transform .15s ease, box-shadow .25s ease',
+      }
+    },
+      e('div', { style: { fontSize: 26, lineHeight: 1 } }, feature.emoji),
+      e('div', null,
+        e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
+        e('div', {
+          style: {
+            fontSize: 11, marginTop: 4, lineHeight: 1.4,
+            color: isPrimary ? 'rgba(255,255,255,0.85)' : C.sub,
+          }
+        }, feature.desc),
+      ),
+    );
+  }
+
+  // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
+  function ComingSoon({ profile, feature, onBack }) {
+    if (!feature) return null;
+    return e('div', {
+      style: {
+        maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
+        animation: 'fadeIn .3s ease',
+      }
+    },
+      // Top bar
+      e('div', {
+        style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 22 }
+      },
+        e('button', {
+          onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em' } },
+          'ホームに戻る'),
+      ),
+
+      // Header
+      e('div', { style: { marginBottom: 28, paddingLeft: 4 } },
+        e('div', { style: { fontSize: 36, marginBottom: 8 } }, feature.emoji),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, feature.label),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } }, feature.desc),
+      ),
+
+      // Coming soon panel
+      e('div', {
+        style: {
+          background: C.softer, border: '1px dashed ' + C.line,
+          borderRadius: 20, padding: '36px 24px', textAlign: 'center', color: C.sub,
+        }
+      },
+        e('div', { style: { fontSize: 32, marginBottom: 10 } }, '🛠️'),
+        e('div', {
+          style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }
+        }, '次のステップで実装します'),
         e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
-          isViewer
-            ? '・家族の学習フィード／応援メッセージ'
-            : '・単語カード（30語サンプル）／瞬間英作文／テスト／AI質問'),
+          'この機能は順番に作っていきます。'),
       ),
     );
   }
