@@ -2031,15 +2031,18 @@
 
     const status = {
       enabled: !!client,
+      online:  typeof navigator !== 'undefined' ? navigator.onLine !== false : true,
       lastError: null,
       lastSyncAt: null,    // ISO string
-      pending: false,      // an upsert is queued or in flight
+      pending: false,      // a write is queued / in flight / waiting for connectivity
     };
     const listeners = new Set();
     function notify() { listeners.forEach(fn => { try { fn(status); } catch {} }); }
 
     // Debounced per-member upsert. We coalesce rapid db.save() calls (e.g.
-    // many record() in a session) into a single network round-trip per member.
+    // many record() in a session) into a single network round-trip per
+    // member. If the upsert fails (offline / network error) the state stays
+    // in `pending` and is retried automatically when connectivity returns.
     const timers  = {};
     const pending = {};
     function schedulePush(memberId, state) {
@@ -2054,6 +2057,15 @@
       if (!client) return;
       const state = pending[memberId];
       if (!state) return;
+      // If the device is offline, leave the entry in `pending` so the
+      // 'online' listener below can retry it. Don't even attempt the
+      // network call (Safari may surface a noisy fetch error otherwise).
+      if (!status.online) {
+        status.pending = true;
+        notify();
+        return;
+      }
+      // Optimistically remove from queue; we'll put it back on failure.
       delete pending[memberId];
       try {
         const { error } = await client
@@ -2063,6 +2075,9 @@
         status.lastError  = null;
         status.lastSyncAt = new Date().toISOString();
       } catch (err) {
+        // Keep the latest version of state pending so the next online retry
+        // catches the most recent edit.
+        if (!pending[memberId]) pending[memberId] = state;
         status.lastError = (err && err.message) || String(err);
         console.warn('cloud upsert failed', err);
       } finally {
@@ -2072,6 +2087,7 @@
     }
     async function pull(memberId) {
       if (!client) return null;
+      if (!status.online) return null;
       try {
         const { data, error } = await client
           .from(CLOUD_TABLE)
@@ -2088,6 +2104,7 @@
     }
     async function pingTest() {
       if (!client) return false;
+      if (!status.online) return false;
       try {
         const { error } = await client
           .from(CLOUD_TABLE)
@@ -2107,11 +2124,16 @@
     // Immediate, non-debounced push. Used for one-off saves like display
     // names / avatars / family photos where we want the write to land in
     // the cloud right away (in case the user closes the tab seconds later).
+    // When offline, falls through to the same pending queue as schedulePush.
     async function pushNow(memberId, state) {
       if (!client) return;
-      // If the debounce was about to fire, cancel it — we're going to write
-      // the same row in this call.
       clearTimeout(timers[memberId]);
+      if (!status.online) {
+        pending[memberId] = state;
+        status.pending = true;
+        notify();
+        return;
+      }
       delete pending[memberId];
       status.pending = true; notify();
       try {
@@ -2122,6 +2144,7 @@
         status.lastError  = null;
         status.lastSyncAt = new Date().toISOString();
       } catch (err) {
+        if (!pending[memberId]) pending[memberId] = state;
         status.lastError = (err && err.message) || String(err);
         console.warn('cloud pushNow failed', err);
       } finally {
@@ -2130,10 +2153,34 @@
       }
     }
 
+    // Track connectivity. When the device comes back online, drain anything
+    // we couldn't push while offline. This is what lets the kid in the UK
+    // dorm keep studying after Wi-Fi cuts out at 22:30 — the answers stack
+    // up in `pending` overnight and flush on reconnect the next morning.
+    function setOnline(isOnline) {
+      const was = status.online;
+      status.online = !!isOnline;
+      // Coming back online: drop any 'lastError' that was just network noise
+      // and flush every pending member.
+      if (!was && status.online) {
+        status.lastError = null;
+        notify();
+        Object.keys(pending).forEach(id => { flushPush(id); });
+      } else {
+        notify();
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online',  () => setOnline(true));
+      window.addEventListener('offline', () => setOnline(false));
+    }
+
     return {
       status,
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
       schedulePush, pushNow, pull, pingTest,
+      // Number of members with un-synced edits in the local queue.
+      pendingCount() { return Object.keys(pending).length; },
     };
   })();
 
@@ -2475,6 +2522,27 @@
         e('polyline', { points: '5 22 5 18 9 18' }),
       ),
     );
+  }
+
+  // ---------- Offline badge (small pill that appears when navigator is offline) ----------
+  // Subscribes to the cloud module's status so it re-renders on online /
+  // offline / pending changes. Stays out of the way when the device is
+  // online and there's nothing queued.
+  function OfflineBadge() {
+    const [, setTick] = useState(0);
+    useEffect(() => cloud.subscribe(() => setTick(t => t + 1)), []);
+    const s = cloud.status;
+    if (s.online) return null;
+    return e('div', {
+      title: 'Wi-Fi がない間も学習データはこの端末に保存され、復帰時に自動で同期されます。',
+      style: {
+        padding: '4px 10px', borderRadius: 999,
+        background: C.ocean + '14', color: C.ocean,
+        border: '1px solid ' + C.ocean + '33',
+        fontSize: 10, fontWeight: 700, fontFamily: SANS_UI,
+        letterSpacing: '0.06em', whiteSpace: 'nowrap',
+      },
+    }, 'オフライン');
   }
 
   // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
@@ -3186,6 +3254,7 @@
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
           'プロファイルを切り替える'),
+        e(OfflineBadge),
         e(ReloadBtn),
       ),
 
@@ -4816,11 +4885,20 @@
     useEffect(() => { refreshDetail(); /* eslint-disable-next-line */ }, []);
 
     const s = cloud.status;
+    const pendingCount = cloud.pendingCount();
+    // Offline is a calm, expected state — not an error. We surface it
+    // with a friendly grey/blue tone instead of red so kids studying in
+    // a no-Wi-Fi dorm don't think something is broken.
     const dotColor = !s.enabled ? C.sub
+                    : !s.online ? C.ocean
                     : s.lastError ? C.danger
                     : (s.pending || syncing) ? C.accent
                     : C.success;
     const statusText = !s.enabled ? '未接続'
+                      : !s.online
+                          ? (pendingCount > 0
+                              ? 'オフライン (' + pendingCount + ' 件は復帰時に同期)'
+                              : 'オフライン')
                       : s.lastError ? 'エラー'
                       : (s.pending || syncing) ? '同期中…'
                       : (s.lastSyncAt ? formatRelativeTime(s.lastSyncAt) + 'に同期' : '待機中');
@@ -4867,9 +4945,11 @@
         ),
         // What's being synced
         e('div', { style: { fontSize: 11, color: C.sub, lineHeight: 1.6, marginBottom: 12 } },
-          s.enabled
-            ? '学習データ・名前・プロフィール写真・ファミリー写真を Supabase に保存しています。別の端末で同じプロフィールを開けば、そのまま続きから始められます。'
-            : 'Supabase クライアントを読み込めませんでした。オフラインのまま使えます。'),
+          !s.enabled
+            ? 'Supabase クライアントを読み込めませんでした。オフラインのまま使えます。'
+            : !s.online
+                ? 'オフラインでもアプリは普通に使えます。学習データは端末に保存され、Wi-Fi が戻ったときに自動でクラウドへ同期されます。'
+                : '学習データ・名前・プロフィール写真・ファミリー写真を Supabase に保存しています。別の端末で同じプロフィールを開けば、そのまま続きから始められます。'),
         // Per-member rows (only once we have detail)
         s.enabled && memberRows.length > 0 && e('div', {
           style: { borderTop: '1px solid ' + C.line, paddingTop: 10 }
