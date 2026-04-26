@@ -35,6 +35,10 @@
   /* Reload button spin (visible only when .is-spinning is set) */
   @keyframes hfe-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .hfe-reload-icon.is-spinning { animation: hfe-spin 0.8s linear infinite; }
+  /* Subtle pulse for the 'update available' dot on the reload button */
+  @keyframes hfe-pulse { 0%, 100% { opacity: 1; transform: scale(1); }
+                         50%       { opacity: 0.55; transform: scale(0.85); } }
+  .hfe-update-dot { animation: hfe-pulse 1.6s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -3107,25 +3111,45 @@
   // Replaces the 🔄 emoji with a properly drawn icon. While the page is
   // navigating away (after the click), the icon spins so the user knows the
   // press registered.
+  // Tiny global flag set when the SW reports a new version is waiting.
+  // ReloadBtn reads this to draw a small pulsing dot so the kid notices.
+  let _hfeUpdateAvailable = false;
+  if (typeof window !== 'undefined') {
+    window.addEventListener('hfe:update-available', () => {
+      _hfeUpdateAvailable = true;
+      // Let any mounted ReloadBtn know via a custom event tick.
+      window.dispatchEvent(new CustomEvent('hfe:update-flag'));
+    });
+  }
   function ReloadBtn() {
     const [spinning, setSpinning] = useState(false);
+    const [, setTick] = useState(0);
+    useEffect(() => {
+      const fn = () => setTick(t => t + 1);
+      window.addEventListener('hfe:update-flag', fn);
+      window.addEventListener('hfe:update-available', fn);
+      return () => {
+        window.removeEventListener('hfe:update-flag', fn);
+        window.removeEventListener('hfe:update-available', fn);
+      };
+    }, []);
     function go() {
       if (spinning) return;
       setSpinning(true);
-      // Briefly hold the spin so the user sees feedback before nav happens.
       setTimeout(() => { hardReload(); }, 120);
     }
+    const showDot = _hfeUpdateAvailable;
     return e('button', {
       onClick: go,
-      title: 'アプリを再読み込み',
+      title: showDot ? '新しいバージョンがあります — タップで更新' : 'アプリを再読み込み',
       'aria-label': '再読み込み',
       style: {
         width: 36, height: 36, borderRadius: 999,
-        background: C.softer, border: '1px solid ' + C.line,
+        background: C.softer, border: '1px solid ' + (showDot ? C.brand : C.line),
         color: C.sub,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
         cursor: spinning ? 'wait' : 'pointer',
-        padding: 0,
+        padding: 0, position: 'relative',
       },
     },
       e('svg', {
@@ -3136,12 +3160,20 @@
         'stroke-width': 1.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
         'aria-hidden': 'true',
       },
-        // Open circular arrow + arrowhead — used by macOS / iOS native UI.
         e('path', { d: 'M3 12a9 9 0 0 1 15.5-6.3' }),
         e('polyline', { points: '19 2 19 6 15 6' }),
         e('path', { d: 'M21 12a9 9 0 0 1-15.5 6.3' }),
         e('polyline', { points: '5 22 5 18 9 18' }),
       ),
+      // Pulsing brand-color dot when an update is waiting.
+      showDot && e('span', {
+        className: 'hfe-update-dot',
+        style: {
+          position: 'absolute', top: -2, right: -2,
+          width: 10, height: 10, borderRadius: 999,
+          background: C.brand, border: '2px solid ' + C.bg,
+        },
+      }),
     );
   }
 
@@ -3164,6 +3196,98 @@
         letterSpacing: '0.06em', whiteSpace: 'nowrap',
       },
     }, 'オフライン');
+  }
+
+  // ---------- Update banner (rate-limited to once per 12h) ----------
+  // The Service Worker fires 'hfe:update-available' the moment a fresh sw.js
+  // / HTML lands. To avoid pestering the kid every hour while Dad is
+  // pushing updates rapidly, we only surface the banner if at least
+  // UPDATE_COOLDOWN_MS has passed since the last time we showed (or
+  // 'あとで'-snoozed) it on this device.
+  const UPDATE_LAST_SHOWN_KEY = 'hfe_update_last_shown_at_v1';
+  const UPDATE_COOLDOWN_MS    = 12 * 60 * 60 * 1000;   // 12 hours
+  function UpdateBanner() {
+    const [show, setShow] = useState(false);
+    function withinCooldown() {
+      try {
+        const t = parseInt(localStorage.getItem(UPDATE_LAST_SHOWN_KEY) || '0', 10);
+        return t && (Date.now() - t < UPDATE_COOLDOWN_MS);
+      } catch { return false; }
+    }
+    useEffect(() => {
+      function onAvailable() {
+        if (withinCooldown()) return;
+        setShow(true);
+      }
+      window.addEventListener('hfe:update-available', onAvailable);
+      // If the SW already raised the flag before this component mounted,
+      // honour it now.
+      if (_hfeUpdateAvailable && !withinCooldown()) setShow(true);
+      return () => window.removeEventListener('hfe:update-available', onAvailable);
+    }, []);
+    function applyUpdate() {
+      try { localStorage.setItem(UPDATE_LAST_SHOWN_KEY, String(Date.now())); } catch {}
+      setShow(false);
+      // Tell the waiting SW to skip waiting; controllerchange handler
+      // (in the SW registration block) will reload the page.
+      try {
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if (reg && reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          } else {
+            // If for some reason there's no waiting worker, force reload.
+            hardReload();
+          }
+        });
+      } catch { hardReload(); }
+    }
+    function snooze() {
+      try { localStorage.setItem(UPDATE_LAST_SHOWN_KEY, String(Date.now())); } catch {}
+      setShow(false);
+    }
+    if (!show) return null;
+    return e('div', {
+      style: {
+        position: 'fixed',
+        left: 12, right: 12,
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+        zIndex: 1000,
+        background: C.card, border: '1px solid ' + C.brand,
+        borderRadius: 14,
+        padding: '14px 16px',
+        boxShadow: '0 10px 30px rgba(42,37,32,0.18)',
+        display: 'flex', alignItems: 'center', gap: 12,
+        maxWidth: 460, margin: '0 auto',
+      }
+    },
+      e('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '✨'),
+      e('div', { style: { flex: 1, minWidth: 0 } },
+        e('div', {
+          style: { fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+        }, '新しいバージョンがあります'),
+        e('div', {
+          style: { fontSize: 11, color: C.sub, marginTop: 2, lineHeight: 1.5 }
+        }, '更新するとアプリが自動で再読み込みされます。'),
+      ),
+      e('button', {
+        onClick: snooze,
+        style: {
+          padding: '8px 12px', borderRadius: 999,
+          background: 'transparent', border: 'none',
+          fontSize: 12, fontWeight: 700, color: C.sub, fontFamily: SANS_UI,
+          cursor: 'pointer',
+        }
+      }, 'あとで'),
+      e('button', {
+        onClick: applyUpdate,
+        style: {
+          padding: '10px 16px', borderRadius: 999,
+          background: C.brand, color: '#fff', border: '1px solid ' + C.brand,
+          fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
+          cursor: 'pointer',
+        }
+      }, '更新'),
+    );
   }
 
   // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
@@ -3712,9 +3836,11 @@
     }, []);
 
     const installEl = showInstall && e(InstallPrompt, { onClose: () => setShowInstall(false) });
+    const updateEl  = e(UpdateBanner);
 
-    // Helper: every route renders alongside the install prompt overlay.
-    const wrap = (el) => e(React.Fragment, null, el, installEl);
+    // Helper: every route renders alongside the install prompt overlay
+    // AND the update-available banner (when one is queued).
+    const wrap = (el) => e(React.Fragment, null, el, installEl, updateEl);
 
     if (route.name === 'profiles') {
       return wrap(e(ProfileSelect, {
@@ -7761,13 +7887,42 @@
     });
   }
 
-  // ---------- Service Worker registration (offline support) ----------
+  // ---------- Service Worker registration + update prompt ----------
   // Registered relative to this HTML file so it works on GitHub Pages
   // (path: /beverage-compass/sw.js) and on a local file server alike.
+  // Also wires the update-available event used by UpdateBanner.
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch((err) => {
+      navigator.serviceWorker.register('sw.js').then((reg) => {
+        if (!reg) return;
+        // If a new SW is already waiting from a previous load, raise the flag.
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          window.dispatchEvent(new CustomEvent('hfe:update-available'));
+        }
+        // Listen for new SW installs.
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              window.dispatchEvent(new CustomEvent('hfe:update-available'));
+            }
+          });
+        });
+        // Re-check periodically while the page is open so a kid who never
+        // closes the app still picks up new versions within the hour.
+        setInterval(() => { reg.update().catch(() => {}); }, 30 * 60 * 1000);
+      }).catch((err) => {
         console.warn('Service worker registration failed:', err);
+      });
+      // When the controller actually changes (after skipWaiting), reload
+      // so the page picks up the new HTML / JS bundle.
+      let controllerSwapped = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (controllerSwapped) return;
+        controllerSwapped = true;
+        // Tiny delay to let any in-flight saves finish.
+        setTimeout(() => location.reload(), 100);
       });
     });
   }
