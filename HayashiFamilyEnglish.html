@@ -2109,10 +2109,36 @@
       }
     }
 
+    // Immediate, non-debounced push. Used for one-off saves like display
+    // names / avatars / family photos where we want the write to land in
+    // the cloud right away (in case the user closes the tab seconds later).
+    async function pushNow(memberId, state) {
+      if (!client) return;
+      // If the debounce was about to fire, cancel it — we're going to write
+      // the same row in this call.
+      clearTimeout(timers[memberId]);
+      delete pending[memberId];
+      status.pending = true; notify();
+      try {
+        const { error } = await client
+          .from(CLOUD_TABLE)
+          .upsert({ member_id: memberId, data: state }, { onConflict: 'member_id' });
+        if (error) throw error;
+        status.lastError  = null;
+        status.lastSyncAt = new Date().toISOString();
+      } catch (err) {
+        status.lastError = (err && err.message) || String(err);
+        console.warn('cloud pushNow failed', err);
+      } finally {
+        status.pending = Object.keys(pending).length > 0;
+        notify();
+      }
+    }
+
     return {
       status,
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-      schedulePush, pull, pingTest,
+      schedulePush, pushNow, pull, pingTest,
     };
   })();
 
@@ -2695,16 +2721,18 @@
   }
 
   // ---------- Custom display names ----------
-  // Names live in this device's localStorage only. The repo never sees them.
-  // If a member's slot is empty, we fall back to the role label from PROFILES.
+  // Persisted in localStorage AND mirrored to Supabase so the names follow
+  // every member to every device they open the app on.
   const NAMES_KEY = 'hfe_names_v1';
   function loadDisplayNames() {
     try { return JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); }
     catch { return {}; }
   }
   function saveDisplayNames(map) {
-    try { localStorage.setItem(NAMES_KEY, JSON.stringify(map || {})); }
+    const safe = map || {};
+    try { localStorage.setItem(NAMES_KEY, JSON.stringify(safe)); }
     catch (err) { console.warn('saveDisplayNames failed', err); }
+    pushFamilySharedState();
   }
   function getDisplayName(profile) {
     if (!profile) return '';
@@ -2712,9 +2740,9 @@
     return (custom && custom.trim()) ? custom.trim() : profile.name;
   }
 
-  // ---------- Custom avatars (per-device, optional photo per profile) ----------
-  // Stored as a single object: { profileId: dataUrl } in localStorage. When
-  // present, the UI shows the photo in a circle instead of the role emoji.
+  // ---------- Custom avatars (per-profile photo) ----------
+  // Persisted in localStorage AND mirrored to Supabase. Stored as a single
+  // object: { profileId: dataUrl }.
   const AVATARS_KEY = 'hfe_avatars_v1';
   function loadAvatars() {
     try { return JSON.parse(localStorage.getItem(AVATARS_KEY) || '{}'); }
@@ -2726,6 +2754,7 @@
     else delete a[profileId];
     try { localStorage.setItem(AVATARS_KEY, JSON.stringify(a)); }
     catch (err) { console.warn('saveAvatar failed (likely full)', err); }
+    pushFamilySharedState();
   }
   function getAvatar(profile) {
     if (!profile) return null;
@@ -2733,8 +2762,8 @@
   }
 
   // ---------- Family photo gallery (multi-photo, shared across the family) ----------
-  // Anyone can upload (Ryoji, mom, wife) — these surface randomly when a
-  // session is completed so the practice ends with a piece of home.
+  // Persisted in localStorage AND mirrored to Supabase so anyone can see
+  // them regardless of which device they're on.
   const FAMILY_PHOTOS_KEY  = 'hfe_family_photos_v1';
   // The cloud-side row id we use to store family-wide data inside member_state.
   // (member_state is a generic key/value blob keyed by member_id; we just
@@ -2748,43 +2777,66 @@
     const safe = arr || [];
     try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(safe)); }
     catch (err) { console.warn('saveFamilyPhotos failed', err); }
-    // Mirror to Supabase so the photos survive a localStorage clear and show
-    // up on every device. We piggy-back on the same member_state table.
-    try {
-      cloud.schedulePush(FAMILY_SHARED_ID, {
-        photos: safe,
-        _localUpdatedAt: new Date().toISOString(),
-      });
-    } catch {}
+    pushFamilySharedState();
   }
   function pickRandomFamilyPhoto() {
     const arr = loadFamilyPhotos();
     if (arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)].url;
   }
-  // Pull the cloud copy on app boot — if cloud has photos and local is empty,
-  // restore them. This is what brings the photos back after a localStorage
-  // clear / reinstall / different device.
-  async function hydrateFamilyPhotosFromCloud() {
-    if (!cloud.status.enabled) return;
-    const remote = await cloud.pull(FAMILY_SHARED_ID);
-    if (!remote || !remote.data || !Array.isArray(remote.data.photos)) return;
-    const local = loadFamilyPhotos();
-    const localTs  = local && local.length > 0 ? '1' : '';
-    const remoteTs = remote.updated_at || '';
-    // If we have nothing local OR cloud is newer, take cloud.
-    if (local.length === 0 || (remoteTs && (!localTs || remoteTs > localTs))) {
-      try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(remote.data.photos)); }
-      catch {}
-    } else if (local.length > 0) {
-      // Local is non-empty — push it up to make sure cloud has it.
-      try {
-        cloud.schedulePush(FAMILY_SHARED_ID, {
-          photos: local,
-          _localUpdatedAt: new Date().toISOString(),
-        });
-      } catch {}
+
+  // ---------- Family-shared cloud row ----------
+  // The 'family' member_state row holds three things together so each save
+  // ships ALL of them up; otherwise pushing only photos would wipe names,
+  // and vice versa. localStorage is the fast read path; cloud is the
+  // durable backup that survives storage clearing / reinstalls / new devices.
+  function buildFamilySharedState() {
+    return {
+      photos:  loadFamilyPhotos(),
+      names:   loadDisplayNames(),
+      avatars: loadAvatars(),
+      _localUpdatedAt: new Date().toISOString(),
+    };
+  }
+  function pushFamilySharedState() {
+    try {
+      if (cloud && cloud.status && cloud.status.enabled) {
+        // Immediate (non-debounced) — names / avatars / photos are one-off
+        // edits and we don't want to lose them if the user closes the tab.
+        cloud.pushNow(FAMILY_SHARED_ID, buildFamilySharedState());
+      }
+    } catch {}
+  }
+  // Pull the family-shared cloud row on app boot. If cloud has data, take
+  // it (overwriting local) — cloud is authoritative for shared family data
+  // because that's how the kids' devices stay in sync with the parents'.
+  // If cloud is empty, push local up so we never lose what's on disk.
+  // Returns true if any localStorage value changed (so the UI can re-render).
+  async function hydrateFamilySharedFromCloud() {
+    if (!cloud.status.enabled) return false;
+    let remote = null;
+    try { remote = await cloud.pull(FAMILY_SHARED_ID); } catch {}
+    if (!remote || !remote.data) {
+      // Nothing in cloud yet — make sure cloud has whatever we have locally.
+      pushFamilySharedState();
+      return false;
     }
+    const d = remote.data;
+    let changed = false;
+    function applyKey(key, value) {
+      const cur = localStorage.getItem(key);
+      const next = JSON.stringify(value);
+      if (cur !== next) {
+        try { localStorage.setItem(key, next); changed = true; } catch {}
+      }
+    }
+    if (Array.isArray(d.photos))                            applyKey(FAMILY_PHOTOS_KEY, d.photos);
+    if (d.names   && typeof d.names   === 'object')         applyKey(NAMES_KEY,         d.names);
+    if (d.avatars && typeof d.avatars === 'object')         applyKey(AVATARS_KEY,       d.avatars);
+    if (changed) {
+      try { window.dispatchEvent(new CustomEvent('hfe:family-hydrated')); } catch {}
+    }
+    return changed;
   }
 
   // ---------- Encouragement messages (bilingual, surfaced on session done) ----------
@@ -2938,6 +2990,16 @@
     const [route, setRoute] = useState({ name: 'profiles' });
     const [activeId, setActiveId] = useState(null);
     const [showInstall, setShowInstall] = useState(false);
+    // Bumped whenever family-shared data (names, avatars, photos) gets
+    // hydrated from the cloud, so descendant components that read
+    // localStorage on every render (ProfileCard, SettingsScreen) re-render
+    // with the freshly-pulled values.
+    const [, setHydrationTick] = useState(0);
+    useEffect(() => {
+      function onHydrated() { setHydrationTick(t => t + 1); }
+      window.addEventListener('hfe:family-hydrated', onHydrated);
+      return () => window.removeEventListener('hfe:family-hydrated', onHydrated);
+    }, []);
     const profile = PROFILES.find(p => p.id === activeId) || null;
 
     // Check install prompt eligibility once on mount, with a small delay so
@@ -7323,9 +7385,10 @@
   // keeps working offline.
   if (cloud.status.enabled) {
     cloud.pingTest().catch(() => {});
-    // Restore any family photos that exist in the cloud but not on this
-    // device (e.g. after a learning-data reset / new browser / new install).
-    hydrateFamilyPhotosFromCloud().catch(() => {});
+    // Restore family-shared data (names, avatars, photos) from the cloud
+    // so anything set on another device shows up here too. Names + avatars
+    // + photos all live in one shared row so one save can't wipe the rest.
+    hydrateFamilySharedFromCloud().catch(() => {});
   }
 
   // ---------- Service Worker registration (offline support) ----------
