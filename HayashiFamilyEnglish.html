@@ -2453,11 +2453,11 @@
     removeMistake(memberId, vocabId){ this.removeMistakeEx(memberId, 'vocab', vocabId); },
 
     // Daily counters: { 'YYYY-MM-DD': { attempts, correct } }
-    todayKey() {
-      const d = new Date();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return d.getFullYear() + '-' + m + '-' + day;
+    // Yoshinari's day rolls over on London time (he's in the UK dorm).
+    // Everyone else uses the device's local date. Pass memberId so the
+    // boundary is correct for whoever's being recorded.
+    todayKey(memberId) {
+      return dateKeyForMember(memberId, new Date());
     },
     getDailyStats(memberId) {
       return this.load(memberId).daily || {};
@@ -2465,7 +2465,7 @@
     recordDaily(memberId, isCorrect) {
       const s = this.load(memberId);
       if (!s.daily) s.daily = {};
-      const k = this.todayKey();
+      const k = this.todayKey(memberId);
       if (!s.daily[k]) s.daily[k] = { attempts: 0, correct: 0 };
       s.daily[k].attempts++;
       if (isCorrect) s.daily[k].correct++;
@@ -2484,7 +2484,7 @@
       const inc = n || 1;
       const s = this.load(memberId);
       if (!s.turns) s.turns = {};
-      const k = this.todayKey();
+      const k = this.todayKey(memberId);
       if (!s.turns[k]) s.turns[k] = {};
       s.turns[k][kind] = (s.turns[k][kind] || 0) + inc;
       this.save(memberId, s);
@@ -2492,19 +2492,76 @@
     getTurns(memberId) {
       return this.load(memberId).turns || {};
     },
+
+    // Append a session event for the activity log.
+    // event = { kind, count?, correct?, total?, label? } — we stamp `at`.
+    pushEvent(memberId, event) {
+      const s = this.load(memberId);
+      if (!s.events) s.events = [];
+      s.events.unshift(Object.assign({ at: new Date().toISOString() }, event || {}));
+      // Cap so the local row doesn't balloon past localStorage limits.
+      if (s.events.length > 200) s.events.length = 200;
+      this.save(memberId, s);
+    },
+    getEvents(memberId) {
+      return this.load(memberId).events || [];
+    },
+
+    // One-time migration: if this member has historical `daily.attempts`
+    // but no `turns` data yet (because turn-tracking was added later),
+    // seed an approximate turn count so the activity panel reflects what
+    // the learner actually did. Marked with `_backfilled` so we don't
+    // overwrite real data on subsequent runs.
+    backfillTurnsFromDaily(memberId) {
+      const s = this.load(memberId);
+      if (s.turnsBackfilled) return false;
+      const daily = s.daily || {};
+      if (!s.turns) s.turns = {};
+      let touched = false;
+      for (const date in daily) {
+        const attempts = daily[date].attempts || 0;
+        if (attempts <= 0) continue;
+        const existing = s.turns[date] || {};
+        const realTotal =
+          (existing.vocab || 0) +
+          (existing.composition || 0) +
+          (existing.random_test || 0) +
+          (existing.mctest || 0);
+        if (realTotal > 0) continue;        // already have precise data
+        const guessed = Math.max(1, Math.round(attempts / 10));
+        s.turns[date] = Object.assign({}, existing, {
+          vocab: guessed, _backfilled: true,
+        });
+        touched = true;
+      }
+      s.turnsBackfilled = true;
+      this.save(memberId, s);
+      return touched;
+    },
     // Returns the last `days` days' data as [{ date: 'YYYY-MM-DD', counts: {...} }],
     // ordered oldest → newest, including days with no activity (counts={}).
     getTurnsByDate(memberId, days) {
       const turns = this.getTurns(memberId);
-      const out = [];
-      const d = new Date(); d.setHours(0, 0, 0, 0);
       const arr = [];
+      // Walk back N days using each member's own timezone — for Yoshinari
+      // the 'today' column on the panel is London-local, not Japan-local.
+      const todayK = this.todayKey(memberId);
+      // Parse 'YYYY-MM-DD' as a UTC noon date so subtracting days never
+      // crosses a DST boundary on the device clock.
+      const [Y, M, D] = todayK.split('-').map(n => parseInt(n, 10));
+      const base = new Date(Date.UTC(Y, M - 1, D, 12, 0, 0));
       for (let i = (days || 7) - 1; i >= 0; i--) {
-        const dd = new Date(d); dd.setDate(d.getDate() - i);
-        const m = String(dd.getMonth() + 1).padStart(2, '0');
-        const day = String(dd.getDate()).padStart(2, '0');
-        const key = dd.getFullYear() + '-' + m + '-' + day;
-        arr.push({ date: key, mm: parseInt(m, 10), dd: parseInt(day, 10), counts: turns[key] || {} });
+        const dd = new Date(base); dd.setUTCDate(base.getUTCDate() - i);
+        const m = String(dd.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(dd.getUTCDate()).padStart(2, '0');
+        const key = dd.getUTCFullYear() + '-' + m + '-' + day;
+        arr.push({
+          date: key,
+          mm: parseInt(m, 10),
+          dd: parseInt(day, 10),
+          counts: turns[key] || {},
+          isToday: key === todayK,
+        });
       }
       return arr;
     },
@@ -2850,6 +2907,26 @@
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return d.getFullYear() + '-' + m + '-' + day;
+  }
+  // Member-aware date-key. Yoshinari (son2) is in a UK boarding-school
+  // dorm so his day rolls over on London time; everyone else uses the
+  // device's local date.
+  const MEMBER_TIMEZONE = {
+    son2: 'Europe/London',
+  };
+  function dateKeyForMember(memberId, d) {
+    const tz = MEMBER_TIMEZONE[memberId];
+    const date = d || new Date();
+    if (!tz) return dateKey(date);
+    try {
+      // 'en-CA' formats numeric dates as YYYY-MM-DD.
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+      }).format(date);
+    } catch {
+      return dateKey(date);
+    }
   }
   // Counts the number of consecutive days (ending today or yesterday) on which
   // the member had any attempts. Today with no activity does not break the
@@ -4118,9 +4195,12 @@
           // Inject live numbers — today's date + activity count for practice
           // tiles, total counts for the summary tiles.
           const turns  = db.getTurns(profile.id);
-          const todayK = db.todayKey();
+          const todayK = db.todayKey(profile.id);
           const today  = turns[todayK] || {};
-          const dateLabel = formatTodayShort();   // e.g. '5/2'
+          // Yoshinari sees London-local 'today'; everyone else uses
+          // their device-local date.
+          const [, mmStr, ddStr] = todayK.split('-');
+          const dateLabel = parseInt(mmStr, 10) + '/' + parseInt(ddStr, 10);
           let subtitle = f.desc;
           if (f.id === 'random_test') {
             subtitle = dateLabel + ' ' + (today.random_test || 0) + '回';
@@ -4158,6 +4238,7 @@
       // previous bare grid with a quick at-a-glance look at how many turns
       // each activity has clocked over the last week.
       e(ActivityPanel, { profile }),
+      e(SessionLog,    { profile }),
     );
   }
 
@@ -4188,7 +4269,7 @@
       days.forEach(d => { max = Math.max(max, d.counts[r.key] || 0); });
       rowMax[r.key] = max;
     });
-    const todayKey = db.todayKey();
+    const todayKey = db.todayKey(profile.id);
 
     return e('div', { style: { marginTop: 26 } },
       e('div', {
@@ -4271,6 +4352,112 @@
             );
           }),
         )),
+      ),
+    );
+  }
+
+  // ---------- Session log ----------
+  // Reverse-chronological list of practice events (each session, each
+  // mistake-overcome) with date / time / contents. Most recent on top.
+  // Times are formatted in the member's own timezone so Yoshinari's
+  // London evenings don't show up as midday in Japan.
+  function SessionLog({ profile }) {
+    const [, setTick] = useState(0);
+    useEffect(() => {
+      const id = setInterval(() => setTick(t => t + 1), 60_000);
+      return () => clearInterval(id);
+    }, []);
+    const events = db.getEvents(profile.id);
+    if (events.length === 0) {
+      return e('div', { style: { marginTop: 26 } },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 12, paddingLeft: 4,
+          }
+        }, '学習ログ'),
+        e('div', {
+          style: {
+            background: C.softer, border: '1px dashed ' + C.line,
+            borderRadius: 12, padding: '24px 16px', textAlign: 'center',
+            fontSize: 12, color: C.sub,
+          }
+        }, '練習を始めるとここに記録が残ります。'),
+      );
+    }
+    const tz = MEMBER_TIMEZONE[profile.id];
+    const dayFmt = new Intl.DateTimeFormat('ja-JP', Object.assign({
+      year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short',
+    }, tz ? { timeZone: tz } : {}));
+    const timeFmt = new Intl.DateTimeFormat('ja-JP', Object.assign({
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }, tz ? { timeZone: tz } : {}));
+    const KIND_LABEL = {
+      vocab: '単語学習', composition: '瞬間英作文',
+      random_test: 'ランダムテスト',  mctest: 'Daily English テスト',
+      flip: 'Daily English めくり',   overcome: '間違い克服',
+    };
+    return e('div', { style: { marginTop: 26 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, '学習ログ'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, overflow: 'hidden',
+        }
+      },
+        events.slice(0, 30).map((ev, i) => {
+          const at = new Date(ev.at || Date.now());
+          const day = dayFmt.format(at);
+          const tm  = timeFmt.format(at);
+          const kindLabel = KIND_LABEL[ev.kind] || ev.kind;
+          let detail = '';
+          if (typeof ev.total === 'number') {
+            detail = ev.total + '問';
+            if (typeof ev.correct === 'number') {
+              detail += ' (' + ev.correct + '/' + ev.total + ' 正解)';
+            }
+          }
+          if (ev.direction) {
+            const dirJa = ev.direction === 'ja2en' ? '日本語 → 英語'
+                        : ev.direction === 'en2ja' ? '英語 → 日本語' : ev.direction;
+            detail = (detail ? detail + ' · ' : '') + dirJa;
+          }
+          if (ev.level && ev.level !== 'auto') {
+            detail = (detail ? detail + ' · ' : '') + 'レベル ' + ev.level;
+          }
+          return e('div', {
+            key: ev.at + '_' + i,
+            style: {
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              padding: '12px 14px',
+              borderBottom: i < Math.min(30, events.length) - 1 ? '1px solid ' + C.line : 'none',
+            }
+          },
+            e('div', { style: { flex: '0 0 96px', minWidth: 0 } },
+              e('div', {
+                style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+              }, day),
+              e('div', {
+                style: { fontSize: 14, color: C.text, fontWeight: 700, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+              }, tm),
+            ),
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontSize: 13, color: C.text, fontWeight: 700 }
+              }, kindLabel),
+              detail && e('div', {
+                style: { fontSize: 11, color: C.sub, marginTop: 2 }
+              }, detail),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -4363,6 +4550,11 @@
         if (index + 1 >= total) {
           soundComplete();
           db.recordTurn(profile.id, 'vocab');
+          db.pushEvent(profile.id, {
+            kind: 'vocab', total, correct: nextCorrect,
+            level: selectedLevel === 'auto' ? 'auto' : selectedLevel,
+            direction,
+          });
           setPhase('done');
         } else {
           setRevealed(false);
@@ -4743,7 +4935,7 @@
   function ProgressChips({ profile, includeTotal, style }) {
     if (profile.role === 'viewer') return null;
     const stats = computeStats(profile.id);
-    const today = (db.getDailyStats(profile.id)[db.todayKey()] || {});
+    const today = (db.getDailyStats(profile.id)[db.todayKey(profile.id)] || {});
     const todayAttempts = today.attempts || 0;
     return e('div', {
       style: Object.assign({ display: 'flex', gap: 8, flexWrap: 'wrap' }, style || {}),
@@ -5584,6 +5776,9 @@
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         db.recordTurn(profile.id, 'composition');
+        db.pushEvent(profile.id, {
+          kind: 'composition', total, correct: correctCount, direction,
+        });
         setPhase('done');
         return;
       }
@@ -7003,6 +7198,10 @@
         if (index + 1 >= queue.length) {
           soundComplete();
           db.recordTurn(profile.id, 'mctest');
+          const correctCount = newResults.filter(r => r.isCorrect).length;
+          db.pushEvent(profile.id, {
+            kind: 'mctest', total: queue.length, correct: correctCount,
+          });
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -7435,6 +7634,9 @@
           const acc = Math.round(correctCount * 100 / queue.length);
           setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 100);
           db.recordTurn(profile.id, 'random_test');
+          db.pushEvent(profile.id, {
+            kind: 'random_test', total: queue.length, correct: correctCount,
+          });
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -7906,6 +8108,15 @@
       Object.keys(loadAvatars()).length > 0 ||
       loadFamilyPhotos().length > 0;
     if (hasData) stampFamilySharedLocal();
+  })();
+
+  // One-time migration: seed `turns` from `daily.attempts` so the
+  // activity panel reflects practice the family did before turn-tracking
+  // was added. Marked with a flag so it only runs once per profile.
+  (function backfillTurnsForAllProfiles() {
+    PROFILES.forEach(p => {
+      try { db.backfillTurnsFromDaily(p.id); } catch {}
+    });
   })();
 
   // Verify the cloud connection on boot so the Settings panel shows a green
