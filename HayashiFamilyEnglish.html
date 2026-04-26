@@ -147,7 +147,86 @@
       s.mistakes = s.mistakes.slice(0, 50);
       this.save(memberId, s);
     },
+    removeMistake(memberId, vocabId) {
+      const s = this.load(memberId);
+      if (!s.mistakes) return;
+      s.mistakes = s.mistakes.filter(m => m.vocabId !== vocabId);
+      this.save(memberId, s);
+    },
+
+    // Daily counters: { 'YYYY-MM-DD': { attempts, correct } }
+    todayKey() {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return d.getFullYear() + '-' + m + '-' + day;
+    },
+    getDailyStats(memberId) {
+      return this.load(memberId).daily || {};
+    },
+    recordDaily(memberId, isCorrect) {
+      const s = this.load(memberId);
+      if (!s.daily) s.daily = {};
+      const k = this.todayKey();
+      if (!s.daily[k]) s.daily[k] = { attempts: 0, correct: 0 };
+      s.daily[k].attempts++;
+      if (isCorrect) s.daily[k].correct++;
+      this.save(memberId, s);
+    },
+
+    // Single entry point for "the user answered a question". Updates SRS state,
+    // mistake log, and daily counters in one place. Pass removeOnCorrect: true
+    // when the source is the mistake-review screen (a correct answer there
+    // should clear the item from the mistake log).
+    recordAnswer(memberId, vocabId, isCorrect, opts) {
+      const prev = this.getVocabProgress(memberId, vocabId);
+      const next = srs.apply(prev, isCorrect);
+      this.setVocabProgress(memberId, vocabId, next);
+      if (!isCorrect) this.pushMistake(memberId, vocabId);
+      else if (opts && opts.removeOnCorrect) this.removeMistake(memberId, vocabId);
+      this.recordDaily(memberId, isCorrect);
+      return next;
+    },
   };
+
+  // ---------- Streak + weekly helpers ----------
+  function dateKey(d) {
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  // Counts the number of consecutive days (ending today or yesterday) on which
+  // the member had any attempts. Today with no activity does not break the
+  // streak — it just means the streak was set yesterday.
+  function computeStreak(daily) {
+    let streak = 0;
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const today = dateKey(d);
+    if (!daily[today] || (daily[today].attempts || 0) === 0) {
+      d.setDate(d.getDate() - 1);
+    }
+    while (true) {
+      const k = dateKey(d);
+      if (daily[k] && (daily[k].attempts || 0) > 0) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      } else break;
+    }
+    return streak;
+  }
+  // Sum of correct answers over the trailing 7 days (today inclusive).
+  function computeWeeklyCorrect(daily) {
+    let total = 0;
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    for (let i = 0; i < 7; i++) {
+      const k = dateKey(d);
+      if (daily[k]) total += daily[k].correct || 0;
+      d.setDate(d.getDate() - 1);
+    }
+    return total;
+  }
 
   // ---------- SRS engine (Anki-like, simplified) ----------
   const srs = {
@@ -270,10 +349,11 @@
     catch { /* ignore */ }
   }
 
-  // Aggregate the current user's real stats from localStorage vocab progress.
+  // Aggregate the current user's real stats from localStorage.
   function computeStats(memberId) {
     const state = db.load(memberId);
     const vocab = state.vocab || {};
+    const daily = state.daily || {};
     let totalAttempts = 0, totalCorrect = 0, learnedCount = 0, masteredCount = 0;
     for (const vid in vocab) {
       const p = vocab[vid];
@@ -283,7 +363,11 @@
       if (p.status === 'mastered') masteredCount++;
     }
     const accuracy = totalAttempts > 0 ? Math.round(totalCorrect * 100 / totalAttempts) : 0;
-    return { totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount };
+    return {
+      totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount,
+      weeklyCorrect: computeWeeklyCorrect(daily),
+      streakDays:    computeStreak(daily),
+    };
   }
 
   // ---------- Time helper (relative, ja) ----------
@@ -593,9 +677,7 @@
 
     function mark(isKnown) {
       if (!current) return;
-      const next = srs.apply(progress, isKnown);
-      db.setVocabProgress(profile.id, current.id, next);
-      if (!isKnown) db.pushMistake(profile.id, current.id);
+      db.recordAnswer(profile.id, current.id, isKnown);
       setTick(t => t + 1);
       // Auto-advance after a short beat so the user can see the new badge
       setTimeout(() => go(1), 200);
@@ -801,9 +883,7 @@
 
     function record(isCorrect) {
       const cur = bundle.items[index];
-      const prev = db.getVocabProgress(profile.id, cur.id);
-      db.setVocabProgress(profile.id, cur.id, srs.apply(prev, isCorrect));
-      if (!isCorrect) db.pushMistake(profile.id, cur.id);
+      db.recordAnswer(profile.id, cur.id, isCorrect);
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= total) { setPhase('done'); return; }
@@ -1128,20 +1208,7 @@
 
     function record(isCorrect) {
       const cur = queue[index];
-      const prev = db.getVocabProgress(profile.id, cur.id);
-      db.setVocabProgress(profile.id, cur.id, srs.apply(prev, isCorrect));
-
-      if (isCorrect) {
-        // Correct in mistake review -> remove from the mistakes log
-        const s = db.load(profile.id);
-        if (s.mistakes) {
-          s.mistakes = s.mistakes.filter(m => m.vocabId !== cur.id);
-          db.save(profile.id, s);
-        }
-      } else {
-        db.pushMistake(profile.id, cur.id);
-      }
-
+      db.recordAnswer(profile.id, cur.id, isCorrect, { removeOnCorrect: true });
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= queue.length) { setPhase('done'); return; }
@@ -1449,14 +1516,12 @@
         }
         if (p.id === profile.id) {
           const real = computeStats(profile.id);
-          // Cap weekly at totalCorrect — a brand-new user has 0 weekly. We use
-          // totalCorrect as a stand-in for "weekly" until per-day stats are wired.
           return {
             profile: p, kind: 'real', isMe: true,
-            weeklyCorrect: real.totalCorrect,
+            weeklyCorrect: real.weeklyCorrect,
             totalCorrect:  real.totalCorrect,
             accuracy:      real.accuracy,
-            streakDays:    0, // cannot be computed without per-day timestamps yet
+            streakDays:    real.streakDays,
             learnedCount:  real.learnedCount,
             masteredCount: real.masteredCount,
           };
@@ -1521,7 +1586,7 @@
           background: C.softer, borderRadius: 10, lineHeight: 1.5,
         }
       },
-        '※ 自分の数字は本物。他のメンバーは Supabase 接続後にリアルタイム同期されます。'),
+        '※ 自分の数字（今週・累計・連続日数）は本物。他のメンバーは Supabase 接続後にリアルタイム同期されます。'),
 
       // Ranked learner list
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 } },
