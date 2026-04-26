@@ -1212,6 +1212,116 @@
     { id:'verbose',      en:'verbose',      ja:'冗長な',                   pos:'adj',  level:5, cat:'general', exEn:'His writing is too verbose.',               exJa:'彼の文章は冗長すぎる。' },
   ];
 
+  // ---------- Vocab synonyms ----------
+  // Optional list of close-meaning English words shown on the answer side
+  // of each card. Helps the learner notice that '獲得する' isn't only 'get',
+  // and that '供給する' has several common verbs. Keyed by VOCAB id; an
+  // empty / missing entry means the card simply doesn't display synonyms.
+  const VOCAB_SYNONYMS = {
+    // L1 — basic verbs / adjectives that pair with several near-synonyms
+    'big':       ['large', 'huge', 'enormous'],
+    'small':     ['little', 'tiny', 'compact'],
+    'happy':     ['glad', 'pleased', 'cheerful'],
+    'sad':       ['unhappy', 'down', 'gloomy'],
+    'good':      ['nice', 'fine', 'great'],
+    'bad':       ['poor', 'awful', 'terrible'],
+    'fast':      ['quick', 'rapid', 'swift'],
+    'slow':      ['sluggish', 'gradual'],
+    'hot':       ['warm', 'boiling'],
+    'cold':      ['cool', 'chilly', 'freezing'],
+    'easy':      ['simple', 'effortless'],
+    'difficult': ['hard', 'tough', 'tricky'],
+    'kind':      ['gentle', 'caring', 'thoughtful'],
+    'smart':     ['clever', 'bright', 'intelligent'],
+    'funny':     ['amusing', 'hilarious', 'witty'],
+    'nice':      ['pleasant', 'lovely'],
+    'busy':      ['occupied', 'tied up'],
+    'tired':     ['exhausted', 'worn out', 'sleepy'],
+    'young':     ['youthful'],
+    'weak':      ['feeble', 'fragile'],
+    // L1 — verbs
+    'run':       ['sprint', 'jog', 'dash'],
+    'walk':      ['stroll', 'hike', 'wander'],
+    'make':      ['create', 'build', 'produce'],
+    'give':      ['provide', 'offer', 'supply', 'hand'],
+    'find':      ['discover', 'locate', 'spot'],
+    'use':       ['utilize', 'employ', 'apply'],
+    'know':      ['understand', 'be aware of'],
+    'ask':       ['request', 'inquire', 'question'],
+    'help':      ['assist', 'support', 'aid'],
+    'start':     ['begin', 'commence', 'kick off'],
+    // L1 — nouns with common alternates
+    'food':      ['meal', 'dish', 'cuisine'],
+    'friend':    ['buddy', 'pal', 'mate'],
+    'home':      ['house', 'place', 'residence'],
+    'car':       ['vehicle', 'auto', 'automobile'],
+  };
+  function getVocabSynonyms(vocabId) {
+    return VOCAB_SYNONYMS[vocabId] || null;
+  }
+
+  // ---------- Idioms / phrasal verbs (added to VOCAB at runtime) ----------
+  // These behave like normal vocab items (same shape; status / mistakes /
+  // mastery all work the same way). Levels start at L2 because they're
+  // structurally a step above bare nouns and verbs.
+  const IDIOMS = [
+    // L2 — everyday phrasal verbs
+    { id:'go_out',     en:'go out',      ja:'出かける',                   pos:'idiom', level:2, cat:'daily',   exEn:"Let's go out for dinner tonight.",          exJa:'今夜、外へ食事に出かけよう。',
+      syn:['leave',  'head out',   'step out'] },
+    { id:'come_back',  en:'come back',   ja:'戻る・帰ってくる',           pos:'idiom', level:2, cat:'daily',   exEn:'I will come back tomorrow.',                exJa:'明日戻ってきます。',
+      syn:['return', 'go back'] },
+    { id:'look_at',    en:'look at',     ja:'〜を見る',                   pos:'idiom', level:2, cat:'daily',   exEn:'Look at this picture.',                     exJa:'この写真を見て。',
+      syn:['watch',  'observe',    'view'] },
+    { id:'look_for',   en:'look for',    ja:'〜を探す',                   pos:'idiom', level:2, cat:'daily',   exEn:"I'm looking for my keys.",                  exJa:'鍵を探しています。',
+      syn:['search for', 'seek',  'hunt for'] },
+    { id:'find_out',   en:'find out',    ja:'(調べて) 見つけ出す・知る',  pos:'idiom', level:2, cat:'daily',   exEn:'I want to find out the truth.',             exJa:'真実を知りたい。',
+      syn:['discover','learn',     'uncover'] },
+    { id:'get_up',     en:'get up',      ja:'起きる',                     pos:'idiom', level:2, cat:'daily',   exEn:'I get up at six every day.',                exJa:'毎日6時に起きます。',
+      syn:['wake up', 'rise',      'arise'] },
+    { id:'sit_down',   en:'sit down',    ja:'座る',                       pos:'idiom', level:2, cat:'daily',   exEn:'Please sit down here.',                     exJa:'ここに座ってください。',
+      syn:['take a seat', 'be seated'] },
+    { id:'stand_up',   en:'stand up',    ja:'立ち上がる',                 pos:'idiom', level:2, cat:'daily',   exEn:'Please stand up when your name is called.', exJa:'名前を呼ばれたら立ち上がって。',
+      syn:['rise',   'get to your feet'] },
+    { id:'turn_on',    en:'turn on',     ja:'(電源などを) つける',        pos:'idiom', level:2, cat:'daily',   exEn:'Please turn on the light.',                 exJa:'電気をつけて。',
+      syn:['switch on', 'activate', 'power up'] },
+    { id:'turn_off',   en:'turn off',    ja:'(電源などを) 消す',          pos:'idiom', level:2, cat:'daily',   exEn:'Turn off the TV before bed.',               exJa:'寝る前にテレビを消して。',
+      syn:['switch off', 'deactivate', 'shut off'] },
+    { id:'pick_up',    en:'pick up',     ja:'拾う・(車で) 迎えに行く',    pos:'idiom', level:2, cat:'daily',   exEn:"I'll pick you up at the station.",          exJa:'駅まで迎えに行くね。',
+      syn:['collect','grab',       'fetch'] },
+    { id:'put_on',     en:'put on',      ja:'(服などを) 着る・身に着ける', pos:'idiom', level:2, cat:'daily',   exEn:'Put on your jacket — it’s cold outside.',   exJa:'外は寒いから上着を着なさい。',
+      syn:['wear',   'don'] },
+    { id:'take_off',   en:'take off',    ja:'脱ぐ・離陸する',             pos:'idiom', level:2, cat:'daily',   exEn:'Please take off your shoes here.',          exJa:'ここで靴を脱いでください。',
+      syn:['remove', 'depart',     'launch'] },
+    { id:'eat_out',    en:'eat out',     ja:'外食する',                   pos:'idiom', level:2, cat:'daily',   exEn:"Let's eat out tonight.",                    exJa:'今夜は外食しよう。',
+      syn:['dine out'] },
+
+    // L3 — slightly more abstract phrasal verbs
+    { id:'look_into',     en:'look into',     ja:'〜を調べる・調査する',           pos:'idiom', level:3, cat:'general', exEn:"I'll look into the problem tomorrow.",        exJa:'明日その問題を調べてみます。',
+      syn:['investigate', 'examine', 'research', 'check'] },
+    { id:'carry_out',     en:'carry out',     ja:'実行する・遂行する',             pos:'idiom', level:3, cat:'general', exEn:'They carried out the plan successfully.',     exJa:'彼らはその計画をうまく実行した。',
+      syn:['perform', 'execute',  'conduct'] },
+    { id:'bring_up',      en:'bring up',      ja:'育てる・(話題を) 持ち出す',      pos:'idiom', level:3, cat:'general', exEn:"She brought up an interesting topic.",        exJa:'彼女は面白い話題を持ち出した。',
+      syn:['raise',  'mention',   'introduce'] },
+    { id:'give_up',       en:'give up',       ja:'諦める・やめる',                 pos:'idiom', level:3, cat:'general', exEn:"Don't give up — you can do it!",              exJa:'諦めないで、君ならできる！',
+      syn:['quit',   'surrender', 'abandon'] },
+    { id:'run_out',       en:'run out',       ja:'(在庫などが) 切れる・尽きる',    pos:'idiom', level:3, cat:'general', exEn:"We've run out of milk.",                       exJa:'牛乳を切らしてしまった。',
+      syn:['be depleted', 'be used up'] },
+    { id:'come_up_with',  en:'come up with',  ja:'(案を) 思いつく',                pos:'idiom', level:3, cat:'general', exEn:"He came up with a great idea.",                exJa:'彼はすごいアイデアを思いついた。',
+      syn:['think of', 'devise',  'invent'] },
+    { id:'take_care_of',  en:'take care of',  ja:'〜の世話をする・面倒を見る',     pos:'idiom', level:3, cat:'family',  exEn:"My mom takes care of the pigs.",               exJa:'母は豚の世話をしています。',
+      syn:['look after', 'attend to', 'mind'] },
+    { id:'get_along',     en:'get along with',ja:'(人と) うまくやる',              pos:'idiom', level:3, cat:'family',  exEn:'I get along with my brothers.',                exJa:'兄弟とうまくやっています。',
+      syn:['be friends with', 'be on good terms with'] },
+    { id:'look_forward',  en:'look forward to', ja:'〜を楽しみにする',             pos:'idiom', level:3, cat:'daily',   exEn:"I'm looking forward to seeing you.",           exJa:'あなたに会えるのを楽しみにしています。',
+      syn:['anticipate', 'await eagerly'] },
+    { id:'put_off',       en:'put off',       ja:'延期する・先延ばしにする',       pos:'idiom', level:3, cat:'general', exEn:"Don't put off your homework.",                 exJa:'宿題を先延ばしにしないで。',
+      syn:['postpone','delay',    'defer'] },
+  ];
+  // Append idioms to the main VOCAB pool so every screen (single-word
+  // study, Daily20 mix, RandomTest, mistakes, mastered) treats them the
+  // same as normal vocabulary items.
+  IDIOMS.forEach(i => VOCAB.push(i));
+
   // ---------- Sprint Composition sentences (瞬間英作文) ----------
   // Short Japanese -> English chunks, organised by grammar pattern.
   const SENTENCES = [
@@ -3686,6 +3796,33 @@
                 e('div', { style: { fontSize: 13, color: C.sub, lineHeight: 1.6, marginTop: 6 } },
                   current.exJa),
               ),
+              // Similar words / synonyms — shown only when the card has any.
+              // Idioms ship with inline `syn`; for ordinary vocab we look up
+              // VOCAB_SYNONYMS by id so we don't have to rewrite the table.
+              (function () {
+                const list = current.syn || getVocabSynonyms(current.id);
+                if (!list || list.length === 0) return null;
+                return e('div', null,
+                  e('div', {
+                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                             textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                  }, '類義語 (Similar)'),
+                  e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    list.map((w, i) => e('div', {
+                      key: 'syn_' + i,
+                      style: {
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '4px 10px 4px 12px', borderRadius: 999,
+                        background: C.softer, border: '1px solid ' + C.line,
+                        fontSize: 13, color: C.text, fontFamily: SERIF, fontWeight: 600,
+                      }
+                    },
+                      e('span', null, w),
+                      e(SpeakerBtn, { onClick: () => speak(w), color: profile.color, size: 24 }),
+                    )),
+                  ),
+                );
+              })(),
             ),
       ),
 
