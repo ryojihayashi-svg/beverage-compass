@@ -1485,6 +1485,76 @@
       this.recordDaily(memberId, isCorrect);
     },
 
+    // Evaluate which achievements `memberId` has just earned, given an
+    // optional `opts` describing the latest event. Returns an array of
+    // achievement ids newly earned during this call (so the UI can
+    // celebrate them).
+    evaluateAchievements(memberId, opts) {
+      const state = this.load(memberId);
+      if (!state.achievements) state.achievements = {};
+      const earned = state.achievements;
+      const now = new Date().toISOString();
+      const newly = [];
+      const give = (id) => {
+        if (earned[id]) return false;
+        earned[id] = { earnedAt: now };
+        newly.push(id);
+        return true;
+      };
+      // Aggregate stats from current state
+      const vocab = state.vocab || {};
+      let totalCorrect = 0, masteredCount = 0;
+      const touchedByLevel = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      for (const vid in vocab) {
+        const p = vocab[vid];
+        totalCorrect += p.totalCorrect || 0;
+        if (p.status === 'mastered') masteredCount++;
+        if ((p.totalAttempts || 0) > 0) {
+          const v = VOCAB.find(x => x.id === vid);
+          if (v) touchedByLevel[v.level] = (touchedByLevel[v.level] || 0) + 1;
+        }
+      }
+      const streakDays = computeStreak(state.daily || {});
+      // Cumulative correct
+      if (totalCorrect >= 1)   give('first_correct');
+      if (totalCorrect >= 10)  give('ten_correct');
+      if (totalCorrect >= 50)  give('fifty_correct');
+      if (totalCorrect >= 100) give('hundred_correct');
+      if (totalCorrect >= 500) give('five_hundred_correct');
+      // Mastery
+      if (masteredCount >= 1)  give('first_mastered');
+      if (masteredCount >= 10) give('ten_mastered');
+      if (masteredCount >= 50) give('fifty_mastered');
+      // Streak
+      if (streakDays >= 3)     give('streak_3');
+      if (streakDays >= 7)     give('streak_7');
+      if (streakDays >= 30)    give('streak_30');
+      // Per-level discovery
+      if (touchedByLevel[1] >= 1) give('l1_started');
+      if (touchedByLevel[2] >= 1) give('l2_started');
+      if (touchedByLevel[3] >= 1) give('l3_started');
+      if (touchedByLevel[4] >= 1) give('l4_started');
+      if (touchedByLevel[5] >= 1) give('l5_started');
+      // Composition entry
+      if (state.composition && Object.keys(state.composition).length > 0) {
+        give('first_composition');
+      }
+      // Time-of-day
+      const h = new Date().getHours();
+      if (h < 7)  give('early_bird');
+      if (h >= 22) give('night_owl');
+      // Per-event flags from opts
+      if (opts && opts.perfectSession) {
+        give('perfect_session');
+        state.perfectCount = (state.perfectCount || 0) + 1;
+        if (state.perfectCount >= 3) give('three_perfect');
+      }
+      if (opts && opts.daily20Done)         give('daily20_done');
+      if (opts && opts.mistakeReviewSession) give('first_mistake_review');
+      this.save(memberId, state);
+      return newly;
+    },
+
     // Evaluate which user-composed support messages should now be unlocked
     // for `memberId`, given a trigger event. Returns the count of newly
     // unlocked messages.
@@ -1675,6 +1745,44 @@
   }
 
   const REACT_EMOJIS = ['❤️', '🙏', '🤗', '🔥', '👍'];
+
+  // ---------- Achievements catalog ----------
+  // 22 badges across cumulative correct, mastery, streak, per-level,
+  // session quality, time-of-day, and feature exploration.
+  const ACHIEVEMENTS = [
+    { id: 'first_correct',         icon: '🌱', label: '初めての正解',     desc: '最初の1問に正解' },
+    { id: 'ten_correct',           icon: '🎯', label: '10問正解',          desc: '累計10問正解' },
+    { id: 'fifty_correct',         icon: '💯', label: '50問正解',          desc: '累計50問正解' },
+    { id: 'hundred_correct',       icon: '🏆', label: '100問正解',         desc: '累計100問正解' },
+    { id: 'five_hundred_correct',  icon: '👑', label: '500問正解',         desc: '累計500問正解' },
+    { id: 'first_mastered',        icon: '✨', label: '初めての習得',      desc: '1単語を完全習得' },
+    { id: 'ten_mastered',          icon: '🌟', label: '10単語マスター',    desc: '10単語を習得' },
+    { id: 'fifty_mastered',        icon: '💎', label: '50単語マスター',    desc: '50単語を習得' },
+    { id: 'streak_3',              icon: '🔥', label: '3日連続',           desc: '3日連続で学習' },
+    { id: 'streak_7',              icon: '🔥', label: '7日連続',           desc: '7日連続で学習' },
+    { id: 'streak_30',             icon: '👑', label: '30日連続',          desc: '30日連続で学習' },
+    { id: 'l1_started',            icon: '🌱', label: 'L1スタート',        desc: 'L1の単語を学習開始' },
+    { id: 'l2_started',            icon: '🌿', label: 'L2スタート',        desc: 'L2の単語を学習開始' },
+    { id: 'l3_started',            icon: '🌳', label: 'L3スタート',        desc: 'L3の単語を学習開始' },
+    { id: 'l4_started',            icon: '🎓', label: 'L4スタート',        desc: 'L4の単語を学習開始' },
+    { id: 'l5_started',            icon: '👑', label: 'L5スタート',        desc: 'L5の単語を学習開始' },
+    { id: 'first_composition',     icon: '✍️', label: '初めての英作文',    desc: '瞬間英作文に挑戦' },
+    { id: 'first_mistake_review',  icon: '🔁', label: '初めての復習',      desc: '間違い復習に挑戦' },
+    { id: 'daily20_done',          icon: '🎯', label: '今日の20問達成',    desc: '今日の20問を完了' },
+    { id: 'perfect_session',       icon: '🎉', label: '完璧なセッション',  desc: 'セッションで全問正解' },
+    { id: 'three_perfect',         icon: '🥇', label: '3回完璧',           desc: '完璧セッション3回達成' },
+    { id: 'early_bird',            icon: '🐦', label: '早起き学習',        desc: '朝7時前に学習' },
+    { id: 'night_owl',             icon: '🦉', label: '夜更かし学習',      desc: '夜10時以降に学習' },
+  ];
+  const ACHIEVEMENT_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
+
+  // ---------- Streak visual tiers ----------
+  function streakVisuals(days) {
+    if (days >= 30) return { icon: '👑', color: '#D4AF37' };
+    if (days >= 7)  return { icon: '🔥', color: '#B85420' };
+    if (days >= 3)  return { icon: '🔥', color: '#C97D3B' };
+    return { icon: '🔥', color: '#C97D3B' };
+  }
 
   // ---------- User-composed support messages (localStorage) ----------
   // Mother (or anyone with isCheerleader) can create messages from inside the app.
@@ -1943,8 +2051,15 @@
     if (route.name === 'home') {
       return e(EnglishHome, {
         profile,
-        onBackToProfiles: () => setRoute({ name: 'profiles' }),
-        onPickFeature:    (id) => setRoute({ name: 'feature', feature: id }),
+        onBackToProfiles:   () => setRoute({ name: 'profiles' }),
+        onPickFeature:      (id) => setRoute({ name: 'feature', feature: id }),
+        onOpenAchievements: () => setRoute({ name: 'achievements' }),
+      });
+    }
+    if (route.name === 'achievements') {
+      return e(AchievementsScreen, {
+        profile,
+        onBack: () => setRoute({ name: 'home' }),
       });
     }
     if (route.name === 'feature') {
@@ -2094,9 +2209,11 @@
   }
 
   // ---------- English Learning Home ----------
-  function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
+  function EnglishHome({ profile, onBackToProfiles, onPickFeature, onOpenAchievements }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
+    const earnedAchievements = ((db.load(profile.id).achievements) || {});
+    const earnedCount = Object.keys(earnedAchievements).length;
 
     return e('div', {
       style: {
@@ -2179,6 +2296,35 @@
             subtitle,
           });
         }),
+      ),
+
+      // Achievements quick-access (learners only)
+      !isViewer && e('button', {
+        onClick: onOpenAchievements,
+        style: {
+          width: '100%', marginTop: 14, padding: '14px 16px',
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 12,
+        },
+      },
+        e('div', {
+          style: {
+            width: 40, height: 40, borderRadius: 12,
+            background: '#FAF0D9', color: '#D4AF37',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, border: '1px solid #D4AF37AA', flexShrink: 0,
+          }
+        }, '🏅'),
+        e('div', { style: { flex: 1 } },
+          e('div', {
+            style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }
+          }, 'バッジ'),
+          e('div', {
+            style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+          }, earnedCount + ' / ' + ACHIEVEMENTS.length + ' 獲得'),
+        ),
+        e('div', { style: { color: C.sub, fontSize: 18 } }, '›'),
       ),
     );
   }
@@ -2468,6 +2614,7 @@
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);  // [{ vocabId, isCorrect }]
     const [unlockedCount, setUnlockedCount] = useState(0);
+    const [newBadges, setNewBadges] = useState([]);
 
     const total   = bundle.items.length;
     const current = bundle.items[index] || null;
@@ -2481,8 +2628,12 @@
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= total) {
+        const correctCount = newResults.filter(r=>r.isCorrect).length;
+        const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const acc = total > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / total) : 0;
+        setNewBadges(db.evaluateAchievements(profile.id, {
+          daily20Done: true, perfectSession: correctCount === total && total > 0,
+        }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -2608,6 +2759,7 @@
         ),
         // Unlocked celebration banner
         unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
+        newBadges.length > 0 && e(BadgeBanner, { ids: newBadges }),
         // Per-question list
         e('div', {
           style: {
@@ -2821,10 +2973,13 @@
       style: Object.assign({ display: 'flex', gap: 8, flexWrap: 'wrap' }, style || {}),
     },
       e(Chip, { label: '今日', value: todayAttempts + '問', color: profile.color }),
-      stats.streakDays > 0 && e(Chip, {
-        icon: '🔥', label: '連続', value: stats.streakDays + '日',
-        color: profile.color, highlight: true,
-      }),
+      stats.streakDays > 0 && (() => {
+        const sv = streakVisuals(stats.streakDays);
+        return e(Chip, {
+          icon: sv.icon, label: '連続', value: stats.streakDays + '日',
+          color: sv.color, highlight: true,
+        });
+      })(),
       includeTotal && e(Chip, {
         label: '累計', value: stats.totalCorrect + '正解', color: profile.color,
       }),
@@ -2852,6 +3007,7 @@
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
     const [unlockedCount, setUnlockedCount] = useState(0);
+    const [newBadges, setNewBadges] = useState([]);
 
     function startAll() {
       if (initialList.length === 0) return;
@@ -2868,8 +3024,13 @@
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= queue.length) {
+        const correctCount = newResults.filter(r=>r.isCorrect).length;
+        const acc = newResults.length > 0 ? Math.round(correctCount * 100 / newResults.length) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const acc = newResults.length > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / newResults.length) : 0;
+        setNewBadges(db.evaluateAchievements(profile.id, {
+          mistakeReviewSession: true,
+          perfectSession: correctCount === newResults.length && newResults.length > 0,
+        }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -3126,6 +3287,7 @@
             '克服率 ' + accuracy + '%'),
         ),
         unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
+        newBadges.length > 0 && e(BadgeBanner, { ids: newBadges }),
         e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
@@ -3944,6 +4106,7 @@
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
     const [unlockedCount, setUnlockedCount] = useState(0);
+    const [newBadges, setNewBadges] = useState([]);
 
     const total   = queue.length;
     const current = queue[index] || null;
@@ -3957,8 +4120,12 @@
       const newResults = results.concat([{ sentenceId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= total) {
+        const correctCount = newResults.filter(r=>r.isCorrect).length;
+        const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const acc = total > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / total) : 0;
+        setNewBadges(db.evaluateAchievements(profile.id, {
+          perfectSession: correctCount === total && total > 0,
+        }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -4084,6 +4251,7 @@
             '精度 ' + accuracy + '%'),
         ),
         unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
+        newBadges.length > 0 && e(BadgeBanner, { ids: newBadges }),
         e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
@@ -4389,6 +4557,45 @@
     );
   }
 
+  // ---------- BadgeBanner (shown on session-done when achievements just earned) ----------
+  function BadgeBanner({ ids }) {
+    if (!ids || ids.length === 0) return null;
+    return e('div', {
+      style: {
+        background: 'linear-gradient(135deg, #FAF0D9 0%, #F2DCA8 100%)',
+        border: '1px solid #D4AF37',
+        borderRadius: 16, padding: '14px 16px', marginBottom: 16,
+        boxShadow: '0 6px 16px rgba(212, 175, 55, 0.28)',
+      }
+    },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+        e('div', { style: { fontSize: 20 } }, '🏅'),
+        e('div', {
+          style: { fontSize: 13, fontWeight: 700, color: '#7A5A1A', letterSpacing: '0.04em' }
+        }, ids.length + ' 個の新しいバッジを獲得！'),
+      ),
+      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+        ids.map(id => {
+          const a = ACHIEVEMENT_BY_ID[id];
+          if (!a) return null;
+          return e('div', {
+            key: id,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 999,
+              background: 'rgba(255,255,255,0.6)',
+              border: '1px solid #D4AF3766',
+              fontSize: 12, color: '#7A5A1A',
+            }
+          },
+            e('span', { style: { fontSize: 14 } }, a.icon),
+            e('span', { style: { fontWeight: 600 } }, a.label),
+          );
+        })
+      ),
+    );
+  }
+
   // ---------- UnlockBanner (shown on session-done when messages just unlocked) ----------
   function UnlockBanner({ count }) {
     return e('div', {
@@ -4650,6 +4857,71 @@
               ),
             )),
           ),
+    );
+  }
+
+  // ---------- Achievements Screen (full grid of all 23 badges) ----------
+  function AchievementsScreen({ profile, onBack }) {
+    const earned = (db.load(profile.id).achievements) || {};
+    const earnedCount = Object.keys(earned).length;
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          'バッジ'),
+      ),
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '🏅'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, 'Achievements'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+          earnedCount + ' / ' + ACHIEVEMENTS.length + ' 獲得済み'),
+      ),
+      // Grid
+      e('div', {
+        style: {
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        }
+      },
+        ACHIEVEMENTS.map(a => {
+          const isEarned = !!earned[a.id];
+          return e('div', {
+            key: a.id,
+            style: {
+              background: isEarned ? '#FAF0D9' : C.card,
+              border: '1px solid ' + (isEarned ? '#D4AF37' : C.line),
+              borderRadius: 14, padding: '14px 12px',
+              opacity: isEarned ? 1 : 0.5,
+              boxShadow: isEarned ? '0 4px 12px rgba(212, 175, 55, 0.2)' : 'none',
+              transition: 'all .2s ease',
+            }
+          },
+            e('div', {
+              style: {
+                fontSize: 28, marginBottom: 8,
+                filter: isEarned ? 'none' : 'grayscale(0.8)',
+              }
+            }, a.icon),
+            e('div', {
+              style: { fontSize: 13, fontWeight: 700, color: isEarned ? '#7A5A1A' : C.text, marginBottom: 4, lineHeight: 1.2 }
+            }, a.label),
+            e('div', {
+              style: { fontSize: 11, color: C.sub, lineHeight: 1.5 }
+            }, a.desc),
+            isEarned && e('div', {
+              style: {
+                fontSize: 10, color: '#9C7A30', marginTop: 6,
+                fontFamily: SANS_UI, letterSpacing: '0.04em',
+              }
+            }, '✓ ' + (earned[a.id].earnedAt ? new Date(earned[a.id].earnedAt).toLocaleDateString('ja-JP') : '獲得済み')),
+          );
+        }),
+      ),
     );
   }
 
