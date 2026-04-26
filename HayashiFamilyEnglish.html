@@ -561,6 +561,33 @@
     };
   }
 
+  // ---------- Image compression (for photo attachments) ----------
+  // Uses a canvas to downscale and re-encode as JPEG so photos don't blow up
+  // localStorage. ~50-150KB per photo at maxDim 800.
+  function compressImageToDataUrl(file, maxDim, quality) {
+    if (!maxDim) maxDim = 800;
+    if (quality == null) quality = 0.75;
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        try {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch (err) { URL.revokeObjectURL(url); reject(err); }
+      };
+      img.onerror = (err) => { URL.revokeObjectURL(url); reject(err); };
+      img.src = url;
+    });
+  }
+
   // ---------- Time helper (relative, ja) ----------
   function timeAgo(iso) {
     if (!iso) return '';
@@ -2022,6 +2049,25 @@
     const [body, setBody]         = useState('');
     const [hue, setHue]           = useState('rose');
     const [unlockCond, setUnlock] = useState('open_now');
+    const [imageUrl, setImageUrl] = useState(null);
+    const [imgErr, setImgErr]     = useState('');
+    const fileInputRef            = useRef(null);
+
+    async function pickImage(file) {
+      if (!file) return;
+      setImgErr('');
+      try {
+        const dataUrl = await compressImageToDataUrl(file, 800, 0.75);
+        // localStorage limit guard: ~5MB total, so cap a single photo at ~1MB base64.
+        if (dataUrl.length > 1_400_000) {
+          setImgErr('写真が大きすぎます。別の写真を試してください。');
+          return;
+        }
+        setImageUrl(dataUrl);
+      } catch (err) {
+        setImgErr('写真を読み込めませんでした。');
+      }
+    }
 
     const recipients = PROFILES.filter(p => p.id !== sender.id);  // can address anyone but self
     const HUES = [
@@ -2049,6 +2095,7 @@
         toMemberId:       toId || null,
         message:          body.trim(),
         imageHue:         hue,
+        imageUrl:         imageUrl || null,
         createdAt:        now,
         unlockedAt:       unlockCond === 'open_now' ? now : null,
         unlockCondition:  unlockCond,
@@ -2114,6 +2161,63 @@
         e('div', {
           style: { fontSize: 11, color: C.sub, marginTop: 6, textAlign: 'right' }
         }, body.length + ' 文字'),
+      ),
+
+      // ----- Photo (optional) -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, '写真（あれば）'),
+        // Hidden file input
+        e('input', {
+          ref: fileInputRef,
+          type: 'file',
+          accept: 'image/*',
+          style: { display: 'none' },
+          onChange: (ev) => { const f = ev.target.files && ev.target.files[0]; pickImage(f); ev.target.value = ''; },
+        }),
+        imageUrl
+          // Preview with remove
+          ? e('div', {
+              style: {
+                position: 'relative', borderRadius: 16, overflow: 'hidden',
+                border: '1px solid ' + C.line,
+              }
+            },
+              e('img', {
+                src: imageUrl,
+                style: { display: 'block', width: '100%', maxHeight: 260, objectFit: 'cover' },
+              }),
+              e('button', {
+                onClick: () => setImageUrl(null),
+                title: '写真を削除',
+                style: {
+                  position: 'absolute', top: 8, right: 8,
+                  width: 32, height: 32, borderRadius: 999,
+                  background: 'rgba(0,0,0,0.55)', color: '#fff',
+                  border: 'none', fontSize: 14, lineHeight: 1, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }
+              }, '✕'),
+            )
+          // Picker placeholder
+          : e('button', {
+              onClick: () => fileInputRef.current && fileInputRef.current.click(),
+              style: {
+                width: '100%', padding: '24px 16px', borderRadius: 16,
+                background: C.softer, border: '1px dashed ' + C.line,
+                color: C.sub, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              }
+            },
+              e('div', { style: { fontSize: 28 } }, '🖼️'),
+              e('div', null, '写真を選ぶ'),
+              e('div', { style: { fontSize: 11, opacity: 0.7 } },
+                '豚・ご飯・弟・なんでも'),
+            ),
+        imgErr && e('div', {
+          style: { marginTop: 8, fontSize: 12, color: C.danger }
+        }, imgErr),
       ),
 
       // ----- Hue -----
@@ -2326,20 +2430,42 @@
               opacity: isLocked && isMother ? 0.85 : 1,
             }
           },
-            // Image area / hue band
+            // Image area: photo if attached, otherwise hue gradient
             e('div', {
               style: {
-                height: 88,
-                background: 'linear-gradient(135deg, ' + accent + ' 0%, ' + accent + 'AA 100%)',
-                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                height: m.imageUrl ? 200 : 88,
+                background: m.imageUrl
+                  ? '#000'
+                  : 'linear-gradient(135deg, ' + accent + ' 0%, ' + accent + 'AA 100%)',
+                position: 'relative', overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }
             },
-              e('div', { style: { fontSize: 36, opacity: isLocked ? 0.55 : 0.9 } },
-                isLocked ? '🔒' : '💐'),
+              // Actual photo (blurred when locked, sharp when unlocked)
+              m.imageUrl && e('img', {
+                src: m.imageUrl,
+                style: {
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%', objectFit: 'cover',
+                  filter: isLocked ? 'blur(18px) brightness(0.55) saturate(0.7)' : 'none',
+                  transform: isLocked ? 'scale(1.1)' : 'scale(1)',  // hide blur edges
+                  transition: 'filter .4s ease, transform .4s ease',
+                },
+                alt: '',
+              }),
+              // Foreground icon (lock or flower) overlays both photo and gradient
+              e('div', {
+                style: {
+                  position: 'relative', fontSize: 36,
+                  opacity: isLocked ? 0.95 : 0.9,
+                  textShadow: m.imageUrl ? '0 2px 12px rgba(0,0,0,0.5)' : 'none',
+                }
+              }, isLocked ? '🔒' : (m.imageUrl ? '' : '💐')),
+              // LOCKED chip (bottom-right)
               isLocked && e('div', {
                 style: {
                   position: 'absolute', bottom: 8, right: 10, fontSize: 9,
-                  color: '#fff', background: 'rgba(0,0,0,0.35)',
+                  color: '#fff', background: 'rgba(0,0,0,0.55)',
                   padding: '3px 8px', borderRadius: 999, fontWeight: 700, letterSpacing: '0.08em',
                 }
               }, 'LOCKED'),
