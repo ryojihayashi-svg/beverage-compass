@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#F6F4F0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Hayashi Family">
+<meta name="apple-mobile-web-app-title" content="林ファミリー English">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Hayashi Family English</title>
+<title>林ファミリー English</title>
 <link rel="icon" type="image/svg+xml" href="hfe-icon.svg">
 <link rel="apple-touch-icon" href="hfe-icon.svg">
 <link rel="mask-icon" href="hfe-icon.svg" color="#8B6914">
@@ -59,7 +59,7 @@
     rose:    '#C97A8A',
     danger:  '#B0533F',
     success: '#6E9560',
-    brand:   '#1A1714',   // single brand color used for every profile
+    brand:   '#7A6F60',   // single brand color — warm taupe / greige
   };
   const SERIF   = "'Cormorant Garamond', 'Shippori Mincho', 'Noto Serif JP', Georgia, serif";
   const SANS_UI = "'DM Sans', 'Noto Sans JP', system-ui, sans-serif";
@@ -67,11 +67,11 @@
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
   const PROFILES = [
-    { id: 'father', name: '父',   subtitle: '英検準2級レベル',          emoji: '🌲', color: C.brand, role: 'learner', level: 3 },
-    { id: 'mother', name: '母',   subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
-    { id: 'son1',   name: '長男', subtitle: '高2・英検2級',             emoji: '🎯', color: C.brand, role: 'learner', level: 4 },
-    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',      emoji: '⚽', color: C.brand, role: 'learner', level: 2, maxLevel: 2 },
-    { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',      emoji: '🌟', color: C.brand, role: 'learner', level: 1 },
+    { id: 'father', name: '林亮治',   subtitle: '英検準2級レベル',          emoji: '🌲', color: C.brand, role: 'learner', level: 3 },
+    { id: 'mother', name: '歩み',     subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
+    { id: 'son1',   name: 'なるみち', subtitle: '高2・英検2級',             emoji: '🎯', color: C.brand, role: 'learner', level: 4 },
+    { id: 'son2',   name: '吉成',     subtitle: '高1・中学レベル復習',      emoji: '⚽', color: C.brand, role: 'learner', level: 2, maxLevel: 2 },
+    { id: 'son3',   name: '吉平',     subtitle: '小6・はじめての英語',      emoji: '🌟', color: C.brand, role: 'learner', level: 1 },
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
@@ -2220,6 +2220,41 @@
     }
   }
 
+  // ---------- Speaker icon (elegant inline SVG, used for all 🔊 buttons) ----------
+  // Renders a neutral speaker glyph + faint sound-wave arc inside a soft pill
+  // button. Replaces the previous '🔊' emoji so the look matches the rest of
+  // the typography. Props: onClick (required), color (icon stroke), size (px).
+  function SpeakerBtn({ onClick, color, size, ariaLabel }) {
+    const px = size || 32;
+    const stroke = color || '#7A6F60';
+    const inner = px * 0.55;
+    return e('button', {
+      onClick: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); onClick && onClick(ev); },
+      'aria-label': ariaLabel || '発音',
+      style: {
+        width: px, height: px, borderRadius: 999,
+        background: '#F0EDE8', border: '1px solid #E8E4DC',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, cursor: 'pointer', lineHeight: 1, padding: 0,
+      },
+    },
+      // Inline SVG: speaker cone + 2 wave arcs, all stroked in `color`.
+      e('svg', {
+        xmlns: 'http://www.w3.org/2000/svg',
+        width: inner, height: inner, viewBox: '0 0 24 24',
+        fill: 'none', stroke, 'stroke-width': 1.6,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        'aria-hidden': 'true', focusable: 'false',
+      },
+        // Speaker body
+        e('path', { d: 'M4 9.5h3.5L12 6v12L7.5 14.5H4z' }),
+        // Wave arcs
+        e('path', { d: 'M16 9c1.2 1 1.2 5 0 6', opacity: '0.85' }),
+        e('path', { d: 'M18.5 7c2.2 1.7 2.2 8.3 0 10', opacity: '0.55' }),
+      ),
+    );
+  }
+
   // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
   function speak(text) {
     if (!('speechSynthesis' in window)) return;
@@ -2740,32 +2775,34 @@
         position: 'relative',
       }
     },
-      // Reload button (top-right, just left of gear)
+      // Reload button (top-right, just left of Setting)
       e('button', {
         onClick: hardReload,
         style: {
-          position: 'absolute', top: 18, right: 60,
-          padding: '8px 12px', borderRadius: 999,
+          position: 'absolute', top: 18, right: 76,
+          width: 28, height: 28, borderRadius: 999,
           background: C.softer, border: '1px solid ' + C.line,
-          fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
+          fontSize: 13, color: C.sub,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
         },
         title: 'アプリを再読み込み',
         'aria-label': '再読み込み',
-      }, '再読み込み'),
+      }, '🔄'),
 
-      // Settings gear (top-right)
+      // Settings (top-right) — plain text
       e('button', {
         onClick: onOpenSettings,
         style: {
           position: 'absolute', top: 18, right: 18,
-          width: 38, height: 38, borderRadius: 999,
+          padding: '5px 10px', borderRadius: 999,
           background: C.softer, border: '1px solid ' + C.line,
-          fontSize: 16, color: C.sub,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, color: C.sub, fontWeight: 600, fontFamily: SANS_UI,
+          letterSpacing: '0.04em',
+          cursor: 'pointer',
         },
         'aria-label': '設定',
-      }, '⚙️'),
+      }, 'Setting'),
 
       // Header — Cormorant Garamond display, restrained gold rule
       e('div', { style: { textAlign: 'center', marginBottom: 36, paddingTop: 12 } },
@@ -2917,51 +2954,43 @@
           title: 'アプリを再読み込み',
           'aria-label': '再読み込み',
           style: {
-            padding: '7px 12px', borderRadius: 999,
+            width: 28, height: 28, borderRadius: 999,
             background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
+            fontSize: 13, color: C.sub,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           },
-        }, '再読み込み'),
+        }, '🔄'),
       ),
 
-      // Daily encouragement (text-only, bilingual)
+      // Daily encouragement (text-only, bilingual). EN is the focus → larger.
       e('div', {
-        style: {
-          padding: '4px 0 18px',
-        }
+        style: { padding: '4px 0 18px' }
       },
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
+          style: { fontSize: 14, color: C.sub, lineHeight: 1.5, fontFamily: SANS_UI }
         }, '今日もちょっとずつ、続けることがいちばん。'),
         e('div', {
-          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 16, color: C.sub, marginTop: 6, lineHeight: 1.5 }
+          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 22, fontWeight: 600, color: C.text, marginTop: 6, lineHeight: 1.4 }
         }, 'A little every day is what matters most.'),
       ),
 
-      // Today's phrase (small, EN + JA, no decoration)
+      // Today's phrase — EN larger (focus), JA smaller subline.
       todayPhrase && e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
-          padding: '12px 14px', borderRadius: 14, marginBottom: 18,
+          padding: '14px 16px', borderRadius: 14, marginBottom: 18,
         }
       },
         e('div', {
-          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4,
+          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
                    display: 'flex', alignItems: 'center', gap: 10 }
         },
           e('span', { style: { flex: 1 } }, todayPhrase.en),
-          e('button', {
-            onClick: (ev) => { ev.stopPropagation(); speak(todayPhrase.en); },
-            'aria-label': '発音',
-            style: {
-              width: 30, height: 30, borderRadius: 999, fontSize: 13,
-              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-            }
-          }, '🔊'),
+          e(SpeakerBtn, { onClick: () => speak(todayPhrase.en), color: profile.color, size: 32 }),
         ),
         e('div', {
-          style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+          style: { fontSize: 12, color: C.sub, marginTop: 6, lineHeight: 1.5 }
         }, todayPhrase.ja),
       ),
 
@@ -3228,14 +3257,7 @@
                     letterSpacing: '-0.02em', color: C.text, textAlign: 'center',
                   }
                 }, current.en),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                  style: {
-                    width: 68, height: 68, borderRadius: 999, fontSize: 32,
-                    background: C.softer, color: profile.color, lineHeight: 1,
-                    flexShrink: 0,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 68 }),
               ),
           // Footer hint
           e('div', { style: { textAlign: 'center', fontSize: 12, color: C.sub } }, frontHint),
@@ -3256,13 +3278,7 @@
                 e('div', {
                   style: { flex: 1, fontFamily: SERIF, fontSize: 44, fontWeight: 800, letterSpacing: '-0.02em', color: C.text, lineHeight: 1.2 }
                 }, current.en),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                  style: {
-                    width: 60, height: 60, borderRadius: 999, fontSize: 28,
-                    background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 60 }),
               )
             : e('div', {
                 style: { fontSize: 40, fontWeight: 800, color: C.text, lineHeight: 1.3 }
@@ -3273,13 +3289,7 @@
             e('div', {
               style: { flex: 1, fontSize: 23, fontWeight: 700, color: C.text, lineHeight: 1.5, fontFamily: SERIF, fontStyle: 'italic' }
             }, current.exEn),
-            e('button', {
-              onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
-              style: {
-                width: 60, height: 60, borderRadius: 999, fontSize: 28,
-                background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-              }
-            }, '🔊'),
+            e(SpeakerBtn, { onClick: () => speak(current.exEn), color: profile.color, size: 60 }),
           ),
           e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
             current.exJa),
@@ -3528,25 +3538,13 @@
                 e('div', {
                   style: { fontFamily: SERIF, fontSize: isVocab ? 38 : 24, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.3 }
                 }, answerEn),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(answerEn); },
-                  style: {
-                    width: 56, height: 56, borderRadius: 999, fontSize: 24,
-                    background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(answerEn), color: profile.color, size: 56 }),
               ),
               isVocab && exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                 e('div', {
                   style: { flex: 1, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.5, fontStyle: 'italic', fontFamily: SERIF }
                 }, exEn),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(exEn); },
-                  style: {
-                    width: 44, height: 44, borderRadius: 999, fontSize: 18,
-                    background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(exEn), color: profile.color, size: 44 }),
               ),
               isVocab && exJa && e('div', {
                 style: { fontSize: 14, color: C.sub, lineHeight: 1.6 }
@@ -3915,26 +3913,14 @@
                   e('div', {
                     style: { fontFamily: SERIF, fontSize: current.kind === 'vocab' ? 44 : 28, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.3 }
                   }, current.en),
-                  e('button', {
-                    onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                    style: {
-                      width: 68, height: 68, borderRadius: 999, fontSize: 32,
-                      background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-                    }
-                  }, '🔊'),
+                  e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 68 }),
                 ),
                 // Vocab-only: show example sentence
                 current.kind === 'vocab' && current.exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                   e('div', {
                     style: { flex: 1, fontSize: 23, fontWeight: 700, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
                   }, current.exEn),
-                  e('button', {
-                    onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
-                    style: {
-                      width: 60, height: 60, borderRadius: 999, fontSize: 28,
-                      background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-                    }
-                  }, '🔊'),
+                  e(SpeakerBtn, { onClick: () => speak(current.exEn), color: profile.color, size: 60 }),
                 ),
                 current.kind === 'vocab' && current.exJa && e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
                   current.exJa),
@@ -5189,21 +5175,15 @@
           const promptLabel = isEn2Ja ? 'English' : '日本語';
           const promptText  = isEn2Ja ? current.en : current.ja;
           const promptStyle = isEn2Ja
-            ? { fontFamily: SERIF, fontStyle: 'italic', fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1.4 }
-            : { fontSize: 34, fontWeight: 800, color: C.text, lineHeight: 1.5 };
+            ? { fontFamily: SERIF, fontStyle: 'italic', fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+            : { fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.5 };
           return e('div', { style: { padding: '4px 0 8px' } },
             e('div', {
               style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8,
                        display: 'flex', alignItems: 'center', gap: 10 }
             },
               e('span', null, promptLabel),
-              isEn2Ja && e('button', {
-                onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                style: {
-                  width: 32, height: 32, borderRadius: 999, fontSize: 16,
-                  background: C.softer, color: profile.color, lineHeight: 1,
-                }
-              }, '🔊'),
+              isEn2Ja && e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 32 }),
             ),
             e('div', { style: promptStyle }, promptText),
           );
@@ -5228,8 +5208,8 @@
               const isEn2Ja = direction === 'en2ja';
               const answerText = isEn2Ja ? current.ja : current.en;
               const answerStyle = isEn2Ja
-                ? { fontSize: 28, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.5 }
-                : { fontFamily: SERIF, fontSize: 30, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.4 };
+                ? { fontSize: 20, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.5 }
+                : { fontFamily: SERIF, fontStyle: 'italic', fontSize: 24, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.4 };
               return e('div', { style: { marginTop: 'auto' } },
                 e('div', {
                   style: {
@@ -5238,13 +5218,7 @@
                   }
                 },
                   e('div', { style: answerStyle }, answerText),
-                  !isEn2Ja && e('button', {
-                    onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                    style: {
-                      width: 68, height: 68, borderRadius: 999, fontSize: 32,
-                      background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-                    }
-                  }, '🔊'),
+                  !isEn2Ja && e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 44 }),
                 ),
               );
             })(),
@@ -5396,12 +5370,13 @@
           title: 'アプリを再読み込み',
           'aria-label': '再読み込み',
           style: {
-            padding: '7px 12px', borderRadius: 999,
+            width: 28, height: 28, borderRadius: 999,
             background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
+            fontSize: 13, color: C.sub,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           },
-        }, '再読み込み'),
+        }, '🔄'),
       ),
 
       // Header
@@ -5936,14 +5911,7 @@
                   letterSpacing: '0.06em', flexShrink: 0,
                 }
               }, 'L' + v.level),
-              e('button', {
-                onClick: (ev) => { ev.stopPropagation(); speak(v.en); },
-                style: {
-                  width: 30, height: 30, borderRadius: 999, fontSize: 13,
-                  background: C.softer, color: profile.color, flexShrink: 0,
-                  border: '1px solid ' + C.line,
-                }
-              }, '🔊'),
+              e(SpeakerBtn, { onClick: () => speak(v.en), color: profile.color, size: 30 }),
             )),
           ),
     );
@@ -6050,14 +6018,7 @@
                     background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
                   }
                 }, 'L' + s.level),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(s.en); },
-                  style: {
-                    width: 30, height: 30, borderRadius: 999, fontSize: 13,
-                    background: C.softer, color: profile.color,
-                    border: '1px solid ' + C.line,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(s.en), color: profile.color, size: 30 }),
               ),
             )),
           ),
@@ -6397,14 +6358,7 @@
                            lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 8 }
                 },
                   e('span', { style: { flex: 1 } }, p.en),
-                  e('button', {
-                    onClick: (ev) => { ev.stopPropagation(); speak(p.en); },
-                    'aria-label': '発音',
-                    style: {
-                      width: 32, height: 32, borderRadius: 999, fontSize: 14,
-                      background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-                    }
-                  }, '🔊'),
+                  e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 32 }),
                 ),
               )),
             ),
@@ -6497,13 +6451,7 @@
                 e('div', {
                   style: { fontFamily: SERIF, fontSize: 28, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.4 }
                 }, current.en),
-                e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
-                  style: {
-                    width: 60, height: 60, borderRadius: 999, fontSize: 28,
-                    background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
-                  }
-                }, '🔊'),
+                e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 60 }),
               ),
             ),
       ),
@@ -6671,27 +6619,16 @@
             const promptIsEn = r.direction === 'en2ja';
             const correctIsEn = !promptIsEn;
             const promptText = promptIsEn ? r.en : r.ja;
-            const speakerStyle = {
-              width: 26, height: 26, borderRadius: 999, fontSize: 12,
-              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-              border: '1px solid ' + C.line,
-            };
             return e('div', { style: { flex: 1, minWidth: 0 } },
               e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 e('div', { style: { flex: 1, fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 } },
                   promptText),
-                promptIsEn && e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(r.en); },
-                  'aria-label': '発音', style: speakerStyle,
-                }, '🔊'),
+                promptIsEn && e(SpeakerBtn, { onClick: () => speak(r.en), color: profile.color, size: 26 }),
               ),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 e('div', { style: { flex: 1, fontSize: 12, color: C.sub } },
                   '→ ' + r.correct),
-                correctIsEn && e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(r.correct); },
-                  'aria-label': '発音', style: speakerStyle,
-                }, '🔊'),
+                correctIsEn && e(SpeakerBtn, { onClick: () => speak(r.correct), color: profile.color, size: 26 }),
               ),
               !r.isCorrect && e('div', { style: { fontSize: 11, color: C.danger, marginTop: 2 } },
                 'あなたの答え: ' + r.chosen),
@@ -6757,14 +6694,7 @@
               fontFamily: optsObj.isEn2Ja ? SERIF : 'inherit',
             }
           }, optsObj.prompt),
-          optsObj.isEn2Ja && e('button', {
-            onClick: (ev) => { ev.stopPropagation(); speak(optsObj.prompt); },
-            'aria-label': '発音',
-            style: {
-              width: 44, height: 44, borderRadius: 999, fontSize: 20,
-              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
-            }
-          }, '🔊'),
+          optsObj.isEn2Ja && e(SpeakerBtn, { onClick: () => speak(optsObj.prompt), color: profile.color, size: 44 }),
         ),
       ),
       // Options (4 buttons) — when options are English (JA→EN), every choice gets a 🔊.
@@ -6799,15 +6729,11 @@
                 cursor: chosen !== null ? 'default' : 'pointer',
               }
             }, opt),
-            optionsAreEn && e('button', {
-              onClick: (ev) => { ev.stopPropagation(); speak(opt); },
-              'aria-label': '発音',
-              style: {
-                width: 52, borderRadius: 14, fontSize: 18,
-                background: C.softer, color: profile.color, lineHeight: 1,
-                border: '1px solid ' + C.line, flexShrink: 0,
-              }
-            }, '🔊'),
+            optionsAreEn && e(SpeakerBtn, {
+              onClick: () => speak(opt),
+              color: profile.color,
+              size: 44,
+            }),
           );
         }),
       ),
