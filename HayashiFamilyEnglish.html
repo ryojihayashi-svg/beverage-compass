@@ -18,12 +18,13 @@
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
   #root { min-height: 100vh; min-height: 100dvh; }
-  /* Flashcard 3D flip */
-  .flip-wrap   { perspective: 1200px; }
-  .flip-inner  { position: relative; width: 100%; transition: transform .55s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
-  .flip-inner.is-flipped { transform: rotateY(180deg); }
-  .flip-face   { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-  .flip-face.back { transform: rotateY(180deg); }
+  /* Flashcard simple toggle (no 3D animation) */
+  .flip-wrap   { position: relative; }
+  .flip-inner  { position: relative; width: 100%; }
+  .flip-face   { width: 100%; }
+  .flip-face.back { display: none; }
+  .flip-inner.is-flipped > .flip-face:not(.back) { display: none; }
+  .flip-inner.is-flipped > .flip-face.back { display: flex; }
 </style>
 </head>
 <body>
@@ -79,16 +80,17 @@
   //   row 4: 覚えた単語       | 応援メッセージ
   //   row 5: 家族ランキング (full-width)
   const FEATURES = [
-    { id: 'daily20',                label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',     primary: true, forLearner: true, forViewer: false },
-    { id: 'random_test',            label: 'ランダムテスト', emoji: '🎲', desc: '混合10問・4択',                     forLearner: true, forViewer: false },
-    { id: 'ai_chat',                label: 'AI質問',         emoji: '💡', desc: '英語のことなんでも',                forLearner: true, forViewer: true  },
-    { id: 'vocab',                  label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                  forLearner: true, forViewer: false },
-    { id: 'composition',            label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                      forLearner: true, forViewer: false },
-    { id: 'phrases',                label: '日常英会話',     emoji: '💬', desc: 'シーン別・簡単英語',                forLearner: true, forViewer: false },
-    { id: 'mistakes',               label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                forLearner: true, forViewer: false },
-    { id: 'mastered_compositions',  label: '覚えた英作文',   emoji: '✓',  desc: '言えるようになった文',              forLearner: true, forViewer: false },
-    { id: 'mastered_vocab',         label: '覚えた単語',     emoji: '✓',  desc: '習得した語',                        forLearner: true, forViewer: true  },
-    { id: 'ranking',                label: '家族ランキング', emoji: '👥', desc: '今週のがんばり',     primary: true, forLearner: true, forViewer: true  },
+    { id: 'daily20',                label: '今日の20問',         desc: '単語と英作文を混ぜて20問', primary: true, forLearner: true, forViewer: false },
+    { id: 'random_test',            label: 'ランダムテスト',     desc: '混合10問・4択',                       forLearner: true, forViewer: false },
+    { id: 'ai_chat',                label: 'AI質問',             desc: '英語のことなんでも',                  forLearner: true, forViewer: true  },
+    { id: 'vocab',                  label: '単語学習',           desc: 'カードでじっくり',                    forLearner: true, forViewer: false },
+    { id: 'composition',            label: '瞬間英作文',         desc: '日本語 ⇄ 英語',                       forLearner: true, forViewer: false },
+    { id: 'phrases',                label: 'Daily English',      desc: 'シーン別・すぐ使える英語',            forLearner: true, forViewer: false },
+    { id: 'mistakes_vocab',         label: '間違えた単語',       desc: '単語の復習',                          forLearner: true, forViewer: false },
+    { id: 'mistakes_sentence',      label: '間違えた英作文',     desc: '英作文の復習',                        forLearner: true, forViewer: false },
+    { id: 'mastered_vocab',         label: '覚えた単語',         desc: '習得した単語',                        forLearner: true, forViewer: true  },
+    { id: 'mastered_compositions',  label: '覚えた英作文',       desc: '言えるようになった文',                forLearner: true, forViewer: false },
+    { id: 'ranking',                label: '家族ランキング',     desc: '今週のがんばり',          primary: true, forLearner: true, forViewer: true  },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -1684,18 +1686,18 @@
     { id:'p038', scene:'friends', ja:'コーヒーでも飲みに行かない？',          en:'Do you want to grab a coffee?' },
     { id:'p039', scene:'friends', ja:'楽しそう！',                            en:'That sounds fun!' },
     { id:'p040', scene:'friends', ja:'ごめん、行けないんだ。',                en:"Sorry, I can't make it." },
-    { id:'p041', scene:'friends', ja:'モールに行こう。',                      en:"Let's go to the mall." },
-    { id:'p042', scene:'friends', ja:'これいくら？',                          en:'How much is this?' },
-    { id:'p043', scene:'friends', ja:'もっと小さいサイズはありますか？',      en:'Do you have this in a smaller size?' },
-    { id:'p044', scene:'friends', ja:'試着してもいいですか？',                en:'Can I try this on?' },
-    { id:'p045', scene:'friends', ja:'試着室はどこですか？',                  en:"Where's the fitting room?" },
-    { id:'p046', scene:'friends', ja:'見ているだけです、ありがとう。',        en:"I'm just looking, thank you." },
-    { id:'p047', scene:'friends', ja:'クレジットカードは使えますか？',        en:'Do you take credit cards?' },
-    { id:'p048', scene:'friends', ja:'これにします。',                        en:"I'll take it." },
-    { id:'p049', scene:'friends', ja:'高すぎます。',                          en:"That's too expensive." },
-    { id:'p050', scene:'friends', ja:'割引はありますか？',                    en:'Do you have any discounts?' },
-    { id:'p051', scene:'friends', ja:'プレゼント用に包んでもらえますか？',    en:'Could you wrap it as a gift?' },
-    { id:'p052', scene:'friends', ja:'すみません、トイレはどこですか？',      en:"Excuse me, where's the restroom?" },
+    { id:'p041', scene:'shopping', ja:'モールに行こう。',                      en:"Let's go to the mall." },
+    { id:'p042', scene:'shopping', ja:'これいくら？',                          en:'How much is this?' },
+    { id:'p043', scene:'shopping', ja:'もっと小さいサイズはありますか？',      en:'Do you have this in a smaller size?' },
+    { id:'p044', scene:'shopping', ja:'試着してもいいですか？',                en:'Can I try this on?' },
+    { id:'p045', scene:'shopping', ja:'試着室はどこですか？',                  en:"Where's the fitting room?" },
+    { id:'p046', scene:'shopping', ja:'見ているだけです、ありがとう。',        en:"I'm just looking, thank you." },
+    { id:'p047', scene:'shopping', ja:'クレジットカードは使えますか？',        en:'Do you take credit cards?' },
+    { id:'p048', scene:'shopping', ja:'これにします。',                        en:"I'll take it." },
+    { id:'p049', scene:'shopping', ja:'高すぎます。',                          en:"That's too expensive." },
+    { id:'p050', scene:'shopping', ja:'割引はありますか？',                    en:'Do you have any discounts?' },
+    { id:'p051', scene:'shopping', ja:'プレゼント用に包んでもらえますか？',    en:'Could you wrap it as a gift?' },
+    { id:'p052', scene:'shopping', ja:'すみません、トイレはどこですか？',      en:"Excuse me, where's the restroom?" },
     { id:'p053', scene:'friends', ja:'この映画見た？',                        en:'Have you seen this movie?' },
     { id:'p054', scene:'friends', ja:'そのうち会おうよ。',                    en:"Let's catch up soon." },
     { id:'p055', scene:'friends', ja:'また明日！',                            en:'See you tomorrow!' },
@@ -1730,8 +1732,13 @@
     { id:'p080', scene:'friends', ja:'すみません。',                          en:'Excuse me.' },
   ];
   const PHRASE_BY_ID = Object.fromEntries(DAILY_PHRASES.map(p => [p.id, p]));
-  const SCENE_LABELS = { school: '学校', cafeteria: '食事', friends: '友達・買い物' };
-  const SCENE_EMOJIS = { school: '🏫', cafeteria: '🍴', friends: '🛍️' };
+  const SCENE_LABELS = {
+    school:    'School',
+    cafeteria: 'Meal',
+    friends:   'With Friends',
+    shopping:  'Shopping',
+  };
+  const SCENE_ORDER = ['school', 'cafeteria', 'friends', 'shopping'];
 
 
   // ---------- Data layer (localStorage today, swappable to Supabase later) ----------
@@ -2107,7 +2114,107 @@
         freshCount: Math.max(0, Math.min(count, out.length) - Math.min(due.length, count)),
       };
     },
+
+    // Pick a mixed daily queue of vocab + sentences with a deliberate slice
+    // of already-mastered material so old learning isn't forgotten.
+    //
+    // Roughly:
+    //   - 1/3 review (mastered vocab + mastered sentences, mixed)
+    //   - 2/3 fresh / due (mix of vocab and sentences within the cap)
+    // memberLevel filters fresh items toward levels at-or-below the learner.
+    pickDaily20(memberId, count, memberLevel, maxLevel) {
+      const state = db.load(memberId);
+      const vp = state.vocab || {};
+      const sp = state.composition || {};
+      const cap = maxLevel || 5;
+
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+
+      const reviewTarget = Math.max(1, Math.round(count / 3));
+
+      // ---------- Mastered (review) pool ----------
+      const masteredV = VOCAB
+        .filter(v => v.level <= cap && vp[v.id] && vp[v.id].status === 'mastered')
+        .map(v => ({ kind: 'vocab', id: v.id, item: v }));
+      const masteredS = SENTENCES
+        .filter(s => s.level <= cap && isSentenceMastered(sp[s.id]))
+        .map(s => ({ kind: 'sentence', id: s.id, item: s }));
+      const review = shuffle(masteredV.concat(masteredS)).slice(0, reviewTarget);
+
+      // ---------- Fresh / due pool ----------
+      const now = new Date().toISOString();
+      const freshOrDueV = VOCAB
+        .filter(v => v.level <= cap)
+        .filter(v => {
+          const p = vp[v.id];
+          if (!p || p.status === 'new') return true;
+          if (p.status === 'mastered') return false;
+          return !p.nextAt || p.nextAt <= now;
+        })
+        .map(v => ({ kind: 'vocab', id: v.id, item: v, level: v.level }));
+      const freshOrDueS = SENTENCES
+        .filter(s => s.level <= cap)
+        .filter(s => !isSentenceMastered(sp[s.id]))
+        .map(s => ({ kind: 'sentence', id: s.id, item: s, level: s.level }));
+
+      // Sort by closeness to memberLevel
+      function byLevel(a, b) {
+        const da = Math.abs((a.level || 1) - (memberLevel || 1));
+        const dbb = Math.abs((b.level || 1) - (memberLevel || 1));
+        return da - dbb;
+      }
+      shuffle(freshOrDueV).sort(byLevel);
+      shuffle(freshOrDueS).sort(byLevel);
+
+      // Interleave fresh vocab + sentence so the queue feels mixed.
+      const fresh = [];
+      const remaining = count - review.length;
+      let vi = 0, si = 0;
+      // Roughly half-half but stop at the remaining cap.
+      while (fresh.length < remaining && (vi < freshOrDueV.length || si < freshOrDueS.length)) {
+        // Alternate, slight bias toward whichever pool is larger.
+        if (vi < freshOrDueV.length && (fresh.length % 2 === 0 || si >= freshOrDueS.length)) {
+          fresh.push(freshOrDueV[vi++]);
+        } else if (si < freshOrDueS.length) {
+          fresh.push(freshOrDueS[si++]);
+        }
+      }
+
+      // Final queue: shuffle review-into-fresh so they don't sit in two blocks.
+      const queue = shuffle(review.concat(fresh)).slice(0, count);
+
+      return {
+        items: queue,
+        reviewCount: queue.filter(q => {
+          const p = q.kind === 'vocab' ? vp[q.id] : sp[q.id];
+          return q.kind === 'vocab'
+            ? (p && p.status === 'mastered')
+            : isSentenceMastered(p);
+        }).length,
+        vocabCount:    queue.filter(q => q.kind === 'vocab').length,
+        sentenceCount: queue.filter(q => q.kind === 'sentence').length,
+      };
+    },
   };
+
+  // ---------- Hard reload (cache-busting) ----------
+  // Some PWAs / browsers serve a stale copy from cache when reload() is called.
+  // Append a fresh ?_=timestamp so the navigation goes to the network.
+  function hardReload() {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('_', Date.now().toString());
+      window.location.replace(url.toString());
+    } catch {
+      try { window.location.reload(); } catch {}
+    }
+  }
 
   // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
   function speak(text) {
@@ -2299,74 +2406,6 @@
   function hapticTap()  { if (navigator.vibrate) navigator.vibrate(12); }
   function hapticBuzz() { if (navigator.vibrate) navigator.vibrate([25, 50, 25]); }
   function hapticWin()  { if (navigator.vibrate) navigator.vibrate([15, 50, 15, 50, 80]); }
-
-  // ---------- Confetti (canvas burst, used on session-done) ----------
-  function ConfettiBurst() {
-    const canvasRef = useRef(null);
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const dpr = window.devicePixelRatio || 1;
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
-      ctx.scale(dpr, dpr);
-      const colors = ['#C97D3B', '#4A6840', '#3D6FA0', '#D4A22F', '#C97A8A', '#8B6914'];
-      const N = 90;
-      const particles = [];
-      for (let i = 0; i < N; i++) {
-        particles.push({
-          x: W * (0.3 + Math.random() * 0.4),
-          y: H * 0.32 + (Math.random() - 0.5) * 40,
-          vx: (Math.random() - 0.5) * 9,
-          vy: (Math.random() - 0.85) * 10,
-          rot: Math.random() * Math.PI * 2,
-          vrot: (Math.random() - 0.5) * 0.32,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          w: Math.random() * 9 + 5,
-          h: Math.random() * 4 + 3,
-        });
-      }
-      const duration = 3500;
-      const start = Date.now();
-      let raf;
-      function frame() {
-        ctx.clearRect(0, 0, W, H);
-        particles.forEach(p => {
-          p.vy += 0.18;
-          p.vx *= 0.995;
-          p.x += p.vx;
-          p.y += p.vy;
-          p.rot += p.vrot;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-          ctx.restore();
-        });
-        const elapsed = Date.now() - start;
-        canvas.style.opacity = elapsed > duration - 800
-          ? Math.max(0, (duration - elapsed) / 800).toFixed(2)
-          : 1;
-        if (elapsed < duration) raf = requestAnimationFrame(frame);
-      }
-      raf = requestAnimationFrame(frame);
-      return () => { cancelAnimationFrame(raf); };
-    }, []);
-    return e('canvas', {
-      ref: canvasRef,
-      style: {
-        position: 'fixed', inset: 0,
-        pointerEvents: 'none', zIndex: 9999,
-        transition: 'opacity .8s ease',
-      }
-    });
-  }
 
   // ---------- Image compression (for photo attachments) ----------
   // Uses a canvas to downscale and re-encode as JPEG so photos don't blow up
@@ -2676,6 +2715,8 @@
       else if (route.feature === 'random_test')            body = e(RandomTest,         { profile, onBack: back });
       else if (route.feature === 'ai_chat')                body = e(AIChat,             { profile, onBack: back });
       else if (route.feature === 'mistakes')               body = e(MistakeReview,      { profile, onBack: back });
+      else if (route.feature === 'mistakes_vocab')         body = e(MistakeReview,      { profile, onBack: back, kindFilter: 'vocab' });
+      else if (route.feature === 'mistakes_sentence')      body = e(MistakeReview,      { profile, onBack: back, kindFilter: 'sentence' });
       else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,      { profile, onBack: back });
       else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences,  { profile, onBack: back });
       else if (route.feature === 'ranking')                body = e(FamilyRanking,      { profile, onBack: back });
@@ -2697,18 +2738,17 @@
     },
       // Reload button (top-right, just left of gear)
       e('button', {
-        onClick: () => { try { window.location.reload(); } catch {} },
+        onClick: hardReload,
         style: {
-          position: 'absolute', top: 18, right: 64,
-          width: 38, height: 38, borderRadius: 999,
+          position: 'absolute', top: 18, right: 60,
+          padding: '8px 12px', borderRadius: 999,
           background: C.softer, border: '1px solid ' + C.line,
-          fontSize: 16, color: C.sub,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
           cursor: 'pointer',
         },
         title: 'アプリを再読み込み',
         'aria-label': '再読み込み',
-      }, '🔄'),
+      }, '再読み込み'),
 
       // Settings gear (top-right)
       e('button', {
@@ -2840,8 +2880,6 @@
   function EnglishHome({ profile, onBackToProfiles, onPickFeature, onOpenAchievements, onOpenFeed }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
-    const earnedAchievements = ((db.load(profile.id).achievements) || {});
-    const earnedCount = Object.keys(earnedAchievements).length;
     const feedCount = db.getFeed().length;
     // Pick one phrase per day so the same phrase appears all day for one
     // member. Mix profile.id into the seed so different members can see
@@ -2858,12 +2896,11 @@
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
-
       }
     },
       // Top bar
       e('div', {
-        style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 22 }
+        style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
       },
         e('button', {
           onClick: onBackToProfiles,
@@ -2872,50 +2909,55 @@
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
           'プロファイルを切り替える'),
         e('button', {
-          onClick: () => { try { window.location.reload(); } catch {} },
+          onClick: hardReload,
           title: 'アプリを再読み込み',
           'aria-label': '再読み込み',
           style: {
-            width: 36, height: 36, borderRadius: 999,
+            padding: '7px 12px', borderRadius: 999,
             background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 14, color: C.sub,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
             cursor: 'pointer',
           },
-        }, '🔄'),
+        }, '再読み込み'),
       ),
 
-      // Today's English (replaces the old "Hi, [name]" hero)
-      todayPhrase && e('div', {
+      // Daily encouragement (text-only, bilingual)
+      e('div', {
         style: {
-          background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
-          color: '#fff', padding: '24px 22px', borderRadius: 24, marginBottom: 22,
-          boxShadow: '0 10px 28px ' + profile.color + '33',
+          padding: '4px 0 18px',
         }
       },
         e('div', {
-          style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.18em', fontWeight: 700 }
-        }, "TODAY'S ENGLISH"),
+          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
+        }, '今日もちょっとずつ、続けることがいちばん。'),
         e('div', {
-          style: {
-            fontFamily: SERIF, fontStyle: 'italic',
-            fontSize: 26, fontWeight: 700, marginTop: 10, lineHeight: 1.3,
-            display: 'flex', alignItems: 'flex-start', gap: 12,
-          }
+          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 16, color: C.sub, marginTop: 6, lineHeight: 1.5 }
+        }, 'A little every day is what matters most.'),
+      ),
+
+      // Today's phrase (small, EN + JA, no decoration)
+      todayPhrase && e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          padding: '12px 14px', borderRadius: 14, marginBottom: 18,
+        }
+      },
+        e('div', {
+          style: { fontFamily: SERIF, fontStyle: 'italic', fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4,
+                   display: 'flex', alignItems: 'center', gap: 10 }
         },
-          e('div', { style: { flex: 1 } }, todayPhrase.en),
+          e('span', { style: { flex: 1 } }, todayPhrase.en),
           e('button', {
             onClick: (ev) => { ev.stopPropagation(); speak(todayPhrase.en); },
             'aria-label': '発音',
             style: {
-              width: 44, height: 44, borderRadius: 999, fontSize: 20,
-              background: 'rgba(255,255,255,0.18)', color: '#fff',
-              flexShrink: 0, lineHeight: 1, cursor: 'pointer',
+              width: 30, height: 30, borderRadius: 999, fontSize: 13,
+              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
             }
           }, '🔊'),
         ),
         e('div', {
-          style: { fontSize: 14, opacity: 0.92, marginTop: 10, lineHeight: 1.55 }
+          style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.5 }
         }, todayPhrase.ja),
       ),
 
@@ -2926,7 +2968,7 @@
       e('div', {
         style: {
           fontSize: 12, color: C.sub, letterSpacing: '0.12em',
-          fontWeight: 600, marginBottom: 10, paddingLeft: 4,
+          fontWeight: 600, marginBottom: 10, paddingLeft: 4, fontFamily: SANS_UI,
         }
       }, 'ENGLISH LEARNING'),
 
@@ -2942,6 +2984,12 @@
           if (f.id === 'mastered_vocab') {
             const n = computeStats(profile.id).masteredCount;
             subtitle = n + ' / 1,000 語';
+          } else if (f.id === 'mistakes_vocab') {
+            const n = db.getMistakesNormalized(profile.id).filter(m => m.kind === 'vocab').length;
+            subtitle = n === 0 ? 'まだありません' : n + ' 語の復習';
+          } else if (f.id === 'mistakes_sentence') {
+            const n = db.getMistakesNormalized(profile.id).filter(m => m.kind === 'sentence').length;
+            subtitle = n === 0 ? 'まだありません' : n + ' 文の復習';
           } else if (f.id === 'mastered_compositions') {
             const n = getMasteredSentences(profile.id).length;
             subtitle = n + ' / ' + SENTENCES.length + ' 文';
@@ -2955,53 +3003,16 @@
         }),
       ),
 
-      // Achievements quick-access (learners only)
-      !isViewer && e('button', {
-        onClick: onOpenAchievements,
-        style: {
-          width: '100%', marginTop: 14, padding: '14px 16px',
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 12,
-        },
-      },
-        e('div', {
-          style: {
-            width: 40, height: 40, borderRadius: 12,
-            background: '#FAF0D9', color: '#D4AF37',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, border: '1px solid #D4AF37AA', flexShrink: 0,
-          }
-        }, '🏅'),
-        e('div', { style: { flex: 1 } },
-          e('div', {
-            style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }
-          }, 'バッジ'),
-          e('div', {
-            style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
-          }, earnedCount + ' / ' + ACHIEVEMENTS.length + ' 獲得'),
-        ),
-        e('div', { style: { color: C.sub, fontSize: 18 } }, '›'),
-      ),
-
-      // Family feed quick-access
+      // Family feed quick-access (text only, no decorative icons)
       e('button', {
         onClick: onOpenFeed,
         style: {
-          width: '100%', marginTop: 10, padding: '14px 16px',
+          width: '100%', marginTop: 12, padding: '14px 16px',
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+          borderRadius: 14, textAlign: 'left', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 12,
         },
       },
-        e('div', {
-          style: {
-            width: 40, height: 40, borderRadius: 12,
-            background: profile.color + '18', color: profile.color,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, border: '1px solid ' + profile.color + '44', flexShrink: 0,
-          }
-        }, '📰'),
         e('div', { style: { flex: 1 } },
           e('div', {
             style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }
@@ -3016,43 +3027,29 @@
   }
 
   function FeatureTile({ feature, accent, onClick, fullWidth, subtitle }) {
-    const [pressed, setPressed] = useState(false);
     const isPrimary = !!feature.primary;
     const sub = subtitle || feature.desc;
     return e('button', {
       onClick,
-      onPointerDown: () => setPressed(true),
-      onPointerUp:   () => setPressed(false),
-      onPointerLeave:() => setPressed(false),
       style: {
         gridColumn: fullWidth ? '1 / -1' : 'auto',
         background: isPrimary ? accent : C.card,
         color: isPrimary ? '#fff' : C.text,
         border: '1px solid ' + (isPrimary ? accent : C.line),
-        borderRadius: 18, padding: '18px 16px',
-        textAlign: 'left', minHeight: 96,
-        display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12,
-        boxShadow: pressed
-          ? '0 1px 2px rgba(42,37,32,0.06)'
-          : (isPrimary
-              ? '0 8px 22px ' + accent + '40'
-              : '0 4px 14px rgba(42,37,32,0.05), 0 1px 2px rgba(42,37,32,0.04)'),
-        transform: pressed ? 'scale(0.985)' : 'scale(1)',
-        transition: 'transform .15s ease, box-shadow .25s ease',
+        borderRadius: 14, padding: '16px 14px',
+        textAlign: 'left', minHeight: 86,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4,
+        cursor: 'pointer',
       }
     },
-      e('div', { style: { fontSize: 26, lineHeight: 1 } }, feature.emoji),
-      e('div', null,
-        e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
-        e('div', {
-          style: {
-            fontSize: 11, marginTop: 4, lineHeight: 1.4,
-            color: isPrimary ? 'rgba(255,255,255,0.85)' : C.sub,
-            fontFamily: SANS_UI, fontWeight: 600,
-            letterSpacing: '0.02em',
-          }
-        }, sub),
-      ),
+      e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
+      e('div', {
+        style: {
+          fontSize: 11, marginTop: 2, lineHeight: 1.4,
+          color: isPrimary ? 'rgba(255,255,255,0.85)' : C.sub,
+          fontFamily: SANS_UI, fontWeight: 600,
+        }
+      }, sub),
     );
   }
 
@@ -3286,7 +3283,7 @@
         return e('div', { className: 'flip-wrap', style: { marginBottom: 18 } },
           e('div', {
             className: 'flip-inner' + (flipped ? ' is-flipped' : ''),
-            style: { height: 320, cursor: 'pointer' },
+            style: { minHeight: 280, cursor: 'pointer' },
             onClick: () => setFlipped(f => !f),
           }, frontFace, backFace),
         );
@@ -3333,41 +3330,38 @@
     );
   }
 
-  // ---------- Today's 20 (SRS-driven session) ----------
-  // For demo we cap at 10 questions (we only have 30 vocab items). Will scale to
-  // 20 once the vocabulary master is expanded.
-  const DAILY_COUNT = 10;
+  // ---------- Today's 20 (mixed: vocab + sentences, with review-of-mastered) ----------
+  // Cap at 12 for now; the queue mixes vocab + sentence with ~1/3 already-mastered
+  // material so old learning isn't forgotten.
+  const DAILY_COUNT = 12;
 
   function Daily20({ profile, onBack }) {
-    const [bundle] = useState(() => srs.pickTodaysList(profile.id, DAILY_COUNT, profile.level));
+    const [bundle] = useState(() => srs.pickDaily20(profile.id, DAILY_COUNT, profile.level, profile.maxLevel));
     const [phase, setPhase]   = useState(bundle.items.length > 0 ? 'intro' : 'empty');
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
-    const [results, setResults]   = useState([]);  // [{ vocabId, isCorrect }]
-    const [unlockedCount, setUnlockedCount] = useState(0);
-    const [newBadges, setNewBadges] = useState([]);
+    const [results, setResults]   = useState([]);  // [{ kind, id, isCorrect }]
 
     const total   = bundle.items.length;
-    const current = bundle.items[index] || null;
+    const cur     = bundle.items[index] || null;
     const correct = results.filter(r => r.isCorrect).length;
 
     function record(isCorrect) {
-      const cur = bundle.items[index];
-      db.recordAnswer(profile.id, cur.id, isCorrect);
+      const c = bundle.items[index];
+      if (c.kind === 'vocab')         db.recordAnswer(profile.id, c.id, isCorrect);
+      else if (c.kind === 'sentence') db.recordSentence(profile.id, c.id, isCorrect);
       if (isCorrect) { soundCorrect(); hapticTap(); }
       else           { soundWrong();   hapticBuzz(); }
-      const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
-      setResults(newResults);
+      const next = results.concat([{ kind: c.kind, id: c.id, isCorrect }]);
+      setResults(next);
       if (index + 1 >= total) {
-        const correctCount = newResults.filter(r=>r.isCorrect).length;
+        const correctCount = next.filter(r => r.isCorrect).length;
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
-        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const badges = db.evaluateAchievements(profile.id, {
+        db.evaluateUnlocks(profile.id, { sessionCompleted: true });
+        db.evaluateAchievements(profile.id, {
           daily20Done: true, perfectSession: correctCount === total && total > 0,
         });
-        setNewBadges(badges);
         db.pushFeed(profile.id, 'session_done', { feature: 'daily20', correct: correctCount, total, accuracy: acc });
-        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -3376,7 +3370,6 @@
       setRevealed(false);
     }
 
-    // Top bar (back + progress) — shared across phases
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
     },
@@ -3391,47 +3384,42 @@
 
     // ============ INTRO ============
     if (phase === 'intro') {
-      return e('div', { style: pageStyle, },
+      return e('div', { style: pageStyle },
         topBar,
-        e('div', { style: { padding: '32px 4px 20px' } },
-          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🎯'),
+        e('div', { style: { padding: '24px 4px 18px' } },
           e('div', {
-            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.15 }
-          }, "Today's Practice"),
+            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, '今日の20問'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
-            total + ' 問の準備ができました。'),
+            '単語と英作文を ' + total + ' 問。\n復習も少しまぜています。'),
         ),
         e(ProgressChips, { profile, style: { marginBottom: 16 } }),
         e('div', {
           style: {
-            background: C.softer, border: '1px solid ' + C.line,
-            borderRadius: 18, padding: '18px 20px', marginBottom: 22,
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '14px 18px', marginBottom: 22,
+            display: 'flex', justifyContent: 'space-between', textAlign: 'center',
           }
         },
-          e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-            e('div', null,
-              e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em' } }, 'DUE'),
-              e('div', { style: { fontSize: 24, fontWeight: 700, color: C.ocean, fontFamily: SERIF, marginTop: 2 } }, bundle.dueCount),
-            ),
-            e('div', { style: { width: 1, alignSelf: 'stretch', background: C.line, margin: '0 16px' } }),
-            e('div', null,
-              e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em' } }, 'NEW'),
-              e('div', { style: { fontSize: 24, fontWeight: 700, color: C.accent, fontFamily: SERIF, marginTop: 2 } }, bundle.freshCount),
-            ),
-            e('div', { style: { width: 1, alignSelf: 'stretch', background: C.line, margin: '0 16px' } }),
-            e('div', null,
-              e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em' } }, 'TOTAL'),
-              e('div', { style: { fontSize: 24, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, total),
-            ),
+          e('div', null,
+            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '単語'),
+            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.vocabCount),
+          ),
+          e('div', null,
+            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '英作文'),
+            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.sentenceCount),
+          ),
+          e('div', null,
+            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '復習'),
+            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.reviewCount),
           ),
         ),
         e('button', {
           onClick: () => setPhase('study'),
           style: {
-            width: '100%', padding: '16px 0', borderRadius: 16,
+            width: '100%', padding: '16px 0', borderRadius: 14,
             background: profile.color, color: '#fff',
             fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
-            boxShadow: '0 8px 22px ' + profile.color + '55',
           }
         }, '始める'),
       );
@@ -3444,16 +3432,14 @@
         e('div', {
           style: {
             background: C.softer, border: '1px dashed ' + C.line,
-            borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+            borderRadius: 14, padding: '32px 20px', textAlign: 'center', color: C.sub,
             marginTop: 12,
           }
         },
-          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌙'),
-          e('div', {
-            style: { fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 6 }
-          }, '今日のDueはありません'),
+          e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+            '出題できる問題がありません'),
           e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
-            '明日また会いましょう。\n単語学習で復習することもできます。'),
+            'もう少し学習を進めると、ここに復習も加わります。'),
         ),
       );
     }
@@ -3464,7 +3450,15 @@
     }
 
     // ============ STUDY ============
-    if (!current) return null;
+    if (!cur) return null;
+    const it      = cur.item;
+    const isVocab = cur.kind === 'vocab';
+    const promptJa = it.ja;
+    const answerEn = it.en;
+    const exEn = isVocab ? it.exEn : null;
+    const exJa = isVocab ? it.exJa : null;
+    const kindLabel = isVocab ? '単語' : '英作文';
+
     return e('div', { style: pageStyle },
       topBar,
       // Progress bar
@@ -3474,20 +3468,15 @@
         }
       },
         e('div', {
-          style: {
-            width: ((index) / total * 100) + '%',
-            height: '100%', background: profile.color,
-            transition: 'width .35s ease',
-          }
+          style: { width: ((index) / total * 100) + '%', height: '100%', background: profile.color }
         }),
       ),
       // Quiz card
       e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 24, padding: '26px 22px', marginBottom: 18,
-          boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
-          minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
+          borderRadius: 18, padding: '22px 20px', marginBottom: 18,
+          minHeight: 280, display: 'flex', flexDirection: 'column', gap: 16,
         }
       },
         // Header chips
@@ -3495,30 +3484,34 @@
           e('span', {
             style: {
               fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-              background: profile.color + '1A', color: profile.color,
+              background: profile.color + '1A', color: profile.color, fontFamily: SANS_UI,
             }
-          }, 'L' + current.level),
+          }, kindLabel),
           e('span', {
             style: {
               fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-              background: C.softer, color: C.sub,
+              background: C.softer, color: C.sub, fontFamily: SANS_UI,
             }
-          }, current.pos),
+          }, 'L' + (it.level || 1)),
         ),
         // Prompt: Japanese
-        e('div', { style: { textAlign: 'center', padding: '8px 0' } },
-          e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
-            '日本語'),
-          e('div', { style: { fontSize: 44, fontWeight: 800, color: C.text, lineHeight: 1.3 } }, current.ja),
+        e('div', { style: { padding: '4px 0' } },
+          e('div', {
+            style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8, fontFamily: SANS_UI }
+          }, '日本語'),
+          e('div', {
+            style: { fontSize: isVocab ? 38 : 26, fontWeight: 800, color: C.text, lineHeight: 1.4 }
+          }, promptJa),
         ),
         // Reveal area
         !revealed
           ? e('button', {
               onClick: () => setRevealed(true),
               style: {
-                marginTop: 'auto', padding: '14px 0', borderRadius: 14,
+                marginTop: 'auto', padding: '14px 0', borderRadius: 12,
                 background: C.softer, color: profile.color,
                 fontSize: 14, fontWeight: 700, border: '1px solid ' + profile.color + '33',
+                fontFamily: SANS_UI,
               }
             }, '答えを見る')
           : e('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 } },
@@ -3529,30 +3522,31 @@
                 }
               },
                 e('div', {
-                  style: { fontFamily: SERIF, fontSize: 44, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.2 }
-                }, current.en),
+                  style: { fontFamily: SERIF, fontSize: isVocab ? 38 : 24, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.3 }
+                }, answerEn),
                 e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
+                  onClick: (ev) => { ev.stopPropagation(); speak(answerEn); },
                   style: {
-                    width: 68, height: 68, borderRadius: 999, fontSize: 32,
+                    width: 56, height: 56, borderRadius: 999, fontSize: 24,
                     background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
                   }
                 }, '🔊'),
               ),
-              e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+              isVocab && exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                 e('div', {
-                  style: { flex: 1, fontSize: 23, fontWeight: 700, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
-                }, current.exEn),
+                  style: { flex: 1, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.5, fontStyle: 'italic', fontFamily: SERIF }
+                }, exEn),
                 e('button', {
-                  onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
+                  onClick: (ev) => { ev.stopPropagation(); speak(exEn); },
                   style: {
-                    width: 60, height: 60, borderRadius: 999, fontSize: 28,
+                    width: 44, height: 44, borderRadius: 999, fontSize: 18,
                     background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
                   }
                 }, '🔊'),
               ),
-              e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
-                current.exJa),
+              isVocab && exJa && e('div', {
+                style: { fontSize: 14, color: C.sub, lineHeight: 1.6 }
+              }, exJa),
             ),
       ),
       // Action buttons (only after reveal)
@@ -3560,18 +3554,19 @@
         e('button', {
           onClick: () => record(false),
           style: {
-            flex: 1, padding: '15px 0', borderRadius: 14,
+            flex: 1, padding: '15px 0', borderRadius: 12,
             background: C.danger + '14', color: C.danger,
             fontWeight: 700, fontSize: 15, border: '1px solid ' + C.danger + '33',
+            fontFamily: SANS_UI,
           }
         }, 'わからなかった'),
         e('button', {
           onClick: () => record(true),
           style: {
-            flex: 1, padding: '15px 0', borderRadius: 14,
+            flex: 1, padding: '15px 0', borderRadius: 12,
             background: C.success, color: '#fff',
             fontWeight: 700, fontSize: 15, border: '1px solid ' + C.success,
-            boxShadow: '0 6px 14px ' + C.success + '40',
+            fontFamily: SANS_UI,
           }
         }, '知ってた'),
       ),
@@ -3647,12 +3642,14 @@
     return null;
   }
 
-  function MistakeReview({ profile, onBack }) {
-    // Build the deduped list once on mount, supporting all 3 kinds.
+  function MistakeReview({ profile, onBack, kindFilter }) {
+    // Build the deduped list once on mount, supporting all 3 kinds. If
+    // kindFilter is set, only items of that kind are kept.
     const initialList = useMemo(() => {
       const ms = db.getMistakesNormalized(profile.id);
       const seen = new Set(); const out = [];
       for (const m of ms) {
+        if (kindFilter && m.kind !== kindFilter) continue;
         const key = m.kind + ':' + m.id;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -3660,7 +3657,11 @@
         if (item) out.push({ item, at: m.at });
       }
       return out;
-    }, [profile.id]);
+    }, [profile.id, kindFilter]);
+
+    const titleLabel = kindFilter === 'vocab'   ? '間違えた単語'
+                     : kindFilter === 'sentence' ? '間違えた英作文'
+                     : '間違い復習';
 
     const [phase, setPhase]     = useState('list');     // 'list' | 'study' | 'done'
     const [queue, setQueue]     = useState([]);
@@ -3718,7 +3719,7 @@
       e('button', { onClick: onBack,
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
       }, '‹'),
-      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '間違い復習'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, titleLabel),
       phase === 'study' && e('div', {
         style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
       }, (index + 1) + ' / ' + queue.length),
@@ -3730,29 +3731,26 @@
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '20px 4px 18px' } },
-          e('div', { style: { fontSize: 32, marginBottom: 10 } }, '🔁'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, 'Review your slips'),
+          }, titleLabel),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
             empty
               ? 'まだ間違いはありません。'
-              : initialList.length + ' 件の間違いをためました。'),
+              : initialList.length + ' 件をためました。'),
         ),
-        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
         empty
           ? e('div', {
               style: {
                 background: C.softer, border: '1px dashed ' + C.line,
-                borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+                borderRadius: 14, padding: '32px 20px', textAlign: 'center', color: C.sub,
                 marginTop: 8,
               }
             },
-              e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
               e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
                 'まだ間違いがありません'),
               e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
-                '今日の20問や単語学習で間違えた語が、ここに集まります。'),
+                '練習で間違えた問題が、ここに集まります。'),
             )
           : e('div', null,
               e('button', {
@@ -3887,7 +3885,7 @@
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
-            }, SCENE_EMOJIS[current.scene] + ' ' + SCENE_LABELS[current.scene]),
+            }, SCENE_LABELS[current.scene]),
           ),
           e('div', { style: { textAlign: 'center', padding: '8px 0' } },
             e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
@@ -5382,22 +5380,20 @@
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '設定'),
         e('button', {
-          onClick: () => { try { window.location.reload(); } catch {} },
+          onClick: hardReload,
           title: 'アプリを再読み込み',
           'aria-label': '再読み込み',
           style: {
-            width: 36, height: 36, borderRadius: 999,
+            padding: '7px 12px', borderRadius: 999,
             background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 14, color: C.sub,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 12, color: C.sub, fontWeight: 700, fontFamily: SANS_UI,
             cursor: 'pointer',
           },
-        }, '🔄'),
+        }, '再読み込み'),
       ),
 
       // Header
       e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '⚙️'),
         e('div', {
           style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, '設定'),
@@ -5724,45 +5720,6 @@
             paddingLeft: 4,
           }
         }, 'この端末の全データ（進捗・間違い・統計・応援メッセージ・名前）を消去します。'),
-      ),
-    );
-  }
-
-  // ---------- BadgeBanner (shown on session-done when achievements just earned) ----------
-  function BadgeBanner({ ids }) {
-    if (!ids || ids.length === 0) return null;
-    return e('div', {
-      style: {
-        background: 'linear-gradient(135deg, #FAF0D9 0%, #F2DCA8 100%)',
-        border: '1px solid #D4AF37',
-        borderRadius: 16, padding: '14px 16px', marginBottom: 16,
-        boxShadow: '0 6px 16px rgba(212, 175, 55, 0.28)',
-      }
-    },
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-        e('div', { style: { fontSize: 20 } }, '🏅'),
-        e('div', {
-          style: { fontSize: 13, fontWeight: 700, color: '#7A5A1A', letterSpacing: '0.04em' }
-        }, ids.length + ' 個の新しいバッジを獲得！'),
-      ),
-      e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-        ids.map(id => {
-          const a = ACHIEVEMENT_BY_ID[id];
-          if (!a) return null;
-          return e('div', {
-            key: id,
-            style: {
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '5px 10px', borderRadius: 999,
-              background: 'rgba(255,255,255,0.6)',
-              border: '1px solid #D4AF3766',
-              fontSize: 12, color: '#7A5A1A',
-            }
-          },
-            e('span', { style: { fontSize: 14 } }, a.icon),
-            e('span', { style: { fontWeight: 600 } }, a.label),
-          );
-        })
       ),
     );
   }
@@ -6367,42 +6324,40 @@
 
     // ============ INTRO / LIST ============
     if (phase === 'intro' || phase === 'empty') {
-      const sceneCounts = { school: 0, cafeteria: 0, friends: 0 };
+      const sceneCounts = {};
       DAILY_PHRASES.forEach(p => { sceneCounts[p.scene] = (sceneCounts[p.scene] || 0) + 1; });
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '20px 4px 18px' } },
-          e('div', { style: { fontSize: 32, marginBottom: 8 } }, '💬'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, 'Daily English'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-            '学校・食事・友達との場面ですぐ使える表現。'),
+            '学校・食事・友達・買い物の場面ですぐ使える表現。'),
         ),
-        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
-        // Filter chips
+        // Filter chips (English labels, no icons)
         e('div', {
           style: {
-            display: 'flex', gap: 8, marginBottom: 16,
-            overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch',
+            display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap',
           }
         },
-          ['all', 'school', 'cafeteria', 'friends'].map(s => {
+          ['all'].concat(SCENE_ORDER).map(s => {
             const isActive = s === filter;
-            const label = s === 'all' ? 'すべて' : (SCENE_EMOJIS[s] + ' ' + SCENE_LABELS[s]);
+            const label = s === 'all' ? 'All' : SCENE_LABELS[s];
             const count = s === 'all' ? DAILY_PHRASES.length : (sceneCounts[s] || 0);
             return e('button', {
               key: s, onClick: () => setFilter(s),
               style: {
                 padding: '8px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
-                flexShrink: 0, border: '1px solid ' + (isActive ? profile.color : C.line),
+                border: '1px solid ' + (isActive ? profile.color : C.line),
                 background: isActive ? profile.color : C.card,
                 color: isActive ? '#fff' : C.sub,
+                fontFamily: SANS_UI,
               }
             }, label + ' (' + count + ')');
           })
         ),
-        // Browse list (small preview cards)
+        // Browse list — show ALL phrases for this filter, top to bottom
         filtered.length === 0
           ? e('div', {
               style: {
@@ -6413,21 +6368,33 @@
           : e('div', {
               style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }
             },
-              filtered.slice(0, 8).map(p => e('div', {
+              filtered.map(p => e('div', {
                 key: p.id,
                 style: {
                   background: C.card, border: '1px solid ' + C.line,
                   borderRadius: 14, padding: '12px 14px',
                 }
               },
-                e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, marginBottom: 4 } },
-                  SCENE_EMOJIS[p.scene] + ' ' + SCENE_LABELS[p.scene]),
+                e('div', {
+                  style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 4,
+                           letterSpacing: '0.08em', fontFamily: SANS_UI }
+                }, SCENE_LABELS[p.scene]),
                 e('div', { style: { fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4, lineHeight: 1.4 } }, p.ja),
-                e('div', { style: { fontSize: 14, color: C.sub, fontFamily: SERIF, fontStyle: 'italic', lineHeight: 1.4 } }, p.en),
+                e('div', {
+                  style: { fontSize: 14, color: C.sub, fontFamily: SERIF, fontStyle: 'italic',
+                           lineHeight: 1.4, display: 'flex', alignItems: 'center', gap: 8 }
+                },
+                  e('span', { style: { flex: 1 } }, p.en),
+                  e('button', {
+                    onClick: (ev) => { ev.stopPropagation(); speak(p.en); },
+                    'aria-label': '発音',
+                    style: {
+                      width: 32, height: 32, borderRadius: 999, fontSize: 14,
+                      background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
+                    }
+                  }, '🔊'),
+                ),
               )),
-              filtered.length > 8 && e('div', {
-                style: { fontSize: 12, color: C.sub, textAlign: 'center', padding: '8px 0' }
-              }, '他に ' + (filtered.length - 8) + ' 件…')
             ),
         // Start practice
         e('button', {
@@ -6437,7 +6404,6 @@
             width: '100%', padding: '16px 0', borderRadius: 16,
             background: profile.color, color: '#fff',
             fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
-            boxShadow: '0 8px 22px ' + profile.color + '55',
             opacity: filtered.length === 0 ? 0.4 : 1,
             cursor: filtered.length === 0 ? 'default' : 'pointer',
           }
@@ -6487,7 +6453,7 @@
               fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999,
               background: profile.color + '1A', color: profile.color,
             }
-          }, SCENE_EMOJIS[current.scene] + ' ' + SCENE_LABELS[current.scene]),
+          }, SCENE_LABELS[current.scene]),
         ),
         // Japanese prompt
         e('div', { style: { padding: '4px 0 8px' } },
