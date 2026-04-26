@@ -8755,7 +8755,7 @@
         };
         r.onerror = (ev) => {
           let m = 'マイクが使えませんでした。';
-          if (ev && ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+          if (ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed')) {
             m = 'マイクが許可されていません。ブラウザの設定で許可してください。';
           } else if (ev && ev.error === 'no-speech') {
             m = '声が聞こえませんでした。もう一度試してください。';
@@ -8781,9 +8781,18 @@
       }
     }
     function stopVoice() {
+      // iOS Safari is flaky about firing `onend` after `stop()`, so we
+      // (a) flip the UI state immediately so the button reads "音声"
+      // again, and (b) belt-and-braces both stop() and abort() to make
+      // sure the mic actually releases. Clearing the ref first prevents
+      // a delayed onend from confusing a freshly-started session.
       const r = recognitionRef.current;
-      if (r) { try { r.stop(); } catch {} }
-      // r.onend will flip recording to false
+      recognitionRef.current = null;
+      setRecording(false);
+      if (r) {
+        try { r.stop(); }  catch {}
+        try { r.abort(); } catch {}
+      }
     }
     function toggleVoice() {
       if (recording) stopVoice();
@@ -8889,12 +8898,8 @@
                   fontSize: 13, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
                   cursor: (busy || recording) ? 'default' : 'pointer',
                   opacity: (busy || recording) ? 0.5 : 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }
-              },
-                e('span', { style: { fontSize: 16 } }, '📷'),
-                e('span', null, '撮影'),
-              ),
+              }, '撮影'),
               e('button', {
                 onClick: () => { if (libraryRef.current) libraryRef.current.click(); },
                 disabled: busy || recording,
@@ -8904,12 +8909,8 @@
                   fontSize: 13, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
                   cursor: (busy || recording) ? 'default' : 'pointer',
                   opacity: (busy || recording) ? 0.5 : 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }
-              },
-                e('span', { style: { fontSize: 16 } }, '🖼'),
-                e('span', null, 'ライブラリ'),
-              ),
+              }, '写真'),
               e('button', {
                 onClick: toggleVoice,
                 disabled: busy,
@@ -8921,12 +8922,8 @@
                   color: recording ? C.danger : C.text, fontFamily: SANS_UI,
                   cursor: busy ? 'default' : 'pointer',
                   opacity: busy ? 0.5 : 1,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }
-              },
-                e('span', { style: { fontSize: 16 } }, '🎤'),
-                e('span', null, recording ? '録音中' : '音声'),
-              ),
+              }, recording ? '停止' : '音声'),
             ),
             recording && e('div', {
               style: {
@@ -8934,7 +8931,7 @@
                 fontWeight: 700, letterSpacing: '0.06em',
                 marginBottom: 10, paddingLeft: 4,
               }
-            }, '🎙 話してください…（もう一度タップで止まります）'),
+            }, '話してください…（もう一度タップで止まります）'),
 
             e('button', {
               onClick: translateNow,
