@@ -243,6 +243,33 @@
     mother: { cheers: 38 },
   };
 
+  // ---------- Dummy support messages (mother → children, until Supabase) ----------
+  // toMemberId === null means the message is addressed to the whole family.
+  // unlockedAt === null means the message is still locked; the unlockCondition
+  // text is shown to recipients to motivate them.
+  function buildDummyMessages() {
+    const now = Date.now();
+    const hr = (h) => new Date(now - h * 3600_000).toISOString();
+    return [
+      { id: 'm1', fromMemberId: 'mother', toMemberId: null,    message: '今日もみんなお疲れさま💐\nがんばってる姿、ちゃんと見てるよ。',                imageHue: 'rose',   createdAt: hr(14), unlockedAt: hr(14), unlockCondition: 'open_now' },
+      { id: 'm2', fromMemberId: 'mother', toMemberId: 'son2',  message: '練習試合、応援してるよ⚽\nボール一個一個、丁寧にね。',                          imageHue: 'orange', createdAt: hr(2),  unlockedAt: hr(2),  unlockCondition: 'open_now' },
+      { id: 'm3', fromMemberId: 'mother', toMemberId: 'son3',  message: '今日の20問を全部正解したら\nおいしいおやつが待ってます🍪',                    imageHue: 'sun',    createdAt: hr(1),  unlockedAt: null,   unlockCondition: 'session_complete' },
+      { id: 'm4', fromMemberId: 'mother', toMemberId: 'son1',  message: '今週の目標、もう半分だね。\nこの調子で🎯',                                   imageHue: 'ocean',  createdAt: hr(28), unlockedAt: hr(28), unlockCondition: 'open_now' },
+    ];
+  }
+
+  const REACT_EMOJIS = ['❤️', '🙏', '🤗', '🔥', '👍'];
+
+  function reactionsKey(memberId)  { return 'hfe_reactions_v1_' + memberId; }
+  function loadReactions(memberId) {
+    try { return JSON.parse(localStorage.getItem(reactionsKey(memberId)) || '{}'); }
+    catch { return {}; }
+  }
+  function saveReactions(memberId, obj) {
+    try { localStorage.setItem(reactionsKey(memberId), JSON.stringify(obj)); }
+    catch { /* ignore */ }
+  }
+
   // Aggregate the current user's real stats from localStorage vocab progress.
   function computeStats(memberId) {
     const state = db.load(memberId);
@@ -299,7 +326,8 @@
       if (route.feature === 'vocab')    return e(VocabBrowse,   { profile, onBack: back });
       if (route.feature === 'daily20')  return e(Daily20,       { profile, onBack: back });
       if (route.feature === 'mistakes') return e(MistakeReview, { profile, onBack: back });
-      if (route.feature === 'ranking')  return e(FamilyRanking, { profile, onBack: back });
+      if (route.feature === 'ranking')  return e(FamilyRanking,   { profile, onBack: back });
+      if (route.feature === 'support')  return e(SupportMessages, { profile, onBack: back });
       return e(ComingSoon, { profile, feature: feat, onBack: back });
     }
     return null;
@@ -1618,6 +1646,210 @@
       ),
     );
   }
+
+  // ---------- Support Messages (mother's reward box, dummy data) ----------
+  function SupportMessages({ profile, onBack }) {
+    const isMother = profile.role === 'viewer';
+    const allMessages = useMemo(buildDummyMessages, []);
+
+    // Recipients see only their messages or family-wide; mother sees all.
+    const visible = useMemo(() => {
+      const list = isMother
+        ? allMessages
+        : allMessages.filter(m => m.toMemberId === null || m.toMemberId === profile.id);
+      // Sort: unlocked first (newest first), locked at the bottom (newest first).
+      return list.slice().sort((a, b) => {
+        const au = !!a.unlockedAt, bu = !!b.unlockedAt;
+        if (au !== bu) return au ? -1 : 1;
+        return (b.createdAt || '').localeCompare(a.createdAt || '');
+      });
+    }, [allMessages, isMother, profile.id]);
+
+    const [reactions, setReactions] = useState(() => loadReactions(profile.id));
+
+    function react(messageId, emoji) {
+      const next = Object.assign({}, reactions);
+      if (next[messageId] === emoji) delete next[messageId]; else next[messageId] = emoji;
+      setReactions(next);
+      saveReactions(profile.id, next);
+    }
+
+    const motherProfile = PROFILES.find(p => p.id === 'mother');
+    const lookupMember  = (id) => PROFILES.find(p => p.id === id);
+
+    const hueToColor = {
+      rose: C.rose, orange: C.accent, sun: C.sun, ocean: C.ocean, forest: C.forest,
+    };
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '応援メッセージ'),
+      ),
+
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '💌'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, 'Cheer Mail'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+          isMother
+            ? 'みんなへの応援を、ためたり開けてもらったり。'
+            : motherProfile.name + 'からの一言メッセージ。'),
+      ),
+
+      // Mother's compose CTA (placeholder)
+      isMother && e('button', {
+        onClick: () => alert('応援メッセージ作成は次のフェーズで実装します'),
+        style: {
+          width: '100%', padding: '14px 0', borderRadius: 14,
+          background: motherProfile.color, color: '#fff',
+          fontSize: 14, fontWeight: 700, marginBottom: 18,
+          boxShadow: '0 6px 16px ' + motherProfile.color + '55',
+        }
+      }, '＋ 新しい応援を送る'),
+
+      // Empty state
+      visible.length === 0 && e('div', {
+        style: {
+          background: C.softer, border: '1px dashed ' + C.line,
+          borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+        }
+      },
+        e('div', { style: { fontSize: 36, marginBottom: 10 } }, '📭'),
+        e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+          'まだメッセージはありません'),
+      ),
+
+      // Messages
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+        visible.map(m => {
+          const sender = lookupMember(m.fromMemberId) || motherProfile;
+          const recipient = m.toMemberId ? lookupMember(m.toMemberId) : null;
+          const isLocked = !m.unlockedAt;
+          const accent = hueToColor[m.imageHue] || sender.color;
+          const myReaction = reactions[m.id];
+
+          return e('div', {
+            key: m.id,
+            style: {
+              background: C.card,
+              border: '1px solid ' + (isLocked ? C.line : accent + '33'),
+              borderRadius: 20, overflow: 'hidden',
+              boxShadow: isLocked ? 'none' : '0 6px 18px rgba(42,37,32,0.05)',
+              opacity: isLocked && isMother ? 0.85 : 1,
+            }
+          },
+            // Image area / hue band
+            e('div', {
+              style: {
+                height: 88,
+                background: 'linear-gradient(135deg, ' + accent + ' 0%, ' + accent + 'AA 100%)',
+                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }
+            },
+              e('div', { style: { fontSize: 36, opacity: isLocked ? 0.55 : 0.9 } },
+                isLocked ? '🔒' : '💐'),
+              isLocked && e('div', {
+                style: {
+                  position: 'absolute', bottom: 8, right: 10, fontSize: 9,
+                  color: '#fff', background: 'rgba(0,0,0,0.35)',
+                  padding: '3px 8px', borderRadius: 999, fontWeight: 700, letterSpacing: '0.08em',
+                }
+              }, 'LOCKED'),
+            ),
+
+            // Body
+            e('div', { style: { padding: '14px 16px' } },
+              // From / to row
+              e('div', {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  marginBottom: 10, fontSize: 12, color: C.sub,
+                }
+              },
+                e('span', { style: { fontSize: 16 } }, sender.emoji),
+                e('span', { style: { fontWeight: 600, color: C.text } }, sender.name),
+                e('span', null, '→'),
+                e('span', { style: { fontWeight: 600, color: C.text } },
+                  recipient ? recipient.name : '家族みんな'),
+                e('span', { style: { flex: 1 } }),
+                e('span', { style: { fontSize: 11 } }, timeAgo(m.createdAt)),
+              ),
+
+              // Content
+              isLocked
+                ? e('div', null,
+                    e('div', {
+                      style: {
+                        fontSize: 13, color: C.sub, lineHeight: 1.6,
+                        padding: '12px 14px',
+                        background: C.softer, borderRadius: 12,
+                        border: '1px dashed ' + C.line,
+                      }
+                    },
+                      e('div', { style: { fontWeight: 700, color: C.text, marginBottom: 4 } },
+                        unlockLabel(m.unlockCondition)),
+                      e('div', null, '達成したら自動で開きます。'),
+                    ),
+                  )
+                : e('div', null,
+                    e('div', {
+                      style: {
+                        fontSize: 15, color: C.text, lineHeight: 1.7,
+                        whiteSpace: 'pre-wrap', marginBottom: 12,
+                      }
+                    }, m.message),
+
+                    // Reactions (recipients pick; mother sees readonly)
+                    !isMother && e('div', {
+                      style: { display: 'flex', gap: 8, flexWrap: 'wrap' }
+                    },
+                      REACT_EMOJIS.map(em => e('button', {
+                        key: em, onClick: () => react(m.id, em),
+                        style: {
+                          padding: '7px 12px', borderRadius: 999, fontSize: 14,
+                          background: myReaction === em ? accent + '22' : C.softer,
+                          border: '1px solid ' + (myReaction === em ? accent : C.line),
+                          color: C.text, transition: 'all .15s ease',
+                          transform: myReaction === em ? 'scale(1.05)' : 'scale(1)',
+                        }
+                      }, em)),
+                    ),
+                    isMother && myReactionFromOthers(m.id, profile.id) /* always null in this prototype, but keeps the API ready */,
+                  ),
+            ),
+          );
+        }),
+      ),
+
+      // Footer note about future phases
+      e('div', {
+        style: {
+          marginTop: 22, fontSize: 11, color: C.sub, textAlign: 'center',
+          padding: '12px 16px', background: C.softer, borderRadius: 12, lineHeight: 1.6,
+        }
+      },
+        '※ 写真添付・自動開封・通知は次のフェーズで実装します。'),
+    );
+  }
+
+  function unlockLabel(cond) {
+    switch (cond) {
+      case 'session_complete': return '🎯 今日の20問をクリアで開く';
+      case 'streak_3':         return '🔥 3日連続でクリアで開く';
+      case 'streak_7':         return '⭐ 7日連続でクリアで開く';
+      default:                 return '🔒 開封条件あり';
+    }
+  }
+
+  // Stub for future Supabase-backed cross-member reaction display.
+  function myReactionFromOthers(_messageId, _memberId) { return null; }
 
   // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
   function ComingSoon({ profile, feature, onBack }) {
