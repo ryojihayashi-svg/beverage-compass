@@ -5249,7 +5249,12 @@
     if (entry.kind === 'vocab') {
       const v = VOCAB.find(x => x.id === entry.id);
       if (!v) return null;
-      return { kind: 'vocab', id: v.id, ja: v.ja, en: v.en, exEn: v.exEn, exJa: v.exJa, level: v.level, pos: v.pos };
+      // Pass through inline syn / usage so idioms (which carry these on the
+      // VOCAB entry itself) keep their disambiguation hints in the review
+      // card. Plain vocab still falls back to VOCAB_SYNONYMS / VOCAB_USAGE
+      // by id at render time.
+      return { kind: 'vocab', id: v.id, ja: v.ja, en: v.en, exEn: v.exEn, exJa: v.exJa,
+               level: v.level, pos: v.pos, syn: v.syn, usage: v.usage };
     }
     if (entry.kind === 'sentence') {
       const s = SENTENCE_BY_ID[entry.id];
@@ -5326,6 +5331,13 @@
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = newResults.length > 0 ? Math.round(correctCount * 100 / newResults.length) : 0;
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
+        // Stamp this session into the activity log so 間違い克服 shows up
+        // alongside vocab / composition / random_test / mctest etc.
+        db.pushEvent(profile.id, {
+          kind: 'overcome',
+          total: newResults.length,
+          correct: correctCount,
+        });
         setPhase('done');
         return;
       }
@@ -5584,6 +5596,81 @@
                 ),
                 current.kind === 'vocab' && current.exJa && e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
                   current.exJa),
+
+                // Vocab-only: 類義語 (similar words) — same chip style as
+                // the single-word study card, so the look stays consistent.
+                current.kind === 'vocab' && (function () {
+                  const list = current.syn || getVocabSynonyms(current.id);
+                  if (!list || list.length === 0) return null;
+                  return e('div', null,
+                    e('div', {
+                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                               textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                    }, '類義語 (Similar)'),
+                    e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                      list.map((w, i) => e('div', {
+                        key: 'syn_' + i,
+                        style: {
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          padding: '4px 10px 4px 12px', borderRadius: 999,
+                          background: C.softer, border: '1px solid ' + C.line,
+                          fontSize: 13, color: C.text, fontFamily: SERIF, fontWeight: 600,
+                        }
+                      },
+                        e('span', null, w),
+                        e(SpeakerBtn, { onClick: () => speak(w), color: profile.color, size: 24 }),
+                      )),
+                    ),
+                  );
+                })(),
+
+                // Vocab-only: 使い分け (usage / disambiguation) — explains
+                // when to pick this word over its synonyms. Same panel
+                // style as the study card.
+                current.kind === 'vocab' && (function () {
+                  const note = current.usage || getVocabUsage(current.id);
+                  if (!note) return null;
+                  return e('div', null,
+                    e('div', {
+                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                               textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                    }, '使い分け (Usage)'),
+                    e('div', {
+                      style: {
+                        background: C.softer, border: '1px solid ' + C.line,
+                        borderRadius: 12, padding: '12px 14px',
+                        fontSize: 13, color: C.text, lineHeight: 1.7,
+                      }
+                    }, note),
+                  );
+                })(),
+
+                // Vocab-only: 活用 (past tense / past participle) for verbs
+                // and idioms.
+                current.kind === 'vocab' && (function () {
+                  const conj = getConjugation(current);
+                  if (!conj) return null;
+                  const samePast = conj.past === current.en;
+                  const samePp   = conj.pp   === current.en;
+                  return e('div', null,
+                    e('div', {
+                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                               textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                    }, '活用 (Past tense)'),
+                    e('div', {
+                      style: {
+                        fontSize: 14, color: C.text, lineHeight: 1.6,
+                        fontFamily: SERIF, fontWeight: 600,
+                      }
+                    },
+                      e('span', null, '過去形: '),
+                      e('span', { style: samePast ? { color: C.sub, fontStyle: 'italic' } : null }, conj.past),
+                      e('span', { style: { color: C.sub, margin: '0 8px' } }, '/'),
+                      e('span', null, '過去分詞: '),
+                      e('span', { style: samePp ? { color: C.sub, fontStyle: 'italic' } : null }, conj.pp),
+                    ),
+                  );
+                })(),
               ),
         ),
         revealed && e('div', { style: { display: 'flex', gap: 10 } },
