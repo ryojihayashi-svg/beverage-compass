@@ -2548,49 +2548,49 @@
       title: 'in / on / under',
       subtitle: '中・上・下',
       icon: '📦',
-      todayQ: '「ボールはどこ？」を、英語ではどう言う？',
-      imagery: '中なら in、(上に乗っているなら) on、下なら under。3つの絵で覚えよう。',
-      rule: 'in =「中」 / on =「面に乗っている」 / under =「真下」',
+      todayQ: 'ボールは箱の「中」？「上」？「下」？ 英語では？',
+      imagery: '「ボール」と「箱」はずっと同じ。in / on / under の 3 つだけ入れ替わって、ボールが箱のどこにあるかを表します。',
+      rule: 'in =「中」 / on =「上にのっている」 / under =「真下」',
       examples: [
-        { en: 'The cat is in the box.',     ja: 'ねこは箱の中にいます。' },
-        { en: 'The book is on the table.',  ja: '本はテーブルの上にあります。' },
-        { en: 'The ball is under the chair.', ja: 'ボールはいすの下にあります。' },
+        { en: 'The ball is in the box.',    ja: 'ボールは箱の中にあります。' },
+        { en: 'The ball is on the box.',    ja: 'ボールは箱の上にあります。' },
+        { en: 'The ball is under the box.', ja: 'ボールは箱の下にあります。' },
       ],
       points: [
-        'in は「囲まれている中」のイメージ。バッグの中、部屋の中、車の中。',
-        'on は「表面にくっついている」イメージ。テーブルの上だけでなく、壁にかかっている絵も on。',
-        'under は「真下」のイメージ。机の下、橋の下。',
+        'in は「囲まれている中」。箱の中、バッグの中、部屋の中、車の中。',
+        'on は「面にくっついている」。箱の上だけでなく、壁にかかっている絵も on。',
+        'under は「真下」。箱の下、机の下、橋の下。',
       ],
       quiz: [
         {
-          q: 'The cat is ___ the bed. (ねこはベッドの上で寝ています)',
-          choices: ['in', 'on', 'under'],
-          answer: 1,
-          explain: 'ベッドの「上」に乗っているので on。in だと「布団の中」になります。',
-        },
-        {
-          q: 'My ball is ___ the sofa. (ソファの下にボールがある)',
-          choices: ['in', 'on', 'under'],
-          answer: 2,
-          explain: 'ソファの「下」だから under。',
-        },
-        {
-          q: 'The fish is ___ the water. (魚は水の中)',
+          q: 'The ball is ___ the box. (ボールは箱の中にあります)',
           choices: ['in', 'on', 'under'],
           answer: 0,
-          explain: '水に囲まれている=「中」なので in。',
+          explain: '箱に「囲まれている」=「中」なので in。',
         },
         {
-          q: 'There is a picture ___ the wall. (壁に絵がかかっている)',
+          q: 'The ball is ___ the box. (ボールは箱の上にのっています)',
           choices: ['in', 'on', 'under'],
           answer: 1,
-          explain: '壁に「貼り付いている」感じなので on。日本語では「壁に」だけど、英語は「面にくっつく」イメージで on を使います。',
+          explain: '箱に「のっかっている」=「面にくっついている」ので on。',
         },
         {
-          q: 'My dog sleeps ___ the table. (犬は机の下で寝る)',
+          q: 'The ball is ___ the box. (ボールは箱の下にあります)',
           choices: ['in', 'on', 'under'],
           answer: 2,
-          explain: '机の「真下」だから under。on にすると机の上で寝ているイメージ。',
+          explain: '箱の「真下」にあるので under。',
+        },
+        {
+          q: 'The ball is ___ the box. (中)',
+          choices: ['on', 'in', 'under'],
+          answer: 1,
+          explain: '「中」は in。語順を変えても答えは変わりません。',
+        },
+        {
+          q: '「ボールは箱の上にあります」を英語で正しいのはどれ？',
+          choices: ['The ball is in the box.', 'The ball is on the box.', 'The ball is under the box.'],
+          answer: 1,
+          explain: '「上にのっている」は on。in は「中」、under は「下」。',
         },
       ],
     },
@@ -9512,82 +9512,141 @@
   }
 
   // ---------- Lesson list (grouped by level) ----------
+  // Level chip labels (subtitle below the LV number) — kept in one place
+  // so the pill row and the section caption stay in sync.
+  const LESSON_LEVEL_LABELS = {
+    1: '超初級',     2: '中学初級',  3: '中学後半',
+    4: '英検準2級', 5: '英検2級〜',
+  };
   function LessonListView({ profile, onPick }) {
     const progress = loadLessonProgress(profile.id);
-    const levels = [1, 2, 3];
+    // Default to the lowest level that already has at least one lesson, so
+    // the empty "準備中" tabs aren't what greets the user on first open.
+    const defaultLevel = (function () {
+      for (const lv of [1, 2, 3, 4, 5]) {
+        if ((LESSONS_BY_LEVEL[lv] || []).length > 0) return lv;
+      }
+      return 1;
+    })();
+    const [selectedLevel, setSelectedLevel] = useState(defaultLevel);
+
+    const lessons = LESSONS_BY_LEVEL[selectedLevel] || [];
+
     return e('div', null,
-      e('div', { style: { padding: '4px 4px 22px' } },
+      e('div', { style: { padding: '4px 4px 18px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, '1分英語解説'),
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
           '短い解説と 5 問のクイズで、文法と単語の感覚を 1 テーマずつ。1 つ 3 分以内で終わります。'),
       ),
-      levels.map((lv) => {
-        const lessons = LESSONS_BY_LEVEL[lv] || [];
-        return e('div', { key: 'lv_' + lv, style: { marginBottom: 22 } },
-          e('div', {
+
+      // Level pill tabs — horizontally scrollable on narrow screens so all
+      // five tabs stay reachable without wrapping.
+      e('div', {
+        style: {
+          display: 'flex', gap: 8, marginBottom: 18,
+          overflowX: 'auto', paddingBottom: 4,
+          // Hide horizontal scrollbar visuals; scroll still works.
+          WebkitOverflowScrolling: 'touch',
+        }
+      },
+        [1, 2, 3, 4, 5].map((lv) => {
+          const isActive = selectedLevel === lv;
+          const count = (LESSONS_BY_LEVEL[lv] || []).length;
+          return e('button', {
+            key: 'lv_tab_' + lv,
+            onClick: () => setSelectedLevel(lv),
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-              letterSpacing: '0.18em', textTransform: 'uppercase',
-              color: C.sub, marginBottom: 10, paddingLeft: 4,
+              flexShrink: 0,
+              padding: '8px 14px', borderRadius: 999,
+              background: isActive ? profile.color : C.card,
+              color:      isActive ? '#fff'         : C.text,
+              border: '1px solid ' + (isActive ? profile.color : C.line),
+              fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+              cursor: 'pointer', letterSpacing: '0.04em',
+              display: 'inline-flex', alignItems: 'center', gap: 8,
             }
-          }, 'LEVEL ' + lv + (lv === 1 ? ' · 超初級' : lv === 2 ? ' · 中学初級' : ' · 中学後半〜')),
-          lessons.length === 0
-            ? e('div', {
+          },
+            e('span', null, 'LV' + lv),
+            count > 0 && e('span', {
+              style: {
+                fontSize: 10, fontWeight: 800,
+                background: isActive ? 'rgba(255,255,255,0.25)' : C.softer,
+                color:      isActive ? '#fff'                  : C.sub,
+                padding: '1px 6px', borderRadius: 999,
+              }
+            }, String(count)),
+          );
+        }),
+      ),
+
+      // Selected-level header caption
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, 'LEVEL ' + selectedLevel + ' · ' + (LESSON_LEVEL_LABELS[selectedLevel] || '')),
+
+      lessons.length === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 12, padding: '24px 20px',
+              fontSize: 13, color: C.sub, textAlign: 'center', lineHeight: 1.7,
+            }
+          },
+            e('div', { style: { fontSize: 20, marginBottom: 6 } }, '🛠'),
+            e('div', null, 'このレベルは準備中です。'),
+            e('div', null, '別のレベルのタブを押してみてください。'),
+          )
+        : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            lessons.map((l) => {
+              const p = progress[l.id];
+              const sub = p
+                ? '最高 ' + (p.bestScore || 0) + '/' + (p.lastTotal || 5) + ' · ' + (p.attempts || 1) + ' 回挑戦'
+                : '未挑戦';
+              return e('button', {
+                key: l.id,
+                onClick: () => onPick(l.id),
                 style: {
-                  background: C.softer, border: '1px dashed ' + C.line,
-                  borderRadius: 12, padding: '18px 20px',
-                  fontSize: 13, color: C.sub, textAlign: 'center',
+                  display: 'flex', width: '100%', textAlign: 'left',
+                  padding: '16px 16px', gap: 14, alignItems: 'center',
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 14, cursor: 'pointer',
                 }
-              }, '準備中…')
-            : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-                lessons.map((l) => {
-                  const p = progress[l.id];
-                  const sub = p
-                    ? '最高 ' + (p.bestScore || 0) + '/' + (p.lastTotal || 5) + ' · ' + (p.attempts || 1) + ' 回挑戦'
-                    : '未挑戦';
-                  return e('button', {
-                    key: l.id,
-                    onClick: () => onPick(l.id),
+              },
+                e('div', {
+                  style: {
+                    width: 44, height: 44, flexShrink: 0,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    background: C.softer, border: '1px solid ' + C.line,
+                    borderRadius: 12, fontSize: 22,
+                  }
+                }, l.icon || '✦'),
+                e('div', { style: { flex: 1, minWidth: 0 } },
+                  e('div', {
+                    style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+                  }, l.title),
+                  e('div', {
+                    style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
+                  }, l.subtitle),
+                  e('div', {
                     style: {
-                      display: 'flex', width: '100%', textAlign: 'left',
-                      padding: '16px 16px', gap: 14, alignItems: 'center',
-                      background: C.card, border: '1px solid ' + C.line,
-                      borderRadius: 14, cursor: 'pointer',
+                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      letterSpacing: '0.06em', color: p && p.bestScore >= 4 ? C.success : C.sub,
+                      marginTop: 6,
                     }
-                  },
-                    e('div', {
-                      style: {
-                        width: 44, height: 44, flexShrink: 0,
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        background: C.softer, border: '1px solid ' + C.line,
-                        borderRadius: 12, fontSize: 22,
-                      }
-                    }, l.icon || '✦'),
-                    e('div', { style: { flex: 1, minWidth: 0 } },
-                      e('div', {
-                        style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-                      }, l.title),
-                      e('div', {
-                        style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
-                      }, l.subtitle),
-                      e('div', {
-                        style: {
-                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-                          letterSpacing: '0.06em', color: p && p.bestScore >= 4 ? C.success : C.sub,
-                          marginTop: 6,
-                        }
-                      }, sub),
-                    ),
-                    e('span', {
-                      style: { fontSize: 18, color: C.sub, flexShrink: 0 }
-                    }, '›'),
-                  );
-                })
-              ),
-        );
-      }),
+                  }, sub),
+                ),
+                e('span', {
+                  style: { fontSize: 18, color: C.sub, flexShrink: 0 }
+                }, '›'),
+              );
+            })
+          ),
     );
   }
 
