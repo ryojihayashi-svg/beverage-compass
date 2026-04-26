@@ -1475,6 +1475,103 @@
     return VOCAB_SYNONYMS[vocabId] || null;
   }
 
+  // ---------- Vocab usage notes (使い分け) ----------
+  // Short Japanese annotation explaining when to use the headword vs its
+  // common near-synonyms. Shown as a "使い分け" panel on the answer side of
+  // a vocab card. Keep each entry to 1–2 sentences so it stays scannable.
+  // Idioms can carry an inline `usage` field and override this lookup.
+  const VOCAB_USAGE = {
+    // ---- Verbs of perception ----
+    see: '自然と目に入るのは see。意識して向ける場合は look at、動くものを継続的に追うのは watch（テレビ・スポーツ）。風景や作品をじっくり眺めるのは view、注意して観察するのは observe。',
+    hear: '自然に聞こえてくるのが hear。意識を向けて聴くのは listen (to)。',
+    listen: '集中して聴くときは listen (to ~)。to が必要。たまたま耳に入るのは hear。',
+    // ---- Verbs of speech ----
+    say: '内容そのものを述べるのが say (\"He said yes.\")。相手に向けて話す・伝える時は tell (\"He told me.\")。会話するなら talk、フォーマルに話す・言語を話すなら speak。',
+    tell: '誰か相手に「伝える」のが tell（人を必ず取る: tell me, tell him）。内容だけ述べるなら say。教え授けるなら teach。',
+    speak: '言語を「話せる」(speak English) や、フォーマルな発言は speak。日常の「話す・しゃべる」は talk。',
+    talk: '会話する・しゃべるのが talk。フォーマルや一方的な発言は speak。',
+    // ---- Verbs of making ----
+    make: '一般に「作る」は make。創造的に新しい物を生み出すなら create、組み立てて建てるなら build、工場などで大量生産は produce。',
+    create: '今までになかった物を生み出すのが create（芸術・アイデア・仕組み）。物理的に組み立てるなら build、日常の「作る」は make。',
+    build: '建物・構造・関係などを組み立てるのが build。料理や物の制作は make が普通。',
+    // ---- Verbs of giving ----
+    give: '直接「あげる・渡す」は give。サービスや必要な物を提供するなら provide、申し出るなら offer、手で渡すなら hand。',
+    provide: '必要な物・サービスを継続的に提供するのが provide（公式・客観的）。日常の「あげる」は give。',
+    offer: '相手に「どうですか？」と申し出るのが offer。受け取るかは相手次第。実際に渡したら give。',
+    // ---- Verbs of mind ----
+    know: '事実・情報として「知っている」状態が know。理解できているなら understand。新しく身につけるなら learn。',
+    understand: '内容や仕組みを「理解する」のが understand。単に事実を知っているだけなら know。',
+    think: '「思う・〜と考える」は think。確信に近いなら believe、よく検討するなら consider、感じとして思うなら feel。',
+    believe: '「信じる・〜だと確信する」は believe。軽い意見の think より強い。',
+    consider: 'じっくり検討するのが consider。さっと思うのは think。',
+    // ---- Verbs of motion / arrival ----
+    arrive: '到着するのが arrive。場所と一緒に使うときは arrive at（駅・空港）/ arrive in（街・国）。reach は他動詞 (reach Tokyo)。',
+    leave: '出発する・その場を去るのが leave。「行く」は go。',
+    // ---- Verbs of starting / ending ----
+    start: '動作の開始は start（口語的、幅広く使える）。begin はやや書き言葉寄りで意味はほぼ同じ。',
+    begin: '物事の始まりは begin（少しフォーマル）。日常会話では start でも同じ意味。',
+    finish: '最後までやり終えるのが finish。複雑な物を仕上げるニュアンスは complete、単に止まる・終わるは end。',
+    complete: '課題・書類など最後まで完璧に仕上げるのが complete。日常の「終える」は finish。',
+    // ---- Verbs of action ----
+    try: '日常で「やってみる」は try。フォーマルや書き言葉は attempt。',
+    use: '「使う」は use。フォーマル・専門的に使う場合は utilize。',
+    help: '「手伝う・助ける」は help（普通の語）。フォーマルや業務的なら assist。',
+    keep: '「(状態を) 保つ」は keep。継続的に「し続ける」は keep + ~ing、改まると continue。',
+    continue: '物事を「続ける」のが continue（少し改まった語）。日常では keep ~ing が自然。',
+    // ---- Adjectives — emotion ----
+    happy: '広い意味で「幸せ・うれしい」のは happy。「(知らせを聞いて) うれしい」は glad、「とても喜んでいる」は delighted、フォーマルな「光栄に思う」は pleased。',
+    glad: '「〜してうれしい (I\'m glad to ~ / glad that ~)」と相性◎。持続的な幸せは happy。',
+    sad: '一般的な「悲しい」は sad。落ち込んでいるなら down、深い悲しみは unhappy / sorrowful。',
+    angry: '「怒っている」は angry（標準）。口語では mad、激怒は furious。少し気分を害しただけなら upset。',
+    // ---- Adjectives — quality ----
+    smart: '実用的に「頭が良い・要領がいい」のが smart（米寄り）。機転がきくのは clever、学術的な賢さは intelligent。',
+    kind: '「親切・思いやりがある」のが kind。優しく穏やかに接するなら gentle、配慮できるなら thoughtful。',
+    beautiful: '本格的に「美しい」のが beautiful（人・風景）。かわいらしいは pretty、親しみを込めて素敵なら lovely、息をのむ美しさは gorgeous。',
+    pretty: 'かわいらしく「きれい」なのが pretty。本格的に美しいなら beautiful、上品で素敵なら lovely。',
+    // ---- Adjectives — size / speed / ease ----
+    big: '日常で「大きい」は big（口語的）。フォーマル・物理的なサイズなら large、とても大きいは huge / enormous。',
+    small: '日常で「小さい」は small。親しみや量を表すなら little (a little water)、極小は tiny。',
+    fast: 'スピードが速いのが fast（人・乗り物・速度）。瞬発的に「素早い」は quick、変化や進行が速いは rapid。',
+    quick: '反応・動作が「素早い」のが quick (a quick reply)。継続的に高速なら fast。',
+    easy: '「楽にできる」のが easy。「単純で複雑でない」なら simple。',
+    simple: '「単純・シンプル」なのが simple。労力がかからず「楽」なら easy。',
+    difficult: '「難しい」のフォーマルな語が difficult。日常会話では hard で同じ意味。',
+    hard: '日常で「難しい」は hard（口語）、または物理的に「硬い」。フォーマルな書き言葉なら difficult。',
+    // ---- Adjectives — temperature / freshness ----
+    hot: '「熱い・暑い」は hot（高温）。心地よく温かいなら warm、ぐらぐら熱いなら boiling。',
+    cold: '「冷たい・寒い」は cold（低温）。少し涼しく心地よいなら cool、凍えるほど寒いなら freezing。',
+    new: '時間的に「新しい」のが new（買ったばかり・最近の）。鮮度や空気のような「新鮮さ」は fresh。',
+    fresh: '食材・空気・気持ちなどが「新鮮」なのが fresh。時間的に新しいだけなら new。',
+    // ---- Adjectives — importance / equality ----
+    important: '一般的な「重要」は important。決定的に重要なら crucial、欠かせない・命にかかわるなら vital、絶対必要なら essential。',
+    equal: '権利・数・量・大きさが「等しい」のが equal (equal pay / equal opportunities)。扱いや判定が「公正・公平」なら fair (a fair decision)。',
+    // ---- Adjectives — wealth / mood ----
+    rich: '「お金持ち」は rich（口語的・幅広い）。フォーマルに「裕福」なら wealthy、暮らしに余裕があるなら well-off。味や色が「濃厚」な意味でも rich。',
+    interesting: '「興味深い」が interesting。強く惹きつけられるなら fascinating、夢中にさせるなら engaging。',
+    boring: '「退屈」は boring（人・物が退屈にさせる）。中身が薄くつまらないなら dull、長く飽きるなら tedious。',
+    amazing: '「すごい・驚くほど良い」は amazing。信じられないほどなら incredible、感動するほどなら wonderful、英国寄りに「最高」なら brilliant。',
+    strong: '「力強い・丈夫」は strong（人・物・味）。影響力や効果が強いなら powerful、頑丈さを強調するなら sturdy / tough。',
+    // ---- Nouns — travel ----
+    trip: '短い「旅行・移動」は trip (a school trip / day trip)。一般的な旅行行為は travel、長く意義ある旅は journey、観光は tour。',
+    travel: '動詞「旅する・移動する」は travel。名詞では旅行全般の概念。具体的な 1 回の旅行は trip。',
+    // ---- Nouns — friend / home ----
+    friend: '「友達」は friend（標準）。親しい仲間は buddy / pal、英国でくだけた言い方は mate。',
+    home: '「家・自宅」は home（自分の暮らす場所）。建物としての家は house。',
+    // ---- Verbs — finding / showing ----
+    find: '「見つける」は find（探した結果でも偶然でも）。新しい事実を「発見する」なら discover、目にとめるなら spot / notice。',
+    show: '「見せる」は show（一般）。展示するなら display、はっきり見せつけるなら demonstrate、提示するなら present。',
+    // ---- Wanting ----
+    want: '「〜したい・〜が欲しい」は want（直接的）。丁寧には would like、実現しにくい願望は wish。',
+    // ---- Buy ----
+    buy: '「買う」は buy（普通の語）。フォーマル・正式に「購入する」なら purchase。',
+    // ---- Old / Young ----
+    old: '人や物が「年をとっている・古い」のが old。年配の人を上品に言うなら elderly / aged、古代の・大昔のは ancient。',
+    // ---- Beautiful + lovely already in 'beautiful' / 'pretty' ----
+  };
+  function getVocabUsage(vocabId) {
+    return VOCAB_USAGE[vocabId] || null;
+  }
+
   // ---------- Verb conjugations (past + past participle) ----------
   // Shown as a small annotation under the example on the answer side of
   // every verb / idiom card so the learner can pick up irregular forms
@@ -1717,12 +1814,15 @@
       syn:['leave',  'head out',   'step out'] },
     { id:'come_back',  en:'come back',   ja:'戻る・帰ってくる',           pos:'idiom', level:2, cat:'daily',   exEn:'I will come back tomorrow.',                exJa:'明日戻ってきます。',
       syn:['return', 'go back'] },
-    { id:'look_at',    en:'look at',     ja:'〜を見る',                   pos:'idiom', level:2, cat:'daily',   exEn:'Look at this picture.',                     exJa:'この写真を見て。',
-      syn:['watch',  'observe',    'view'] },
+    { id:'look_at',    en:'look at',     ja:'〜を見る (意識して目を向ける)', pos:'idiom', level:2, cat:'daily',   exEn:'Look at this picture.',                     exJa:'この写真を見て。',
+      syn:['watch',  'observe',    'view'],
+      usage:'意識的に目を向ける場合は look at（写真・地図・人）。動くものや番組を継続的に観るのは watch（TV・スポーツ）。自然と目に入る・見えるは see。風景や作品をじっくり眺めるのは view。' },
     { id:'look_for',   en:'look for',    ja:'〜を探す',                   pos:'idiom', level:2, cat:'daily',   exEn:"I'm looking for my keys.",                  exJa:'鍵を探しています。',
-      syn:['search for', 'seek',  'hunt for'] },
+      syn:['search for', 'seek',  'hunt for'],
+      usage:'日常で「探す」のが look for。フォーマルにくまなく探すなら search、努力して追い求めるなら seek。' },
     { id:'find_out',   en:'find out',    ja:'(調べて) 見つけ出す・知る',  pos:'idiom', level:2, cat:'daily',   exEn:'I want to find out the truth.',             exJa:'真実を知りたい。',
-      syn:['discover','learn',     'uncover'] },
+      syn:['discover','learn',     'uncover'],
+      usage:'調査や問い合わせの結果として「知る」のが find out。新しい事実を発見するなら discover、ふと「見つける」だけなら find。' },
     { id:'get_up',     en:'get up',      ja:'起きる',                     pos:'idiom', level:2, cat:'daily',   exEn:'I get up at six every day.',                exJa:'毎日6時に起きます。',
       syn:['wake up', 'rise',      'arise'] },
     { id:'sit_down',   en:'sit down',    ja:'座る',                       pos:'idiom', level:2, cat:'daily',   exEn:'Please sit down here.',                     exJa:'ここに座ってください。',
@@ -3744,8 +3844,8 @@
       en: "Look out for the new students having a hard time, and lend them a hand." },
     { ja: '暇な時間があったら、筋トレでもしてみたら？',
       en: 'If you have some free time, why not get some training in?' },
-    { ja: 'トトも父ちゃんも母ちゃんも応援してるぞ。英語がんばれ！',
-      en: 'Toto, Dad, and Mom are all rooting for you. Go get that English!' },
+    { ja: '父ちゃんも母ちゃんも応援してるぞ。英語がんばれ！',
+      en: "Dad and Mum are both rooting for you. Go get that English!" },
     { ja: '毎日少しずつでも勉強することが大事なんだ。わからない英語があったら自分で調べるんだぞ。',
       en: "Studying a little every day is what really counts. When you hit English you don't know, look it up yourself." },
   ];
@@ -4834,6 +4934,27 @@
                       e(SpeakerBtn, { onClick: () => speak(w), color: profile.color, size: 24 }),
                     )),
                   ),
+                );
+              })(),
+              // Usage / disambiguation note — shown when the headword has
+              // close synonyms whose usage differs (see vs look at vs watch,
+              // equal vs fair, etc.). Idioms can carry an inline `usage`;
+              // ordinary vocab looks the entry up in VOCAB_USAGE by id.
+              (function () {
+                const note = current.usage || getVocabUsage(current.id);
+                if (!note) return null;
+                return e('div', null,
+                  e('div', {
+                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                             textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                  }, '使い分け (Usage)'),
+                  e('div', {
+                    style: {
+                      background: C.softer, border: '1px solid ' + C.line,
+                      borderRadius: 12, padding: '12px 14px',
+                      fontSize: 13, color: C.text, lineHeight: 1.7,
+                    }
+                  }, note),
                 );
               })(),
               // Past tense / past participle — only for verbs and idioms.
