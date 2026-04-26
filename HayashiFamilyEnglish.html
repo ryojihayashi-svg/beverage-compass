@@ -88,7 +88,7 @@
   //   row 3: 瞬間英作文(日→英)     | 瞬間英作文(英→日)
   //   row 4: 間違い復習(単語+英作文)| 覚えた一覧(単語+英作文)
   const FEATURES = [
-    { id: 'random_test',        label: 'ランダムテスト',  desc: '混合10問・4択',         forLearner: true, forViewer: false },
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '混合10問・4択',           forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: 'シーン別・すぐ使える英語', forLearner: true, forViewer: false },
     { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',           forLearner: true, forViewer: false },
     { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',           forLearner: true, forViewer: true  },
@@ -96,6 +96,8 @@
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',           forLearner: true, forViewer: false },
     { id: 'mistakes',           label: '間違い復習',     desc: '単語と英作文',            forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '単語と英作文',            forLearner: true, forViewer: true  },
+    { id: 'ai_chat',            label: 'AIに質問',       desc: '英語でわからないこと、何でも聞ける',
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -3324,6 +3326,10 @@
             const v = getMasteredVocab(profile.id).length;
             const s = getMasteredSentences(profile.id).length;
             subtitle = v + '語 / ' + s + '文';
+          } else if (f.id === 'ai_chat') {
+            subtitle = loadApiKey()
+              ? '英語でわからないこと、何でも聞ける'
+              : '設定で API キーを登録してください';
           }
           return e(FeatureTile, {
             key: f.id, feature: f,
@@ -3341,21 +3347,31 @@
     return e('button', {
       onClick,
       style: {
+        gridColumn: feature.fullWidth ? '1 / -1' : 'auto',
         background: C.card, color: C.text,
         border: '1px solid ' + C.line,
         borderRadius: 14, padding: '16px 14px',
-        textAlign: 'left', minHeight: 86,
-        display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4,
+        textAlign: 'left', minHeight: feature.fullWidth ? 64 : 86,
+        display: 'flex',
+        flexDirection: feature.fullWidth ? 'row' : 'column',
+        justifyContent: 'center',
+        alignItems: feature.fullWidth ? 'center' : 'stretch',
+        gap: feature.fullWidth ? 12 : 4,
         cursor: 'pointer',
       }
     },
-      e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
-      e('div', {
-        style: {
-          fontSize: 11, marginTop: 2, lineHeight: 1.4,
-          color: C.sub, fontFamily: SANS_UI, fontWeight: 600,
-        }
-      }, sub),
+      e('div', { style: { flex: feature.fullWidth ? 1 : 'unset' } },
+        e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
+        e('div', {
+          style: {
+            fontSize: 11, marginTop: 2, lineHeight: 1.4,
+            color: C.sub, fontFamily: SANS_UI, fontWeight: 600,
+          }
+        }, sub),
+      ),
+      feature.fullWidth && e('div', {
+        style: { color: C.sub, fontSize: 18, flexShrink: 0 }
+      }, '›'),
     );
   }
 
