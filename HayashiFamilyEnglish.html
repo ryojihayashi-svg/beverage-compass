@@ -8821,6 +8821,122 @@
             result && e(TranslateResult, {
               result, profile, saved, onToggleSave: toggleSave,
             }),
+
+            // Inline "蓄積中" list — newest saved entries on this device,
+            // shown right below the translate area so the user feels the
+            // dictionary growing as they translate. Acts as a quick
+            // lookup: tap the speaker to hear it again, ★ to remove.
+            e(InlineSavedList, { profile, savedToggle: saved }),
+          ),
+    );
+  }
+
+  // ---------- Inline saved-translation list ----------
+  // Lives on the AI翻訳 screen below the active result. Reads from the
+  // same SAVED_TRANSLATE store as the dedicated 翻訳ノート page so the
+  // two views are always in sync. Showing only the most recent few
+  // keeps the screen short — full archive is on 翻訳ノート.
+  function InlineSavedList({ profile, savedToggle }) {
+    // savedToggle is just a render trigger so the list refreshes after
+    // a save / unsave on the result card above.
+    const [items, setItems] = useState(() => loadSavedTranslations(profile.id));
+    useEffect(() => { setItems(loadSavedTranslations(profile.id)); }, [savedToggle]);
+
+    function unsave(id) {
+      removeSavedTranslation(profile.id, id);
+      setItems(loadSavedTranslations(profile.id));
+    }
+
+    const SHOW = 5;
+    const visible = items.slice(0, SHOW);
+    const more    = Math.max(0, items.length - SHOW);
+
+    return e('div', { style: { marginTop: 24 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+          display: 'flex', alignItems: 'center', gap: 8,
+        }
+      },
+        e('span', { style: { flex: 1 } }, '蓄積中 · MY DICTIONARY'),
+        items.length > 0 && e('span', {
+          style: {
+            fontWeight: 800, fontSize: 11, letterSpacing: 0,
+            color: profile.color,
+          }
+        }, items.length + ' 件'),
+      ),
+
+      items.length === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 14, padding: '20px 18px', textAlign: 'center',
+              fontSize: 12, color: C.sub, lineHeight: 1.7,
+            }
+          },
+            e('div', { style: { fontSize: 22, marginBottom: 6 } }, '☆'),
+            e('div', null, '翻訳して「保存する」を押すと、ここに辞書として残ります。'),
+          )
+        : e('div', null,
+            e('div', {
+              style: {
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, overflow: 'hidden',
+              }
+            },
+              visible.map((it, i) => e('div', {
+                key: it.id,
+                style: {
+                  display: 'flex', alignItems: 'flex-start', gap: 10,
+                  padding: '12px 14px',
+                  borderBottom: i === visible.length - 1 ? 'none' : '1px solid ' + C.line,
+                }
+              },
+                e('div', { style: { flex: 1, minWidth: 0 } },
+                  e('div', {
+                    style: {
+                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      letterSpacing: '0.12em', color: C.sub, marginBottom: 4,
+                    }
+                  }, it.srcLang === 'ja' ? '日本語 → 英語' : '英語 → 日本語'),
+                  e('div', {
+                    style: {
+                      fontSize: 12, color: C.sub, marginBottom: 2,
+                      whiteSpace: 'nowrap', overflow: 'hidden',
+                      textOverflow: 'ellipsis', lineHeight: 1.5,
+                    }
+                  }, it.src || ''),
+                  e('div', {
+                    style: {
+                      fontFamily: SERIF, fontSize: 15, fontWeight: 600,
+                      color: C.text, lineHeight: 1.5,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    }
+                  }, it.main || ''),
+                ),
+                e(SpeakerBtn, { onClick: () => speak(it.main || ''), color: profile.color, size: 24 }),
+                e('button', {
+                  onClick: () => unsave(it.id),
+                  'aria-label': '保存解除',
+                  style: {
+                    width: 26, height: 26, borderRadius: 999,
+                    background: profile.color + '14', color: profile.color,
+                    border: '1px solid ' + profile.color + '55',
+                    fontSize: 12, lineHeight: 1, cursor: 'pointer',
+                    flexShrink: 0,
+                  }
+                }, '★'),
+              )),
+            ),
+            more > 0 && e('div', {
+              style: {
+                fontSize: 12, color: C.sub, marginTop: 8, textAlign: 'center',
+                fontFamily: SANS_UI,
+              }
+            }, '残り ' + more + ' 件はホームの「翻訳ノート」で見られます'),
           ),
     );
   }
@@ -8850,7 +8966,9 @@
         borderRadius: 14, padding: '16px 16px 14px',
       }
     },
-      // Header: 翻訳結果 + speaker + ★
+      // Header: 翻訳結果 + speaker. The save toggle now lives in the
+      // prominent panel at the bottom of the card — having both was
+      // redundant and the small ☆ icon was easy to miss.
       e('div', {
         style: {
           display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
@@ -8863,18 +8981,6 @@
           }
         }, '翻訳結果'),
         e(SpeakerBtn, { onClick: () => speak(result.main), color: profile.color, size: 30 }),
-        e('button', {
-          onClick: onToggleSave,
-          'aria-label': saved ? '保存解除' : '保存',
-          style: {
-            width: 30, height: 30, borderRadius: 999,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            background: saved ? profile.color + '1A' : C.softer,
-            border: '1px solid ' + (saved ? profile.color : C.line),
-            color: saved ? profile.color : C.sub,
-            fontSize: 16, lineHeight: 1, cursor: 'pointer',
-          }
-        }, saved ? '★' : '☆'),
       ),
 
       // Main translation
@@ -9011,6 +9117,53 @@
             onClick: () => speak(result.example.en), color: profile.color, size: 24,
           }),
         ),
+      ),
+
+      // Save prompt — surfaces the action below the result instead of
+      // hiding it behind a tiny ☆ icon in the header. Once saved, the
+      // panel turns into a confirmation with an option to undo.
+      e('div', {
+        style: {
+          marginTop: 14, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        saved
+          ? e('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 10 }
+            },
+              e('span', {
+                style: {
+                  flex: 1, fontSize: 13, color: C.success, fontWeight: 700, fontFamily: SANS_UI,
+                }
+              }, '✓ 辞書に保存しました'),
+              e('button', {
+                onClick: onToggleSave,
+                style: {
+                  padding: '8px 14px', borderRadius: 10,
+                  background: 'none', border: '1px solid ' + C.line,
+                  color: C.sub, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                  fontFamily: SANS_UI,
+                }
+              }, '解除する'),
+            )
+          : e('div', null,
+              e('div', {
+                style: {
+                  fontFamily: SERIF, fontSize: 14, fontWeight: 600,
+                  color: C.text, marginBottom: 10, lineHeight: 1.5,
+                }
+              }, '📖 これを辞書に保存しますか？'),
+              e('button', {
+                onClick: onToggleSave,
+                style: {
+                  width: '100%', padding: '12px 0', borderRadius: 12,
+                  background: profile.color, color: '#fff',
+                  border: 'none', fontSize: 14, fontWeight: 700,
+                  fontFamily: SANS_UI, cursor: 'pointer', letterSpacing: '0.04em',
+                }
+              }, '★ 保存する'),
+            ),
       ),
     );
   }
