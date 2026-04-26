@@ -469,6 +469,24 @@
     return Math.floor(d / 30) + 'ヶ月前';
   }
 
+  // ---------- Custom display names ----------
+  // Names live in this device's localStorage only. The repo never sees them.
+  // If a member's slot is empty, we fall back to the role label from PROFILES.
+  const NAMES_KEY = 'hfe_names_v1';
+  function loadDisplayNames() {
+    try { return JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function saveDisplayNames(map) {
+    try { localStorage.setItem(NAMES_KEY, JSON.stringify(map || {})); }
+    catch (err) { console.warn('saveDisplayNames failed', err); }
+  }
+  function getDisplayName(profile) {
+    if (!profile) return '';
+    const custom = loadDisplayNames()[profile.id];
+    return (custom && custom.trim()) ? custom.trim() : profile.name;
+  }
+
   // ---------- App ----------
   function App() {
     const [route, setRoute] = useState({ name: 'profiles' });
@@ -477,7 +495,13 @@
 
     if (route.name === 'profiles') {
       return e(ProfileSelect, {
-        onPick: (id) => { setActiveId(id); setRoute({ name: 'home' }); },
+        onPick:        (id) => { setActiveId(id); setRoute({ name: 'home' }); },
+        onOpenSettings: () => setRoute({ name: 'settings' }),
+      });
+    }
+    if (route.name === 'settings') {
+      return e(SettingsScreen, {
+        onBack: () => setRoute({ name: 'profiles' }),
       });
     }
     if (!profile) return null;
@@ -504,13 +528,27 @@
   }
 
   // ---------- Profile selection ----------
-  function ProfileSelect({ onPick }) {
+  function ProfileSelect({ onPick, onOpenSettings }) {
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '48px 22px 96px',
         animation: 'fadeIn .45s ease',
+        position: 'relative',
       }
     },
+      // Settings gear (top-right)
+      e('button', {
+        onClick: onOpenSettings,
+        style: {
+          position: 'absolute', top: 18, right: 18,
+          width: 38, height: 38, borderRadius: 999,
+          background: C.softer, border: '1px solid ' + C.line,
+          fontSize: 16, color: C.sub,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        },
+        'aria-label': '設定',
+      }, '⚙️'),
+
       // Header
       e('div', { style: { textAlign: 'center', marginBottom: 40 } },
         e('div', {
@@ -596,7 +634,7 @@
             display: 'flex', alignItems: 'center', gap: 8,
           }
         },
-          profile.name,
+          getDisplayName(profile),
           isViewer && e('span', {
             style: {
               fontSize: 10, fontWeight: 600,
@@ -661,7 +699,7 @@
             e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } },
               isViewer ? 'VIEWER' : 'TODAY'),
             e('div', { style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, marginTop: 2 } },
-              'Hi, ' + profile.name + '.'),
+              'Hi, ' + getDisplayName(profile) + '.'),
           ),
         ),
         e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 14, lineHeight: 1.5 } },
@@ -1786,7 +1824,7 @@
               e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 e('div', {
                   style: { fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1 }
-                }, entry.profile.name),
+                }, getDisplayName(entry.profile)),
                 entry.isMe && e('span', {
                   style: {
                     fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
@@ -1855,7 +1893,7 @@
           }, v.profile.emoji),
           e('div', { style: { flex: 1 } },
             e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-              e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, v.profile.name),
+              e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, getDisplayName(v.profile)),
               v.isMe && e('span', {
                 style: {
                   fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
@@ -1925,7 +1963,7 @@
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
           isMother
             ? 'みんなへの応援を、ためたり開けてもらったり。'
-            : motherProfile.name + 'からの一言メッセージ。'),
+            : getDisplayName(motherProfile) + 'からの一言メッセージ。'),
       ),
 
       // Mother's compose CTA (placeholder)
@@ -1999,10 +2037,10 @@
                 }
               },
                 e('span', { style: { fontSize: 16 } }, sender.emoji),
-                e('span', { style: { fontWeight: 600, color: C.text } }, sender.name),
+                e('span', { style: { fontWeight: 600, color: C.text } }, getDisplayName(sender)),
                 e('span', null, '→'),
                 e('span', { style: { fontWeight: 600, color: C.text } },
-                  recipient ? recipient.name : '家族みんな'),
+                  recipient ? getDisplayName(recipient) : '家族みんな'),
                 e('span', { style: { flex: 1 } }),
                 e('span', { style: { fontSize: 11 } }, timeAgo(m.createdAt)),
               ),
@@ -2383,6 +2421,117 @@
           }
         }, 'できた'),
       ),
+    );
+  }
+
+  // ---------- Settings (custom display names — local to this device) ----------
+  function SettingsScreen({ onBack }) {
+    const [names, setNames] = useState(() => loadDisplayNames());
+
+    function update(id, value) {
+      setNames(prev => Object.assign({}, prev, { [id]: value }));
+    }
+    function save() {
+      // Trim, drop empties (so they fall back to role labels).
+      const clean = {};
+      for (const id in names) {
+        const v = (names[id] || '').trim();
+        if (v) clean[id] = v;
+      }
+      saveDisplayNames(clean);
+      onBack();
+    }
+    function clearAll() {
+      saveDisplayNames({});
+      setNames({});
+    }
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '設定'),
+      ),
+
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '⚙️'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, '名前を入れる'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+          '入れた名前は、この端末の中だけに保存されます。\n空欄のままなら役割名（父・母など）が使われます。'),
+      ),
+
+      // Inputs
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 } },
+        PROFILES.map(p => e('label', {
+          key: p.id,
+          style: {
+            display: 'flex', alignItems: 'center', gap: 12,
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 16, padding: '12px 14px',
+          }
+        },
+          e('div', {
+            style: {
+              width: 42, height: 42, borderRadius: 14,
+              background: p.color + '22', color: p.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, flexShrink: 0,
+              border: '1px solid ' + p.color + '33',
+            }
+          }, p.emoji),
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 } },
+              p.name + ' (' + p.subtitle + ')'),
+            e('input', {
+              type: 'text',
+              value: names[p.id] || '',
+              onChange: (ev) => update(p.id, ev.target.value),
+              placeholder: p.name + ' のままでOK',
+              style: {
+                width: '100%', padding: '8px 0', fontSize: 16,
+                fontFamily: 'inherit', color: C.text,
+                background: 'transparent', border: 'none', outline: 'none',
+                borderBottom: '1px solid ' + C.line,
+              }
+            }),
+          ),
+        )),
+      ),
+
+      // Save / clear
+      e('div', { style: { display: 'flex', gap: 10 } },
+        e('button', {
+          onClick: clearAll,
+          style: {
+            flex: 1, padding: '14px 0', borderRadius: 14,
+            background: C.card, color: C.sub, border: '1px solid ' + C.line,
+            fontSize: 14, fontWeight: 600,
+          }
+        }, 'すべて消す'),
+        e('button', {
+          onClick: save,
+          style: {
+            flex: 2, padding: '14px 0', borderRadius: 14,
+            background: C.accent, color: '#fff', border: '1px solid ' + C.accent,
+            fontSize: 14, fontWeight: 700,
+            boxShadow: '0 6px 16px ' + C.accent + '55',
+          }
+        }, '保存して戻る'),
+      ),
+
+      // Privacy note
+      e('div', {
+        style: {
+          marginTop: 20, fontSize: 11, color: C.sub, textAlign: 'center',
+          padding: '12px 16px', background: C.softer, borderRadius: 12, lineHeight: 1.6,
+        }
+      },
+        '🔒 名前はこの端末の localStorage にのみ保存され、サーバーや GitHub には送られません。'),
     );
   }
 
