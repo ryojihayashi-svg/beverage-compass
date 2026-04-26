@@ -4205,7 +4205,12 @@
           if (f.id === 'random_test') {
             subtitle = dateLabel + ' ' + (today.random_test || 0) + '回';
           } else if (f.id === 'phrases') {
-            subtitle = dateLabel + ' ' + (today.flip || 0) + 'めくり';
+            const flips = today.flip   || 0;
+            const tests = today.mctest || 0;
+            const parts = [];
+            parts.push(flips + 'めくり');
+            if (tests > 0) parts.push(tests + '回テスト');
+            subtitle = dateLabel + ' ' + parts.join(' / ');
           } else if (f.id === 'vocab_ja2en' || f.id === 'vocab_en2ja') {
             // Both directions share the same counter — turning over 10
             // questions in either direction counts as one vocab turn.
@@ -4262,13 +4267,6 @@
       { key: 'flip',        label: 'Daily English めくり' },
       { key: 'overcome',    label: '間違い克服' },
     ];
-    // Per-row max for normalising the bar heights.
-    const rowMax = {};
-    rows.forEach(r => {
-      let max = 0;
-      days.forEach(d => { max = Math.max(max, d.counts[r.key] || 0); });
-      rowMax[r.key] = max;
-    });
     const todayKey = db.todayKey(profile.id);
 
     return e('div', { style: { marginTop: 26 } },
@@ -4323,33 +4321,18 @@
           e('div', { style: { fontSize: 11, color: C.text, fontFamily: SANS_UI, fontWeight: 600 } }, r.label),
           days.map((d, i) => {
             const v = d.counts[r.key] || 0;
-            const max = Math.max(1, rowMax[r.key]);
-            const ratio = v > 0 ? Math.max(0.18, v / max) : 0;
             return e('div', {
               key: r.key + '_' + i,
               style: {
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'flex-end', gap: 2, minHeight: 30,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, color: v > 0 ? C.text : C.sub + 'AA',
+                fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                fontWeight: v > 0 ? 700 : 500,
+                background: v > 0 && d.isToday ? C.brand + '14' : 'transparent',
+                borderRadius: 6,
+                padding: '4px 0',
               }
-            },
-              // Bar
-              e('div', {
-                style: {
-                  width: '70%', height: Math.round(ratio * 24) + 'px',
-                  background: v > 0 ? C.brand : 'transparent',
-                  borderRadius: 3,
-                  transition: 'height .25s ease',
-                }
-              }),
-              // Number
-              e('div', {
-                style: {
-                  fontSize: 10, color: v > 0 ? C.text : C.sub + 'AA',
-                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
-                  fontWeight: v > 0 ? 700 : 500,
-                }
-              }, v),
-            );
+            }, v);
           }),
         )),
       ),
@@ -4977,13 +4960,15 @@
   }
 
   function MistakeReview({ profile, onBack, kindFilter }) {
-    // Build the deduped list once on mount, supporting all 3 kinds. If
-    // kindFilter is set, only items of that kind are kept.
+    // The user picks 'all' / 'vocab' / 'sentence' from a chooser at the
+    // top of the list screen. If a kindFilter prop was passed (legacy
+    // route), seed the picker with it.
+    const [activeFilter, setActiveFilter] = useState(kindFilter || 'all');
     const initialList = useMemo(() => {
       const ms = db.getMistakesNormalized(profile.id);
       const seen = new Set(); const out = [];
       for (const m of ms) {
-        if (kindFilter && m.kind !== kindFilter) continue;
+        if (activeFilter !== 'all' && m.kind !== activeFilter) continue;
         const key = m.kind + ':' + m.id;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -4991,10 +4976,10 @@
         if (item) out.push({ item, at: m.at });
       }
       return out;
-    }, [profile.id, kindFilter]);
+    }, [profile.id, activeFilter]);
 
-    const titleLabel = kindFilter === 'vocab'   ? '間違えた単語'
-                     : kindFilter === 'sentence' ? '間違えた英作文'
+    const titleLabel = activeFilter === 'vocab'   ? '間違えた単語'
+                     : activeFilter === 'sentence' ? '間違えた英作文'
                      : '間違い復習';
 
     const [phase, setPhase]     = useState('list');     // 'list' | 'study' | 'done'
@@ -5057,6 +5042,23 @@
     // ============ LIST ============
     if (phase === 'list') {
       const empty = initialList.length === 0;
+      // Live counts per kind for the 3-button chooser.
+      const allMistakes = db.getMistakesNormalized(profile.id);
+      const seenAll = new Set();
+      let cntAll = 0, cntVocab = 0, cntSentence = 0;
+      for (const m of allMistakes) {
+        const k = m.kind + ':' + m.id;
+        if (seenAll.has(k)) continue;
+        seenAll.add(k);
+        cntAll++;
+        if (m.kind === 'vocab') cntVocab++;
+        else if (m.kind === 'sentence') cntSentence++;
+      }
+      const filterOpts = [
+        { value: 'all',      label: '全部',     count: cntAll },
+        { value: 'vocab',    label: '単語',     count: cntVocab },
+        { value: 'sentence', label: '瞬間英作文', count: cntSentence },
+      ];
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '20px 4px 18px' } },
@@ -5064,9 +5066,35 @@
             style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, titleLabel),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
-            empty
+            cntAll === 0
               ? 'まだ間違いはありません。'
-              : initialList.length + ' 件をためました。'),
+              : 'まとめて復習する範囲を選んでください。'),
+        ),
+        // 3-button chooser
+        e('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
+          filterOpts.map(opt => {
+            const isActive = activeFilter === opt.value;
+            return e('button', {
+              key: 'mf_' + opt.value,
+              onClick: () => setActiveFilter(opt.value),
+              style: {
+                flex: 1, padding: '10px 0', borderRadius: 12,
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                background: isActive ? profile.color + '14' : C.card,
+                color: isActive ? profile.color : C.sub,
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                cursor: 'pointer', lineHeight: 1.3,
+              }
+            },
+              e('div', null, opt.label),
+              e('div', {
+                style: {
+                  fontSize: 10, marginTop: 2, fontVariantNumeric: 'tabular-nums',
+                  color: isActive ? profile.color : C.sub, opacity: 0.85,
+                }
+              }, opt.count + '件'),
+            );
+          })
         ),
         empty
           ? e('div', {
@@ -7567,17 +7595,15 @@
     DAILY_PHRASES.forEach(p => arr.push({ kind: 'phrase', id: p.id, en: p.en, ja: p.ja, level: 2 }));
     return arr;
   }
-  function buildTestQueue(memberLevel, count) {
+  // Build a 10-question test queue weighted to the family member's
+  // own level distribution (Ryoji L2-3, Narumichi L3-4, others L1-2,
+  // etc.). Each picked item gets a random direction so EN→JA and
+  // JA→EN questions alternate.
+  function buildTestQueue(profile, count) {
     const pool = buildTestPool();
-    const near = pool.filter(it => Math.abs(it.level - (memberLevel || 2)) <= 1);
-    const useArr = near.length >= count ? near : pool;
-    const arr = useArr.slice();
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
-    }
-    return arr.slice(0, count).map(it => ({
-      ...it, direction: Math.random() < 0.5 ? 'en2ja' : 'ja2en',
+    const picked = pickWeightedQueue(pool, profile, count);
+    return picked.map(it => Object.assign({}, it, {
+      direction: Math.random() < 0.5 ? 'en2ja' : 'ja2en',
     }));
   }
   function buildOptions(item, pool) {
@@ -7605,7 +7631,7 @@
 
   function RandomTest({ profile, onBack }) {
     const [pool] = useState(buildTestPool);
-    const [queue] = useState(() => buildTestQueue(profile.level, TEST_COUNT));
+    const [queue] = useState(() => buildTestQueue(profile, TEST_COUNT));
     const [phase, setPhase]   = useState(queue.length > 0 ? 'study' : 'empty');
     const [index, setIndex]   = useState(0);
     const [chosen, setChosen] = useState(null);
