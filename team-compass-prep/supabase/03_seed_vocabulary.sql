@@ -222,9 +222,45 @@ insert into vocabulary_items (word_en, meaning_ja, pos, level, category, example
   ('sufficient', '十分な',           'adj',  4, 'general', 'We have sufficient time to prepare.','準備するための十分な時間があります。'),
   ('contribute', '貢献する',         'verb', 4, 'general', 'He contributed to the team''s win.', '彼はチームの勝利に貢献しました。'),
   ('ensure',     '確実にする',       'verb', 4, 'general', 'Please ensure the door is locked.',  'ドアが施錠されていることを確認してください。'),
+  -- L4 (continued) — verbs
+  ('discover',   '発見する',         'verb', 4, 'general', 'Scientists discovered a new planet.', '科学者たちは新しい惑星を発見した。'),
+  ('examine',    '調査する',         'verb', 4, 'general', 'The doctor examined the patient.',   '医者が患者を診察した。'),
+  ('consider',   '考慮する',         'verb', 4, 'general', 'Please consider my proposal.',       '私の提案を検討してください。'),
+  ('demonstrate','示す・実演する',   'verb', 4, 'general', 'He demonstrated how to fix it.',     '彼は修理方法を実演した。'),
+  ('estimate',   '見積もる',         'verb', 4, 'general', 'We estimate the cost at $100.',      '費用は100ドルと見積もります。'),
+  ('influence',  '影響する',         'verb', 4, 'general', 'His teacher influenced him deeply.', '彼は先生に深く影響を受けた。'),
+  ('maintain',   '維持する',         'verb', 4, 'general', 'We must maintain quality.',          '私たちは品質を維持しなければならない。'),
+  ('publish',    '出版する',         'verb', 4, 'general', 'She published her first novel.',     '彼女は処女作を出版した。'),
+  ('recognize',  '認識する',         'verb', 4, 'general', 'I didn''t recognize you.',           '君だと気づかなかった。'),
+  ('require',    '必要とする',       'verb', 4, 'general', 'This job requires patience.',        'この仕事には忍耐が必要だ。'),
+  -- L4 (continued) — abstract nouns
+  ('concept',    '概念',             'noun', 4, 'general', 'It''s a difficult concept to grasp.', '把握しにくい概念だ。'),
+  ('definition', '定義',             'noun', 4, 'general', 'What''s the definition of this word?', 'この単語の定義は何ですか？'),
+  ('evidence',   '証拠',             'noun', 4, 'general', 'We need more evidence.',             'もっと証拠が必要だ。'),
+  ('impact',     '影響',             'noun', 4, 'general', 'Climate change has a big impact.',   '気候変動は大きな影響を及ぼす。'),
+  ('method',     '方法',             'noun', 4, 'general', 'Try a different method.',            '違う方法を試して。'),
+  ('policy',     '方針',             'noun', 4, 'general', 'The company changed its policy.',    '会社は方針を変えた。'),
+  -- L4 (continued) — adjectives
+  ('essential',  '必要不可欠な',     'adj',  4, 'general', 'Sleep is essential for health.',     '睡眠は健康に不可欠だ。'),
+  ('significant','重要な',           'adj',  4, 'general', 'There was a significant change.',    '大きな変化があった。'),
+  ('obvious',    '明らかな',         'adj',  4, 'general', 'The answer is obvious.',             '答えは明らかだ。'),
+  ('specific',   '特定の',           'adj',  4, 'general', 'Be more specific, please.',          'もっと具体的に言ってください。'),
 
   -- ----- L5 (advanced, Eiken Pre-1) -----
   ('perspective','視点',             'noun', 5, 'general', 'Try looking from a new perspective.','新しい視点で見てみてください。'),
   ('substantial','相当な',           'adj',  5, 'general', 'There was a substantial improvement.','相当な改善がありました。'),
-  ('deteriorate','悪化する',         'verb', 5, 'general', 'His health began to deteriorate.',   '彼の健康は悪化し始めました。')
+  ('deteriorate','悪化する',         'verb', 5, 'general', 'His health began to deteriorate.',   '彼の健康は悪化し始めました。'),
+  -- L5 (continued) — sophisticated
+  ('inevitable', '避けられない',     'adj',  5, 'general', 'Death is inevitable.',               '死は避けられない。'),
+  ('ambiguous',  'あいまいな',       'adj',  5, 'general', 'Her answer was ambiguous.',          '彼女の答えはあいまいだった。'),
+  ('profound',   '深い・重大な',     'adj',  5, 'general', 'It had a profound impact on me.',    '私に深い影響を与えた。'),
+  ('articulate', '明確に表現する',   'verb', 5, 'general', 'She articulates her ideas clearly.', '彼女は考えを明確に表現する。'),
+  ('eloquent',   '雄弁な',           'adj',  5, 'general', 'He gave an eloquent speech.',        '彼は雄弁なスピーチをした。'),
+  ('comprehensive','包括的な',       'adj',  5, 'general', 'We need a comprehensive plan.',      '包括的な計画が必要だ。'),
+  ('ubiquitous', '至るところにある', 'adj',  5, 'general', 'Smartphones are ubiquitous now.',    'スマートフォンは今や至る所にある。'),
+  ('nuance',     '微妙な差・ニュアンス','noun', 5, 'general', 'Translation often loses nuance.', '翻訳ではしばしばニュアンスが失われる。'),
+  ('discrepancy','不一致',           'noun', 5, 'general', 'There''s a discrepancy in the data.', 'データに不一致がある。'),
+  ('paradigm',   'パラダイム・枠組み','noun', 5, 'general', 'It''s a paradigm shift.',            'パラダイムシフトだ。'),
+  ('mitigate',   '軽減する',         'verb', 5, 'general', 'We must mitigate the risks.',        'リスクを軽減しなければならない。'),
+  ('scrutinize', '詳しく調べる',     'verb', 5, 'general', 'He scrutinized every detail.',       '彼はあらゆる細部を詳しく調べた。')
 on conflict do nothing;
