@@ -188,6 +188,33 @@ insert into vocabulary_items (word_en, meaning_ja, pos, level, category, example
   ('recently',   '最近',             'adv',  3, 'general', 'I have been busy recently.',         '最近忙しいです。'),
   ('opportunity','機会',             'noun', 3, 'general', 'This is a great opportunity.',       'これは素晴らしい機会です。'),
   ('improve',    '改善する',         'verb', 3, 'general', 'I want to improve my English.',      '私は英語を上達させたいです。'),
+  -- L3 (continued) — connectives
+  ('however',    'しかしながら',     'adv',  3, 'general', 'It was raining; however, we went out.',  '雨が降っていたが、私たちは出かけました。'),
+  ('therefore',  'そのため',         'adv',  3, 'general', 'He was tired; therefore, he went to bed.', '彼は疲れていたので寝ました。'),
+  ('because',    'なぜなら',         'conj', 3, 'general', 'I''m happy because it''s sunny.',    '晴れているのでうれしいです。'),
+  ('while',      '〜の間に',         'conj', 3, 'general', 'She read while I cooked.',           '私が料理する間、彼女は読書をしました。'),
+  ('before',     '〜の前に',         'prep', 3, 'general', 'Wash your hands before lunch.',      '昼食前に手を洗ってください。'),
+  ('after',      '〜の後に',         'prep', 3, 'general', 'I take a walk after dinner.',        '私は夕食後に散歩します。'),
+  -- L3 (continued) — verbs
+  ('continue',   '続ける',           'verb', 3, 'general', 'Please continue your work.',         '仕事を続けてください。'),
+  ('prepare',    '準備する',         'verb', 3, 'general', 'I prepare lunch every morning.',     '私は毎朝昼食を準備します。'),
+  ('suggest',    '提案する',         'verb', 3, 'general', 'He suggested a new idea.',           '彼は新しいアイデアを提案しました。'),
+  ('introduce',  '紹介する',         'verb', 3, 'general', 'Let me introduce my friend.',        '友達を紹介させてください。'),
+  ('succeed',    '成功する',         'verb', 3, 'general', 'She succeeded in the exam.',         '彼女は試験に合格しました。'),
+  ('complete',   '完成させる',       'verb', 3, 'general', 'I completed the project.',           '私はプロジェクトを完成させました。'),
+  ('develop',    '発達する・開発する','verb', 3, 'general', 'Children develop quickly.',          '子供は早く発達します。'),
+  ('increase',   '増える・増やす',   'verb', 3, 'general', 'The price will increase.',           '価格が上がるでしょう。'),
+  ('agree',      '同意する',         'verb', 3, 'general', 'I agree with your opinion.',         'あなたの意見に賛成です。'),
+  -- L3 (continued) — abstract nouns
+  ('knowledge',  '知識',             'noun', 3, 'general', 'Knowledge is power.',                '知識は力なり。'),
+  ('ability',    '能力',             'noun', 3, 'general', 'She has the ability to lead.',       '彼女にはリーダーシップ能力があります。'),
+  ('future',     '未来',             'noun', 3, 'general', 'What do you want to do in the future?', '将来何をしたいですか？'),
+  ('reason',     '理由',             'noun', 3, 'general', 'Tell me the reason.',                '理由を教えてください。'),
+  ('opinion',    '意見',             'noun', 3, 'general', 'What''s your opinion?',              'あなたの意見は？'),
+  ('problem',    '問題',             'noun', 3, 'general', 'Do you have a problem?',             '問題がありますか？'),
+  ('environment','環境',             'noun', 3, 'general', 'We must protect the environment.',   '私たちは環境を守らなければなりません。'),
+  -- L3 (continued) — adjective
+  ('dangerous',  '危険な',           'adj',  3, 'general', 'Driving fast is dangerous.',         '速く運転することは危険です。'),
 
   -- ----- L4 (high school standard, Eiken 2) -----
   ('although',   '〜だけれども',     'conj', 4, 'general', 'Although it rained, we went out.',   '雨が降ったけれども、私たちは出かけました。'),

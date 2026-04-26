@@ -14,8 +14,6 @@
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
   #root { min-height: 100vh; min-height: 100dvh; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   /* Flashcard 3D flip */
   .flip-wrap   { perspective: 1200px; }
   .flip-inner  { position: relative; width: 100%; transition: transform .55s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
@@ -266,6 +264,33 @@
     { id:'recently',    en:'recently',    ja:'最近',                     pos:'adv',  level:3, cat:'general', exEn:'I have been busy recently.',                exJa:'最近忙しいです。' },
     { id:'opportunity', en:'opportunity', ja:'機会',                     pos:'noun', level:3, cat:'general', exEn:'This is a great opportunity.',              exJa:'これは素晴らしい機会です。' },
     { id:'improve',     en:'improve',     ja:'改善する',                 pos:'verb', level:3, cat:'general', exEn:'I want to improve my English.',             exJa:'私は英語を上達させたいです。' },
+    // L3 (continued) — connectives
+    { id:'however',     en:'however',     ja:'しかしながら',             pos:'adv',  level:3, cat:'general', exEn:'It was raining; however, we went out.',     exJa:'雨が降っていたが、私たちは出かけました。' },
+    { id:'therefore',   en:'therefore',   ja:'そのため',                 pos:'adv',  level:3, cat:'general', exEn:'He was tired; therefore, he went to bed.',  exJa:'彼は疲れていたので寝ました。' },
+    { id:'because',     en:'because',     ja:'なぜなら',                 pos:'conj', level:3, cat:'general', exEn:"I'm happy because it's sunny.",             exJa:'晴れているのでうれしいです。' },
+    { id:'while',       en:'while',       ja:'〜の間に',                  pos:'conj', level:3, cat:'general', exEn:'She read while I cooked.',                  exJa:'私が料理する間、彼女は読書をしました。' },
+    { id:'before',      en:'before',      ja:'〜の前に',                  pos:'prep', level:3, cat:'general', exEn:'Wash your hands before lunch.',             exJa:'昼食前に手を洗ってください。' },
+    { id:'after',       en:'after',       ja:'〜の後に',                  pos:'prep', level:3, cat:'general', exEn:'I take a walk after dinner.',               exJa:'私は夕食後に散歩します。' },
+    // L3 (continued) — verbs
+    { id:'continue',    en:'continue',    ja:'続ける',                   pos:'verb', level:3, cat:'general', exEn:'Please continue your work.',                exJa:'仕事を続けてください。' },
+    { id:'prepare',     en:'prepare',     ja:'準備する',                 pos:'verb', level:3, cat:'general', exEn:'I prepare lunch every morning.',            exJa:'私は毎朝昼食を準備します。' },
+    { id:'suggest',     en:'suggest',     ja:'提案する',                 pos:'verb', level:3, cat:'general', exEn:'He suggested a new idea.',                  exJa:'彼は新しいアイデアを提案しました。' },
+    { id:'introduce',   en:'introduce',   ja:'紹介する',                 pos:'verb', level:3, cat:'general', exEn:'Let me introduce my friend.',               exJa:'友達を紹介させてください。' },
+    { id:'succeed',     en:'succeed',     ja:'成功する',                 pos:'verb', level:3, cat:'general', exEn:'She succeeded in the exam.',                exJa:'彼女は試験に合格しました。' },
+    { id:'complete',    en:'complete',    ja:'完成させる',               pos:'verb', level:3, cat:'general', exEn:'I completed the project.',                  exJa:'私はプロジェクトを完成させました。' },
+    { id:'develop',     en:'develop',     ja:'発達する・開発する',       pos:'verb', level:3, cat:'general', exEn:'Children develop quickly.',                 exJa:'子供は早く発達します。' },
+    { id:'increase',    en:'increase',    ja:'増える・増やす',           pos:'verb', level:3, cat:'general', exEn:'The price will increase.',                  exJa:'価格が上がるでしょう。' },
+    { id:'agree',       en:'agree',       ja:'同意する',                 pos:'verb', level:3, cat:'general', exEn:'I agree with your opinion.',                exJa:'あなたの意見に賛成です。' },
+    // L3 (continued) — abstract nouns
+    { id:'knowledge',   en:'knowledge',   ja:'知識',                     pos:'noun', level:3, cat:'general', exEn:'Knowledge is power.',                       exJa:'知識は力なり。' },
+    { id:'ability',     en:'ability',     ja:'能力',                     pos:'noun', level:3, cat:'general', exEn:'She has the ability to lead.',              exJa:'彼女にはリーダーシップ能力があります。' },
+    { id:'future',      en:'future',      ja:'未来',                     pos:'noun', level:3, cat:'general', exEn:'What do you want to do in the future?',     exJa:'将来何をしたいですか？' },
+    { id:'reason',      en:'reason',      ja:'理由',                     pos:'noun', level:3, cat:'general', exEn:'Tell me the reason.',                       exJa:'理由を教えてください。' },
+    { id:'opinion',     en:'opinion',     ja:'意見',                     pos:'noun', level:3, cat:'general', exEn:"What's your opinion?",                      exJa:'あなたの意見は？' },
+    { id:'problem',     en:'problem',     ja:'問題',                     pos:'noun', level:3, cat:'general', exEn:'Do you have a problem?',                    exJa:'問題がありますか？' },
+    { id:'environment', en:'environment', ja:'環境',                     pos:'noun', level:3, cat:'general', exEn:'We must protect the environment.',          exJa:'私たちは環境を守らなければなりません。' },
+    // L3 (continued) — adjective
+    { id:'dangerous',   en:'dangerous',   ja:'危険な',                   pos:'adj',  level:3, cat:'general', exEn:'Driving fast is dangerous.',                exJa:'速く運転することは危険です。' },
     // L4 — high school standard
     { id:'although',    en:'although',    ja:'〜だけれども',              pos:'conj', level:4, cat:'general', exEn:'Although it rained, we went out.',          exJa:'雨が降ったけれども、私たちは出かけました。' },
     { id:'acquire',     en:'acquire',     ja:'習得する・取得する',         pos:'verb', level:4, cat:'general', exEn:'She acquired new skills quickly.',          exJa:'彼女は新しい技能を素早く習得しました。' },
@@ -761,7 +786,7 @@
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '48px 22px 96px',
-        animation: 'fadeIn .45s ease',
+
         position: 'relative',
       }
     },
@@ -894,7 +919,7 @@
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
-        animation: 'fadeIn .35s ease',
+
       }
     },
       // Top bar
@@ -1069,7 +1094,7 @@
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
-        animation: 'fadeIn .3s ease',
+
       }
     },
       // Top bar
@@ -1575,7 +1600,7 @@
 
   const pageStyle = {
     maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
-    animation: 'fadeIn .3s ease',
+
   };
 
   // ---------- Reusable chips ----------
@@ -3136,7 +3161,7 @@
         borderRadius: 16, padding: '14px 16px', marginBottom: 16,
         display: 'flex', alignItems: 'center', gap: 12,
         boxShadow: '0 6px 16px rgba(232, 194, 138, 0.35)',
-        animation: 'fadeIn .5s ease',
+
       }
     },
       e('div', { style: { fontSize: 26 } }, '✨'),
@@ -3397,7 +3422,7 @@
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
-        animation: 'fadeIn .3s ease',
+
       }
     },
       // Top bar
