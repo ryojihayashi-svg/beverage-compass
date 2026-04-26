@@ -3908,6 +3908,13 @@
       photos:  loadFamilyPhotos(),
       names:   loadDisplayNames(),
       avatars: loadAvatars(),
+      // Anthropic API key is mirrored via this same shared row so the
+      // family doesn't have to set it up on every device. Only the family
+      // can read this row (Supabase RLS) and the key only authorises
+      // their own Anthropic spend, so this matches the trust boundary.
+      // We always include the field so that an explicit "delete" on one
+      // device clears it everywhere on next sync.
+      apiKey:  loadApiKey() || '',
       _localUpdatedAt: new Date().toISOString(),
     };
   }
@@ -3959,6 +3966,19 @@
     if (Array.isArray(d.photos))                            applyKey(FAMILY_PHOTOS_KEY, d.photos);
     if (d.names   && typeof d.names   === 'object')         applyKey(NAMES_KEY,         d.names);
     if (d.avatars && typeof d.avatars === 'object')         applyKey(AVATARS_KEY,       d.avatars);
+    // apiKey is a plain string (not JSON-encoded) so it can't go through
+    // applyKey() above. Set it directly; an empty string means the key
+    // was explicitly cleared elsewhere and should be removed here too.
+    if (typeof d.apiKey === 'string') {
+      const cur = localStorage.getItem(AI_KEY_STORAGE) || '';
+      if (cur !== d.apiKey) {
+        try {
+          if (d.apiKey) localStorage.setItem(AI_KEY_STORAGE, d.apiKey);
+          else          localStorage.removeItem(AI_KEY_STORAGE);
+          changed = true;
+        } catch {}
+      }
+    }
     if (changed) {
       // Mark our local timestamp to mirror what we just pulled, so we
       // don't immediately re-push the same data on the next event.
@@ -4012,6 +4032,13 @@
       if (k) localStorage.setItem(AI_KEY_STORAGE, k);
       else   localStorage.removeItem(AI_KEY_STORAGE);
     } catch (err) { console.warn('saveApiKey failed', err); }
+    // Mirror the key through the family-shared cloud row so the other
+    // four devices pick it up automatically on next boot, instead of
+    // every member having to paste it themselves.
+    try {
+      stampFamilySharedLocal();
+      pushFamilySharedState();
+    } catch {}
   }
   function chatHistoryKey(memberId) { return 'hfe_chat_v1_' + memberId; }
   function loadChatHistory(memberId) {
