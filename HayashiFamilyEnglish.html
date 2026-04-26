@@ -28,6 +28,9 @@
   .flip-face.back { display: none; }
   .flip-inner.is-flipped > .flip-face:not(.back) { display: none; }
   .flip-inner.is-flipped > .flip-face.back { display: flex; }
+  /* Reload button spin (visible only when .is-spinning is set) */
+  @keyframes hfe-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .hfe-reload-icon.is-spinning { animation: hfe-spin 0.8s linear infinite; }
 </style>
 </head>
 <body>
@@ -76,26 +79,20 @@
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
-  // forLearner=true: shown to family members who study (father, sons)
-  // forViewer=true:  shown to mother (viewer-only)
-  // Layout (per request):
-  //   row 1: 今日の20問 (full-width primary)
-  //   row 2: 単語学習         | 瞬間英作文
-  //   row 3: 間違い復習       | 覚えた英作文
-  //   row 4: 覚えた単語       | 応援メッセージ
-  //   row 5: 家族ランキング (full-width)
+  // 4 rows × 2 columns. All same-sized tiles (no full-width primary).
+  //   row 1: ランダムテスト       | Daily English
+  //   row 2: 単語学習(日→英)       | 単語学習(英→日)
+  //   row 3: 瞬間英作文(日→英)     | 瞬間英作文(英→日)
+  //   row 4: 間違い復習(単語+英作文)| 覚えた一覧(単語+英作文)
   const FEATURES = [
-    { id: 'daily20',                label: '今日の20問',         desc: '単語と英作文を混ぜて20問', primary: true, forLearner: true, forViewer: false },
-    { id: 'random_test',            label: 'ランダムテスト',     desc: '混合10問・4択',                       forLearner: true, forViewer: false },
-    { id: 'ai_chat',                label: 'AI質問',             desc: '英語のことなんでも',                  forLearner: true, forViewer: true  },
-    { id: 'vocab',                  label: '単語学習',           desc: 'カードでじっくり',                    forLearner: true, forViewer: false },
-    { id: 'composition',            label: '瞬間英作文',         desc: '日本語 ⇄ 英語',                       forLearner: true, forViewer: false },
-    { id: 'phrases',                label: 'Daily English',      desc: 'シーン別・すぐ使える英語',            forLearner: true, forViewer: false },
-    { id: 'mistakes_vocab',         label: '間違えた単語',       desc: '単語の復習',                          forLearner: true, forViewer: false },
-    { id: 'mistakes_sentence',      label: '間違えた英作文',     desc: '英作文の復習',                        forLearner: true, forViewer: false },
-    { id: 'mastered_vocab',         label: '覚えた単語',         desc: '習得した単語',                        forLearner: true, forViewer: true  },
-    { id: 'mastered_compositions',  label: '覚えた英作文',       desc: '言えるようになった文',                forLearner: true, forViewer: false },
-    { id: 'ranking',                label: '家族ランキング',     desc: '今週のがんばり',          primary: true, forLearner: true, forViewer: true  },
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '混合10問・4択',         forLearner: true, forViewer: false },
+    { id: 'phrases',            label: 'Daily English',  desc: 'シーン別・すぐ使える英語', forLearner: true, forViewer: false },
+    { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',           forLearner: true, forViewer: false },
+    { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',           forLearner: true, forViewer: true  },
+    { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',           forLearner: true, forViewer: false },
+    { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',           forLearner: true, forViewer: false },
+    { id: 'mistakes',           label: '間違い復習',     desc: '単語と英作文',            forLearner: true, forViewer: false },
+    { id: 'mastered',           label: '覚えた一覧',     desc: '単語と英作文',            forLearner: true, forViewer: true  },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -2397,6 +2394,48 @@
     );
   }
 
+  // ---------- Reload button (elegant SVG circular arrow + spin feedback) ----------
+  // Replaces the 🔄 emoji with a properly drawn icon. While the page is
+  // navigating away (after the click), the icon spins so the user knows the
+  // press registered.
+  function ReloadBtn() {
+    const [spinning, setSpinning] = useState(false);
+    function go() {
+      if (spinning) return;
+      setSpinning(true);
+      // Briefly hold the spin so the user sees feedback before nav happens.
+      setTimeout(() => { hardReload(); }, 120);
+    }
+    return e('button', {
+      onClick: go,
+      title: 'アプリを再読み込み',
+      'aria-label': '再読み込み',
+      style: {
+        width: 36, height: 36, borderRadius: 999,
+        background: C.softer, border: '1px solid ' + C.line,
+        color: C.sub,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        cursor: spinning ? 'wait' : 'pointer',
+        padding: 0,
+      },
+    },
+      e('svg', {
+        className: 'hfe-reload-icon' + (spinning ? ' is-spinning' : ''),
+        xmlns: 'http://www.w3.org/2000/svg',
+        width: 16, height: 16, viewBox: '0 0 24 24',
+        fill: 'none', stroke: 'currentColor',
+        'stroke-width': 1.8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+        'aria-hidden': 'true',
+      },
+        // Open circular arrow + arrowhead — used by macOS / iOS native UI.
+        e('path', { d: 'M3 12a9 9 0 0 1 15.5-6.3' }),
+        e('polyline', { points: '19 2 19 6 15 6' }),
+        e('path', { d: 'M21 12a9 9 0 0 1-15.5 6.3' }),
+        e('polyline', { points: '5 22 5 18 9 18' }),
+      ),
+    );
+  }
+
   // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
   function speak(text) {
     if (!('speechSynthesis' in window)) return;
@@ -2670,19 +2709,56 @@
   // ---------- Family photo gallery (multi-photo, shared across the family) ----------
   // Anyone can upload (Ryoji, mom, wife) — these surface randomly when a
   // session is completed so the practice ends with a piece of home.
-  const FAMILY_PHOTOS_KEY = 'hfe_family_photos_v1';
+  const FAMILY_PHOTOS_KEY  = 'hfe_family_photos_v1';
+  // The cloud-side row id we use to store family-wide data inside member_state.
+  // (member_state is a generic key/value blob keyed by member_id; we just
+  // borrow a synthetic id 'family' for shared rows.)
+  const FAMILY_SHARED_ID   = 'family';
   function loadFamilyPhotos() {
     try { return JSON.parse(localStorage.getItem(FAMILY_PHOTOS_KEY) || '[]'); }
     catch { return []; }
   }
   function saveFamilyPhotos(arr) {
-    try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(arr || [])); }
+    const safe = arr || [];
+    try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(safe)); }
     catch (err) { console.warn('saveFamilyPhotos failed', err); }
+    // Mirror to Supabase so the photos survive a localStorage clear and show
+    // up on every device. We piggy-back on the same member_state table.
+    try {
+      cloud.schedulePush(FAMILY_SHARED_ID, {
+        photos: safe,
+        _localUpdatedAt: new Date().toISOString(),
+      });
+    } catch {}
   }
   function pickRandomFamilyPhoto() {
     const arr = loadFamilyPhotos();
     if (arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)].url;
+  }
+  // Pull the cloud copy on app boot — if cloud has photos and local is empty,
+  // restore them. This is what brings the photos back after a localStorage
+  // clear / reinstall / different device.
+  async function hydrateFamilyPhotosFromCloud() {
+    if (!cloud.status.enabled) return;
+    const remote = await cloud.pull(FAMILY_SHARED_ID);
+    if (!remote || !remote.data || !Array.isArray(remote.data.photos)) return;
+    const local = loadFamilyPhotos();
+    const localTs  = local && local.length > 0 ? '1' : '';
+    const remoteTs = remote.updated_at || '';
+    // If we have nothing local OR cloud is newer, take cloud.
+    if (local.length === 0 || (remoteTs && (!localTs || remoteTs > localTs))) {
+      try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(remote.data.photos)); }
+      catch {}
+    } else if (local.length > 0) {
+      // Local is non-empty — push it up to make sure cloud has it.
+      try {
+        cloud.schedulePush(FAMILY_SHARED_ID, {
+          photos: local,
+          _localUpdatedAt: new Date().toISOString(),
+        });
+      } catch {}
+    }
   }
 
   // ---------- Encouragement messages (bilingual, surfaced on session done) ----------
@@ -2895,19 +2971,27 @@
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
       let body;
-      if      (route.feature === 'vocab')                  body = e(VocabBrowse,        { profile, onBack: back });
-      else if (route.feature === 'daily20')                body = e(Daily20,            { profile, onBack: back });
-      else if (route.feature === 'composition')            body = e(SprintComposition,  { profile, onBack: back });
-      else if (route.feature === 'phrases')                body = e(DailyPhrases,       { profile, onBack: back });
-      else if (route.feature === 'random_test')            body = e(RandomTest,         { profile, onBack: back });
-      else if (route.feature === 'ai_chat')                body = e(AIChat,             { profile, onBack: back });
-      else if (route.feature === 'mistakes')               body = e(MistakeReview,      { profile, onBack: back });
-      else if (route.feature === 'mistakes_vocab')         body = e(MistakeReview,      { profile, onBack: back, kindFilter: 'vocab' });
-      else if (route.feature === 'mistakes_sentence')      body = e(MistakeReview,      { profile, onBack: back, kindFilter: 'sentence' });
-      else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,      { profile, onBack: back });
-      else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences,  { profile, onBack: back });
-      else if (route.feature === 'ranking')                body = e(FamilyRanking,      { profile, onBack: back });
-      else if (route.feature === 'support')                body = e(SupportMessages,    { profile, onBack: back });
+      if      (route.feature === 'phrases')                body = e(DailyPhrases,      { profile, onBack: back });
+      else if (route.feature === 'random_test')            body = e(RandomTest,        { profile, onBack: back });
+      // Direction-baked tiles — open the practice screen with the picker preset.
+      else if (route.feature === 'vocab_ja2en')            body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'ja2en' });
+      else if (route.feature === 'vocab_en2ja')            body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'en2ja' });
+      else if (route.feature === 'composition_ja2en')      body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'ja2en' });
+      else if (route.feature === 'composition_en2ja')      body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
+      // Combined review / mastered (no kind split on the home grid).
+      else if (route.feature === 'mistakes')               body = e(MistakeReview,     { profile, onBack: back });
+      else if (route.feature === 'mastered')               body = e(CombinedMastered,  { profile, onBack: back });
+      // Legacy ids kept for safety so old links / saved feeds don't 404.
+      else if (route.feature === 'mistakes_vocab')         body = e(MistakeReview,     { profile, onBack: back, kindFilter: 'vocab' });
+      else if (route.feature === 'mistakes_sentence')      body = e(MistakeReview,     { profile, onBack: back, kindFilter: 'sentence' });
+      else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,     { profile, onBack: back });
+      else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences, { profile, onBack: back });
+      else if (route.feature === 'vocab')                  body = e(VocabBrowse,       { profile, onBack: back });
+      else if (route.feature === 'composition')            body = e(SprintComposition, { profile, onBack: back });
+      else if (route.feature === 'ai_chat')                body = e(AIChat,            { profile, onBack: back });
+      else if (route.feature === 'daily20')                body = e(Daily20,           { profile, onBack: back });
+      else if (route.feature === 'ranking')                body = e(FamilyRanking,     { profile, onBack: back });
+      else if (route.feature === 'support')                body = e(SupportMessages,   { profile, onBack: back });
       else                                                  body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -2918,69 +3002,26 @@
   function ProfileSelect({ onPick, onOpenSettings }) {
     return e('div', {
       style: {
-        maxWidth: 480, margin: '0 auto', padding: '48px 22px 96px',
-
+        maxWidth: 480, margin: '0 auto', padding: '64px 22px 64px',
         position: 'relative',
       }
     },
-      // Reload button (top-right, just left of Setting)
-      e('button', {
-        onClick: hardReload,
-        style: {
-          position: 'absolute', top: 18, right: 76,
-          width: 28, height: 28, borderRadius: 999,
-          background: C.softer, border: '1px solid ' + C.line,
-          fontSize: 13, color: C.sub,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        },
-        title: 'アプリを再読み込み',
-        'aria-label': '再読み込み',
-      }, '🔄'),
-
-      // Settings (top-right) — plain text
-      e('button', {
-        onClick: onOpenSettings,
-        style: {
-          position: 'absolute', top: 18, right: 18,
-          padding: '5px 10px', borderRadius: 999,
-          background: C.softer, border: '1px solid ' + C.line,
-          fontSize: 11, color: C.sub, fontWeight: 600, fontFamily: SANS_UI,
-          letterSpacing: '0.04em',
-          cursor: 'pointer',
-        },
-        'aria-label': '設定',
-      }, 'Setting'),
-
-      // Header — Cormorant Garamond display, restrained gold rule
-      e('div', { style: { textAlign: 'center', marginBottom: 36, paddingTop: 12 } },
+      // Header — both lines in matching elegant serif, same size, no
+      // subtitle. Pushed down so the page breathes at the top.
+      e('div', { style: { textAlign: 'center', marginBottom: 44, paddingTop: 40 } },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.32em', textTransform: 'uppercase',
-            color: C.gold, marginBottom: 14,
+            fontFamily: SERIF, fontSize: 38, fontWeight: 500,
+            color: C.text, lineHeight: 1.15,
           }
-        }, 'Hayashi Family'),
+        }, '林ファミリー'),
         e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 46, fontWeight: 500,
-            letterSpacing: '-0.01em', color: C.text, lineHeight: 1.05,
+            fontFamily: SERIF, fontStyle: 'italic',
+            fontSize: 38, fontWeight: 500,
+            color: C.text, lineHeight: 1.15, marginTop: 4,
           }
         }, 'English'),
-        e('div', {
-          style: {
-            fontFamily: SERIF, fontSize: 22, fontWeight: 400,
-            color: C.sub, fontStyle: 'italic',
-            marginTop: 4, lineHeight: 1.2,
-          }
-        }, 'a family practice'),
-        // Hairline gold rule
-        e('div', {
-          style: {
-            width: 36, height: 1, background: C.gold, opacity: 0.55,
-            margin: '20px auto 0',
-          }
-        }),
       ),
 
       // Cards
@@ -2988,10 +3029,29 @@
         PROFILES.map(p => e(ProfileCard, { key: p.id, profile: p, onClick: () => onPick(p.id) })),
       ),
 
+      // Reload + Setting (below the cards, centered)
+      e('div', {
+        style: {
+          marginTop: 28, display: 'flex', justifyContent: 'center', gap: 12,
+        }
+      },
+        e(ReloadBtn),
+        e('button', {
+          onClick: onOpenSettings,
+          style: {
+            padding: '8px 16px', borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 12, color: C.sub, fontWeight: 600, fontFamily: SANS_UI,
+            letterSpacing: '0.04em', cursor: 'pointer',
+          },
+          'aria-label': '設定',
+        }, 'Setting'),
+      ),
+
       // Footer note
       e('div', {
         style: {
-          marginTop: 32, textAlign: 'center', fontSize: 11,
+          marginTop: 20, textAlign: 'center', fontSize: 11,
           color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
         }
       }, 'v0.1 — プロトタイプ'),
@@ -3066,10 +3126,9 @@
   }
 
   // ---------- English Learning Home ----------
-  function EnglishHome({ profile, onBackToProfiles, onPickFeature, onOpenAchievements, onOpenFeed }) {
+  function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
-    const feedCount = db.getFeed().length;
     // Pick one phrase per day so the same phrase appears all day for one
     // member. Mix profile.id into the seed so different members can see
     // different phrases on the same day.
@@ -3097,18 +3156,7 @@
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
           'プロファイルを切り替える'),
-        e('button', {
-          onClick: hardReload,
-          title: 'アプリを再読み込み',
-          'aria-label': '再読み込み',
-          style: {
-            width: 28, height: 28, borderRadius: 999,
-            background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 13, color: C.sub,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          },
-        }, '🔄'),
+        e(ReloadBtn),
       ),
 
       // Daily encouragement (text-only, bilingual). EN is the focus → larger.
@@ -3160,63 +3208,34 @@
         }
       },
         visibleFeatures.map(f => {
-          // Inject live counts where it matters
+          // Inject live counts where useful
           let subtitle = f.desc;
-          if (f.id === 'mastered_vocab') {
-            const n = computeStats(profile.id).masteredCount;
-            subtitle = n + ' / 1,000 語';
-          } else if (f.id === 'mistakes_vocab') {
-            const n = db.getMistakesNormalized(profile.id).filter(m => m.kind === 'vocab').length;
-            subtitle = n === 0 ? 'まだありません' : n + ' 語の復習';
-          } else if (f.id === 'mistakes_sentence') {
-            const n = db.getMistakesNormalized(profile.id).filter(m => m.kind === 'sentence').length;
-            subtitle = n === 0 ? 'まだありません' : n + ' 文の復習';
-          } else if (f.id === 'mastered_compositions') {
-            const n = getMasteredSentences(profile.id).length;
-            subtitle = n + ' / ' + SENTENCES.length + ' 文';
+          if (f.id === 'mistakes') {
+            const n = db.getMistakesNormalized(profile.id).length;
+            subtitle = n === 0 ? '単語と英作文' : n + ' 件の復習';
+          } else if (f.id === 'mastered') {
+            const v = getMasteredVocab(profile.id).length;
+            const s = getMasteredSentences(profile.id).length;
+            subtitle = v + '語 / ' + s + '文';
           }
           return e(FeatureTile, {
-            key: f.id, feature: f, accent: profile.color,
+            key: f.id, feature: f,
             onClick: () => onPickFeature(f.id),
-            fullWidth: f.primary,
             subtitle,
           });
         }),
       ),
 
-      // Family feed quick-access (text only, no decorative icons)
-      e('button', {
-        onClick: onOpenFeed,
-        style: {
-          width: '100%', marginTop: 12, padding: '14px 16px',
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, textAlign: 'left', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 12,
-        },
-      },
-        e('div', { style: { flex: 1 } },
-          e('div', {
-            style: { fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }
-          }, '家族の今'),
-          e('div', {
-            style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
-          }, feedCount === 0 ? 'まだ投稿はありません' : feedCount + ' 件のアクティビティ'),
-        ),
-        e('div', { style: { color: C.sub, fontSize: 18 } }, '›'),
-      ),
     );
   }
 
-  function FeatureTile({ feature, accent, onClick, fullWidth, subtitle }) {
-    const isPrimary = !!feature.primary;
+  function FeatureTile({ feature, onClick, subtitle }) {
     const sub = subtitle || feature.desc;
     return e('button', {
       onClick,
       style: {
-        gridColumn: fullWidth ? '1 / -1' : 'auto',
-        background: isPrimary ? accent : C.card,
-        color: isPrimary ? '#fff' : C.text,
-        border: '1px solid ' + (isPrimary ? accent : C.line),
+        background: C.card, color: C.text,
+        border: '1px solid ' + C.line,
         borderRadius: 14, padding: '16px 14px',
         textAlign: 'left', minHeight: 86,
         display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4,
@@ -3227,17 +3246,16 @@
       e('div', {
         style: {
           fontSize: 11, marginTop: 2, lineHeight: 1.4,
-          color: isPrimary ? 'rgba(255,255,255,0.85)' : C.sub,
-          fontFamily: SANS_UI, fontWeight: 600,
+          color: C.sub, fontFamily: SANS_UI, fontWeight: 600,
         }
       }, sub),
     );
   }
 
   // ---------- Vocab Browse (single flashcard, manual navigation) ----------
-  function VocabBrowse({ profile, onBack }) {
+  function VocabBrowse({ profile, onBack, forcedDirection }) {
     const [filter, setFilter] = useState('all');                 // 'all' | '1'..'5'
-    const [direction, setDirection] = useState('en2ja');         // 'en2ja' | 'ja2en'
+    const [direction, setDirection] = useState(forcedDirection || 'en2ja'); // 'en2ja' | 'ja2en'
     const [index, setIndex]   = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [tick, setTick]     = useState(0);                     // bump after marking, to re-read progress
@@ -3326,8 +3344,8 @@
         })
       ),
 
-      // Direction picker
-      e('div', { style: { display: 'flex', gap: 8, marginBottom: 18 } },
+      // Direction picker (hidden when forcedDirection is set by the tile)
+      !forcedDirection && e('div', { style: { display: 'flex', gap: 8, marginBottom: 18 } },
         [
           { value: 'en2ja', label: '英語 → 日本語' },
           { value: 'ja2en', label: '日本語 → 英語' },
@@ -5037,9 +5055,9 @@
     return arr.slice(0, count);
   }
 
-  function SprintComposition({ profile, onBack }) {
+  function SprintComposition({ profile, onBack, forcedDirection }) {
     const [selectedLevel, setSelectedLevel] = useState('auto'); // 'auto' | 1..5
-    const [direction, setDirection] = useState('ja2en'); // 'ja2en' | 'en2ja'
+    const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' | 'en2ja'
     const [queue, setQueue]   = useState([]);
     const [phase, setPhase]   = useState('intro');
     const [index, setIndex]   = useState(0);
@@ -5168,15 +5186,15 @@
             );
           })
         ),
-        // Direction picker
-        e('div', {
+        // Direction picker (hidden when the tile already chose a direction)
+        !forcedDirection && e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
         }, '方向を選ぶ'),
-        e('div', { style: { display: 'flex', gap: 8, marginBottom: 22 } },
+        !forcedDirection && e('div', { style: { display: 'flex', gap: 8, marginBottom: 22 } },
           [
             { value: 'ja2en', label: '日本語 → 英語', desc: '日本語を見て英語に直す' },
             { value: 'en2ja', label: '英語 → 日本語', desc: '英語を見て日本語に直す' },
@@ -5581,18 +5599,7 @@
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '設定'),
-        e('button', {
-          onClick: hardReload,
-          title: 'アプリを再読み込み',
-          'aria-label': '再読み込み',
-          style: {
-            width: 28, height: 28, borderRadius: 999,
-            background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 13, color: C.sub,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          },
-        }, '🔄'),
+        e(ReloadBtn),
       ),
 
       // Header
@@ -6018,19 +6025,58 @@
     );
   }
 
+  // ---------- Combined mastered (vocab + sentences in one screen) ----------
+  // Tabs at the top, each list is the same UI as the standalone screen.
+  function CombinedMastered({ profile, onBack }) {
+    const [tab, setTab] = useState('vocab'); // 'vocab' | 'sentence'
+    return e('div', { style: pageStyle },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '覚えた一覧'),
+      ),
+      // Tab switcher
+      e('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
+        [
+          { id: 'vocab',    label: '覚えた単語' },
+          { id: 'sentence', label: '覚えた英作文' },
+        ].map(t => {
+          const active = tab === t.id;
+          return e('button', {
+            key: t.id,
+            onClick: () => setTab(t.id),
+            style: {
+              flex: 1, padding: '10px 0', borderRadius: 12,
+              background: active ? profile.color + '14' : C.card,
+              color: active ? profile.color : C.sub,
+              border: '1px solid ' + (active ? profile.color : C.line),
+              fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
+              cursor: 'pointer',
+            }
+          }, t.label);
+        })
+      ),
+      // Body — render the existing screen but tell it to skip its own top bar
+      tab === 'vocab'
+        ? e(MasteredVocab,     { profile, onBack, embedded: true })
+        : e(MasteredSentences, { profile, onBack, embedded: true }),
+    );
+  }
+
   // ---------- Mastered Vocabulary ----------
   // Shows progress toward the 1,000-word goal and lists every word
   // the SRS engine has marked as mastered.
   const VOCAB_GOAL = 1000;
 
-  function MasteredVocab({ profile, onBack }) {
+  function MasteredVocab({ profile, onBack, embedded }) {
     const items = useMemo(() => getMasteredVocab(profile.id), [profile.id]);
     const count = items.length;
     const pct = Math.min(100, count * 100 / VOCAB_GOAL);
 
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+    return e('div', { style: embedded ? null : pageStyle },
+      // Top bar — hidden when embedded inside CombinedMastered
+      !embedded && e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
         e('button', { onClick: onBack,
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
@@ -6137,14 +6183,14 @@
   }
 
   // ---------- Mastered Sentences ----------
-  function MasteredSentences({ profile, onBack }) {
+  function MasteredSentences({ profile, onBack, embedded }) {
     const items = useMemo(() => getMasteredSentences(profile.id), [profile.id]);
     const total = SENTENCES.length;
     const count = items.length;
     const pct   = total > 0 ? Math.min(100, count * 100 / total) : 0;
 
-    return e('div', { style: pageStyle },
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+    return e('div', { style: embedded ? null : pageStyle },
+      !embedded && e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
         e('button', { onClick: onBack,
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
@@ -7232,6 +7278,9 @@
   // keeps working offline.
   if (cloud.status.enabled) {
     cloud.pingTest().catch(() => {});
+    // Restore any family photos that exist in the cloud but not on this
+    // device (e.g. after a learning-data reset / new browser / new install).
+    hydrateFamilyPhotosFromCloud().catch(() => {});
   }
 
   // ---------- Service Worker registration (offline support) ----------
