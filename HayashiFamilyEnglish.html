@@ -49,13 +49,14 @@
     sub:     '#A09A8C',   // muted warm grey
     line:    '#E8E4DC',   // hairline border
     gold:    '#8B6914',   // restrained luxe accent (BC signature)
-    accent:  '#C97D3B',   // warm orange — Yoshinari's color
+    accent:  '#C97D3B',   // warm orange — kept for non-profile UI accents
     forest:  '#4A6840',
     ocean:   '#3D6FA0',
     sun:     '#D4A22F',
     rose:    '#C97A8A',
     danger:  '#B0533F',
     success: '#6E9560',
+    brand:   '#1A1714',   // single brand color used for every profile
   };
   const SERIF   = "'Cormorant Garamond', 'Shippori Mincho', 'Noto Serif JP', Georgia, serif";
   const SANS_UI = "'DM Sans', 'Noto Sans JP', system-ui, sans-serif";
@@ -63,11 +64,11 @@
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
   const PROFILES = [
-    { id: 'father', name: '父',   subtitle: '英検準2級レベル',     emoji: '🌲', color: C.forest, role: 'learner', level: 3 },
-    { id: 'son1',   name: '長男', subtitle: '高2・英検2級',          emoji: '🎯', color: C.ocean,  role: 'learner', level: 4 },
-    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',   emoji: '⚽', color: C.accent, role: 'learner', level: 2, maxLevel: 2 },
-    { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',   emoji: '🌟', color: C.sun,    role: 'learner', level: 1 },
-    { id: 'mother', name: '母',   subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.rose,   role: 'learner', level: 2, isCheerleader: true },
+    { id: 'father', name: '父',   subtitle: '英検準2級レベル',          emoji: '🌲', color: C.brand, role: 'learner', level: 3 },
+    { id: 'mother', name: '母',   subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
+    { id: 'son1',   name: '長男', subtitle: '高2・英検2級',             emoji: '🎯', color: C.brand, role: 'learner', level: 4 },
+    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',      emoji: '⚽', color: C.brand, role: 'learner', level: 2, maxLevel: 2 },
+    { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',      emoji: '🌟', color: C.brand, role: 'learner', level: 1 },
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
@@ -6663,14 +6664,36 @@
               fontWeight: 700, flexShrink: 0, marginTop: 2,
             }
           }, r.isCorrect ? '✓' : '✗'),
-          e('div', { style: { flex: 1, minWidth: 0 } },
-            e('div', { style: { fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 } },
-              (r.direction === 'en2ja' ? r.en : r.ja)),
-            e('div', { style: { fontSize: 12, color: C.sub } },
-              '→ ' + r.correct),
-            !r.isCorrect && e('div', { style: { fontSize: 11, color: C.danger, marginTop: 2 } },
-              'あなたの答え: ' + r.chosen),
-          ),
+          (function () {
+            const promptIsEn = r.direction === 'en2ja';
+            const correctIsEn = !promptIsEn;
+            const promptText = promptIsEn ? r.en : r.ja;
+            const speakerStyle = {
+              width: 26, height: 26, borderRadius: 999, fontSize: 12,
+              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
+              border: '1px solid ' + C.line,
+            };
+            return e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                e('div', { style: { flex: 1, fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 } },
+                  promptText),
+                promptIsEn && e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(r.en); },
+                  'aria-label': '発音', style: speakerStyle,
+                }, '🔊'),
+              ),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                e('div', { style: { flex: 1, fontSize: 12, color: C.sub } },
+                  '→ ' + r.correct),
+                correctIsEn && e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(r.correct); },
+                  'aria-label': '発音', style: speakerStyle,
+                }, '🔊'),
+              ),
+              !r.isCorrect && e('div', { style: { fontSize: 11, color: C.danger, marginTop: 2 } },
+                'あなたの答え: ' + r.chosen),
+            );
+          })(),
           e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
             r.kind === 'vocab' ? '単語' : r.kind === 'sentence' ? '英作文' : 'フレーズ'),
         )),
@@ -6721,43 +6744,68 @@
             }
           }, dirLabel),
         ),
-        // Prompt
-        e('div', { style: { padding: '12px 0' } },
+        // Prompt — when prompt is English (EN→JA), put a speaker next to it.
+        e('div', { style: { padding: '12px 0', display: 'flex', alignItems: 'center', gap: 12 } },
           e('div', {
             style: {
+              flex: 1,
               fontSize: optsObj.isEn2Ja ? 32 : 28,
               fontWeight: 800, color: C.text, lineHeight: 1.4,
               fontFamily: optsObj.isEn2Ja ? SERIF : 'inherit',
             }
           }, optsObj.prompt),
+          optsObj.isEn2Ja && e('button', {
+            onClick: (ev) => { ev.stopPropagation(); speak(optsObj.prompt); },
+            'aria-label': '発音',
+            style: {
+              width: 44, height: 44, borderRadius: 999, fontSize: 20,
+              background: C.softer, color: profile.color, lineHeight: 1, flexShrink: 0,
+            }
+          }, '🔊'),
         ),
       ),
-      // Options (4 buttons)
+      // Options (4 buttons) — when options are English (JA→EN), every choice gets a 🔊.
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         optsObj.options.map((opt, i) => {
           const isPicked  = chosen === opt;
           const isCorrect = opt === optsObj.correct;
           const showResult = chosen !== null;
+          const optionsAreEn = !optsObj.isEn2Ja;
           let bg = C.card, border = C.line, color = C.text;
           if (showResult && isCorrect) {
             bg = C.success + '22'; border = C.success; color = C.success;
           } else if (showResult && isPicked && !isCorrect) {
             bg = C.danger + '22'; border = C.danger; color = C.danger;
           }
-          return e('button', {
+          return e('div', {
             key: i,
-            onClick: () => pick(opt),
-            disabled: chosen !== null,
             style: {
-              padding: '16px 18px', borderRadius: 14, textAlign: 'left',
-              background: bg, border: '1px solid ' + border, color,
-              fontSize: optsObj.isEn2Ja ? 16 : 18,
-              fontWeight: 600, lineHeight: 1.4,
-              fontFamily: optsObj.isEn2Ja ? 'inherit' : SERIF,
-              cursor: chosen !== null ? 'default' : 'pointer',
-              transition: 'all .2s ease',
+              display: 'flex', alignItems: 'stretch', gap: 8,
             }
-          }, opt);
+          },
+            e('button', {
+              onClick: () => pick(opt),
+              disabled: chosen !== null,
+              style: {
+                flex: 1,
+                padding: '16px 18px', borderRadius: 14, textAlign: 'left',
+                background: bg, border: '1px solid ' + border, color,
+                fontSize: optsObj.isEn2Ja ? 16 : 18,
+                fontWeight: 600, lineHeight: 1.4,
+                fontFamily: optsObj.isEn2Ja ? 'inherit' : SERIF,
+                cursor: chosen !== null ? 'default' : 'pointer',
+              }
+            }, opt),
+            optionsAreEn && e('button', {
+              onClick: (ev) => { ev.stopPropagation(); speak(opt); },
+              'aria-label': '発音',
+              style: {
+                width: 52, borderRadius: 14, fontSize: 18,
+                background: C.softer, color: profile.color, lineHeight: 1,
+                border: '1px solid ' + C.line, flexShrink: 0,
+              }
+            }, '🔊'),
+          );
         }),
       ),
     );
