@@ -24,13 +24,14 @@
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
   #root { min-height: 100vh; min-height: 100dvh; }
-  /* Flashcard simple toggle (no 3D animation) */
-  .flip-wrap   { position: relative; }
-  .flip-inner  { position: relative; width: 100%; }
-  .flip-face   { width: 100%; }
-  .flip-face.back { display: none; }
-  .flip-inner.is-flipped > .flip-face:not(.back) { display: none; }
-  .flip-inner.is-flipped > .flip-face.back { display: flex; }
+  /* Flip card — 3D rotateY for the Daily English phrasebook rows */
+  .flip-wrap   { perspective: 1200px; }
+  .flip-inner  { position: relative; width: 100%; transform-style: preserve-3d;
+                 transition: transform .55s cubic-bezier(.2,.8,.2,1); }
+  .flip-inner.is-flipped { transform: rotateY(180deg); }
+  .flip-face   { position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  .flip-face.front { position: relative; }
+  .flip-face.back  { transform: rotateY(180deg); }
   /* Reload button spin (visible only when .is-spinning is set) */
   @keyframes hfe-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .hfe-reload-icon.is-spinning { animation: hfe-spin 0.8s linear infinite; }
@@ -1995,7 +1996,8 @@
     // should clear the item from the mistake log).
     recordAnswer(memberId, vocabId, isCorrect, opts) {
       const prev = this.getVocabProgress(memberId, vocabId);
-      const next = srs.apply(prev, isCorrect);
+      const direction = (opts && opts.direction) || 'ja2en';
+      const next = srs.apply(prev, isCorrect, direction);
       this.setVocabProgress(memberId, vocabId, next);
       if (!isCorrect) this.pushMistake(memberId, vocabId);
       else if (opts && opts.removeOnCorrect) this.removeMistake(memberId, vocabId);
@@ -2222,9 +2224,13 @@
         nextAt: null,
         intervalDays: 0,
         ease: 2.5,
+        // Per-direction success — once the learner has marked '覚えた' in
+        // both directions the word is considered mastered.
+        knownJa2En: false,
+        knownEn2Ja: false,
       };
     },
-    apply(state, isCorrect) {
+    apply(state, isCorrect, direction) {
       const s = state ? Object.assign({}, state) : this.initial();
       s.totalAttempts++;
       s.lastAt = new Date().toISOString();
@@ -2234,18 +2240,23 @@
         if (s.intervalDays === 0)         { s.intervalDays = 1; }
         else if (s.intervalDays < 4)      { s.intervalDays = Math.round(s.intervalDays * 2); }
         else                              { s.intervalDays = Math.round(s.intervalDays * s.ease); }
-        // Mastery rule: 3 consecutive correct answers (achievable in one
-        // session for the youngest learner). The interval-based path stays
-        // as a generous fallback for long-term reviewers.
-        if (s.consecutiveCorrect >= 3 || s.intervalDays >= 30) s.status = 'mastered';
-        else if (s.consecutiveCorrect >= 2)                    s.status = 'review';
-        else                                                    s.status = 'learning';
+        // Stamp the direction the learner just nailed. Default to 'ja2en'
+        // for legacy callers that don't pass direction.
+        const dir = direction === 'en2ja' ? 'en2ja' : 'ja2en';
+        if (dir === 'ja2en') s.knownJa2En = true;
+        else                 s.knownEn2Ja = true;
+        // Mastered when both directions have been marked correct at least
+        // once. Otherwise it's still learning (consecutiveCorrect tracks
+        // momentum but no longer promotes to mastered on its own).
+        if (s.knownJa2En && s.knownEn2Ja)        s.status = 'mastered';
+        else if (s.consecutiveCorrect >= 2)      s.status = 'review';
+        else                                      s.status = 'learning';
       } else {
         s.consecutiveCorrect = 0;
         s.intervalDays = 0;
-        // A wrong answer steps the word down to 'learning' but does NOT
-        // un-master a word the learner had already mastered before — the
-        // 'mastered' shelf is a permanent achievement once earned.
+        // A wrong answer steps the word back down to 'learning' but does
+        // NOT clear a direction flag the learner had previously earned —
+        // mastery is sticky once both sides are confirmed.
         if (s.status !== 'mastered') s.status = 'learning';
         s.ease = Math.max(1.3, s.ease - 0.2);
       }
@@ -2256,7 +2267,7 @@
     // Pick a queue for "today's 20":
     //   1) All due items, oldest nextAt first
     //   2) Filled with new items, preferring those near memberLevel
-    // Returns up to `count` vocab objects (in display order).
+    //   Returns up to `count` vocab objects (in display order).
     pickTodaysList(memberId, count, memberLevel) {
       const now = new Date().toISOString();
       const state = db.load(memberId);
@@ -3285,53 +3296,67 @@
     );
   }
 
-  // ---------- Vocab Browse (one prompt card at a time, accordion reveal) ----------
-  // The deck is shuffled fresh whenever the level filter or direction
-  // changes so 'water' isn't always first. The UI shows only the prompt
-  // until the learner taps '答えを見る'; the answer then expands inline
-  // and the learner picks 覚えた / 覚えてない to advance.
+  // ---------- Vocab Browse (20-question session, accordion reveal) ----------
+  // Each session draws 20 shuffled words from the chosen level filter,
+  // shows them one at a time with the answer hidden behind a tap, and
+  // ends on the shared SessionDoneCard once the learner has gone through
+  // all 20. The 20-question cap exists so kids see a clear finish line
+  // and don't burn out mid-deck.
+  const VOCAB_SESSION_COUNT = 20;
   function VocabBrowse({ profile, onBack, forcedDirection }) {
     const [filter, setFilter] = useState('all');                 // 'all' | '1'..'5'
     const [direction, setDirection] = useState(forcedDirection || 'en2ja'); // 'en2ja' | 'ja2en'
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
-    const [tick, setTick]     = useState(0);                     // bump after marking, to re-read progress
+    const [phase, setPhase]   = useState('study');               // 'study' | 'done'
+    const [correctCount, setCorrectCount] = useState(0);
+    const [tick, setTick]     = useState(0);
 
-    // Shuffled queue: re-rolled when filter / direction changes (or when we
-    // wrap around). Includes profile.id so two members on the same device
-    // don't see the exact same order.
+    // Shuffled queue capped at 20. Re-rolled when filter / direction
+    // changes (and when the learner restarts a fresh session). Includes
+    // profile.id so two members on the same device don't see identical order.
     const queue = useMemo(() => {
       let pool = filter === 'all'
         ? VOCAB.slice()
         : VOCAB.filter(v => v.level === parseInt(filter, 10));
-      // Fisher-Yates shuffle
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
       }
-      return pool;
+      return pool.slice(0, VOCAB_SESSION_COUNT);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filter, direction, profile.id]);
+    }, [filter, direction, profile.id, tick]);
 
-    // Reset to the top of the shuffled queue whenever it's regenerated.
-    useEffect(() => { setIndex(0); setRevealed(false); }, [queue]);
+    // Reset session state whenever the queue is regenerated.
+    useEffect(() => {
+      setIndex(0); setRevealed(false); setPhase('study'); setCorrectCount(0);
+    }, [queue]);
 
     const total   = queue.length;
     const current = queue[Math.min(index, total - 1)] || null;
     const progress = current ? db.getVocabProgress(profile.id, current.id) : null;
 
-    function next() {
-      setRevealed(false);
-      setIndex(i => (i + 1 >= total ? 0 : i + 1));
-    }
     function mark(isKnown) {
-      if (!current) return;
-      db.recordAnswer(profile.id, current.id, isKnown);
+      if (!current || phase !== 'study') return;
+      db.recordAnswer(profile.id, current.id, isKnown, { direction });
       if (isKnown) { soundCorrect(); hapticTap(); }
       else         { soundWrong();   hapticBuzz(); }
+      const nextCorrect = correctCount + (isKnown ? 1 : 0);
+      setCorrectCount(nextCorrect);
+      // Advance — or finish the session if we've answered all 20.
+      setTimeout(() => {
+        if (index + 1 >= total) {
+          soundComplete();
+          setPhase('done');
+        } else {
+          setRevealed(false);
+          setIndex(i => i + 1);
+        }
+      }, 240);
+    }
+    function restart() {
+      // Bumping `tick` regenerates the shuffled queue (a fresh 20).
       setTick(t => t + 1);
-      // Auto-advance after a short beat so the user sees the new status pill
-      setTimeout(next, 240);
     }
 
     const levelChips = ['all','1','2','3','4','5'];
@@ -3345,6 +3370,26 @@
     };
     const stInfo = statusInfo[(progress && progress.status) || 'new'];
     const isJa2En = direction === 'ja2en';
+
+    // ============ DONE ============
+    // Once the learner has worked through all 20 cards, hand off to the
+    // shared finish-screen body — random family photo, bilingual cheer,
+    // plain score. 'もう一度' restarts with a fresh shuffled deck.
+    if (phase === 'done') {
+      return e(SessionDoneCard, {
+        profile, correct: correctCount, total, onBack,
+        extra: e('button', {
+          onClick: restart,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: profile.color,
+            border: '1px solid ' + profile.color + '33',
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+            marginBottom: 12, cursor: 'pointer',
+          }
+        }, 'もう20問やる'),
+      });
+    }
 
     return e('div', {
       style: {
@@ -5697,6 +5742,17 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
+    // Per-row flipped state for the phrasebook list. Tap a JA row to flip
+    // it and reveal the EN answer; tap again to flip back. Stored as a
+    // Set of phrase ids so we can keep many rows independently flipped.
+    const [flippedIds, setFlippedIds] = useState(() => new Set());
+    function toggleFlip(id) {
+      setFlippedIds(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+    }
 
     // When filter changes from idle, jump back to intro
     useEffect(() => { if (phase !== 'study' && phase !== 'done') setPhase(filtered.length > 0 ? 'intro' : 'empty'); }, [filter]);
@@ -5788,30 +5844,55 @@
           : e('div', {
               style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }
             },
-              filtered.map(p => e('div', {
-                key: p.id,
-                style: {
+              // Each row is a 3D flip card:
+              //   front = Japanese (the prompt the learner sees first)
+              //   back  = English answer + speaker
+              //   tap anywhere on the card to flip; speaker tap doesn't flip
+              filtered.map(p => {
+                const flipped = flippedIds.has(p.id);
+                const cardStyle = {
                   background: C.card, border: '1px solid ' + C.line,
                   borderRadius: 14, padding: '14px 14px',
-                }
-              },
-                e('div', {
-                  style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
-                           letterSpacing: '0.08em', fontFamily: SANS_UI }
-                }, SCENE_LABELS[p.scene]),
-                // English first — large, plain dark text. Phrasebook-style.
-                e('div', {
-                  style: { fontSize: 19, color: C.text, fontFamily: SERIF, fontWeight: 600,
-                           lineHeight: 1.35, display: 'flex', alignItems: 'center', gap: 10 }
-                },
-                  e('span', { style: { flex: 1 } }, p.en),
-                  e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 32 }),
-                ),
-                // Japanese gloss — smaller, lighter, but still readable.
-                e('div', {
-                  style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.4 }
-                }, p.ja),
-              )),
+                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                  cursor: 'pointer', minHeight: 96,
+                  width: '100%', height: '100%',
+                };
+                return e('div', { key: p.id, className: 'flip-wrap' },
+                  e('div', {
+                    className: 'flip-inner' + (flipped ? ' is-flipped' : ''),
+                    style: { minHeight: 96 },
+                    onClick: () => toggleFlip(p.id),
+                  },
+                    // FRONT — Japanese
+                    e('div', { className: 'flip-face front', style: cardStyle },
+                      e('div', {
+                        style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
+                                 letterSpacing: '0.08em', fontFamily: SANS_UI }
+                      }, SCENE_LABELS[p.scene]),
+                      e('div', {
+                        style: { fontSize: 18, color: C.text, fontWeight: 700, lineHeight: 1.4 }
+                      }, p.ja),
+                      e('div', {
+                        style: { fontSize: 11, color: C.sub, marginTop: 8, fontFamily: SANS_UI }
+                      }, 'タップで英語'),
+                    ),
+                    // BACK — English + speaker
+                    e('div', { className: 'flip-face back', style: cardStyle },
+                      e('div', {
+                        style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
+                                 letterSpacing: '0.08em', fontFamily: SANS_UI }
+                      }, SCENE_LABELS[p.scene]),
+                      e('div', {
+                        style: { fontSize: 19, color: C.text, fontFamily: SERIF, fontWeight: 700,
+                                 lineHeight: 1.35, display: 'flex', alignItems: 'center', gap: 10 }
+                      },
+                        e('span', { style: { flex: 1 } }, p.en),
+                        e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 32 }),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ),
         // Start practice
         e('button', {
