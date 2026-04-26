@@ -76,8 +76,10 @@
   //   row 5: 家族ランキング (full-width)
   const FEATURES = [
     { id: 'daily20',                label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',     primary: true, forLearner: true, forViewer: false },
+    { id: 'random_test',            label: 'ランダムテスト', emoji: '🎲', desc: '混合10問・4択',                     forLearner: true, forViewer: false },
     { id: 'vocab',                  label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                  forLearner: true, forViewer: false },
     { id: 'composition',            label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                      forLearner: true, forViewer: false },
+    { id: 'phrases',                label: '日常英会話',     emoji: '💬', desc: 'シーン別・簡単英語',                forLearner: true, forViewer: false },
     { id: 'mistakes',               label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                forLearner: true, forViewer: false },
     { id: 'mastered_compositions',  label: '覚えた英作文',   emoji: '📖', desc: '言えるようになった文',              forLearner: true, forViewer: false },
     { id: 'mastered_vocab',         label: '覚えた単語',     emoji: '📚', desc: '習得した語',                        forLearner: true, forViewer: true  },
@@ -1407,6 +1409,76 @@
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
+  // ---------- Daily Phrases (簡単英語 — school / cafeteria / friends-shopping) ----------
+  // Short situational phrases tagged by scene. Especially useful for Yoshinari
+  // abroad where the same handful of utterances comes up every day.
+  const DAILY_PHRASES = [
+    // ----- school (18) -----
+    { id:'p001', scene:'school', ja:'トイレに行ってもいいですか？',         en:'May I go to the bathroom?' },
+    { id:'p002', scene:'school', ja:'意味がわかりません。',                   en:"I don't understand." },
+    { id:'p003', scene:'school', ja:'もう一度言ってもらえますか？',           en:'Could you say that again?' },
+    { id:'p004', scene:'school', ja:'もう少しゆっくり話してもらえますか？',   en:'Could you speak more slowly?' },
+    { id:'p005', scene:'school', ja:'これは英語で何と言いますか？',           en:'How do you say this in English?' },
+    { id:'p006', scene:'school', ja:'これはどういう意味ですか？',             en:'What does this mean?' },
+    { id:'p007', scene:'school', ja:'これを手伝ってもらえますか？',           en:'Can you help me with this?' },
+    { id:'p008', scene:'school', ja:'遅れてすみません。',                     en:"I'm sorry I'm late." },
+    { id:'p009', scene:'school', ja:'鉛筆を借りてもいいですか？',             en:'May I borrow your pencil?' },
+    { id:'p010', scene:'school', ja:'宿題を忘れました。',                     en:'I forgot my homework.' },
+    { id:'p011', scene:'school', ja:'ここに座ってもいいですか？',             en:'Can I sit here?' },
+    { id:'p012', scene:'school', ja:'今、何ページですか？',                   en:'What page are we on?' },
+    { id:'p013', scene:'school', ja:'答えを確認してもらえますか？',           en:'Can you check my answer?' },
+    { id:'p014', scene:'school', ja:'質問があります。',                       en:'I have a question.' },
+    { id:'p015', scene:'school', ja:'助けてくれてありがとう。',               en:'Thank you for your help.' },
+    { id:'p016', scene:'school', ja:'辞書を使ってもいいですか？',             en:'May I use the dictionary?' },
+    { id:'p017', scene:'school', ja:'転校生です。',                           en:"I'm a new student here." },
+    { id:'p018', scene:'school', ja:'スペルを教えてもらえますか？',           en:'Could you spell that?' },
+
+    // ----- cafeteria / meals (15) -----
+    { id:'p019', scene:'cafeteria', ja:'今日のランチは何ですか？',            en:"What's for lunch today?" },
+    { id:'p020', scene:'cafeteria', ja:'これをください。',                    en:'I would like this, please.' },
+    { id:'p021', scene:'cafeteria', ja:'いくらですか？',                      en:'How much is it?' },
+    { id:'p022', scene:'cafeteria', ja:'チキンをお願いします。',              en:"I'll have the chicken, please." },
+    { id:'p023', scene:'cafeteria', ja:'ベジタリアン用のメニューはありますか？', en:'Do you have a vegetarian option?' },
+    { id:'p024', scene:'cafeteria', ja:'ご飯のおかわりをもらえますか？',      en:'Can I get more rice?' },
+    { id:'p025', scene:'cafeteria', ja:'とても美味しいです！',                en:'This is delicious!' },
+    { id:'p026', scene:'cafeteria', ja:'お腹は空いていません。',              en:"I'm not hungry." },
+    { id:'p027', scene:'cafeteria', ja:'塩を取ってもらえますか？',            en:'Could you pass me the salt?' },
+    { id:'p028', scene:'cafeteria', ja:'どこに座ればいいですか？',            en:'Where should I sit?' },
+    { id:'p029', scene:'cafeteria', ja:'お水をいただけますか？',              en:'Could I have some water?' },
+    { id:'p030', scene:'cafeteria', ja:'ナッツアレルギーがあります。',        en:"I'm allergic to nuts." },
+    { id:'p031', scene:'cafeteria', ja:'もう結構です、お腹いっぱいです。',    en:"No thanks, I'm full." },
+    { id:'p032', scene:'cafeteria', ja:'一緒に座ってもいいですか？',          en:'Can I sit with you?' },
+    { id:'p033', scene:'cafeteria', ja:'おすすめは何ですか？',                en:'What do you recommend?' },
+
+    // ----- friends / shopping (22) -----
+    { id:'p034', scene:'friends', ja:'週末は何をしますか？',                  en:'What are you doing this weekend?' },
+    { id:'p035', scene:'friends', ja:'遊ばない？',                            en:'Want to hang out?' },
+    { id:'p036', scene:'friends', ja:'出身はどこですか？',                    en:'Where are you from?' },
+    { id:'p037', scene:'friends', ja:'どのくらいここにいるのですか？',        en:'How long have you been here?' },
+    { id:'p038', scene:'friends', ja:'コーヒーでも飲みに行かない？',          en:'Do you want to grab a coffee?' },
+    { id:'p039', scene:'friends', ja:'楽しそう！',                            en:'That sounds fun!' },
+    { id:'p040', scene:'friends', ja:'ごめん、行けないんだ。',                en:"Sorry, I can't make it." },
+    { id:'p041', scene:'friends', ja:'モールに行こう。',                      en:"Let's go to the mall." },
+    { id:'p042', scene:'friends', ja:'これいくら？',                          en:'How much is this?' },
+    { id:'p043', scene:'friends', ja:'もっと小さいサイズはありますか？',      en:'Do you have this in a smaller size?' },
+    { id:'p044', scene:'friends', ja:'試着してもいいですか？',                en:'Can I try this on?' },
+    { id:'p045', scene:'friends', ja:'試着室はどこですか？',                  en:"Where's the fitting room?" },
+    { id:'p046', scene:'friends', ja:'見ているだけです、ありがとう。',        en:"I'm just looking, thank you." },
+    { id:'p047', scene:'friends', ja:'クレジットカードは使えますか？',        en:'Do you take credit cards?' },
+    { id:'p048', scene:'friends', ja:'これにします。',                        en:"I'll take it." },
+    { id:'p049', scene:'friends', ja:'高すぎます。',                          en:"That's too expensive." },
+    { id:'p050', scene:'friends', ja:'割引はありますか？',                    en:'Do you have any discounts?' },
+    { id:'p051', scene:'friends', ja:'プレゼント用に包んでもらえますか？',    en:'Could you wrap it as a gift?' },
+    { id:'p052', scene:'friends', ja:'すみません、トイレはどこですか？',      en:"Excuse me, where's the restroom?" },
+    { id:'p053', scene:'friends', ja:'この映画見た？',                        en:'Have you seen this movie?' },
+    { id:'p054', scene:'friends', ja:'そのうち会おうよ。',                    en:"Let's catch up soon." },
+    { id:'p055', scene:'friends', ja:'また明日！',                            en:'See you tomorrow!' },
+  ];
+  const PHRASE_BY_ID = Object.fromEntries(DAILY_PHRASES.map(p => [p.id, p]));
+  const SCENE_LABELS = { school: '学校', cafeteria: '食事', friends: '友達・買い物' };
+  const SCENE_EMOJIS = { school: '🏫', cafeteria: '🍴', friends: '🛍️' };
+
+
   // ---------- Data layer (localStorage today, swappable to Supabase later) ----------
   // Storage shape per member:
   //   { vocab: { [vocabId]: SrsState }, mistakes: [{ vocabId, at }] }
@@ -1431,21 +1503,9 @@
       s.vocab[vocabId] = progress;
       this.save(memberId, s);
     },
-    pushMistake(memberId, vocabId) {
-      const s = this.load(memberId);
-      if (!s.mistakes) s.mistakes = [];
-      // Dedup recent same vocabId, then unshift
-      s.mistakes = s.mistakes.filter(m => m.vocabId !== vocabId);
-      s.mistakes.unshift({ vocabId, at: new Date().toISOString() });
-      s.mistakes = s.mistakes.slice(0, 50);
-      this.save(memberId, s);
-    },
-    removeMistake(memberId, vocabId) {
-      const s = this.load(memberId);
-      if (!s.mistakes) return;
-      s.mistakes = s.mistakes.filter(m => m.vocabId !== vocabId);
-      this.save(memberId, s);
-    },
+    // Vocab-only wrappers (kept for backward compatibility with older code).
+    pushMistake(memberId, vocabId)  { this.pushMistakeEx(memberId, 'vocab', vocabId); },
+    removeMistake(memberId, vocabId){ this.removeMistakeEx(memberId, 'vocab', vocabId); },
 
     // Daily counters: { 'YYYY-MM-DD': { attempts, correct } }
     todayKey() {
@@ -1483,6 +1543,62 @@
       s.composition[sentenceId] = cur;
       this.save(memberId, s);
       this.recordDaily(memberId, isCorrect);
+      if (!isCorrect) this.pushMistakeEx(memberId, 'sentence', sentenceId);
+      else this.removeMistakeEx(memberId, 'sentence', sentenceId);
+    },
+
+    // Phrase (daily English) progress
+    getPhraseProgress(memberId, phraseId) {
+      const s = this.load(memberId);
+      return (s.phrases && s.phrases[phraseId]) || null;
+    },
+    recordPhrase(memberId, phraseId, isCorrect) {
+      const s = this.load(memberId);
+      if (!s.phrases) s.phrases = {};
+      const cur = s.phrases[phraseId] || { attempts: 0, correct: 0, lastAt: null };
+      cur.attempts++;
+      if (isCorrect) cur.correct++;
+      cur.lastAt = new Date().toISOString();
+      s.phrases[phraseId] = cur;
+      this.save(memberId, s);
+      this.recordDaily(memberId, isCorrect);
+      if (!isCorrect) this.pushMistakeEx(memberId, 'phrase', phraseId);
+      else this.removeMistakeEx(memberId, 'phrase', phraseId);
+    },
+
+    // Generic mistakes (kind: 'vocab' | 'sentence' | 'phrase').
+    // Backward-compatible with older entries that only carried { vocabId, at };
+    // those are normalised to { kind: 'vocab', id: vocabId, at } at read time.
+    pushMistakeEx(memberId, kind, id) {
+      const s = this.load(memberId);
+      if (!s.mistakes) s.mistakes = [];
+      // Strip any existing entry for the same (kind, id)
+      s.mistakes = s.mistakes.filter(m => {
+        const k = m.kind || 'vocab';
+        const i = m.id  || m.vocabId;
+        return !(k === kind && i === id);
+      });
+      s.mistakes.unshift({ kind, id, at: new Date().toISOString() });
+      s.mistakes = s.mistakes.slice(0, 80);
+      this.save(memberId, s);
+    },
+    removeMistakeEx(memberId, kind, id) {
+      const s = this.load(memberId);
+      if (!s.mistakes) return;
+      s.mistakes = s.mistakes.filter(m => {
+        const k = m.kind || 'vocab';
+        const i = m.id  || m.vocabId;
+        return !(k === kind && i === id);
+      });
+      this.save(memberId, s);
+    },
+    getMistakesNormalized(memberId) {
+      const raw = this.load(memberId).mistakes || [];
+      return raw.map(m => ({
+        kind: m.kind || 'vocab',
+        id:   m.id  || m.vocabId,
+        at:   m.at,
+      })).filter(m => m.id);
     },
 
     // Family activity feed (shared across members on this device — Supabase
@@ -2102,6 +2218,8 @@
       if (route.feature === 'vocab')                  return e(VocabBrowse,        { profile, onBack: back });
       if (route.feature === 'daily20')                return e(Daily20,            { profile, onBack: back });
       if (route.feature === 'composition')            return e(SprintComposition,  { profile, onBack: back });
+      if (route.feature === 'phrases')                return e(DailyPhrases,       { profile, onBack: back });
+      if (route.feature === 'random_test')            return e(RandomTest,         { profile, onBack: back });
       if (route.feature === 'mistakes')               return e(MistakeReview,      { profile, onBack: back });
       if (route.feature === 'mastered_vocab')         return e(MasteredVocab,      { profile, onBack: back });
       if (route.feature === 'mastered_compositions')  return e(MasteredSentences,  { profile, onBack: back });
@@ -3055,16 +3173,38 @@
   }
 
   // ---------- Mistake Review (drives a session from the mistakes log) ----------
+  // Resolve a normalized mistake entry { kind, id } to a uniform shape with
+  // ja / en / extra fields the review UI can render.
+  function resolveMistake(entry) {
+    if (entry.kind === 'vocab') {
+      const v = VOCAB.find(x => x.id === entry.id);
+      if (!v) return null;
+      return { kind: 'vocab', id: v.id, ja: v.ja, en: v.en, exEn: v.exEn, exJa: v.exJa, level: v.level, pos: v.pos };
+    }
+    if (entry.kind === 'sentence') {
+      const s = SENTENCE_BY_ID[entry.id];
+      if (!s) return null;
+      return { kind: 'sentence', id: s.id, ja: s.ja, en: s.en, level: s.level, grammar: s.grammar };
+    }
+    if (entry.kind === 'phrase') {
+      const p = PHRASE_BY_ID[entry.id];
+      if (!p) return null;
+      return { kind: 'phrase', id: p.id, ja: p.ja, en: p.en, scene: p.scene };
+    }
+    return null;
+  }
+
   function MistakeReview({ profile, onBack }) {
-    // Build the deduped list once on mount
+    // Build the deduped list once on mount, supporting all 3 kinds.
     const initialList = useMemo(() => {
-      const ms = (db.load(profile.id).mistakes) || [];
+      const ms = db.getMistakesNormalized(profile.id);
       const seen = new Set(); const out = [];
       for (const m of ms) {
-        if (seen.has(m.vocabId)) continue;
-        seen.add(m.vocabId);
-        const v = VOCAB.find(x => x.id === m.vocabId);
-        if (v) out.push({ vocab: v, at: m.at });
+        const key = m.kind + ':' + m.id;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const item = resolveMistake(m);
+        if (item) out.push({ item, at: m.at });
       }
       return out;
     }, [profile.id]);
@@ -3079,17 +3219,27 @@
 
     function startAll() {
       if (initialList.length === 0) return;
-      setQueue(initialList.map(m => m.vocab));
+      setQueue(initialList.map(m => m.item));
       setResults([]); setIndex(0); setRevealed(false);
       setPhase('study');
     }
 
     function record(isCorrect) {
       const cur = queue[index];
-      db.recordAnswer(profile.id, cur.id, isCorrect, { removeOnCorrect: true });
+      // Per-kind recording (auto-removes from mistakes on correct via the
+      // recordAnswer / recordSentence / recordPhrase helpers).
+      if (cur.kind === 'vocab') {
+        db.recordAnswer(profile.id, cur.id, isCorrect, { removeOnCorrect: true });
+      } else if (cur.kind === 'sentence') {
+        db.recordSentence(profile.id, cur.id, isCorrect);
+        if (isCorrect) db.removeMistakeEx(profile.id, 'sentence', cur.id);
+      } else if (cur.kind === 'phrase') {
+        db.recordPhrase(profile.id, cur.id, isCorrect);
+        if (isCorrect) db.removeMistakeEx(profile.id, 'phrase', cur.id);
+      }
       if (isCorrect) { soundCorrect(); hapticTap(); }
       else           { soundWrong();   hapticBuzz(); }
-      const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
+      const newResults = results.concat([{ item: cur, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= queue.length) {
         const correctCount = newResults.filter(r=>r.isCorrect).length;
@@ -3168,46 +3318,57 @@
                   borderRadius: 18, overflow: 'hidden',
                 }
               },
-                initialList.map((m, i) => e('div', {
-                  key: m.vocab.id,
-                  style: {
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '14px 14px',
-                    borderBottom: i < initialList.length - 1 ? '1px solid ' + C.line : 'none',
-                  }
-                },
-                  e('div', {
+                initialList.map((m, i) => {
+                  const it = m.item;
+                  const kindLabel = it.kind === 'vocab' ? '単語'
+                                  : it.kind === 'sentence' ? '英作文' : 'フレーズ';
+                  return e('div', {
+                    key: it.kind + ':' + it.id,
                     style: {
-                      width: 30, height: 30, borderRadius: 10,
-                      background: C.danger + '18', color: C.danger,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 14, fontWeight: 700, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 14px',
+                      borderBottom: i < initialList.length - 1 ? '1px solid ' + C.line : 'none',
                     }
-                  }, '✗'),
-                  e('div', { style: { flex: 1, minWidth: 0 } },
-                    e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                      e('div', {
-                        style: {
-                          fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text,
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }
-                      }, m.vocab.en),
-                      e('span', {
-                        style: {
-                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                          background: C.softer, color: C.sub, flexShrink: 0,
-                        }
-                      }, 'L' + m.vocab.level),
-                    ),
+                  },
                     e('div', {
                       style: {
-                        fontSize: 12, color: C.sub, marginTop: 2,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        width: 30, height: 30, borderRadius: 10,
+                        background: C.danger + '18', color: C.danger,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14, fontWeight: 700, flexShrink: 0,
                       }
-                    }, m.vocab.ja),
-                  ),
-                  e('div', { style: { fontSize: 11, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
-                )),
+                    }, '✗'),
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 } },
+                        e('span', {
+                          style: {
+                            fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            background: C.softer, color: C.sub, flexShrink: 0,
+                          }
+                        }, kindLabel),
+                        it.level && e('span', {
+                          style: {
+                            fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            background: C.softer, color: C.sub, flexShrink: 0,
+                          }
+                        }, 'L' + it.level),
+                      ),
+                      e('div', {
+                        style: {
+                          fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text,
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }
+                      }, it.en),
+                      e('div', {
+                        style: {
+                          fontSize: 12, color: C.sub, marginTop: 2,
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }
+                      }, it.ja),
+                    ),
+                    e('div', { style: { fontSize: 11, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
+                  );
+                }),
               ),
             ),
       );
@@ -3242,24 +3403,43 @@
             minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
           }
         },
-          e('div', { style: { display: 'flex', gap: 8 } },
+          // Chips (kind label + level/pos/scene/grammar where available)
+          e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
             e('span', {
               style: {
                 fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
                 background: profile.color + '1A', color: profile.color,
               }
+            }, current.kind === 'vocab' ? '単語' : current.kind === 'sentence' ? '英作文' : 'フレーズ'),
+            current.level && e('span', {
+              style: {
+                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                background: C.softer, color: C.sub,
+              }
             }, 'L' + current.level),
-            e('span', {
+            current.pos && e('span', {
               style: {
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
             }, current.pos),
+            current.grammar && e('span', {
+              style: {
+                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                background: C.softer, color: C.sub,
+              }
+            }, current.grammar),
+            current.scene && e('span', {
+              style: {
+                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                background: C.softer, color: C.sub,
+              }
+            }, SCENE_EMOJIS[current.scene] + ' ' + SCENE_LABELS[current.scene]),
           ),
           e('div', { style: { textAlign: 'center', padding: '8px 0' } },
             e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
               '日本語'),
-            e('div', { style: { fontSize: 44, fontWeight: 800, color: C.text, lineHeight: 1.3 } }, current.ja),
+            e('div', { style: { fontSize: current.kind === 'vocab' ? 44 : 32, fontWeight: 800, color: C.text, lineHeight: 1.3 } }, current.ja),
           ),
           !revealed
             ? e('button', {
@@ -3278,7 +3458,7 @@
                   }
                 },
                   e('div', {
-                    style: { fontFamily: SERIF, fontSize: 44, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.2 }
+                    style: { fontFamily: SERIF, fontSize: current.kind === 'vocab' ? 44 : 28, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.3 }
                   }, current.en),
                   e('button', {
                     onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
@@ -3288,7 +3468,8 @@
                     }
                   }, '🔊'),
                 ),
-                e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+                // Vocab-only: show example sentence
+                current.kind === 'vocab' && current.exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                   e('div', {
                     style: { flex: 1, fontSize: 23, fontWeight: 700, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
                   }, current.exEn),
@@ -3300,7 +3481,7 @@
                     }
                   }, '🔊'),
                 ),
-                e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
+                current.kind === 'vocab' && current.exJa && e('div', { style: { fontSize: 20, color: C.sub, lineHeight: 1.7, fontWeight: 600 } },
                   current.exJa),
               ),
         ),
@@ -3366,10 +3547,11 @@
           }
         },
           results.map((r, i) => {
-            const v = VOCAB.find(x => x.id === r.vocabId);
-            if (!v) return null;
+            const it = r.item;
+            if (!it) return null;
+            const kindLabel = it.kind === 'vocab' ? '単語' : it.kind === 'sentence' ? '英作文' : 'フレーズ';
             return e('div', {
-              key: r.vocabId,
+              key: it.kind + ':' + it.id,
               style: {
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 12px',
@@ -3386,10 +3568,15 @@
                 }
               }, r.isCorrect ? '✓' : '✗'),
               e('div', { style: { flex: 1, minWidth: 0 } },
-                e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text } }, v.en),
-                e('div', { style: { fontSize: 11, color: C.sub, marginTop: 1 } }, v.ja),
+                e('div', {
+                  style: { fontSize: 14, fontWeight: 600, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+                }, it.en),
+                e('div', {
+                  style: { fontSize: 11, color: C.sub, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
+                }, it.ja),
               ),
-              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600 } }, 'L' + v.level),
+              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
+                kindLabel + (it.level ? ' L' + it.level : '')),
             );
           }),
         ),
@@ -5277,6 +5464,566 @@
               }
             }, '✓ ' + (earned[a.id].earnedAt ? new Date(earned[a.id].earnedAt).toLocaleDateString('ja-JP') : '獲得済み')),
           );
+        }),
+      ),
+    );
+  }
+
+  // ---------- Daily Phrases (簡単英語) ----------
+  // Scene-tagged phrasebook with a Daily20-style practice flow.
+  function DailyPhrases({ profile, onBack }) {
+    const [filter, setFilter] = useState('all');  // 'all' | 'school' | 'cafeteria' | 'friends'
+    const filtered = useMemo(() => {
+      if (filter === 'all') return DAILY_PHRASES;
+      return DAILY_PHRASES.filter(p => p.scene === filter);
+    }, [filter]);
+
+    const [phase, setPhase]   = useState(filtered.length > 0 ? 'intro' : 'empty');
+    const [queue, setQueue]   = useState([]);
+    const [index, setIndex]   = useState(0);
+    const [revealed, setRevealed] = useState(false);
+    const [results, setResults]   = useState([]);
+    const [unlockedCount, setUnlockedCount] = useState(0);
+    const [newBadges, setNewBadges] = useState([]);
+
+    // When filter changes from idle, jump back to intro
+    useEffect(() => { if (phase !== 'study' && phase !== 'done') setPhase(filtered.length > 0 ? 'intro' : 'empty'); }, [filter]);
+
+    function startSession() {
+      // Pick up to 10 phrases from the filtered set (shuffled)
+      const arr = filtered.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      setQueue(arr.slice(0, 10));
+      setResults([]); setIndex(0); setRevealed(false);
+      setPhase('study');
+    }
+
+    function record(isCorrect) {
+      const cur = queue[index];
+      db.recordPhrase(profile.id, cur.id, isCorrect);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
+      const newResults = results.concat([{ phraseId: cur.id, isCorrect }]);
+      setResults(newResults);
+      if (index + 1 >= queue.length) {
+        const correctCount = newResults.filter(r=>r.isCorrect).length;
+        const acc = Math.round(correctCount * 100 / queue.length);
+        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        const badges = db.evaluateAchievements(profile.id, {
+          perfectSession: correctCount === queue.length,
+        });
+        setNewBadges(badges);
+        db.pushFeed(profile.id, 'session_done', { feature: 'phrases', correct: correctCount, total: queue.length, accuracy: acc });
+        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
+        setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
+        setPhase('done');
+        return;
+      }
+      setIndex(index + 1); setRevealed(false);
+    }
+
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '日常英会話'),
+      phase === 'study' && e('div', {
+        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+      }, (index + 1) + ' / ' + queue.length),
+    );
+
+    // ============ INTRO / LIST ============
+    if (phase === 'intro' || phase === 'empty') {
+      const sceneCounts = { school: 0, cafeteria: 0, friends: 0 };
+      DAILY_PHRASES.forEach(p => { sceneCounts[p.scene] = (sceneCounts[p.scene] || 0) + 1; });
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '20px 4px 18px' } },
+          e('div', { style: { fontSize: 32, marginBottom: 8 } }, '💬'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, 'Daily English'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+            '学校・食事・友達との場面ですぐ使える表現。'),
+        ),
+        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
+        // Filter chips
+        e('div', {
+          style: {
+            display: 'flex', gap: 8, marginBottom: 16,
+            overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch',
+          }
+        },
+          ['all', 'school', 'cafeteria', 'friends'].map(s => {
+            const isActive = s === filter;
+            const label = s === 'all' ? 'すべて' : (SCENE_EMOJIS[s] + ' ' + SCENE_LABELS[s]);
+            const count = s === 'all' ? DAILY_PHRASES.length : (sceneCounts[s] || 0);
+            return e('button', {
+              key: s, onClick: () => setFilter(s),
+              style: {
+                padding: '8px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
+                flexShrink: 0, border: '1px solid ' + (isActive ? profile.color : C.line),
+                background: isActive ? profile.color : C.card,
+                color: isActive ? '#fff' : C.sub,
+              }
+            }, label + ' (' + count + ')');
+          })
+        ),
+        // Browse list (small preview cards)
+        filtered.length === 0
+          ? e('div', {
+              style: {
+                background: C.softer, border: '1px dashed ' + C.line,
+                borderRadius: 18, padding: '40px 22px', textAlign: 'center', color: C.sub,
+              }
+            }, 'このシーンのフレーズはありません')
+          : e('div', {
+              style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }
+            },
+              filtered.slice(0, 8).map(p => e('div', {
+                key: p.id,
+                style: {
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 14, padding: '12px 14px',
+                }
+              },
+                e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, marginBottom: 4 } },
+                  SCENE_EMOJIS[p.scene] + ' ' + SCENE_LABELS[p.scene]),
+                e('div', { style: { fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 4, lineHeight: 1.4 } }, p.ja),
+                e('div', { style: { fontSize: 14, color: C.sub, fontFamily: SERIF, fontStyle: 'italic', lineHeight: 1.4 } }, p.en),
+              )),
+              filtered.length > 8 && e('div', {
+                style: { fontSize: 12, color: C.sub, textAlign: 'center', padding: '8px 0' }
+              }, '他に ' + (filtered.length - 8) + ' 件…')
+            ),
+        // Start practice
+        e('button', {
+          onClick: startSession,
+          disabled: filtered.length === 0,
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 16,
+            background: profile.color, color: '#fff',
+            fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
+            boxShadow: '0 8px 22px ' + profile.color + '55',
+            opacity: filtered.length === 0 ? 0.4 : 1,
+            cursor: filtered.length === 0 ? 'default' : 'pointer',
+          }
+        }, '練習する (最大10問)'),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      const correct = results.filter(r => r.isCorrect).length;
+      const total = results.length;
+      const accuracy = total > 0 ? Math.round(correct * 100 / total) : 0;
+      const cheers = accuracy >= 90 ? '完璧！' : accuracy >= 70 ? 'いい感じ！' : 'お疲れさま。';
+      return e('div', { style: pageStyle },
+        accuracy >= 70 && e(ConfettiBurst),
+        topBar,
+        e('div', { style: { padding: '32px 4px 20px' } },
+          e('div', { style: { fontSize: 44, marginBottom: 10 } }, accuracy >= 70 ? '🎉' : '💪'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 32, fontWeight: 700, color: C.text, lineHeight: 1.15 }
+          }, cheers),
+        ),
+        e('div', {
+          style: {
+            background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
+            color: '#fff', padding: '22px 22px', borderRadius: 22, marginBottom: 18,
+            boxShadow: '0 10px 28px ' + profile.color + '33',
+          }
+        },
+          e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } }, 'PHRASES SCORE'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 42, fontWeight: 700, marginTop: 4, lineHeight: 1 } }, correct + ' / ' + total),
+          e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } }, '精度 ' + accuracy + '%'),
+        ),
+        unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
+        newBadges.length > 0 && e(BadgeBanner, { ids: newBadges }),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontSize: 14, fontWeight: 700,
+            boxShadow: '0 6px 14px ' + profile.color + '44',
+          }
+        }, 'ホームへ'),
+      );
+    }
+
+    // ============ STUDY ============
+    if (phase !== 'study' || queue.length === 0) return null;
+    const current = queue[index];
+    return e('div', { style: pageStyle },
+      topBar,
+      // Progress bar
+      e('div', {
+        style: {
+          height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden',
+        }
+      },
+        e('div', {
+          style: {
+            width: ((index) / queue.length * 100) + '%',
+            height: '100%', background: profile.color,
+            transition: 'width .35s ease',
+          }
+        }),
+      ),
+      // Card
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 24, padding: '24px 22px', marginBottom: 18,
+          boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
+          minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
+        }
+      },
+        // Scene chip
+        e('div', { style: { display: 'flex' } },
+          e('span', {
+            style: {
+              fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999,
+              background: profile.color + '1A', color: profile.color,
+            }
+          }, SCENE_EMOJIS[current.scene] + ' ' + SCENE_LABELS[current.scene]),
+        ),
+        // Japanese prompt
+        e('div', { style: { padding: '4px 0 8px' } },
+          e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
+            '日本語'),
+          e('div', { style: { fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1.5 } },
+            current.ja),
+        ),
+        !revealed
+          ? e('div', { style: { marginTop: 'auto', textAlign: 'center', padding: '14px 0' } },
+              e('div', { style: { fontSize: 13, color: C.sub, marginBottom: 12, lineHeight: 1.6 } },
+                '頭の中で英語に直してから\n👇 を押してね'),
+              e('button', {
+                onClick: () => setRevealed(true),
+                style: {
+                  width: '100%', padding: '16px 0', borderRadius: 14,
+                  background: C.softer, color: profile.color,
+                  fontSize: 16, fontWeight: 700, border: '1px solid ' + profile.color + '33',
+                }
+              }, '答えを見る'),
+            )
+          : e('div', { style: { marginTop: 'auto' } },
+              e('div', {
+                style: {
+                  borderTop: '1px dashed ' + C.line, paddingTop: 14,
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }
+              },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 28, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.4 }
+                }, current.en),
+                e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
+                  style: {
+                    width: 60, height: 60, borderRadius: 999, fontSize: 28,
+                    background: C.softer, color: profile.color, flexShrink: 0, lineHeight: 1,
+                  }
+                }, '🔊'),
+              ),
+            ),
+      ),
+      revealed && e('div', { style: { display: 'flex', gap: 10 } },
+        e('button', {
+          onClick: () => record(false),
+          style: {
+            flex: 1, padding: '15px 0', borderRadius: 14,
+            background: C.danger + '14', color: C.danger,
+            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.danger + '33',
+          }
+        }, 'できなかった'),
+        e('button', {
+          onClick: () => record(true),
+          style: {
+            flex: 1, padding: '15px 0', borderRadius: 14,
+            background: C.success, color: '#fff',
+            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.success,
+            boxShadow: '0 6px 14px ' + C.success + '40',
+          }
+        }, 'できた'),
+      ),
+    );
+  }
+
+  // ---------- Random Test (混合10問・4択 MCQ) ----------
+  // Pool draws from VOCAB + SENTENCES + DAILY_PHRASES. Each question picks a
+  // random direction (EN→JA or JA→EN) and three plausible distractors from the
+  // same kind. Wrong answers feed the per-kind progress + mistakes log so they
+  // surface in 間違い復習 next time.
+  function buildTestPool() {
+    const arr = [];
+    VOCAB.forEach(v => arr.push({ kind: 'vocab', id: v.id, en: v.en, ja: v.ja, level: v.level }));
+    SENTENCES.forEach(s => arr.push({ kind: 'sentence', id: s.id, en: s.en, ja: s.ja, level: s.level }));
+    DAILY_PHRASES.forEach(p => arr.push({ kind: 'phrase', id: p.id, en: p.en, ja: p.ja, level: 2 }));
+    return arr;
+  }
+  function buildTestQueue(memberLevel, count) {
+    const pool = buildTestPool();
+    const near = pool.filter(it => Math.abs(it.level - (memberLevel || 2)) <= 1);
+    const useArr = near.length >= count ? near : pool;
+    const arr = useArr.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr.slice(0, count).map(it => ({
+      ...it, direction: Math.random() < 0.5 ? 'en2ja' : 'ja2en',
+    }));
+  }
+  function buildOptions(item, pool) {
+    const isEn2Ja = item.direction === 'en2ja';
+    const correct = isEn2Ja ? item.ja : item.en;
+    const others = pool.filter(o => o.kind === item.kind && o.id !== item.id);
+    const distractors = [];
+    const seen = new Set([correct]);
+    for (let tries = 0; tries < 30 && distractors.length < 3 && others.length > 0; tries++) {
+      const idx = Math.floor(Math.random() * others.length);
+      const o = others.splice(idx, 1)[0];
+      const text = isEn2Ja ? o.ja : o.en;
+      if (!seen.has(text)) { distractors.push(text); seen.add(text); }
+    }
+    const options = [correct].concat(distractors);
+    while (options.length < 4) options.push('—'); // fallback if pool tiny
+    for (let i = options.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = options[i]; options[i] = options[j]; options[j] = t;
+    }
+    return { prompt: isEn2Ja ? item.en : item.ja, correct, options, isEn2Ja };
+  }
+
+  const TEST_COUNT = 10;
+
+  function RandomTest({ profile, onBack }) {
+    const [pool] = useState(buildTestPool);
+    const [queue] = useState(() => buildTestQueue(profile.level, TEST_COUNT));
+    const [phase, setPhase]   = useState(queue.length > 0 ? 'study' : 'empty');
+    const [index, setIndex]   = useState(0);
+    const [chosen, setChosen] = useState(null);
+    const [results, setResults] = useState([]);
+    const [unlockedCount, setUnlockedCount] = useState(0);
+    const [newBadges, setNewBadges] = useState([]);
+
+    const current = queue[index] || null;
+    const optsObj = useMemo(() => current ? buildOptions(current, pool) : null, [current, pool]);
+
+    function pick(option) {
+      if (chosen !== null || !optsObj) return;
+      setChosen(option);
+      const isCorrect = option === optsObj.correct;
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
+      // Record per-kind (auto-pushes to mistakes if wrong)
+      if (current.kind === 'vocab')        db.recordAnswer(profile.id, current.id, isCorrect);
+      else if (current.kind === 'sentence') db.recordSentence(profile.id, current.id, isCorrect);
+      else if (current.kind === 'phrase')   db.recordPhrase(profile.id, current.id, isCorrect);
+      const newResults = results.concat([Object.assign({}, current, {
+        isCorrect, chosen: option, correct: optsObj.correct,
+      })]);
+      setResults(newResults);
+      setTimeout(() => {
+        if (index + 1 >= queue.length) {
+          const correctCount = newResults.filter(r => r.isCorrect).length;
+          const acc = Math.round(correctCount * 100 / queue.length);
+          setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+          const badges = db.evaluateAchievements(profile.id, {
+            perfectSession: correctCount === queue.length,
+          });
+          setNewBadges(badges);
+          db.pushFeed(profile.id, 'session_done', { feature: 'random_test', correct: correctCount, total: queue.length, accuracy: acc });
+          badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
+          setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 100);
+          setPhase('done');
+        } else {
+          setIndex(index + 1);
+          setChosen(null);
+        }
+      }, 1100);
+    }
+
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, 'ランダムテスト'),
+      phase === 'study' && e('div', {
+        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+      }, (index + 1) + ' / ' + queue.length),
+    );
+
+    if (phase === 'empty') {
+      return e('div', { style: pageStyle }, topBar,
+        e('div', { style: { textAlign: 'center', padding: '40px 20px', color: C.sub } }, '出題できる問題がありません。'),
+      );
+    }
+
+    if (phase === 'done') {
+      const correct = results.filter(r => r.isCorrect).length;
+      const accuracy = Math.round(correct * 100 / queue.length);
+      const wrongs = results.filter(r => !r.isCorrect);
+      return e('div', { style: pageStyle },
+        accuracy >= 70 && e(ConfettiBurst),
+        topBar,
+        e('div', { style: { padding: '32px 4px 20px' } },
+          e('div', { style: { fontSize: 44, marginBottom: 10 } }, accuracy >= 70 ? '🎉' : '💪'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 32, fontWeight: 700, color: C.text }
+          }, accuracy >= 90 ? '完璧！' : accuracy >= 70 ? 'いい結果！' : 'お疲れさま'),
+        ),
+        e('div', {
+          style: {
+            background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
+            color: '#fff', padding: '22px 22px', borderRadius: 22, marginBottom: 18,
+            boxShadow: '0 10px 28px ' + profile.color + '33',
+          }
+        },
+          e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } }, 'TEST SCORE'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 42, fontWeight: 700, marginTop: 4, lineHeight: 1 } }, correct + ' / ' + queue.length),
+          e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
+            '精度 ' + accuracy + '%' +
+            (wrongs.length > 0 ? '・' + wrongs.length + '問は間違い復習に追加' : '')),
+        ),
+        unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
+        newBadges.length > 0 && e(BadgeBanner, { ids: newBadges }),
+        // Per-question result list
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 18, padding: 8, marginBottom: 18,
+          }
+        },
+          results.map((r, i) => e('div', {
+            key: i,
+            style: {
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              padding: '12px',
+              borderBottom: i < results.length - 1 ? '1px solid ' + C.line : 'none',
+            }
+          },
+            e('div', {
+              style: {
+                width: 26, height: 26, borderRadius: 999, fontSize: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: r.isCorrect ? C.success + '22' : C.danger + '22',
+                color:      r.isCorrect ? C.success         : C.danger,
+                fontWeight: 700, flexShrink: 0, marginTop: 2,
+              }
+            }, r.isCorrect ? '✓' : '✗'),
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', { style: { fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 } },
+                (r.direction === 'en2ja' ? r.en : r.ja)),
+              e('div', { style: { fontSize: 12, color: C.sub } },
+                '→ ' + r.correct),
+              !r.isCorrect && e('div', { style: { fontSize: 11, color: C.danger, marginTop: 2 } },
+                'あなたの答え: ' + r.chosen),
+            ),
+            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
+              r.kind === 'vocab' ? '単語' : r.kind === 'sentence' ? '英作文' : 'フレーズ'),
+          )),
+        ),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff', fontSize: 14, fontWeight: 700,
+            boxShadow: '0 6px 14px ' + profile.color + '44',
+          }
+        }, 'ホームへ'),
+      );
+    }
+
+    // ============ STUDY ============
+    if (!current || !optsObj) return null;
+    const kindLabel = current.kind === 'vocab' ? '単語' : current.kind === 'sentence' ? '英作文' : 'フレーズ';
+    const dirLabel  = optsObj.isEn2Ja ? '英語 → 日本語' : '日本語 → 英語';
+    return e('div', { style: pageStyle },
+      topBar,
+      // Progress bar
+      e('div', {
+        style: {
+          height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden',
+        }
+      },
+        e('div', {
+          style: {
+            width: ((index) / queue.length * 100) + '%',
+            height: '100%', background: profile.color, transition: 'width .35s ease',
+          }
+        }),
+      ),
+      // Card
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 24, padding: '22px 22px', marginBottom: 16,
+          boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
+          display: 'flex', flexDirection: 'column', gap: 14,
+        }
+      },
+        // Chips
+        e('div', { style: { display: 'flex', gap: 8 } },
+          e('span', {
+            style: {
+              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              background: profile.color + '1A', color: profile.color,
+            }
+          }, kindLabel),
+          e('span', {
+            style: {
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: C.softer, color: C.sub,
+            }
+          }, dirLabel),
+        ),
+        // Prompt
+        e('div', { style: { padding: '12px 0' } },
+          e('div', {
+            style: {
+              fontSize: optsObj.isEn2Ja ? 32 : 28,
+              fontWeight: 800, color: C.text, lineHeight: 1.4,
+              fontFamily: optsObj.isEn2Ja ? SERIF : 'inherit',
+            }
+          }, optsObj.prompt),
+        ),
+      ),
+      // Options (4 buttons)
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        optsObj.options.map((opt, i) => {
+          const isPicked  = chosen === opt;
+          const isCorrect = opt === optsObj.correct;
+          const showResult = chosen !== null;
+          let bg = C.card, border = C.line, color = C.text;
+          if (showResult && isCorrect) {
+            bg = C.success + '22'; border = C.success; color = C.success;
+          } else if (showResult && isPicked && !isCorrect) {
+            bg = C.danger + '22'; border = C.danger; color = C.danger;
+          }
+          return e('button', {
+            key: i,
+            onClick: () => pick(opt),
+            disabled: chosen !== null,
+            style: {
+              padding: '16px 18px', borderRadius: 14, textAlign: 'left',
+              background: bg, border: '1px solid ' + border, color,
+              fontSize: optsObj.isEn2Ja ? 16 : 18,
+              fontWeight: 600, lineHeight: 1.4,
+              fontFamily: optsObj.isEn2Ja ? 'inherit' : SERIF,
+              cursor: chosen !== null ? 'default' : 'pointer',
+              transition: 'all .2s ease',
+            }
+          }, opt);
         }),
       ),
     );
