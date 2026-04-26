@@ -2362,6 +2362,26 @@
     return (custom && custom.trim()) ? custom.trim() : profile.name;
   }
 
+  // ---------- Custom avatars (per-device, optional photo per profile) ----------
+  // Stored as a single object: { profileId: dataUrl } in localStorage. When
+  // present, the UI shows the photo in a circle instead of the role emoji.
+  const AVATARS_KEY = 'hfe_avatars_v1';
+  function loadAvatars() {
+    try { return JSON.parse(localStorage.getItem(AVATARS_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function saveAvatar(profileId, dataUrl) {
+    const a = loadAvatars();
+    if (dataUrl) a[profileId] = dataUrl;
+    else delete a[profileId];
+    try { localStorage.setItem(AVATARS_KEY, JSON.stringify(a)); }
+    catch (err) { console.warn('saveAvatar failed (likely full)', err); }
+  }
+  function getAvatar(profile) {
+    if (!profile) return null;
+    return loadAvatars()[profile.id] || null;
+  }
+
   // ---------- App ----------
   function App() {
     const [route, setRoute] = useState({ name: 'profiles' });
@@ -2506,6 +2526,7 @@
   function ProfileCard({ profile, onClick }) {
     const [pressed, setPressed] = useState(false);
     const isViewer = profile.role === 'viewer';
+    const avatar = getAvatar(profile);
     return e('button', {
       onClick,
       onPointerDown: () => setPressed(true),
@@ -2523,7 +2544,7 @@
         transition: 'transform .15s ease, box-shadow .25s ease',
       }
     },
-      // Avatar
+      // Avatar (custom photo if set, else emoji)
       e('div', {
         style: {
           width: 56, height: 56, borderRadius: 18,
@@ -2532,8 +2553,12 @@
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 28, flexShrink: 0,
           border: '1px solid ' + profile.color + '33',
+          overflow: 'hidden',
         }
-      }, profile.emoji),
+      },
+        avatar
+          ? e('img', { src: avatar, style: { width: '100%', height: '100%', objectFit: 'cover' } })
+          : profile.emoji),
 
       // Name + subtitle
       e('div', { style: { flex: 1, minWidth: 0 } },
@@ -2612,13 +2637,18 @@
         }
       },
         e('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-          e('div', {
+          (() => { const av = getAvatar(profile); return e('div', {
             style: {
               fontSize: 30, width: 48, height: 48, borderRadius: 14,
               background: 'rgba(255,255,255,0.18)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden',
             }
-          }, profile.emoji),
+          },
+            av
+              ? e('img', { src: av, style: { width: '100%', height: '100%', objectFit: 'cover' } })
+              : profile.emoji,
+          ); })(),
           e('div', null,
             e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } },
               isViewer ? 'VIEWER' : 'TODAY'),
@@ -4705,9 +4735,10 @@
   // ---------- Sprint Composition (瞬間英作文) ----------
   // Picks ~10 sentences near the member's level, runs a Daily20-style flow:
   // intro → study (JP prompt → reveal EN → self-grade) → done (score + list).
-  const COMP_COUNT = 10;
+  const COMP_COUNT = 20;
 
-  function pickComposition(profile, count) {
+  function pickComposition(profile, count, opts) {
+    opts = opts || {};
     // Build a unified pool of SENTENCES + DAILY_PHRASES tagged with kind, so
     // recordPhrase / recordSentence can be dispatched cleanly at answer time.
     const pool = [];
@@ -4720,11 +4751,14 @@
       id: p.id, level: 2, ja: p.ja, en: p.en,
       grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
     }));
-    // If the profile has maxLevel set (e.g. Yoshinari capped at L2 until he
-    // masters the middle-school content), filter strictly. Otherwise prefer
-    // ±1 of memberLevel and fall back to the whole pool when too sparse.
+    // Selection rules (priority):
+    //   1. If opts.level is a number (1-5): exact level only
+    //   2. Else if profile.maxLevel set: strict <= maxLevel
+    //   3. Else: prefer ±1 of memberLevel, fall back to whole pool when sparse
     let candidates;
-    if (profile && profile.maxLevel) {
+    if (opts.level && [1, 2, 3, 4, 5].indexOf(opts.level) >= 0) {
+      candidates = pool.filter(it => it.level === opts.level);
+    } else if (profile && profile.maxLevel) {
       candidates = pool.filter(it => it.level <= profile.maxLevel);
     } else {
       const memberLevel = (profile && profile.level) || 1;
@@ -4741,13 +4775,22 @@
   }
 
   function SprintComposition({ profile, onBack }) {
-    const [queue]    = useState(() => pickComposition(profile, COMP_COUNT));
-    const [phase, setPhase]   = useState(queue.length > 0 ? 'intro' : 'empty');
+    const [selectedLevel, setSelectedLevel] = useState('auto'); // 'auto' | 1..5
+    const [queue, setQueue]   = useState([]);
+    const [phase, setPhase]   = useState('intro');
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
     const [unlockedCount, setUnlockedCount] = useState(0);
     const [newBadges, setNewBadges] = useState([]);
+
+    function startSession() {
+      const opts = selectedLevel === 'auto' ? {} : { level: selectedLevel };
+      const q = pickComposition(profile, COMP_COUNT, opts);
+      if (q.length === 0) { setPhase('empty'); return; }
+      setQueue(q); setIndex(0); setRevealed(false); setResults([]);
+      setPhase('study');
+    }
 
     const total   = queue.length;
     const current = queue[index] || null;
@@ -4794,8 +4837,17 @@
 
     // ============ INTRO ============
     if (phase === 'intro') {
-      const byLevel = { 1: 0, 2: 0, 3: 0 };
-      queue.forEach(s => { byLevel[s.level] = (byLevel[s.level] || 0) + 1; });
+      // Build the level-picker options. Respect profile.maxLevel by graying
+      // out levels above the cap (e.g., Yoshinari can't pick L3-L5).
+      const levelOpts = [
+        { value: 'auto', label: 'おまかせ', desc: 'あなたのレベルに合わせて' },
+        { value: 1, label: 'L1', desc: '超基礎・英検5/4級' },
+        { value: 2, label: 'L2', desc: '中学基礎・英検4/3級' },
+        { value: 3, label: 'L3', desc: '中3完了・英検3/準2級' },
+        { value: 4, label: 'L4', desc: '高校標準・英検2級' },
+        { value: 5, label: 'L5', desc: '高校発展・英検準1級' },
+      ];
+      const maxLv = profile.maxLevel;
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '24px 4px 20px' } },
@@ -4804,46 +4856,64 @@
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.15 }
           }, 'Sprint Composition'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
-            '日本語を見て、すぐに英語に直す練習。\n頭の中で組み立ててから「答えを見る」を押そう。'),
+            '日本語を見て、すぐに英語に直す練習。\nレベルを選んで ' + COMP_COUNT + ' 問チャレンジしよう。'),
         ),
-        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
+        e(ProgressChips, { profile, style: { marginBottom: 18 } }),
+        // Level picker
         e('div', {
           style: {
-            background: C.softer, border: '1px solid ' + C.line,
-            borderRadius: 18, padding: '18px 20px', marginBottom: 22,
+            fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+            letterSpacing: '0.16em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
-        },
-          e('div', { style: { display: 'flex', justifyContent: 'space-around', alignItems: 'center' } },
-            ['1','2','3'].map((lv, i) => e('div', {
-              key: lv,
+        }, 'レベルを選ぶ'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 } },
+          levelOpts.map(opt => {
+            const isLocked = maxLv && opt.value !== 'auto' && opt.value > maxLv;
+            const isActive = selectedLevel === opt.value;
+            return e('button', {
+              key: 'lv_' + opt.value,
+              onClick: () => { if (!isLocked) setSelectedLevel(opt.value); },
+              disabled: isLocked,
               style: {
-                textAlign: 'center', flex: 1,
-                borderRight: i < 2 ? '1px solid ' + C.line : 'none',
-                padding: '0 8px',
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px', borderRadius: 14, textAlign: 'left',
+                background: isActive ? profile.color + '14' : C.card,
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                cursor: isLocked ? 'default' : 'pointer',
+                opacity: isLocked ? 0.4 : 1,
+                transition: 'all .15s ease',
               }
             },
-              e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em' } }, 'L' + lv),
               e('div', {
-                style: { fontSize: 20, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 }
-              }, byLevel[lv] || 0),
-            )),
-          ),
-          e('div', {
-            style: {
-              fontSize: 11, color: C.sub, textAlign: 'center', marginTop: 12, paddingTop: 12,
-              borderTop: '1px solid ' + C.line,
-            }
-          }, '今日の出題: 計 ' + total + ' 文'),
+                style: {
+                  width: 40, height: 40, borderRadius: 12,
+                  background: isActive ? profile.color : C.softer,
+                  color: isActive ? '#fff' : C.sub,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 700, flexShrink: 0,
+                }
+              }, opt.label),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } },
+                  opt.value === 'auto' ? 'おまかせ' : opt.label),
+                e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+                  isLocked ? '🔒 まだ解放されていません' : opt.desc),
+              ),
+              isActive && e('div', { style: { fontSize: 14, color: profile.color, flexShrink: 0 } }, '✓'),
+            );
+          })
         ),
+        // Start
         e('button', {
-          onClick: () => setPhase('study'),
+          onClick: startSession,
           style: {
             width: '100%', padding: '16px 0', borderRadius: 16,
             background: profile.color, color: '#fff',
             fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
             boxShadow: '0 8px 22px ' + profile.color + '55',
           }
-        }, '始める'),
+        }, COMP_COUNT + ' 問 始める'),
       );
     }
 
@@ -5061,6 +5131,32 @@
   // ---------- Settings (custom display names — local to this device) ----------
   function SettingsScreen({ onBack }) {
     const [names, setNames] = useState(() => loadDisplayNames());
+    const [avatars, setAvatars] = useState(() => loadAvatars());
+    const [avatarErr, setAvatarErr] = useState('');
+    const fileInputRefs = useRef({});
+
+    async function pickAvatar(profileId, file) {
+      if (!file) return;
+      setAvatarErr('');
+      try {
+        const dataUrl = await compressImageToDataUrl(file, 400, 0.8);
+        if (dataUrl.length > 350_000) {
+          setAvatarErr('写真が大きすぎます。別の写真を試してください。');
+          return;
+        }
+        const next = Object.assign({}, avatars, { [profileId]: dataUrl });
+        setAvatars(next);
+        saveAvatar(profileId, dataUrl);
+      } catch {
+        setAvatarErr('写真を読み込めませんでした。');
+      }
+    }
+    function clearAvatar(profileId) {
+      const next = Object.assign({}, avatars);
+      delete next[profileId];
+      setAvatars(next);
+      saveAvatar(profileId, null);
+    }
 
     function update(id, value) {
       setNames(prev => Object.assign({}, prev, { [id]: value }));
@@ -5092,12 +5188,24 @@
     }
 
     return e('div', { style: pageStyle },
-      // Top bar
+      // Top bar — back + reload button on the right
       e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
         e('button', { onClick: onBack,
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '設定'),
+        e('button', {
+          onClick: () => { try { window.location.reload(); } catch {} },
+          title: 'アプリを再読み込み',
+          'aria-label': '再読み込み',
+          style: {
+            width: 36, height: 36, borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 14, color: C.sub,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          },
+        }, '🔄'),
       ),
 
       // Header
@@ -5105,10 +5213,93 @@
         e('div', { style: { fontSize: 32, marginBottom: 8 } }, '⚙️'),
         e('div', {
           style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, '名前を入れる'),
+        }, '設定'),
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-          '入れた名前は、この端末の中だけに保存されます。\n空欄のままなら役割名（父・母など）が使われます。'),
+          '名前と写真は、この端末の中だけに保存されます。'),
       ),
+
+      // ----- Section: アイコン (avatars) -----
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, 'アイコン (Photo)'),
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 } },
+        PROFILES.map(p => {
+          const av = avatars[p.id];
+          return e('div', {
+            key: 'av_' + p.id,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 12,
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, padding: '12px 14px',
+            }
+          },
+            // Current avatar (img or emoji circle)
+            e('div', {
+              style: {
+                width: 52, height: 52, borderRadius: 999,
+                background: p.color + '22',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 26, flexShrink: 0,
+                border: '1px solid ' + p.color + '44',
+                overflow: 'hidden',
+              }
+            },
+              av
+                ? e('img', { src: av, style: { width: '100%', height: '100%', objectFit: 'cover' } })
+                : p.emoji,
+            ),
+            // Name
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } }, p.name),
+              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+                av ? '写真設定済み' : '絵文字を使用中'),
+            ),
+            // Hidden file input + buttons
+            e('input', {
+              ref: el => { if (el) fileInputRefs.current[p.id] = el; },
+              type: 'file', accept: 'image/*',
+              style: { display: 'none' },
+              onChange: (ev) => { const f = ev.target.files && ev.target.files[0]; pickAvatar(p.id, f); ev.target.value = ''; },
+            }),
+            e('button', {
+              onClick: () => { const r = fileInputRefs.current[p.id]; if (r) r.click(); },
+              title: '写真を選ぶ',
+              style: {
+                width: 36, height: 36, borderRadius: 999,
+                background: C.softer, border: '1px solid ' + C.line,
+                color: C.sub, fontSize: 14, cursor: 'pointer', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }
+            }, '📷'),
+            av && e('button', {
+              onClick: () => clearAvatar(p.id),
+              title: '元の絵文字に戻す',
+              style: {
+                width: 36, height: 36, borderRadius: 999,
+                background: C.softer, border: '1px solid ' + C.line,
+                color: C.danger, fontSize: 14, cursor: 'pointer', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }
+            }, '✕'),
+          );
+        }),
+      ),
+      avatarErr && e('div', {
+        style: { fontSize: 12, color: C.danger, marginTop: -14, marginBottom: 16, paddingLeft: 4 }
+      }, avatarErr),
+
+      // ----- Section: 名前 (names) -----
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, '名前 (Name)'),
 
       // Inputs
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 } },
