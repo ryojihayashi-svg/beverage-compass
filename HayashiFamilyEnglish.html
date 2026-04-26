@@ -3627,7 +3627,13 @@
     const [unlockCond, setUnlock] = useState('open_now');
     const [imageUrl, setImageUrl] = useState(null);
     const [imgErr, setImgErr]     = useState('');
+    const [voiceUrl, setVoiceUrl] = useState(null);
+    const [voiceErr, setVoiceErr] = useState('');
+    const [recording, setRecording] = useState(false);   // boolean
+    const [recordSec, setRecordSec] = useState(0);
     const fileInputRef            = useRef(null);
+    const recorderRef             = useRef(null);
+    const recordTimerRef          = useRef(null);
 
     async function pickImage(file) {
       if (!file) return;
@@ -3643,6 +3649,59 @@
       } catch (err) {
         setImgErr('写真を読み込めませんでした。');
       }
+    }
+
+    async function startRecording() {
+      setVoiceErr('');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setVoiceErr('この端末は録音に対応していません。');
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+        const recorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 24000 } : {});
+        const chunks = [];
+        recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
+        recorder.onstop = () => {
+          stream.getTracks().forEach(t => t.stop());
+          if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
+          setRecording(false);
+          const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
+          if (blob.size > 600_000) {
+            setVoiceErr('録音が大きすぎます。短く録り直してください。');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => setVoiceUrl(reader.result);
+          reader.onerror = () => setVoiceErr('録音の読み込みに失敗しました。');
+          reader.readAsDataURL(blob);
+        };
+        recorderRef.current = recorder;
+        recorder.start();
+        setRecording(true);
+        setRecordSec(0);
+        recordTimerRef.current = setInterval(() => {
+          setRecordSec(s => {
+            const next = s + 1;
+            if (next >= 15) stopRecording();
+            return next;
+          });
+        }, 1000);
+      } catch (err) {
+        setVoiceErr('マイクの許可が必要です。');
+      }
+    }
+    function stopRecording() {
+      if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+        try { recorderRef.current.stop(); } catch {}
+      }
+    }
+    function clearVoice() {
+      setVoiceUrl(null);
+      setVoiceErr('');
     }
 
     const recipients = PROFILES.filter(p => p.id !== sender.id);  // can address anyone but self
@@ -3672,6 +3731,7 @@
         message:          body.trim(),
         imageHue:         hue,
         imageUrl:         imageUrl || null,
+        voiceUrl:         voiceUrl || null,
         createdAt:        now,
         unlockedAt:       unlockCond === 'open_now' ? now : null,
         unlockCondition:  unlockCond,
@@ -3794,6 +3854,76 @@
         imgErr && e('div', {
           style: { marginTop: 8, fontSize: 12, color: C.danger }
         }, imgErr),
+      ),
+
+      // ----- Voice (optional, max 15s) -----
+      e('div', { style: { marginBottom: 22 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+        }, '音声メッセージ（最大15秒）'),
+        voiceUrl
+          ? e('div', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 14,
+                background: C.softer, border: '1px solid ' + C.line,
+              }
+            },
+              e('audio', {
+                src: voiceUrl, controls: true,
+                style: { flex: 1, height: 36, maxWidth: 'calc(100% - 60px)' },
+              }),
+              e('button', {
+                onClick: clearVoice,
+                title: '録音を削除',
+                style: {
+                  width: 32, height: 32, borderRadius: 999,
+                  background: 'rgba(0,0,0,0.55)', color: '#fff',
+                  border: 'none', fontSize: 14, lineHeight: 1, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }
+              }, '✕'),
+            )
+          : recording
+            ? e('button', {
+                onClick: stopRecording,
+                style: {
+                  width: '100%', padding: '20px 16px', borderRadius: 14,
+                  background: '#FFE9E5', border: '1px solid ' + C.danger,
+                  color: C.danger, fontSize: 14, fontWeight: 700,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  cursor: 'pointer',
+                }
+              },
+                e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  e('div', {
+                    style: {
+                      width: 12, height: 12, borderRadius: 999,
+                      background: C.danger, opacity: 0.9,
+                    }
+                  }),
+                  e('span', null, '録音中... ' + recordSec + 's / 15s'),
+                ),
+                e('div', { style: { fontSize: 11, opacity: 0.75 } }, 'タップで停止'),
+              )
+            : e('button', {
+                onClick: startRecording,
+                style: {
+                  width: '100%', padding: '24px 16px', borderRadius: 14,
+                  background: C.softer, border: '1px dashed ' + C.line,
+                  color: C.sub, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                }
+              },
+                e('div', { style: { fontSize: 28 } }, '🎤'),
+                e('div', null, '音声を録音'),
+                e('div', { style: { fontSize: 11, opacity: 0.7 } },
+                  '15秒まで・声で温度が伝わる'),
+              ),
+        voiceErr && e('div', {
+          style: { marginTop: 8, fontSize: 12, color: C.danger }
+        }, voiceErr),
       ),
 
       // ----- Hue -----
@@ -4105,6 +4235,22 @@
                         whiteSpace: 'pre-wrap', marginBottom: 12,
                       }
                     }, m.message),
+
+                    // Voice playback (only if a voice message was attached)
+                    m.voiceUrl && e('div', {
+                      style: {
+                        marginBottom: 12, padding: '10px 12px',
+                        background: C.softer, borderRadius: 10,
+                        border: '1px solid ' + C.line,
+                        display: 'flex', alignItems: 'center', gap: 10,
+                      }
+                    },
+                      e('div', { style: { fontSize: 16 } }, '🎤'),
+                      e('audio', {
+                        src: m.voiceUrl, controls: true,
+                        style: { flex: 1, height: 32, maxWidth: 'calc(100% - 40px)' },
+                      }),
+                    ),
 
                     // Reactions (recipients pick; mother sees readonly)
                     !isMother && e('div', {
