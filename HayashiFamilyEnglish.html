@@ -70,13 +70,21 @@
   // ---------- Feature tiles for English Learning Home ----------
   // forLearner=true: shown to family members who study (father, sons)
   // forViewer=true:  shown to mother (viewer-only)
+  // Layout (per request):
+  //   row 1: 今日の20問 (full-width primary)
+  //   row 2: 単語学習         | 瞬間英作文
+  //   row 3: 間違い復習       | 覚えた英作文
+  //   row 4: 覚えた単語       | 応援メッセージ
+  //   row 5: 家族ランキング (full-width)
   const FEATURES = [
-    { id: 'daily20',     label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',       primary: true, forLearner: true,  forViewer: false },
-    { id: 'vocab',       label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                    forLearner: true,  forViewer: false },
-    { id: 'composition', label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                        forLearner: true,  forViewer: false },
-    { id: 'mistakes',    label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                  forLearner: true,  forViewer: false },
-    { id: 'ranking',     label: '家族ランキング', emoji: '🏆', desc: '今週のがんばり',                       forLearner: true,  forViewer: true  },
-    { id: 'support',     label: '応援メッセージ', emoji: '💌', desc: 'みんなへの一言',                       forLearner: true,  forViewer: true  },
+    { id: 'daily20',                label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',     primary: true, forLearner: true, forViewer: false },
+    { id: 'vocab',                  label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                  forLearner: true, forViewer: false },
+    { id: 'composition',            label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                      forLearner: true, forViewer: false },
+    { id: 'mistakes',               label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                forLearner: true, forViewer: false },
+    { id: 'mastered_compositions',  label: '覚えた英作文',   emoji: '📖', desc: '言えるようになった文',              forLearner: true, forViewer: false },
+    { id: 'mastered_vocab',         label: '覚えた単語',     emoji: '📚', desc: '習得した語',                        forLearner: true, forViewer: true  },
+    { id: 'support',                label: '応援メッセージ', emoji: '💌', desc: 'みんなへの一言',                    forLearner: true, forViewer: true  },
+    { id: 'ranking',                label: '家族ランキング', emoji: '🏆', desc: '今週のがんばり',     primary: true, forLearner: true, forViewer: true  },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -597,6 +605,25 @@
     };
   }
 
+  // ---------- Mastery helpers ----------
+  // A vocab item is "mastered" once the SRS engine sets status = 'mastered'
+  // (interval grows past ~30 days of correct answers).
+  function getMasteredVocab(memberId) {
+    const vocab = (db.load(memberId).vocab) || {};
+    return VOCAB.filter(v => vocab[v.id] && vocab[v.id].status === 'mastered');
+  }
+
+  // A sentence is "mastered" once the user has answered it correctly 3+ times
+  // with at least 70% overall accuracy.
+  function isSentenceMastered(p) {
+    if (!p || !p.attempts) return false;
+    return p.correct >= 3 && (p.correct / p.attempts) >= 0.7;
+  }
+  function getMasteredSentences(memberId) {
+    const composition = (db.load(memberId).composition) || {};
+    return SENTENCES.filter(s => isSentenceMastered(composition[s.id]));
+  }
+
   // ---------- Image compression (for photo attachments) ----------
   // Uses a canvas to downscale and re-encode as JPEG so photos don't blow up
   // localStorage. ~50-150KB per photo at maxDim 800.
@@ -685,12 +712,14 @@
     if (route.name === 'feature') {
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
-      if (route.feature === 'vocab')       return e(VocabBrowse,      { profile, onBack: back });
-      if (route.feature === 'daily20')     return e(Daily20,          { profile, onBack: back });
-      if (route.feature === 'composition') return e(SprintComposition,{ profile, onBack: back });
-      if (route.feature === 'mistakes')    return e(MistakeReview,    { profile, onBack: back });
-      if (route.feature === 'ranking')     return e(FamilyRanking,    { profile, onBack: back });
-      if (route.feature === 'support')     return e(SupportMessages,  { profile, onBack: back });
+      if (route.feature === 'vocab')                  return e(VocabBrowse,        { profile, onBack: back });
+      if (route.feature === 'daily20')                return e(Daily20,            { profile, onBack: back });
+      if (route.feature === 'composition')            return e(SprintComposition,  { profile, onBack: back });
+      if (route.feature === 'mistakes')               return e(MistakeReview,      { profile, onBack: back });
+      if (route.feature === 'mastered_vocab')         return e(MasteredVocab,      { profile, onBack: back });
+      if (route.feature === 'mastered_compositions')  return e(MasteredSentences,  { profile, onBack: back });
+      if (route.feature === 'ranking')                return e(FamilyRanking,      { profile, onBack: back });
+      if (route.feature === 'support')                return e(SupportMessages,    { profile, onBack: back });
       return e(ComingSoon, { profile, feature: feat, onBack: back });
     }
     return null;
@@ -895,18 +924,31 @@
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
         }
       },
-        visibleFeatures.map(f => e(FeatureTile, {
-          key: f.id, feature: f, accent: profile.color,
-          onClick: () => onPickFeature(f.id),
-          fullWidth: f.primary,
-        })),
+        visibleFeatures.map(f => {
+          // Inject live counts where it matters
+          let subtitle = f.desc;
+          if (f.id === 'mastered_vocab') {
+            const n = computeStats(profile.id).masteredCount;
+            subtitle = n + ' / 1,000 語';
+          } else if (f.id === 'mastered_compositions') {
+            const n = getMasteredSentences(profile.id).length;
+            subtitle = n + ' / ' + SENTENCES.length + ' 文';
+          }
+          return e(FeatureTile, {
+            key: f.id, feature: f, accent: profile.color,
+            onClick: () => onPickFeature(f.id),
+            fullWidth: f.primary,
+            subtitle,
+          });
+        }),
       ),
     );
   }
 
-  function FeatureTile({ feature, accent, onClick, fullWidth }) {
+  function FeatureTile({ feature, accent, onClick, fullWidth, subtitle }) {
     const [pressed, setPressed] = useState(false);
     const isPrimary = !!feature.primary;
+    const sub = subtitle || feature.desc;
     return e('button', {
       onClick,
       onPointerDown: () => setPressed(true),
@@ -936,8 +978,10 @@
           style: {
             fontSize: 11, marginTop: 4, lineHeight: 1.4,
             color: isPrimary ? 'rgba(255,255,255,0.85)' : C.sub,
+            fontFamily: SANS_UI, fontWeight: 600,
+            letterSpacing: '0.02em',
           }
-        }, feature.desc),
+        }, sub),
       ),
     );
   }
@@ -3073,6 +3117,246 @@
           style: { fontSize: 11, color: '#9C6E40', marginTop: 2 }
         }, '💌 応援メッセージから見られます'),
       ),
+    );
+  }
+
+  // ---------- Mastered Vocabulary ----------
+  // Shows progress toward the 1,000-word goal and lists every word
+  // the SRS engine has marked as mastered.
+  const VOCAB_GOAL = 1000;
+
+  function MasteredVocab({ profile, onBack }) {
+    const items = useMemo(() => getMasteredVocab(profile.id), [profile.id]);
+    const count = items.length;
+    const pct = Math.min(100, count * 100 / VOCAB_GOAL);
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1, fontFamily: SANS_UI } },
+          '覚えた単語'),
+      ),
+
+      // Hero count
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '24px 22px 20px', marginBottom: 18,
+          textAlign: 'center',
+        }
+      },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.32em', textTransform: 'uppercase',
+            color: C.gold, marginBottom: 6,
+          }
+        }, 'Mastered'),
+        e('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 500, color: C.text, lineHeight: 1 }
+          }, count),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 400, color: C.sub, lineHeight: 1 }
+          }, '/ ' + VOCAB_GOAL.toLocaleString()),
+        ),
+        e('div', {
+          style: { fontSize: 12, color: C.sub, marginTop: 6, fontFamily: SANS_UI, letterSpacing: '0.06em' }
+        }, 'words mastered'),
+        // Progress bar
+        e('div', {
+          style: {
+            height: 4, background: C.line, borderRadius: 999,
+            overflow: 'hidden', marginTop: 16,
+          }
+        },
+          e('div', {
+            style: {
+              width: pct + '%', height: '100%',
+              background: 'linear-gradient(90deg, ' + C.gold + ' 0%, ' + profile.color + ' 100%)',
+              transition: 'width .5s ease',
+            }
+          }),
+        ),
+        e('div', {
+          style: {
+            fontSize: 10, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+          }
+        }, pct.toFixed(1) + '% to goal'),
+      ),
+
+      // Empty state
+      count === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 14, padding: '40px 22px', textAlign: 'center', color: C.sub,
+            }
+          },
+            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
+            e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+              'まだ覚えた単語はありません'),
+            e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
+              '今日の20問・単語学習で\n何度も正解すると、ここに加わります。'),
+          )
+        // List
+        : e('div', {
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, overflow: 'hidden',
+            }
+          },
+            items.map((v, i) => e('div', {
+              key: v.id,
+              style: {
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px',
+                borderBottom: i < items.length - 1 ? '1px solid ' + C.line : 'none',
+              }
+            },
+              e('div', {
+                style: {
+                  fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.text,
+                  flex: 1, minWidth: 0,
+                }
+              }, v.en),
+              e('div', { style: { fontSize: 13, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
+              e('span', {
+                style: {
+                  fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                  background: C.softer, color: C.gold, fontFamily: SANS_UI,
+                  letterSpacing: '0.06em', flexShrink: 0,
+                }
+              }, 'L' + v.level),
+              e('button', {
+                onClick: (ev) => { ev.stopPropagation(); speak(v.en); },
+                style: {
+                  width: 30, height: 30, borderRadius: 999, fontSize: 13,
+                  background: C.softer, color: profile.color, flexShrink: 0,
+                  border: '1px solid ' + C.line,
+                }
+              }, '🔊'),
+            )),
+          ),
+    );
+  }
+
+  // ---------- Mastered Sentences ----------
+  function MasteredSentences({ profile, onBack }) {
+    const items = useMemo(() => getMasteredSentences(profile.id), [profile.id]);
+    const total = SENTENCES.length;
+    const count = items.length;
+    const pct   = total > 0 ? Math.min(100, count * 100 / total) : 0;
+
+    return e('div', { style: pageStyle },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1, fontFamily: SANS_UI } },
+          '覚えた英作文'),
+      ),
+
+      // Hero
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '24px 22px 20px', marginBottom: 18,
+          textAlign: 'center',
+        }
+      },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.32em', textTransform: 'uppercase',
+            color: C.gold, marginBottom: 6,
+          }
+        }, 'Sentences Mastered'),
+        e('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 500, color: C.text, lineHeight: 1 }
+          }, count),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 400, color: C.sub, lineHeight: 1 }
+          }, '/ ' + total),
+        ),
+        e('div', {
+          style: { fontSize: 12, color: C.sub, marginTop: 6, fontFamily: SANS_UI, letterSpacing: '0.06em' }
+        }, 'sentences mastered'),
+        e('div', {
+          style: { height: 4, background: C.line, borderRadius: 999, overflow: 'hidden', marginTop: 16 }
+        },
+          e('div', {
+            style: {
+              width: pct + '%', height: '100%',
+              background: 'linear-gradient(90deg, ' + C.gold + ' 0%, ' + profile.color + ' 100%)',
+              transition: 'width .5s ease',
+            }
+          }),
+        ),
+        e('div', {
+          style: {
+            fontSize: 10, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+          }
+        }, pct.toFixed(0) + '% complete'),
+      ),
+
+      count === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 14, padding: '40px 22px', textAlign: 'center', color: C.sub,
+            }
+          },
+            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '✍️'),
+            e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+              'まだ覚えた英作文はありません'),
+            e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
+              '瞬間英作文で同じ文を3回正解すると\nここに加わります。'),
+          )
+        : e('div', {
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, overflow: 'hidden',
+            }
+          },
+            items.map((s, i) => e('div', {
+              key: s.id,
+              style: {
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '14px 16px',
+                borderBottom: i < items.length - 1 ? '1px solid ' + C.line : 'none',
+              }
+            },
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 4 } }, s.ja),
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 16, fontWeight: 500, color: C.text, lineHeight: 1.4 }
+                }, s.en),
+              ),
+              e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 } },
+                e('span', {
+                  style: {
+                    fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
+                  }
+                }, 'L' + s.level),
+                e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(s.en); },
+                  style: {
+                    width: 30, height: 30, borderRadius: 999, fontSize: 13,
+                    background: C.softer, color: profile.color,
+                    border: '1px solid ' + C.line,
+                  }
+                }, '🔊'),
+              ),
+            )),
+          ),
     );
   }
 
