@@ -2736,6 +2736,7 @@
     const safe = map || {};
     try { localStorage.setItem(NAMES_KEY, JSON.stringify(safe)); }
     catch (err) { console.warn('saveDisplayNames failed', err); }
+    stampFamilySharedLocal();
     pushFamilySharedState();
   }
   function getDisplayName(profile) {
@@ -2758,6 +2759,7 @@
     else delete a[profileId];
     try { localStorage.setItem(AVATARS_KEY, JSON.stringify(a)); }
     catch (err) { console.warn('saveAvatar failed (likely full)', err); }
+    stampFamilySharedLocal();
     pushFamilySharedState();
   }
   function getAvatar(profile) {
@@ -2773,6 +2775,19 @@
   // (member_state is a generic key/value blob keyed by member_id; we just
   // borrow a synthetic id 'family' for shared rows.)
   const FAMILY_SHARED_ID   = 'family';
+  // ISO timestamp of the most recent local edit to family-shared data.
+  // Used by hydrateFamilySharedFromCloud to decide whether the cloud copy
+  // is actually newer than what's already on this device. Without this
+  // check the hydrate would happily overwrite a name the user just typed
+  // with an older empty cloud row.
+  const FAMILY_SHARED_TS_KEY = 'hfe_family_shared_ts_v1';
+  function loadFamilySharedLocalTs() {
+    try { return localStorage.getItem(FAMILY_SHARED_TS_KEY) || ''; } catch { return ''; }
+  }
+  function stampFamilySharedLocal(iso) {
+    const v = iso || new Date().toISOString();
+    try { localStorage.setItem(FAMILY_SHARED_TS_KEY, v); } catch {}
+  }
   function loadFamilyPhotos() {
     try { return JSON.parse(localStorage.getItem(FAMILY_PHOTOS_KEY) || '[]'); }
     catch { return []; }
@@ -2781,6 +2796,7 @@
     const safe = arr || [];
     try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(safe)); }
     catch (err) { console.warn('saveFamilyPhotos failed', err); }
+    stampFamilySharedLocal();
     pushFamilySharedState();
   }
   // Picks a family photo at random while avoiding the most recently shown
@@ -2839,6 +2855,19 @@
       return false;
     }
     const d = remote.data;
+    // Decide which side is newer. Prefer the data._localUpdatedAt that the
+    // writing device stamped into the row; fall back to the row's
+    // updated_at if missing. We only let cloud overwrite local when cloud
+    // is STRICTLY newer than the last local edit on this device.
+    const cloudTs = String(d._localUpdatedAt || remote.updated_at || '');
+    const localTs = loadFamilySharedLocalTs();
+    if (localTs && (!cloudTs || localTs >= cloudTs)) {
+      // Local has been edited at least once on this device and we're at
+      // least as fresh as cloud. Don't touch local — push it up instead so
+      // cloud catches up to whatever the user just did.
+      pushFamilySharedState();
+      return false;
+    }
     let changed = false;
     function applyKey(key, value) {
       const cur = localStorage.getItem(key);
@@ -2851,6 +2880,9 @@
     if (d.names   && typeof d.names   === 'object')         applyKey(NAMES_KEY,         d.names);
     if (d.avatars && typeof d.avatars === 'object')         applyKey(AVATARS_KEY,       d.avatars);
     if (changed) {
+      // Mark our local timestamp to mirror what we just pulled, so we
+      // don't immediately re-push the same data on the next event.
+      if (cloudTs) stampFamilySharedLocal(cloudTs);
       try { window.dispatchEvent(new CustomEvent('hfe:family-hydrated')); } catch {}
     }
     return changed;
@@ -5105,11 +5137,12 @@
       if (!confirm('この端末の学習データを消去しますか？\n\n・語彙の進捗\n・間違いの記録\n・日次統計\n・応援メッセージとリアクション\n・家族タイムライン\n\nが消えます。\n\nカスタム名・プロフィール写真・ファミリーフォト・APIキーは残ります。\n元に戻せません。')) return;
       // Keys we want to PRESERVE through a learning-data reset.
       const PRESERVE = new Set([
-        NAMES_KEY,            // hfe_names_v1            — custom display names
-        AVATARS_KEY,          // hfe_avatars_v1          — profile photos
-        FAMILY_PHOTOS_KEY,    // hfe_family_photos_v1    — family photo gallery
-        AI_KEY_STORAGE,       // hfe_anthropic_key_v1    — AI chat key
-        INSTALL_DISMISS_KEY,  // hfe_install_dismissed_v1 — install prompt state
+        NAMES_KEY,                // hfe_names_v1               — custom display names
+        AVATARS_KEY,              // hfe_avatars_v1             — profile photos
+        FAMILY_PHOTOS_KEY,        // hfe_family_photos_v1       — family photo gallery
+        FAMILY_SHARED_TS_KEY,     // hfe_family_shared_ts_v1    — last-edit timestamp
+        AI_KEY_STORAGE,           // hfe_anthropic_key_v1       — AI chat key
+        INSTALL_DISMISS_KEY,      // hfe_install_dismissed_v1   — install prompt state
       ]);
       const keys = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -5136,73 +5169,91 @@
           style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, '設定'),
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-          '名前と写真は、この端末の中だけに保存されます。'),
+          '名前とプロフィール写真。「保存して戻る」で確定します。'),
       ),
 
-      // ----- Section: アイコン (avatars) -----
+      // ----- Combined section: photo + name per profile -----
+      // One row per family member with the avatar (tap to change),
+      // a name input, and small info / clear actions. Replaces the old
+      // separate アイコン and 名前 sections.
       e('div', {
         style: {
           fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
-      }, 'アイコン (Photo)'),
+      }, 'アイコン & 名前'),
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 } },
         PROFILES.map(p => {
           const av = avatars[p.id];
           return e('div', {
-            key: 'av_' + p.id,
+            key: 'pn_' + p.id,
             style: {
               display: 'flex', alignItems: 'center', gap: 12,
               background: C.card, border: '1px solid ' + C.line,
               borderRadius: 14, padding: '12px 14px',
             }
           },
-            // Current avatar (img or emoji circle)
-            e('div', {
+            // Avatar (tap circle directly to open file picker)
+            e('button', {
+              onClick: () => { const r = fileInputRefs.current[p.id]; if (r) r.click(); },
+              title: '写真を選ぶ',
               style: {
-                width: 52, height: 52, borderRadius: 999,
+                width: 56, height: 56, borderRadius: 999,
                 background: p.color + '22',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 26, flexShrink: 0,
                 border: '1px solid ' + p.color + '44',
-                overflow: 'hidden',
+                overflow: 'hidden', cursor: 'pointer', padding: 0,
+                position: 'relative',
               }
             },
               av
                 ? e('img', { src: av, style: { width: '100%', height: '100%', objectFit: 'cover' } })
                 : p.emoji,
+              // Tiny camera badge in the corner so it's clear the avatar is tappable
+              e('span', {
+                style: {
+                  position: 'absolute', right: -2, bottom: -2,
+                  width: 22, height: 22, borderRadius: 999,
+                  background: '#fff', border: '1px solid ' + C.line,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11,
+                }
+              }, '📷'),
             ),
-            // Name
-            e('div', { style: { flex: 1, minWidth: 0 } },
-              e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } }, p.name),
-              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
-                av ? '写真設定済み' : '絵文字を使用中'),
-            ),
-            // Hidden file input + buttons
             e('input', {
               ref: el => { if (el) fileInputRefs.current[p.id] = el; },
               type: 'file', accept: 'image/*',
               style: { display: 'none' },
               onChange: (ev) => { const f = ev.target.files && ev.target.files[0]; pickAvatar(p.id, f); ev.target.value = ''; },
             }),
-            e('button', {
-              onClick: () => { const r = fileInputRefs.current[p.id]; if (r) r.click(); },
-              title: '写真を選ぶ',
-              style: {
-                width: 36, height: 36, borderRadius: 999,
-                background: C.softer, border: '1px solid ' + C.line,
-                color: C.sub, fontSize: 14, cursor: 'pointer', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }
-            }, '📷'),
+            // Default name (greyed) + editable input
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 }
+              }, p.name + ' (' + p.subtitle + ')'),
+              e('input', {
+                type: 'text',
+                value: names[p.id] || '',
+                onChange: (ev) => update(p.id, ev.target.value),
+                placeholder: p.name,
+                style: {
+                  width: '100%', padding: '6px 0', fontSize: 16,
+                  fontFamily: 'inherit', color: C.text,
+                  background: 'transparent', border: 'none', outline: 'none',
+                  borderBottom: '1px solid ' + C.line,
+                }
+              }),
+            ),
+            // Clear-avatar button (only when a photo is set)
             av && e('button', {
               onClick: () => clearAvatar(p.id),
               title: '元の絵文字に戻す',
               style: {
-                width: 36, height: 36, borderRadius: 999,
+                width: 32, height: 32, borderRadius: 999,
                 background: C.softer, border: '1px solid ' + C.line,
-                color: C.danger, fontSize: 14, cursor: 'pointer', flexShrink: 0,
+                color: C.danger, fontSize: 13, cursor: 'pointer', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }
             }, '✕'),
@@ -5224,7 +5275,7 @@
       e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '14px 16px', marginBottom: 8,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 22,
         }
       },
         e('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
@@ -5273,54 +5324,6 @@
           '🔒 キーはこの端末の中だけに保存されます。',
         ),
       ),
-      e('div', { style: { marginBottom: 22 } }),
-
-      // ----- Section: 名前 (names) -----
-      e('div', {
-        style: {
-          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          color: C.sub, marginBottom: 12, paddingLeft: 4,
-        }
-      }, '名前 (Name)'),
-
-      // Inputs
-      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 } },
-        PROFILES.map(p => e('label', {
-          key: p.id,
-          style: {
-            display: 'flex', alignItems: 'center', gap: 12,
-            background: C.card, border: '1px solid ' + C.line,
-            borderRadius: 16, padding: '12px 14px',
-          }
-        },
-          e('div', {
-            style: {
-              width: 42, height: 42, borderRadius: 14,
-              background: p.color + '22', color: p.color,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, flexShrink: 0,
-              border: '1px solid ' + p.color + '33',
-            }
-          }, p.emoji),
-          e('div', { style: { flex: 1, minWidth: 0 } },
-            e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 } },
-              p.name + ' (' + p.subtitle + ')'),
-            e('input', {
-              type: 'text',
-              value: names[p.id] || '',
-              onChange: (ev) => update(p.id, ev.target.value),
-              placeholder: p.name + ' のままでOK',
-              style: {
-                width: '100%', padding: '8px 0', fontSize: 16,
-                fontFamily: 'inherit', color: C.text,
-                background: 'transparent', border: 'none', outline: 'none',
-                borderBottom: '1px solid ' + C.line,
-              }
-            }),
-          ),
-        )),
-      ),
 
       // Save / clear
       e('div', { style: { display: 'flex', gap: 10 } },
@@ -5350,7 +5353,7 @@
           padding: '12px 16px', background: C.softer, borderRadius: 12, lineHeight: 1.6,
         }
       },
-        '🔒 名前はこの端末の localStorage にのみ保存され、サーバーや GitHub には送られません。'),
+        '名前と写真はこの端末と Supabase（家族用クラウド）に保存され、別の端末でも同じものが見られます。GitHub には送られません。'),
 
       // ----- Cloud sync (Supabase) -----
       e(CloudStatusPanel),
@@ -6610,6 +6613,19 @@
 
   // ---------- Mount ----------
   ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+
+  // One-time migration: if this device already has local names / avatars /
+  // photos set under the old (timestamp-less) scheme, stamp the local
+  // timestamp now so the first cloud hydrate doesn't overwrite them with
+  // an older empty cloud row.
+  (function migrateFamilySharedLocalTs() {
+    if (loadFamilySharedLocalTs()) return;
+    const hasData =
+      Object.keys(loadDisplayNames()).length > 0 ||
+      Object.keys(loadAvatars()).length > 0 ||
+      loadFamilyPhotos().length > 0;
+    if (hasData) stampFamilySharedLocal();
+  })();
 
   // Verify the cloud connection on boot so the Settings panel shows a green
   // dot immediately when everything's healthy. Failure is silent — the app
