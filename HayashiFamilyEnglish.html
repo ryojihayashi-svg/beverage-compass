@@ -66,11 +66,12 @@
   // forLearner=true: shown to family members who study (father, sons)
   // forViewer=true:  shown to mother (viewer-only)
   const FEATURES = [
-    { id: 'daily20',  label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',       primary: true,  forLearner: true,  forViewer: false },
-    { id: 'vocab',    label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                     forLearner: true,  forViewer: false },
-    { id: 'mistakes', label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                  forLearner: true,  forViewer: false },
-    { id: 'ranking',  label: '家族ランキング', emoji: '🏆', desc: '今週のがんばり',                       forLearner: true,  forViewer: true  },
-    { id: 'support',  label: '応援メッセージ', emoji: '💌', desc: 'みんなへの一言',                       forLearner: true,  forViewer: true  },
+    { id: 'daily20',     label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',       primary: true, forLearner: true,  forViewer: false },
+    { id: 'vocab',       label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                    forLearner: true,  forViewer: false },
+    { id: 'composition', label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                        forLearner: true,  forViewer: false },
+    { id: 'mistakes',    label: '間違い復習',     emoji: '🔁', desc: '直近のまちがいだけ',                  forLearner: true,  forViewer: false },
+    { id: 'ranking',     label: '家族ランキング', emoji: '🏆', desc: '今週のがんばり',                       forLearner: true,  forViewer: true  },
+    { id: 'support',     label: '応援メッセージ', emoji: '💌', desc: 'みんなへの一言',                       forLearner: true,  forViewer: true  },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -132,6 +133,37 @@
     { id:'deteriorate', en:'deteriorate', ja:'悪化する',                 pos:'verb', level:5, cat:'general', exEn:'His health began to deteriorate.',          exJa:'彼の健康は悪化し始めました。' },
   ];
 
+  // ---------- Sprint Composition sentences (瞬間英作文) ----------
+  // Short Japanese -> English chunks, organised by grammar pattern.
+  const SENTENCES = [
+    // L1 — be動詞 / 一般動詞現在形 / 三単現
+    { id:'s001', level:1, grammar:'be動詞',           ja:'私は学生です。',                    en:'I am a student.' },
+    { id:'s002', level:1, grammar:'be動詞',           ja:'彼は私の友達です。',                en:'He is my friend.' },
+    { id:'s003', level:1, grammar:'一般動詞',         ja:'私は犬を飼っています。',            en:'I have a dog.' },
+    { id:'s004', level:1, grammar:'三単現',           ja:'彼女は本を読みます。',              en:'She reads books.' },
+    { id:'s005', level:1, grammar:'一般動詞',         ja:'私たちは学校へ行きます。',          en:'We go to school.' },
+    { id:'s006', level:1, grammar:'三単現',           ja:'彼は速く走ります。',                en:'He runs fast.' },
+
+    // L2 — 否定・疑問・過去・未来・進行・助動詞
+    { id:'s007', level:2, grammar:'否定文',           ja:'私は寿司が好きではありません。',    en:"I don't like sushi." },
+    { id:'s008', level:2, grammar:'疑問文',           ja:'あなたはサッカーをしますか？',      en:'Do you play soccer?' },
+    { id:'s009', level:2, grammar:'過去形',           ja:'彼は昨日東京に行きました。',        en:'He went to Tokyo yesterday.' },
+    { id:'s010', level:2, grammar:'未来 (will)',      ja:'私は明日学校に行きます。',          en:'I will go to school tomorrow.' },
+    { id:'s011', level:2, grammar:'現在進行形',       ja:'彼女は今、料理をしています。',      en:'She is cooking now.' },
+    { id:'s012', level:2, grammar:'過去進行形',       ja:'彼らは公園で遊んでいました。',      en:'They were playing in the park.' },
+    { id:'s013', level:2, grammar:'助動詞 can',       ja:'私はギターが弾けます。',            en:'I can play the guitar.' },
+    { id:'s014', level:2, grammar:'依頼',             ja:'それを見せてくれませんか？',        en:'Could you show me that?' },
+
+    // L3 — 現在完了・受動態・関係代名詞・仮定法
+    { id:'s015', level:3, grammar:'現在完了',         ja:'彼女と5年間会っていません。',        en:"I haven't seen her for five years." },
+    { id:'s016', level:3, grammar:'受動態',           ja:'この本は多くの人に読まれています。',  en:'This book is read by many people.' },
+    { id:'s017', level:3, grammar:'関係代名詞 who',   ja:'あそこに立っている男の子を知っています。', en:'I know the boy who is standing over there.' },
+    { id:'s018', level:3, grammar:'should have',      ja:'もっと早く来るべきだった。',          en:'I should have come earlier.' },
+    { id:'s019', level:3, grammar:'現在完了進行形',   ja:'彼は3時間ずっと勉強しています。',     en:'He has been studying for three hours.' },
+    { id:'s020', level:3, grammar:'仮定法過去',       ja:'もし時間があれば、手伝うのに。',      en:'If I had time, I would help you.' },
+  ];
+  const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
+
   // ---------- Data layer (localStorage today, swappable to Supabase later) ----------
   // Storage shape per member:
   //   { vocab: { [vocabId]: SrsState }, mistakes: [{ vocabId, at }] }
@@ -190,6 +222,24 @@
       s.daily[k].attempts++;
       if (isCorrect) s.daily[k].correct++;
       this.save(memberId, s);
+    },
+
+    // Sentence (composition) progress: simple per-sentence counters.
+    // Shape: state.composition[sentenceId] = { attempts, correct, lastAt }
+    getSentenceProgress(memberId, sentenceId) {
+      const s = this.load(memberId);
+      return (s.composition && s.composition[sentenceId]) || null;
+    },
+    recordSentence(memberId, sentenceId, isCorrect) {
+      const s = this.load(memberId);
+      if (!s.composition) s.composition = {};
+      const cur = s.composition[sentenceId] || { attempts: 0, correct: 0, lastAt: null };
+      cur.attempts++;
+      if (isCorrect) cur.correct++;
+      cur.lastAt = new Date().toISOString();
+      s.composition[sentenceId] = cur;
+      this.save(memberId, s);
+      this.recordDaily(memberId, isCorrect);
     },
 
     // Single entry point for "the user answered a question". Updates SRS state,
@@ -425,11 +475,12 @@
     if (route.name === 'feature') {
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
-      if (route.feature === 'vocab')    return e(VocabBrowse,   { profile, onBack: back });
-      if (route.feature === 'daily20')  return e(Daily20,       { profile, onBack: back });
-      if (route.feature === 'mistakes') return e(MistakeReview, { profile, onBack: back });
-      if (route.feature === 'ranking')  return e(FamilyRanking,   { profile, onBack: back });
-      if (route.feature === 'support')  return e(SupportMessages, { profile, onBack: back });
+      if (route.feature === 'vocab')       return e(VocabBrowse,      { profile, onBack: back });
+      if (route.feature === 'daily20')     return e(Daily20,          { profile, onBack: back });
+      if (route.feature === 'composition') return e(SprintComposition,{ profile, onBack: back });
+      if (route.feature === 'mistakes')    return e(MistakeReview,    { profile, onBack: back });
+      if (route.feature === 'ranking')     return e(FamilyRanking,    { profile, onBack: back });
+      if (route.feature === 'support')     return e(SupportMessages,  { profile, onBack: back });
       return e(ComingSoon, { profile, feature: feat, onBack: back });
     }
     return null;
@@ -1933,6 +1984,315 @@
 
   // Stub for future Supabase-backed cross-member reaction display.
   function myReactionFromOthers(_messageId, _memberId) { return null; }
+
+  // ---------- Sprint Composition (瞬間英作文) ----------
+  // Picks ~10 sentences near the member's level, runs a Daily20-style flow:
+  // intro → study (JP prompt → reveal EN → self-grade) → done (score + list).
+  const COMP_COUNT = 10;
+
+  function pickComposition(memberLevel, count) {
+    // Prefer sentences near the member's level (allow ±1), then fall back to all.
+    const inRange = SENTENCES.filter(s => Math.abs(s.level - (memberLevel || 1)) <= 1);
+    const pool = inRange.length >= count ? inRange : SENTENCES.slice();
+    // Fisher-Yates shuffle
+    const arr = pool.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr.slice(0, count);
+  }
+
+  function SprintComposition({ profile, onBack }) {
+    const [queue]    = useState(() => pickComposition(profile.level, COMP_COUNT));
+    const [phase, setPhase]   = useState(queue.length > 0 ? 'intro' : 'empty');
+    const [index, setIndex]   = useState(0);
+    const [revealed, setRevealed] = useState(false);
+    const [results, setResults]   = useState([]);
+
+    const total   = queue.length;
+    const current = queue[index] || null;
+    const correct = results.filter(r => r.isCorrect).length;
+
+    function record(isCorrect) {
+      const cur = queue[index];
+      db.recordSentence(profile.id, cur.id, isCorrect);
+      const newResults = results.concat([{ sentenceId: cur.id, isCorrect }]);
+      setResults(newResults);
+      if (index + 1 >= total) { setPhase('done'); return; }
+      setIndex(index + 1); setRevealed(false);
+    }
+
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '瞬間英作文'),
+      phase === 'study' && e('div', {
+        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+      }, (index + 1) + ' / ' + total),
+    );
+
+    // ============ INTRO ============
+    if (phase === 'intro') {
+      const byLevel = { 1: 0, 2: 0, 3: 0 };
+      queue.forEach(s => { byLevel[s.level] = (byLevel[s.level] || 0) + 1; });
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '24px 4px 20px' } },
+          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '✍️'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.15 }
+          }, 'Sprint Composition'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
+            '日本語を見て、すぐに英語に直す練習。\n頭の中で組み立ててから「答えを見る」を押そう。'),
+        ),
+        e('div', {
+          style: {
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 18, padding: '18px 20px', marginBottom: 22,
+          }
+        },
+          e('div', { style: { display: 'flex', justifyContent: 'space-around', alignItems: 'center' } },
+            ['1','2','3'].map((lv, i) => e('div', {
+              key: lv,
+              style: {
+                textAlign: 'center', flex: 1,
+                borderRight: i < 2 ? '1px solid ' + C.line : 'none',
+                padding: '0 8px',
+              }
+            },
+              e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em' } }, 'L' + lv),
+              e('div', {
+                style: { fontSize: 20, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 }
+              }, byLevel[lv] || 0),
+            )),
+          ),
+          e('div', {
+            style: {
+              fontSize: 11, color: C.sub, textAlign: 'center', marginTop: 12, paddingTop: 12,
+              borderTop: '1px solid ' + C.line,
+            }
+          }, '今日の出題: 計 ' + total + ' 文'),
+        ),
+        e('button', {
+          onClick: () => setPhase('study'),
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 16,
+            background: profile.color, color: '#fff',
+            fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
+            boxShadow: '0 8px 22px ' + profile.color + '55',
+          }
+        }, '始める'),
+      );
+    }
+
+    // ============ EMPTY ============
+    if (phase === 'empty') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', {
+          style: {
+            background: C.softer, border: '1px dashed ' + C.line,
+            borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+            marginTop: 12,
+          }
+        },
+          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
+          e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+            'まだ出題がありません'),
+          e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
+            '文の追加を待ってください。'),
+        ),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      const accuracy = total > 0 ? Math.round(correct * 100 / total) : 0;
+      const cheers =
+        accuracy >= 90 ? '完璧！' :
+        accuracy >= 70 ? 'いい感じ！' :
+        accuracy >= 50 ? 'もう一歩。' : 'お疲れさま。';
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '32px 4px 20px' } },
+          e('div', { style: { fontSize: 44, marginBottom: 10 } }, accuracy >= 70 ? '🎉' : '💪'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 32, fontWeight: 700, color: C.text, lineHeight: 1.15 }
+          }, cheers),
+        ),
+        e('div', {
+          style: {
+            background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
+            color: '#fff', padding: '22px 22px', borderRadius: 22, marginBottom: 18,
+            boxShadow: '0 10px 28px ' + profile.color + '33',
+          }
+        },
+          e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } }, 'COMPOSITION SCORE'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 42, fontWeight: 700, marginTop: 4, lineHeight: 1 }
+          }, correct + ' / ' + total),
+          e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
+            '精度 ' + accuracy + '%'),
+        ),
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 18, padding: 8, marginBottom: 18,
+          }
+        },
+          results.map((r, i) => {
+            const s = SENTENCE_BY_ID[r.sentenceId];
+            if (!s) return null;
+            return e('div', {
+              key: r.sentenceId,
+              style: {
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '12px',
+                borderBottom: i < results.length - 1 ? '1px solid ' + C.line : 'none',
+              }
+            },
+              e('div', {
+                style: {
+                  width: 24, height: 24, borderRadius: 999, fontSize: 13,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: r.isCorrect ? C.success + '22' : C.danger + '22',
+                  color:      r.isCorrect ? C.success         : C.danger,
+                  fontWeight: 700, flexShrink: 0, marginTop: 2,
+                }
+              }, r.isCorrect ? '✓' : '✗'),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', {
+                  style: { fontSize: 13, color: C.sub, marginBottom: 3 }
+                }, s.ja),
+                e('div', {
+                  style: { fontSize: 13, fontFamily: SERIF, fontStyle: 'italic', color: C.text }
+                }, s.en),
+              ),
+              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } }, 'L' + s.level),
+            );
+          }),
+        ),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontSize: 14, fontWeight: 700,
+            boxShadow: '0 6px 14px ' + profile.color + '44',
+          }
+        }, 'ホームへ'),
+      );
+    }
+
+    // ============ STUDY ============
+    if (!current) return null;
+    return e('div', { style: pageStyle },
+      topBar,
+      // Progress bar
+      e('div', {
+        style: {
+          height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden',
+        }
+      },
+        e('div', {
+          style: {
+            width: ((index) / total * 100) + '%',
+            height: '100%', background: profile.color,
+            transition: 'width .35s ease',
+          }
+        }),
+      ),
+      // Card
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 24, padding: '24px 22px', marginBottom: 18,
+          boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
+          minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
+        }
+      },
+        // Chips
+        e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+          e('span', {
+            style: {
+              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              background: profile.color + '1A', color: profile.color,
+            }
+          }, 'L' + current.level),
+          e('span', {
+            style: {
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: C.softer, color: C.sub,
+            }
+          }, current.grammar),
+        ),
+        // Japanese prompt
+        e('div', { style: { padding: '4px 0 8px' } },
+          e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
+            '日本語'),
+          e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.5 } },
+            current.ja),
+        ),
+        // Reveal area
+        !revealed
+          ? e('div', { style: { marginTop: 'auto', textAlign: 'center', padding: '14px 0' } },
+              e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 12, lineHeight: 1.6 } },
+                '頭の中で英語に直してから\n👇 を押してね'),
+              e('button', {
+                onClick: () => setRevealed(true),
+                style: {
+                  width: '100%', padding: '14px 0', borderRadius: 14,
+                  background: C.softer, color: profile.color,
+                  fontSize: 14, fontWeight: 700, border: '1px solid ' + profile.color + '33',
+                }
+              }, '答えを見る'),
+            )
+          : e('div', { style: { marginTop: 'auto' } },
+              e('div', {
+                style: {
+                  borderTop: '1px dashed ' + C.line, paddingTop: 14,
+                  display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4,
+                }
+              },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.text, flex: 1, lineHeight: 1.4 }
+                }, current.en),
+                e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
+                  style: {
+                    width: 38, height: 38, borderRadius: 999, fontSize: 16,
+                    background: C.softer, color: profile.color, flexShrink: 0,
+                  }
+                }, '🔊'),
+              ),
+            ),
+      ),
+      // Action buttons
+      revealed && e('div', { style: { display: 'flex', gap: 10 } },
+        e('button', {
+          onClick: () => record(false),
+          style: {
+            flex: 1, padding: '15px 0', borderRadius: 14,
+            background: C.danger + '14', color: C.danger,
+            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.danger + '33',
+          }
+        }, 'できなかった'),
+        e('button', {
+          onClick: () => record(true),
+          style: {
+            flex: 1, padding: '15px 0', borderRadius: 14,
+            background: C.success, color: '#fff',
+            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.success,
+            boxShadow: '0 6px 14px ' + C.success + '40',
+          }
+        }, 'できた'),
+      ),
+    );
+  }
 
   // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
   function ComingSoon({ profile, feature, onBack }) {
