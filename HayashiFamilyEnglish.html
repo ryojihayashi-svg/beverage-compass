@@ -343,6 +343,37 @@
       this.recordDaily(memberId, isCorrect);
     },
 
+    // Evaluate which user-composed support messages should now be unlocked
+    // for `memberId`, given a trigger event. Returns the count of newly
+    // unlocked messages.
+    //
+    // Conditions:
+    //   open_now         — already unlocked at create time, never re-evaluated
+    //   session_complete — unlocks when opts.sessionCompleted is true
+    //   streak_3 / 7     — unlocks once the member's streak reaches the threshold
+    evaluateUnlocks(memberId, opts) {
+      const sessionDone = !!(opts && opts.sessionCompleted);
+      const messages = loadUserMessages();
+      let newlyUnlocked = 0;
+      let changed = false;
+      const now = new Date().toISOString();
+      // Stats only needed for streak conditions; lazy-compute.
+      let cachedStats = null;
+      const getStats = () => cachedStats || (cachedStats = computeStats(memberId));
+      for (const m of messages) {
+        if (m.unlockedAt) continue;
+        // Only auto-unlock messages addressed to this member or family-wide
+        if (m.toMemberId && m.toMemberId !== memberId) continue;
+        let unlock = false;
+        if (m.unlockCondition === 'session_complete' && sessionDone) unlock = true;
+        else if (m.unlockCondition === 'streak_3' && getStats().streakDays >= 3) unlock = true;
+        else if (m.unlockCondition === 'streak_7' && getStats().streakDays >= 7) unlock = true;
+        if (unlock) { m.unlockedAt = now; newlyUnlocked++; changed = true; }
+      }
+      if (changed) saveUserMessages(messages);
+      return newlyUnlocked;
+    },
+
     // Single entry point for "the user answered a question". Updates SRS state,
     // mistake log, and daily counters in one place. Pass removeOnCorrect: true
     // when the source is the mistake-review screen (a correct answer there
@@ -1146,6 +1177,7 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);  // [{ vocabId, isCorrect }]
+    const [unlockedCount, setUnlockedCount] = useState(0);
 
     const total   = bundle.items.length;
     const current = bundle.items[index] || null;
@@ -1156,7 +1188,11 @@
       db.recordAnswer(profile.id, cur.id, isCorrect);
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
-      if (index + 1 >= total) { setPhase('done'); return; }
+      if (index + 1 >= total) {
+        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        setPhase('done');
+        return;
+      }
       setIndex(index + 1);
       setRevealed(false);
     }
@@ -1275,6 +1311,8 @@
           e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
             '精度 ' + accuracy + '%'),
         ),
+        // Unlocked celebration banner
+        unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
         // Per-question list
         e('div', {
           style: {
@@ -1518,6 +1556,7 @@
     const [index, setIndex]     = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
+    const [unlockedCount, setUnlockedCount] = useState(0);
 
     function startAll() {
       if (initialList.length === 0) return;
@@ -1531,7 +1570,11 @@
       db.recordAnswer(profile.id, cur.id, isCorrect, { removeOnCorrect: true });
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
-      if (index + 1 >= queue.length) { setPhase('done'); return; }
+      if (index + 1 >= queue.length) {
+        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        setPhase('done');
+        return;
+      }
       setIndex(index + 1); setRevealed(false);
     }
 
@@ -1782,6 +1825,7 @@
           e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
             '克服率 ' + accuracy + '%'),
         ),
+        unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
         e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
@@ -2314,6 +2358,13 @@
     const [userMessages, setUserMessages] = useState(() => loadUserMessages());
     const [composeMode, setComposeMode] = useState(false);
 
+    // Evaluate streak-based unlocks the moment the user opens the inbox.
+    // (session_complete unlocks happen at session end, before navigation here.)
+    useEffect(() => {
+      const newly = db.evaluateUnlocks(profile.id);
+      if (newly > 0) setUserMessages(loadUserMessages());
+    }, [profile.id]);
+
     // Combined list: user's own + dummy seed
     const allMessages = useMemo(() => userMessages.concat(dummyMessages), [userMessages, dummyMessages]);
 
@@ -2592,6 +2643,7 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
+    const [unlockedCount, setUnlockedCount] = useState(0);
 
     const total   = queue.length;
     const current = queue[index] || null;
@@ -2602,7 +2654,11 @@
       db.recordSentence(profile.id, cur.id, isCorrect);
       const newResults = results.concat([{ sentenceId: cur.id, isCorrect }]);
       setResults(newResults);
-      if (index + 1 >= total) { setPhase('done'); return; }
+      if (index + 1 >= total) {
+        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        setPhase('done');
+        return;
+      }
       setIndex(index + 1); setRevealed(false);
     }
 
@@ -2722,6 +2778,7 @@
           e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
             '精度 ' + accuracy + '%'),
         ),
+        unlockedCount > 0 && e(UnlockBanner, { count: unlockedCount }),
         e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
@@ -2986,6 +3043,30 @@
         }
       },
         '🔒 名前はこの端末の localStorage にのみ保存され、サーバーや GitHub には送られません。'),
+    );
+  }
+
+  // ---------- UnlockBanner (shown on session-done when messages just unlocked) ----------
+  function UnlockBanner({ count }) {
+    return e('div', {
+      style: {
+        background: 'linear-gradient(135deg, #FFE9C8 0%, #FFD8A1 100%)',
+        border: '1px solid #E8C28A',
+        borderRadius: 16, padding: '14px 16px', marginBottom: 16,
+        display: 'flex', alignItems: 'center', gap: 12,
+        boxShadow: '0 6px 16px rgba(232, 194, 138, 0.35)',
+        animation: 'fadeIn .5s ease',
+      }
+    },
+      e('div', { style: { fontSize: 26 } }, '✨'),
+      e('div', { style: { flex: 1 } },
+        e('div', {
+          style: { fontSize: 14, fontWeight: 700, color: '#7A4D1A' }
+        }, count + ' 件の応援メッセージが開きました！'),
+        e('div', {
+          style: { fontSize: 11, color: '#9C6E40', marginTop: 2 }
+        }, '💌 応援メッセージから見られます'),
+      ),
     );
   }
 
