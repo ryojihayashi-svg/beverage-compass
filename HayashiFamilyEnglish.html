@@ -78,7 +78,7 @@
     { id: 'father', name: '林亮治',   subtitle: '英検準2級レベル',          emoji: '🌲', color: C.brand, role: 'learner', level: 3 },
     { id: 'mother', name: '歩み',     subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
     { id: 'son1',   name: 'なるみち', subtitle: '高2・英検2級',             emoji: '🎯', color: C.brand, role: 'learner', level: 4 },
-    { id: 'son2',   name: '吉成',     subtitle: '高1・中学レベル復習',      emoji: '⚽', color: C.brand, role: 'learner', level: 2, maxLevel: 2 },
+    { id: 'son2',   name: '吉成',     subtitle: '高1・中学レベル復習',      emoji: '⚽', color: C.brand, role: 'learner', level: 2 },
     { id: 'son3',   name: '吉平',     subtitle: '小6・はじめての英語',      emoji: '🌟', color: C.brand, role: 'learner', level: 1 },
   ];
 
@@ -1426,6 +1426,44 @@
     'always':       ['constantly', 'forever'],
     'never':        ['not ever', 'at no time'],
     'usually':      ['normally', 'typically', 'generally'],
+    // Travel / movement
+    'trip':         ['travel', 'tour', 'journey', 'excursion'],
+    'travel':       ['trip', 'tour', 'journey'],
+    // Verbs of mind / speech
+    'learn':        ['study', 'pick up', 'master'],
+    'think':        ['believe', 'consider', 'suppose'],
+    'talk':         ['speak', 'chat', 'converse'],
+    'speak':        ['talk', 'say', 'address'],
+    'tell':         ['say', 'inform', 'mention'],
+    'show':         ['display', 'demonstrate', 'present'],
+    'listen':       ['pay attention', 'tune in'],
+    'see':          ['look', 'view', 'notice', 'observe'],
+    // Verbs of action / desire
+    'want':         ['wish', 'desire', 'would like'],
+    'like':         ['enjoy', 'love', 'be fond of'],
+    'buy':          ['purchase', 'get'],
+    'finish':       ['end', 'complete', 'wrap up'],
+    'write':        ['compose', 'draft'],
+    // Adjectives — nuance groups
+    'happy':        ['glad', 'pleased', 'cheerful', 'delighted', 'joyful'],
+    'new':          ['fresh', 'recent', 'modern'],
+    'old':          ['aged', 'ancient', 'elderly'],
+    'pretty':       ['beautiful', 'lovely', 'cute'],
+    'beautiful':    ['pretty', 'lovely', 'gorgeous'],
+    'rich':         ['wealthy', 'well-off'],
+    'poor':         ['needy', 'broke'],
+    'right':        ['correct', 'accurate'],
+    'wrong':        ['incorrect', 'mistaken'],
+    'true':         ['real', 'actual', 'genuine'],
+    'amazing':      ['incredible', 'wonderful', 'awesome'],
+    'angry':        ['mad', 'upset', 'furious'],
+    'important':    ['significant', 'crucial', 'major'],
+    'interesting':  ['fascinating', 'engaging'],
+    'boring':       ['dull', 'uninteresting', 'tedious'],
+    'beautiful':    ['pretty', 'lovely', 'gorgeous'],
+    'strong':       ['powerful', 'tough', 'sturdy'],
+    'enough':       ['sufficient', 'adequate'],
+    'a lot':        ['many', 'lots', 'plenty'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
@@ -1580,6 +1618,70 @@
       past: tail ? past + ' ' + tail : past,
       pp:   tail ? pp   + ' ' + tail : pp,
     };
+  }
+
+  // ---------- Per-profile level distribution ----------
+  // The "おまかせ" (auto) picker for vocab + sprint composition uses these
+  // weights so each family member sees a level mix that fits their stage.
+  // Distributions per family request:
+  //   Ryoji (father):       L2 45% / L3 45% / L4 10%
+  //   Narumichi (son1):     L2 20% / L3 40% / L4 40%
+  //   Ayumi / Yoshinari /   L1 45% / L2 45% / L3 10%
+  //     Kippei
+  function pickLevelForProfile(profile) {
+    const r = Math.random();
+    const id = (profile && profile.id) || '';
+    if (id === 'father') {
+      if (r < 0.45) return 2;
+      if (r < 0.90) return 3;
+      return 4;
+    }
+    if (id === 'son1') {
+      if (r < 0.20) return 2;
+      if (r < 0.60) return 3;
+      return 4;
+    }
+    // mother / son2 / son3 — basics first
+    if (r < 0.45) return 1;
+    if (r < 0.90) return 2;
+    return 3;
+  }
+
+  // Build a profile-weighted queue of `count` unique items from `pool`.
+  // Each draw picks a level via pickLevelForProfile and grabs a random
+  // unused item from that level. Falls back to the whole pool if a level
+  // bucket is empty so the queue always fills.
+  function pickWeightedQueue(pool, profile, count) {
+    if (!pool || pool.length === 0) return [];
+    const byLevel = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    for (const item of pool) {
+      const lv = item.level || 1;
+      if (byLevel[lv]) byLevel[lv].push(item);
+    }
+    const used = new Set();
+    const out = [];
+    let safety = count * 20;
+    while (out.length < count && safety-- > 0) {
+      const lv = pickLevelForProfile(profile);
+      let bucket = byLevel[lv];
+      if (!bucket || bucket.length === 0) bucket = pool;
+      let picked = null;
+      for (let t = 0; t < 12; t++) {
+        const c = bucket[Math.floor(Math.random() * bucket.length)];
+        if (!used.has(c.id)) { picked = c; break; }
+      }
+      // Last-ditch — if we keep colliding within the chosen bucket, try
+      // any pool item we haven't used.
+      if (!picked) {
+        for (const c of pool) {
+          if (!used.has(c.id)) { picked = c; break; }
+        }
+      }
+      if (!picked) break;
+      used.add(picked.id);
+      out.push(picked);
+    }
+    return out;
   }
 
   // Friendly Japanese label for the part-of-speech tag stored on each
@@ -3891,9 +3993,13 @@
     // changes (and when the learner restarts a fresh session). Includes
     // profile.id so two members on the same device don't see identical order.
     const queue = useMemo(() => {
-      let pool = filter === 'all'
-        ? VOCAB.slice()
-        : VOCAB.filter(v => v.level === parseInt(filter, 10));
+      // 'all' → use the per-profile weighted picker so the level mix matches
+      // who's studying (Ryoji L2-4, Narumichi L2-4 high, others L1-3 etc).
+      // A specific level filter overrides and just picks from that level.
+      if (filter === 'all') {
+        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT);
+      }
+      let pool = VOCAB.filter(v => v.level === parseInt(filter, 10));
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
@@ -5026,24 +5132,28 @@
     // Selection rules (priority):
     //   1. If opts.level is a number (1-5): exact level only
     //   2. Else if profile.maxLevel set: strict <= maxLevel
-    //   3. Else: prefer ±1 of memberLevel, fall back to whole pool when sparse
-    let candidates;
+    //   3. Else: profile-weighted distribution (pickLevelForProfile)
     if (opts.level && [1, 2, 3, 4, 5].indexOf(opts.level) >= 0) {
-      candidates = pool.filter(it => it.level === opts.level);
-    } else if (profile && profile.maxLevel) {
-      candidates = pool.filter(it => it.level <= profile.maxLevel);
-    } else {
-      const memberLevel = (profile && profile.level) || 1;
-      const near = pool.filter(it => Math.abs(it.level - memberLevel) <= 1);
-      candidates = near.length >= count ? near : pool;
+      const candidates = pool.filter(it => it.level === opts.level);
+      const arr = candidates.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr.slice(0, count);
     }
-    // Fisher-Yates shuffle
-    const arr = candidates.slice();
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    if (profile && profile.maxLevel) {
+      const candidates = pool.filter(it => it.level <= profile.maxLevel);
+      const arr = candidates.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr.slice(0, count);
     }
-    return arr.slice(0, count);
+    // Profile-weighted: each draw picks a level matching the family
+    // member's distribution and grabs a random unused item from it.
+    return pickWeightedQueue(pool, profile, count);
   }
 
   function SprintComposition({ profile, onBack, forcedDirection }) {
