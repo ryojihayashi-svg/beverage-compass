@@ -39,6 +39,14 @@
   @keyframes hfe-pulse { 0%, 100% { opacity: 1; transform: scale(1); }
                          50%       { opacity: 0.55; transform: scale(0.85); } }
   .hfe-update-dot { animation: hfe-pulse 1.6s ease-in-out infinite; }
+  /* "Today's path" — soft pulsing ring on the next recommended tile.
+     Uses the brand color (#7A6F60). 1.6s period, gentle expansion so it
+     reads as guidance, not an alarm. */
+  @keyframes hfe-step-pulse {
+    0%, 100% { box-shadow: 0 0 0 0   rgba(122, 111, 96, 0.45); }
+    50%      { box-shadow: 0 0 0 10px rgba(122, 111, 96, 0);    }
+  }
+  .hfe-step-current { animation: hfe-step-pulse 1.8s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -101,9 +109,9 @@
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
-    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true },
     { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
+    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
@@ -2722,6 +2730,123 @@
     return out;
   }
 
+  // ---------- Today's learning path ----------
+  // A guided routine. We pre-build a per-day, per-profile "ladder" of
+  // steps and highlight whichever step is up next. The path is stamped
+  // into localStorage so it survives reloads / app re-opens; it gets
+  // rebuilt when the day rolls over.
+  //
+  // Step generation: deterministic per (day, profile) so opening the app
+  // twice in the same day shows the same plan. Mistake review steps only
+  // show up when there ARE mistakes; otherwise they're skipped.
+  const DAILY_PATH_KEY = (memberId) => 'hfe_daily_path_v1_' + memberId;
+  function _hashCode(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    return h >>> 0;
+  }
+  function _mulberry32(seed) {
+    let t = seed >>> 0;
+    return function () {
+      t = (t + 0x6D2B79F5) | 0;
+      let r = Math.imul(t ^ (t >>> 15), 1 | t);
+      r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+      return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function buildTodaysPath(profile) {
+    const memberId = profile.id;
+    const today    = db.todayKey(memberId);
+    const rand     = _mulberry32(_hashCode(today + ':' + memberId));
+    const out      = [];
+    const undoneLessons = ENGLISH_LESSONS.filter(
+      l => !(loadLessonProgress(memberId)[l.id])
+    ).length;
+    // 1. Daily English warm-up (60% of the time)
+    if (rand() < 0.6) out.push({ id: 'phrases' });
+    // 2 + 4. Two main inputs in random order
+    const main = ['vocab_ja2en', 'composition_ja2en'];
+    if (rand() < 0.5) main.reverse();
+    out.push({ id: main[0] });
+    // Mistake review slots are always part of the plan; reconcilePath
+    // auto-resolves them when there's nothing to review at that moment.
+    out.push({ id: 'mistakes' });
+    out.push({ id: main[1] });
+    out.push({ id: 'mistakes' });
+    // 6. 1分英語解説 (50% if there's an unfinished lesson)
+    if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
+    // 7. Random test as the closer
+    out.push({ id: 'random_test' });
+    return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
+  }
+  function loadTodaysPath(profile) {
+    try {
+      const raw = localStorage.getItem(DAILY_PATH_KEY(profile.id));
+      const p = raw ? JSON.parse(raw) : null;
+      if (!p || !Array.isArray(p.steps)) return null;
+      // Day boundary check — Yoshinari uses London time per MEMBER_TIMEZONE.
+      if (p.day !== db.todayKey(profile.id)) return null;
+      return p;
+    } catch { return null; }
+  }
+  function saveTodaysPath(profile, p) {
+    try { localStorage.setItem(DAILY_PATH_KEY(profile.id), JSON.stringify(p)); }
+    catch {}
+  }
+  function getOrCreateTodaysPath(profile) {
+    let p = loadTodaysPath(profile);
+    if (p) return p;
+    const steps = buildTodaysPath(profile);
+    p = { day: db.todayKey(profile.id), steps, createdAt: Date.now() };
+    saveTodaysPath(profile, p);
+    return p;
+  }
+  // Mark the FIRST undone step matching `featureId` as done. Two
+  // 'mistakes' steps in the same path get knocked off in sequence —
+  // first review session clears step 3, the second clears step 5.
+  function markPathStepDone(profile, featureId) {
+    const p = loadTodaysPath(profile);
+    if (!p) return;
+    const i = p.steps.findIndex(s => s.id === featureId && !s.doneAt);
+    if (i < 0) return;
+    p.steps[i].doneAt = Date.now();
+    saveTodaysPath(profile, p);
+  }
+  // Auto-skip steps that don't apply right now (e.g. mistake review
+  // when there's nothing in the mistake bin). Mutates and persists when
+  // any step gets auto-skipped. Returns true if anything changed.
+  function reconcilePath(p, profile) {
+    if (!p || !Array.isArray(p.steps)) return false;
+    let changed = false;
+    for (const s of p.steps) {
+      if (s.doneAt) continue;
+      if (s.id === 'mistakes') {
+        const has = db.getMistakesNormalized && db.getMistakesNormalized(profile.id).length > 0;
+        if (!has) { s.doneAt = Date.now(); s.skipped = true; changed = true; }
+      }
+    }
+    if (changed) saveTodaysPath(profile, p);
+    return changed;
+  }
+  // Returns the index of the first undone step, or -1 when the path is
+  // complete. Used by the home screen to highlight the next tile.
+  function currentPathStep(p) {
+    if (!p || !Array.isArray(p.steps)) return -1;
+    return p.steps.findIndex(s => !s.doneAt);
+  }
+  // Friendly label for a step ID, used by the "次は ___" hint in the
+  // path header card.
+  const PATH_STEP_LABEL = {
+    phrases:           'Daily English',
+    vocab_ja2en:       '単語学習',
+    vocab_en2ja:       '単語学習',
+    composition_ja2en: '瞬間英作文',
+    composition_en2ja: '瞬間英作文',
+    mistakes:          '間違い復習',
+    english_lessons:   '1分英語解説',
+    random_test:       'ランダムテスト',
+  };
+
 
   // ---------- Data layer (localStorage today, swappable to Supabase later) ----------
   // Storage shape per member:
@@ -4565,6 +4690,51 @@
   function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
+
+    // Today's guided path. Generated once per day, persisted, and
+    // reconciled on every render so empty mistake-review slots auto-
+    // skip themselves the moment there's nothing to review.
+    const path = !isViewer ? getOrCreateTodaysPath(profile) : null;
+    if (path) reconcilePath(path, profile);
+    const currentIdx = currentPathStep(path);
+    const totalSteps = path ? path.steps.length : 0;
+    const doneSteps  = path ? path.steps.filter(s => s.doneAt).length : 0;
+    const allDone    = path && totalSteps > 0 && currentIdx === -1;
+    const currentStepId = currentIdx >= 0 ? path.steps[currentIdx].id : null;
+    // Map a tile feature id to its status on today's path.
+    //   isCurrent: highlight + pulse (next thing to do)
+    //   isDone   : faded + ✓
+    //   stepNum  : badge number (1-indexed) for an upcoming step
+    function pathStatusFor(featureId) {
+      if (!path) return null;
+      // Direction-aware match: a tile for 'vocab_en2ja' lights up when
+      // the path's next step is 'vocab_ja2en' too, so the user can
+      // satisfy a 単語学習 step from either direction.
+      const matchesGeneric = (tileId, stepId) => {
+        if (tileId === stepId) return true;
+        if ((tileId === 'vocab_ja2en' || tileId === 'vocab_en2ja') &&
+            (stepId === 'vocab_ja2en' || stepId === 'vocab_en2ja')) return true;
+        if ((tileId === 'composition_ja2en' || tileId === 'composition_en2ja') &&
+            (stepId === 'composition_ja2en' || stepId === 'composition_en2ja')) return true;
+        return false;
+      };
+      // Scan the path for a step that matches this feature.
+      for (let i = 0; i < path.steps.length; i++) {
+        const s = path.steps[i];
+        if (!matchesGeneric(featureId, s.id)) continue;
+        if (s.doneAt) {
+          // Only mark a tile "done" if every matching step in the path
+          // is done (so a tile that appears twice doesn't go ✓ early).
+          const remaining = path.steps.find(x => matchesGeneric(featureId, x.id) && !x.doneAt);
+          if (!remaining) return { isDone: true };
+          continue;
+        }
+        if (i === currentIdx) return { isCurrent: true, stepNum: i + 1 };
+        return { isUpcoming: true, stepNum: i + 1 };
+      }
+      return null; // not part of today's plan
+    }
+
     // Pick one phrase per day so the same phrase appears all day for one
     // member. Mix profile.id into the seed so different members can see
     // different phrases on the same day.
@@ -4629,6 +4799,69 @@
 
       // Progress chips (learners only)
       !isViewer && e(ProgressChips, { profile, includeTotal: true, style: { marginBottom: 18 } }),
+
+      // Today's guided path — a small banner above the feature tiles
+      // showing how far the learner has progressed and what's up next.
+      // Hidden for viewer-only profiles since they don't get the path.
+      path && e('div', {
+        style: {
+          background: allDone ? (C.success + '14') : C.card,
+          border: '1px solid ' + (allDone ? C.success : C.line),
+          borderRadius: 14, padding: '12px 14px', marginBottom: 16,
+        }
+      },
+        allDone
+          ? e('div', null,
+              e('div', {
+                style: {
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  letterSpacing: '0.12em', color: C.success, marginBottom: 4,
+                }
+              }, '🎉  今日の学習 完了！'),
+              e('div', {
+                style: { fontSize: 13, color: C.text, lineHeight: 1.6 }
+              }, totalSteps + ' ステップぜんぶやりました。お疲れさま！'),
+            )
+          : e('div', null,
+              e('div', {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  letterSpacing: '0.12em', color: C.sub, marginBottom: 6,
+                }
+              },
+                e('span', { style: { flex: 1 } }, '今日の学習'),
+                e('span', {
+                  style: {
+                    color: profile.color, fontVariantNumeric: 'tabular-nums',
+                  }
+                }, doneSteps + ' / ' + totalSteps),
+              ),
+              e('div', {
+                style: { fontSize: 14, color: C.text, lineHeight: 1.6, fontWeight: 600 }
+              },
+                '次は ',
+                e('span', {
+                  style: { color: profile.color, fontWeight: 800 }
+                }, '「' + (PATH_STEP_LABEL[currentStepId] || currentStepId) + '」'),
+                ' をやろう。',
+              ),
+              // Tiny dot row: filled = done, empty = remaining, ring = current.
+              e('div', {
+                style: { display: 'flex', gap: 6, marginTop: 8, alignItems: 'center' }
+              },
+                path.steps.map((s, i) => e('span', {
+                  key: 'dot_' + i,
+                  style: {
+                    width: 8, height: 8, borderRadius: 999,
+                    background: s.doneAt ? profile.color : 'transparent',
+                    border: '1.5px solid ' + (i === currentIdx ? profile.color : (s.doneAt ? profile.color : C.line)),
+                    boxShadow: i === currentIdx ? '0 0 0 3px ' + profile.color + '33' : 'none',
+                  }
+                })),
+              ),
+            ),
+      ),
 
       // Section label
       e('div', {
@@ -4696,6 +4929,8 @@
             key: f.id, feature: f,
             onClick: () => onPickFeature(f.id),
             subtitle,
+            pathStatus: pathStatusFor(f.id),
+            profileColor: profile.color,
           });
         }),
       ),
@@ -4917,14 +5152,22 @@
     );
   }
 
-  function FeatureTile({ feature, onClick, subtitle }) {
+  function FeatureTile({ feature, onClick, subtitle, pathStatus, profileColor }) {
     const sub = subtitle || feature.desc;
+    const isCurrent  = pathStatus && pathStatus.isCurrent;
+    const isDone     = pathStatus && pathStatus.isDone;
+    const isUpcoming = pathStatus && pathStatus.isUpcoming;
+    const accent = profileColor || C.brand;
     return e('button', {
       onClick,
+      // The pulsing ring is added when this is the next step on the
+      // user's daily path; otherwise the tile renders exactly as before.
+      className: isCurrent ? 'hfe-step-current' : '',
       style: {
         gridColumn: feature.fullWidth ? '1 / -1' : 'auto',
-        background: C.card, color: C.text,
-        border: '1px solid ' + C.line,
+        background: isCurrent ? (accent + '0F') : C.card,
+        color: C.text,
+        border: '1px solid ' + (isCurrent ? accent : C.line),
         borderRadius: 14, padding: '16px 14px',
         textAlign: 'left', minHeight: feature.fullWidth ? 64 : 86,
         display: 'flex',
@@ -4933,8 +5176,25 @@
         alignItems: feature.fullWidth ? 'center' : 'stretch',
         gap: feature.fullWidth ? 12 : 4,
         cursor: 'pointer',
+        position: 'relative',
+        opacity: isDone ? 0.55 : 1,
       }
     },
+      // Step badge in the top-right corner — shows the step number for
+      // upcoming/current path steps, ✓ for completed ones.
+      pathStatus && (isCurrent || isUpcoming || isDone) && e('span', {
+        style: {
+          position: 'absolute', top: 8, right: 8,
+          minWidth: 22, height: 22, padding: '0 6px', borderRadius: 999,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, fontWeight: 800, fontFamily: SANS_UI,
+          background: isCurrent ? accent : isDone ? C.success : C.softer,
+          color: (isCurrent || isDone) ? '#fff' : accent,
+          border: '1px solid ' + (isCurrent ? accent : isDone ? C.success : accent + '55'),
+          letterSpacing: 0,
+        }
+      }, isDone ? '✓' : String(pathStatus.stepNum || '')),
+
       e('div', { style: { flex: feature.fullWidth ? 1 : 'unset' } },
         e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
         e('div', {
@@ -5010,6 +5270,9 @@
             level: selectedLevel === 'auto' ? 'auto' : selectedLevel,
             direction,
           });
+          // Mark the matching step on today's guided path so the home
+          // screen advances the glow to the next recommended activity.
+          markPathStepDone(profile, direction === 'ja2en' ? 'vocab_ja2en' : 'vocab_en2ja');
           setPhase('done');
         } else {
           setRevealed(false);
@@ -5526,6 +5789,7 @@
           total: newResults.length,
           correct: correctCount,
         });
+        markPathStepDone(profile, 'mistakes');
         setPhase('done');
         return;
       }
@@ -6387,6 +6651,7 @@
         db.pushEvent(profile.id, {
           kind: 'composition', total, correct: correctCount, direction,
         });
+        markPathStepDone(profile, direction === 'ja2en' ? 'composition_ja2en' : 'composition_en2ja');
         setPhase('done');
         return;
       }
@@ -7902,6 +8167,7 @@
           db.pushEvent(profile.id, {
             kind: 'mctest', total: queue.length, correct: correctCount,
           });
+          markPathStepDone(profile, 'phrases');
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -8335,6 +8601,7 @@
           db.pushEvent(profile.id, {
             kind: 'random_test', total: queue.length, correct: correctCount,
           });
+          markPathStepDone(profile, 'random_test');
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -9713,6 +9980,7 @@
           label: lesson.title,
           durationMs,
         });
+        markPathStepDone(profile, 'english_lessons');
         quizStartRef.current = null;
         setPhase('result');
       } else {
