@@ -3214,19 +3214,25 @@
         return t && (Date.now() - t < UPDATE_COOLDOWN_MS);
       } catch { return false; }
     }
+    function markShown() {
+      try { localStorage.setItem(UPDATE_LAST_SHOWN_KEY, String(Date.now())); } catch {}
+    }
     useEffect(() => {
       function onAvailable() {
         if (withinCooldown()) return;
         setShow(true);
+        markShown();    // Stamp on show so we don't pop again within 12h.
       }
       window.addEventListener('hfe:update-available', onAvailable);
       // If the SW already raised the flag before this component mounted,
       // honour it now.
-      if (_hfeUpdateAvailable && !withinCooldown()) setShow(true);
+      if (_hfeUpdateAvailable && !withinCooldown()) {
+        setShow(true);
+        markShown();
+      }
       return () => window.removeEventListener('hfe:update-available', onAvailable);
     }, []);
     function applyUpdate() {
-      try { localStorage.setItem(UPDATE_LAST_SHOWN_KEY, String(Date.now())); } catch {}
       setShow(false);
       // Tell the waiting SW to skip waiting; controllerchange handler
       // (in the SW registration block) will reload the page.
@@ -3241,12 +3247,12 @@
         });
       } catch { hardReload(); }
     }
-    function snooze() {
-      try { localStorage.setItem(UPDATE_LAST_SHOWN_KEY, String(Date.now())); } catch {}
-      setShow(false);
-    }
     if (!show) return null;
-    return e('div', {
+    // Single-action banner: tapping anywhere on it (or the 更新 button)
+    // applies the update. Reload only takes a second or two so there's
+    // no value in offering a snooze.
+    return e('button', {
+      onClick: applyUpdate,
       style: {
         position: 'fixed',
         left: 12, right: 12,
@@ -3258,6 +3264,7 @@
         boxShadow: '0 10px 30px rgba(42,37,32,0.18)',
         display: 'flex', alignItems: 'center', gap: 12,
         maxWidth: 460, margin: '0 auto',
+        textAlign: 'left', cursor: 'pointer',
       }
     },
       e('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '✨'),
@@ -3267,24 +3274,14 @@
         }, '新しいバージョンがあります'),
         e('div', {
           style: { fontSize: 11, color: C.sub, marginTop: 2, lineHeight: 1.5 }
-        }, '更新するとアプリが自動で再読み込みされます。'),
+        }, 'タップで更新（数秒で再読み込みされます）'),
       ),
-      e('button', {
-        onClick: snooze,
-        style: {
-          padding: '8px 12px', borderRadius: 999,
-          background: 'transparent', border: 'none',
-          fontSize: 12, fontWeight: 700, color: C.sub, fontFamily: SANS_UI,
-          cursor: 'pointer',
-        }
-      }, 'あとで'),
-      e('button', {
-        onClick: applyUpdate,
+      e('span', {
         style: {
           padding: '10px 16px', borderRadius: 999,
-          background: C.brand, color: '#fff', border: '1px solid ' + C.brand,
+          background: C.brand, color: '#fff',
           fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
-          cursor: 'pointer',
+          flexShrink: 0,
         }
       }, '更新'),
     );
