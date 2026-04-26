@@ -5902,7 +5902,11 @@
     }
 
     // When filter changes from idle, jump back to intro
-    useEffect(() => { if (phase !== 'study' && phase !== 'done') setPhase(filtered.length > 0 ? 'intro' : 'empty'); }, [filter]);
+    useEffect(() => {
+      if (phase !== 'study' && phase !== 'done' && phase !== 'mctest') {
+        setPhase(filtered.length > 0 ? 'intro' : 'empty');
+      }
+    }, [filter]);
 
     function startSession() {
       // Pick up to 10 phrases from the filtered set (shuffled)
@@ -5914,6 +5918,73 @@
       setQueue(arr.slice(0, 10));
       setResults([]); setIndex(0); setRevealed(false);
       setPhase('study');
+    }
+
+    // Mixed-direction 10-question MCQ test, scoped to the current filter.
+    // Each question is a phrase + a random direction ('en2ja' | 'ja2en') +
+    // 4 options drawn from the same pool. Mirrors RandomTest's mechanic
+    // but stays inside Daily English so the kid doesn't have to navigate
+    // out and back.
+    const [mcChosen, setMcChosen] = useState(null);   // current option string
+    function startMcTest() {
+      const arr = filtered.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      const queueArr = arr.slice(0, 10).map(p => Object.assign({}, p, {
+        direction: Math.random() < 0.5 ? 'en2ja' : 'ja2en',
+      }));
+      setQueue(queueArr);
+      setResults([]); setIndex(0); setMcChosen(null);
+      setPhase('mctest');
+    }
+    function buildPhraseTestOptions(item) {
+      const isEn2Ja = item.direction === 'en2ja';
+      const correct = isEn2Ja ? item.ja : item.en;
+      // Distractors come from the same scene if possible (more plausible);
+      // otherwise from the whole phrase pool.
+      const sameScene = DAILY_PHRASES.filter(o => o.scene === item.scene && o.id !== item.id);
+      const others = (sameScene.length >= 3 ? sameScene : DAILY_PHRASES.filter(o => o.id !== item.id)).slice();
+      const distractors = [];
+      const seen = new Set([correct]);
+      for (let tries = 0; tries < 30 && distractors.length < 3 && others.length > 0; tries++) {
+        const idx = Math.floor(Math.random() * others.length);
+        const o = others.splice(idx, 1)[0];
+        const text = isEn2Ja ? o.ja : o.en;
+        if (!seen.has(text)) { distractors.push(text); seen.add(text); }
+      }
+      const options = [correct].concat(distractors);
+      while (options.length < 4) options.push('—');
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = options[i]; options[i] = options[j]; options[j] = t;
+      }
+      return { prompt: isEn2Ja ? item.en : item.ja, correct, options, isEn2Ja };
+    }
+    function pickMcChoice(option, opts) {
+      if (mcChosen !== null) return;
+      const cur = queue[index];
+      const isCorrect = option === opts.correct;
+      setMcChosen(option);
+      db.recordPhrase(profile.id, cur.id, isCorrect);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
+      const newResults = results.concat([{
+        phraseId: cur.id, direction: cur.direction,
+        en: cur.en, ja: cur.ja,
+        chosen: option, correct: opts.correct, isCorrect,
+      }]);
+      setResults(newResults);
+      setTimeout(() => {
+        if (index + 1 >= queue.length) {
+          soundComplete();
+          setPhase('done');
+        } else {
+          setIndex(index + 1);
+          setMcChosen(null);
+        }
+      }, 700);
     }
 
     function record(isCorrect) {
@@ -5939,8 +6010,8 @@
       e('button', { onClick: onBack,
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
       }, '‹'),
-      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '日常英会話'),
-      phase === 'study' && e('div', {
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, 'Daily English'),
+      (phase === 'study' || phase === 'mctest') && e('div', {
         style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
       }, (index + 1) + ' / ' + queue.length),
     );
@@ -5958,6 +6029,19 @@
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
             '学校・食事・友達・買い物の場面ですぐ使える表現。'),
         ),
+        // Top: 10-question mixed-direction MCQ test on the current filter
+        e('button', {
+          onClick: startMcTest,
+          disabled: filtered.length === 0,
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontSize: 15, fontWeight: 700, letterSpacing: '0.04em',
+            marginBottom: 16,
+            opacity: filtered.length === 0 ? 0.4 : 1,
+            cursor: filtered.length === 0 ? 'default' : 'pointer',
+          }
+        }, '10問テスト (英語 ⇄ 日本語ミックス)'),
         // Filter chips (English labels, no icons)
         e('div', {
           style: {
@@ -6061,6 +6145,98 @@
       const correct = results.filter(r => r.isCorrect).length;
       const total = results.length;
       return e(SessionDoneCard, { profile, correct, total, onBack });
+    }
+
+    // ============ MCQ TEST ============
+    // 10 phrases, each with a random direction. The learner picks the
+    // matching translation from 4 choices (correct + 3 distractors from
+    // the same scene where possible). Auto-advances after 700ms.
+    if (phase === 'mctest' && queue.length > 0) {
+      const cur = queue[index];
+      const opts = buildPhraseTestOptions(cur);
+      const dirLabel = cur.direction === 'en2ja' ? '英語 → 日本語' : '日本語 → 英語';
+      return e('div', { style: pageStyle },
+        topBar,
+        // Progress bar
+        e('div', {
+          style: { height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden' }
+        },
+          e('div', {
+            style: { width: ((index) / queue.length * 100) + '%', height: '100%', background: profile.color }
+          }),
+        ),
+        // Card
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 18, padding: '20px 18px', marginBottom: 16,
+            display: 'flex', flexDirection: 'column', gap: 14,
+          }
+        },
+          // Chips
+          e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            e('span', {
+              style: {
+                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                background: profile.color + '1A', color: profile.color, fontFamily: SANS_UI,
+              }
+            }, SCENE_LABELS[cur.scene]),
+            e('span', {
+              style: {
+                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                background: C.softer, color: C.sub, fontFamily: SANS_UI,
+              }
+            }, dirLabel),
+          ),
+          // Prompt — speaker shown only when prompt is English
+          e('div', { style: { padding: '8px 0', display: 'flex', alignItems: 'center', gap: 12 } },
+            e('div', {
+              style: {
+                flex: 1,
+                fontSize: opts.isEn2Ja ? 24 : 22,
+                fontWeight: 800, color: C.text, lineHeight: 1.4,
+                fontFamily: opts.isEn2Ja ? SERIF : 'inherit',
+              }
+            }, opts.prompt),
+            opts.isEn2Ja && e(SpeakerBtn, {
+              onClick: () => speak(opts.prompt), color: profile.color, size: 40,
+            }),
+          ),
+        ),
+        // 4 options. When the answer is English, attach a speaker on the right.
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          opts.options.map((opt, i) => {
+            const isPicked   = mcChosen === opt;
+            const isCorrect  = opt === opts.correct;
+            const showResult = mcChosen !== null;
+            const optionsAreEn = !opts.isEn2Ja;
+            let bg = C.card, border = C.line, color = C.text;
+            if (showResult && isCorrect) {
+              bg = C.success + '22'; border = C.success; color = C.success;
+            } else if (showResult && isPicked && !isCorrect) {
+              bg = C.danger + '22'; border = C.danger; color = C.danger;
+            }
+            return e('div', { key: i, style: { display: 'flex', alignItems: 'stretch', gap: 8 } },
+              e('button', {
+                onClick: () => pickMcChoice(opt, opts),
+                disabled: mcChosen !== null,
+                style: {
+                  flex: 1,
+                  padding: '14px 16px', borderRadius: 12, textAlign: 'left',
+                  background: bg, border: '1px solid ' + border, color,
+                  fontSize: opts.isEn2Ja ? 14 : 16,
+                  fontWeight: 600, lineHeight: 1.4,
+                  fontFamily: opts.isEn2Ja ? 'inherit' : SERIF,
+                  cursor: mcChosen !== null ? 'default' : 'pointer',
+                }
+              }, opt),
+              optionsAreEn && e(SpeakerBtn, {
+                onClick: () => speak(opt), color: profile.color, size: 44,
+              }),
+            );
+          }),
+        ),
+      );
     }
 
     // ============ STUDY ============
