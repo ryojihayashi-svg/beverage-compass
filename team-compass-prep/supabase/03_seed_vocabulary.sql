@@ -37,6 +37,37 @@ insert into vocabulary_items (word_en, meaning_ja, pos, level, category, example
   ('big',     '大きい',              'adj',  1, 'general','That is a big tree.',               'あれは大きな木です。'),
   ('small',   '小さい',              'adj',  1, 'general','She has a small bag.',              '彼女は小さなかばんを持っています。'),
   ('good',    'よい',                'adj',  1, 'general','Good morning, everyone!',           'みなさん、おはようございます！'),
+  -- L1 (continued) — numbers
+  ('one',     '1・ひとつ',           'num',  1, 'general','I have one brother.',               '兄が一人います。'),
+  ('two',     '2・ふたつ',           'num',  1, 'general','I see two cats.',                   '猫が2匹見えます。'),
+  ('three',   '3・みっつ',           'num',  1, 'general','I read three books.',               '本を3冊読みました。'),
+  ('four',    '4・よっつ',           'num',  1, 'general','We have four apples.',              'りんごが4つあります。'),
+  ('five',    '5・いつつ',           'num',  1, 'general','I have five pencils.',              '鉛筆が5本あります。'),
+  -- L1 (continued) — time
+  ('today',   '今日',                'noun', 1, 'daily',  'It''s sunny today.',                '今日は晴れです。'),
+  ('morning', '朝',                  'noun', 1, 'daily',  'Good morning!',                     'おはよう！'),
+  ('night',   '夜',                  'noun', 1, 'daily',  'Good night, everyone.',             'みなさん、おやすみなさい。'),
+  ('day',     '日',                  'noun', 1, 'daily',  'Have a good day!',                  'よい一日を！'),
+  -- L1 (continued) — colors
+  ('red',     '赤',                  'adj',  1, 'general','I like the red one.',               '赤いのが好きです。'),
+  ('blue',    '青',                  'adj',  1, 'general','The sky is blue.',                  '空は青いです。'),
+  ('white',   '白',                  'adj',  1, 'general','She has a white dog.',              '彼女は白い犬を飼っています。'),
+  ('black',   '黒',                  'adj',  1, 'general','He wears a black hat.',             '彼は黒い帽子をかぶっています。'),
+  -- L1 (continued) — body
+  ('hand',    '手',                  'noun', 1, 'general','Wash your hands.',                  '手を洗ってください。'),
+  ('foot',    '足',                  'noun', 1, 'general','My foot hurts.',                    '足が痛いです。'),
+  ('eye',     '目',                  'noun', 1, 'general','Close your eyes.',                  '目を閉じて。'),
+  ('head',    '頭',                  'noun', 1, 'general','My head hurts.',                    '頭が痛いです。'),
+  -- L1 (continued) — common verbs
+  ('see',     '見る',                'verb', 1, 'daily',  'I can see the sea.',                '海が見えます。'),
+  ('go',      '行く',                'verb', 1, 'daily',  'Let''s go home.',                   '家に帰ろう。'),
+  ('come',    '来る',                'verb', 1, 'daily',  'Please come here.',                 'こっちに来てください。'),
+  ('walk',    '歩く',                'verb', 1, 'daily',  'I walk to school.',                 '私は歩いて学校へ行きます。'),
+  -- L1 (continued) — common nouns
+  ('car',     '車',                  'noun', 1, 'daily',  'My father drives a car.',           '父は車を運転します。'),
+  ('apple',   'りんご',              'noun', 1, 'daily',  'I eat an apple every day.',         '私は毎日りんごを食べます。'),
+  ('fish',    '魚',                  'noun', 1, 'daily',  'Fish swim in the sea.',             '魚は海で泳ぎます。'),
+  ('tree',    '木',                  'noun', 1, 'general','There is a big tree.',              '大きな木があります。'),
 
   -- ----- L2 (middle school basic, Eiken 4/3) -----
   ('play',     '(スポーツを)する・遊ぶ', 'verb', 2, 'soccer',  'I play soccer with my friends.',     '私は友達とサッカーをします。'),
