@@ -2592,10 +2592,23 @@
     catch (err) { console.warn('saveFamilyPhotos failed', err); }
     pushFamilySharedState();
   }
+  // Picks a family photo at random while avoiding the most recently shown
+  // ones. Without this, two sessions in a row would often show the same
+  // photo, which kills the surprise. We keep a tail of recent picks (length
+  // = floor(N/2), capped at 5) and exclude them from the candidate pool.
+  let _recentPhotoUrls = [];
   function pickRandomFamilyPhoto() {
     const arr = loadFamilyPhotos();
     if (arr.length === 0) return null;
-    return arr[Math.floor(Math.random() * arr.length)].url;
+    if (arr.length === 1) return arr[0].url;
+    const blockSize = Math.min(5, Math.max(1, Math.floor(arr.length / 2)));
+    const recent = new Set(_recentPhotoUrls.slice(-blockSize));
+    const fresh = arr.filter(p => !recent.has(p.url));
+    const pool = fresh.length > 0 ? fresh : arr;
+    const picked = pool[Math.floor(Math.random() * pool.length)].url;
+    _recentPhotoUrls.push(picked);
+    if (_recentPhotoUrls.length > blockSize) _recentPhotoUrls.shift();
+    return picked;
   }
 
   // ---------- Family-shared cloud row ----------
