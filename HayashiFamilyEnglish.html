@@ -1870,134 +1870,6 @@
       })).filter(m => m.id);
     },
 
-    // Family activity feed (shared across members on this device — Supabase
-    // would replace this with cross-device sync). Newest first, capped at 100.
-    pushFeed(memberId, kind, payload) {
-      let arr = [];
-      try { arr = JSON.parse(localStorage.getItem('hfe_feed_v1') || '[]'); } catch {}
-      arr.unshift({
-        id: 'f_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-        memberId, kind, payload: payload || {},
-        at: new Date().toISOString(),
-      });
-      arr = arr.slice(0, 100);
-      try { localStorage.setItem('hfe_feed_v1', JSON.stringify(arr)); } catch {}
-    },
-    getFeed() {
-      try { return JSON.parse(localStorage.getItem('hfe_feed_v1') || '[]'); }
-      catch { return []; }
-    },
-    addFeedReaction(feedId, memberId, emoji) {
-      let arr = this.getFeed();
-      const item = arr.find(x => x.id === feedId);
-      if (!item) return;
-      if (!item.reactions) item.reactions = {};
-      if (item.reactions[memberId] === emoji) delete item.reactions[memberId];
-      else item.reactions[memberId] = emoji;
-      try { localStorage.setItem('hfe_feed_v1', JSON.stringify(arr)); } catch {}
-    },
-
-    // Evaluate which achievements `memberId` has just earned, given an
-    // optional `opts` describing the latest event. Returns an array of
-    // achievement ids newly earned during this call (so the UI can
-    // celebrate them).
-    evaluateAchievements(memberId, opts) {
-      const state = this.load(memberId);
-      if (!state.achievements) state.achievements = {};
-      const earned = state.achievements;
-      const now = new Date().toISOString();
-      const newly = [];
-      const give = (id) => {
-        if (earned[id]) return false;
-        earned[id] = { earnedAt: now };
-        newly.push(id);
-        return true;
-      };
-      // Aggregate stats from current state
-      const vocab = state.vocab || {};
-      let totalCorrect = 0, masteredCount = 0;
-      const touchedByLevel = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      for (const vid in vocab) {
-        const p = vocab[vid];
-        totalCorrect += p.totalCorrect || 0;
-        if (p.status === 'mastered') masteredCount++;
-        if ((p.totalAttempts || 0) > 0) {
-          const v = VOCAB.find(x => x.id === vid);
-          if (v) touchedByLevel[v.level] = (touchedByLevel[v.level] || 0) + 1;
-        }
-      }
-      const streakDays = computeStreak(state.daily || {});
-      // Cumulative correct
-      if (totalCorrect >= 1)   give('first_correct');
-      if (totalCorrect >= 10)  give('ten_correct');
-      if (totalCorrect >= 50)  give('fifty_correct');
-      if (totalCorrect >= 100) give('hundred_correct');
-      if (totalCorrect >= 500) give('five_hundred_correct');
-      // Mastery
-      if (masteredCount >= 1)  give('first_mastered');
-      if (masteredCount >= 10) give('ten_mastered');
-      if (masteredCount >= 50) give('fifty_mastered');
-      // Streak
-      if (streakDays >= 3)     give('streak_3');
-      if (streakDays >= 7)     give('streak_7');
-      if (streakDays >= 30)    give('streak_30');
-      // Per-level discovery
-      if (touchedByLevel[1] >= 1) give('l1_started');
-      if (touchedByLevel[2] >= 1) give('l2_started');
-      if (touchedByLevel[3] >= 1) give('l3_started');
-      if (touchedByLevel[4] >= 1) give('l4_started');
-      if (touchedByLevel[5] >= 1) give('l5_started');
-      // Composition entry
-      if (state.composition && Object.keys(state.composition).length > 0) {
-        give('first_composition');
-      }
-      // Time-of-day
-      const h = new Date().getHours();
-      if (h < 7)  give('early_bird');
-      if (h >= 22) give('night_owl');
-      // Per-event flags from opts
-      if (opts && opts.perfectSession) {
-        give('perfect_session');
-        state.perfectCount = (state.perfectCount || 0) + 1;
-        if (state.perfectCount >= 3) give('three_perfect');
-      }
-      if (opts && opts.daily20Done)         give('daily20_done');
-      if (opts && opts.mistakeReviewSession) give('first_mistake_review');
-      this.save(memberId, state);
-      return newly;
-    },
-
-    // Evaluate which user-composed support messages should now be unlocked
-    // for `memberId`, given a trigger event. Returns the count of newly
-    // unlocked messages.
-    //
-    // Conditions:
-    //   open_now         — already unlocked at create time, never re-evaluated
-    //   session_complete — unlocks when opts.sessionCompleted is true
-    //   streak_3 / 7     — unlocks once the member's streak reaches the threshold
-    evaluateUnlocks(memberId, opts) {
-      const sessionDone = !!(opts && opts.sessionCompleted);
-      const messages = loadUserMessages();
-      let newlyUnlocked = 0;
-      let changed = false;
-      const now = new Date().toISOString();
-      // Stats only needed for streak conditions; lazy-compute.
-      let cachedStats = null;
-      const getStats = () => cachedStats || (cachedStats = computeStats(memberId));
-      for (const m of messages) {
-        if (m.unlockedAt) continue;
-        // Only auto-unlock messages addressed to this member or family-wide
-        if (m.toMemberId && m.toMemberId !== memberId) continue;
-        let unlock = false;
-        if (m.unlockCondition === 'session_complete' && sessionDone) unlock = true;
-        else if (m.unlockCondition === 'streak_3' && getStats().streakDays >= 3) unlock = true;
-        else if (m.unlockCondition === 'streak_7' && getStats().streakDays >= 7) unlock = true;
-        if (unlock) { m.unlockedAt = now; newlyUnlocked++; changed = true; }
-      }
-      if (changed) saveUserMessages(messages);
-      return newlyUnlocked;
-    },
-
     // Single entry point for "the user answered a question". Updates SRS state,
     // mistake log, and daily counters in one place. Pass removeOnCorrect: true
     // when the source is the mistake-review screen (a correct answer there
@@ -2485,91 +2357,12 @@
   // Dummy stats cleared per user request — everyone starts from zero.
   // Real numbers will accrue from each member's actual answers (and once
   // Supabase is wired up, sync across devices in real time).
-  const DUMMY_STATS = {
-    father: { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 },
-    son1:   { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 },
-    son2:   { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 },
-    son3:   { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 },
-    mother: { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 },
-  };
-
-  // ---------- Dummy support messages ----------
-  // Cleared per user request — start with an empty inbox. All messages now
-  // come from the cheerleader's compose form (stored in localStorage).
-  function buildDummyMessages() {
-    return [];
-  }
-
-  const REACT_EMOJIS = ['❤️', '🙏', '🤗', '🔥', '👍'];
-
-  // ---------- Achievements catalog ----------
-  // 22 badges across cumulative correct, mastery, streak, per-level,
-  // session quality, time-of-day, and feature exploration.
-  const ACHIEVEMENTS = [
-    { id: 'first_correct',         icon: '🌱', label: '初めての正解',     desc: '最初の1問に正解' },
-    { id: 'ten_correct',           icon: '🎯', label: '10問正解',          desc: '累計10問正解' },
-    { id: 'fifty_correct',         icon: '💯', label: '50問正解',          desc: '累計50問正解' },
-    { id: 'hundred_correct',       icon: '🏆', label: '100問正解',         desc: '累計100問正解' },
-    { id: 'five_hundred_correct',  icon: '👑', label: '500問正解',         desc: '累計500問正解' },
-    { id: 'first_mastered',        icon: '✨', label: '初めての習得',      desc: '1単語を完全習得' },
-    { id: 'ten_mastered',          icon: '🌟', label: '10単語マスター',    desc: '10単語を習得' },
-    { id: 'fifty_mastered',        icon: '💎', label: '50単語マスター',    desc: '50単語を習得' },
-    { id: 'streak_3',              icon: '🔥', label: '3日連続',           desc: '3日連続で学習' },
-    { id: 'streak_7',              icon: '🔥', label: '7日連続',           desc: '7日連続で学習' },
-    { id: 'streak_30',             icon: '👑', label: '30日連続',          desc: '30日連続で学習' },
-    { id: 'l1_started',            icon: '🌱', label: 'L1スタート',        desc: 'L1の単語を学習開始' },
-    { id: 'l2_started',            icon: '🌿', label: 'L2スタート',        desc: 'L2の単語を学習開始' },
-    { id: 'l3_started',            icon: '🌳', label: 'L3スタート',        desc: 'L3の単語を学習開始' },
-    { id: 'l4_started',            icon: '🎓', label: 'L4スタート',        desc: 'L4の単語を学習開始' },
-    { id: 'l5_started',            icon: '👑', label: 'L5スタート',        desc: 'L5の単語を学習開始' },
-    { id: 'first_composition',     icon: '✍️', label: '初めての英作文',    desc: '瞬間英作文に挑戦' },
-    { id: 'first_mistake_review',  icon: '🔁', label: '初めての復習',      desc: '間違い復習に挑戦' },
-    { id: 'daily20_done',          icon: '🎯', label: '今日の20問達成',    desc: '今日の20問を完了' },
-    { id: 'perfect_session',       icon: '🎉', label: '完璧なセッション',  desc: 'セッションで全問正解' },
-    { id: 'three_perfect',         icon: '🥇', label: '3回完璧',           desc: '完璧セッション3回達成' },
-    { id: 'early_bird',            icon: '🐦', label: '早起き学習',        desc: '朝7時前に学習' },
-    { id: 'night_owl',             icon: '🦉', label: '夜更かし学習',      desc: '夜10時以降に学習' },
-  ];
-  const ACHIEVEMENT_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
-
   // ---------- Streak visual tiers ----------
   function streakVisuals(days) {
     if (days >= 30) return { icon: '👑', color: '#D4AF37' };
     if (days >= 7)  return { icon: '🔥', color: '#B85420' };
     if (days >= 3)  return { icon: '🔥', color: '#C97D3B' };
     return { icon: '🔥', color: '#C97D3B' };
-  }
-
-  // ---------- User-composed support messages (localStorage) ----------
-  // Mother (or anyone with isCheerleader) can create messages from inside the app.
-  // They live alongside the dummy seed messages and use the same shape.
-  const SUPPORT_MSG_KEY = 'hfe_support_msgs_v1';
-  function loadUserMessages() {
-    try { return JSON.parse(localStorage.getItem(SUPPORT_MSG_KEY) || '[]'); }
-    catch { return []; }
-  }
-  function saveUserMessages(arr) {
-    try { localStorage.setItem(SUPPORT_MSG_KEY, JSON.stringify(arr || [])); }
-    catch (err) { console.warn('saveUserMessages failed', err); }
-  }
-  function addUserMessage(msg) {
-    const all = loadUserMessages();
-    all.unshift(msg);
-    saveUserMessages(all);
-  }
-  function deleteUserMessage(id) {
-    const all = loadUserMessages().filter(m => m.id !== id);
-    saveUserMessages(all);
-  }
-
-  function reactionsKey(memberId)  { return 'hfe_reactions_v1_' + memberId; }
-  function loadReactions(memberId) {
-    try { return JSON.parse(localStorage.getItem(reactionsKey(memberId)) || '{}'); }
-    catch { return {}; }
-  }
-  function saveReactions(memberId, obj) {
-    try { localStorage.setItem(reactionsKey(memberId), JSON.stringify(obj)); }
-    catch { /* ignore */ }
   }
 
   // Aggregate the current user's real stats from localStorage.
@@ -3039,50 +2832,24 @@
     if (route.name === 'home') {
       return wrap(e(EnglishHome, {
         profile,
-        onBackToProfiles:   () => setRoute({ name: 'profiles' }),
-        onPickFeature:      (id) => setRoute({ name: 'feature', feature: id }),
-        onOpenAchievements: () => setRoute({ name: 'achievements' }),
-        onOpenFeed:         () => setRoute({ name: 'feed' }),
-      }));
-    }
-    if (route.name === 'achievements') {
-      return wrap(e(AchievementsScreen, {
-        profile,
-        onBack: () => setRoute({ name: 'home' }),
-      }));
-    }
-    if (route.name === 'feed') {
-      return wrap(e(FamilyFeedScreen, {
-        profile,
-        onBack: () => setRoute({ name: 'home' }),
+        onBackToProfiles: () => setRoute({ name: 'profiles' }),
+        onPickFeature:    (id) => setRoute({ name: 'feature', feature: id }),
       }));
     }
     if (route.name === 'feature') {
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
       let body;
-      if      (route.feature === 'phrases')                body = e(DailyPhrases,      { profile, onBack: back });
-      else if (route.feature === 'random_test')            body = e(RandomTest,        { profile, onBack: back });
-      // Direction-baked tiles — open the practice screen with the picker preset.
-      else if (route.feature === 'vocab_ja2en')            body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'ja2en' });
-      else if (route.feature === 'vocab_en2ja')            body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'en2ja' });
-      else if (route.feature === 'composition_ja2en')      body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'ja2en' });
-      else if (route.feature === 'composition_en2ja')      body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
-      // Combined review / mastered (no kind split on the home grid).
-      else if (route.feature === 'mistakes')               body = e(MistakeReview,     { profile, onBack: back });
-      else if (route.feature === 'mastered')               body = e(CombinedMastered,  { profile, onBack: back });
-      // Legacy ids kept for safety so old links / saved feeds don't 404.
-      else if (route.feature === 'mistakes_vocab')         body = e(MistakeReview,     { profile, onBack: back, kindFilter: 'vocab' });
-      else if (route.feature === 'mistakes_sentence')      body = e(MistakeReview,     { profile, onBack: back, kindFilter: 'sentence' });
-      else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,     { profile, onBack: back });
-      else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences, { profile, onBack: back });
-      else if (route.feature === 'vocab')                  body = e(VocabBrowse,       { profile, onBack: back });
-      else if (route.feature === 'composition')            body = e(SprintComposition, { profile, onBack: back });
-      else if (route.feature === 'ai_chat')                body = e(AIChat,            { profile, onBack: back });
-      else if (route.feature === 'daily20')                body = e(Daily20,           { profile, onBack: back });
-      else if (route.feature === 'ranking')                body = e(FamilyRanking,     { profile, onBack: back });
-      else if (route.feature === 'support')                body = e(SupportMessages,   { profile, onBack: back });
-      else                                                  body = e(ComingSoon, { profile, feature: feat, onBack: back });
+      if      (route.feature === 'phrases')           body = e(DailyPhrases,      { profile, onBack: back });
+      else if (route.feature === 'random_test')       body = e(RandomTest,        { profile, onBack: back });
+      else if (route.feature === 'vocab_ja2en')       body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'ja2en' });
+      else if (route.feature === 'vocab_en2ja')       body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'en2ja' });
+      else if (route.feature === 'composition_ja2en') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'ja2en' });
+      else if (route.feature === 'composition_en2ja') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
+      else if (route.feature === 'mistakes')          body = e(MistakeReview,     { profile, onBack: back });
+      else if (route.feature === 'mastered')          body = e(CombinedMastered,  { profile, onBack: back });
+      else if (route.feature === 'ai_chat')           body = e(AIChat,            { profile, onBack: back });
+      else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
     return null;
@@ -3638,231 +3405,6 @@
   // material so old learning isn't forgotten.
   const DAILY_COUNT = 12;
 
-  function Daily20({ profile, onBack }) {
-    const [bundle] = useState(() => srs.pickDaily20(profile.id, DAILY_COUNT, profile.level, profile.maxLevel));
-    const [phase, setPhase]   = useState(bundle.items.length > 0 ? 'intro' : 'empty');
-    const [index, setIndex]   = useState(0);
-    const [revealed, setRevealed] = useState(false);
-    const [results, setResults]   = useState([]);  // [{ kind, id, isCorrect }]
-
-    const total   = bundle.items.length;
-    const cur     = bundle.items[index] || null;
-    const correct = results.filter(r => r.isCorrect).length;
-
-    function record(isCorrect) {
-      const c = bundle.items[index];
-      if (c.kind === 'vocab')         db.recordAnswer(profile.id, c.id, isCorrect);
-      else if (c.kind === 'sentence') db.recordSentence(profile.id, c.id, isCorrect);
-      if (isCorrect) { soundCorrect(); hapticTap(); }
-      else           { soundWrong();   hapticBuzz(); }
-      const next = results.concat([{ kind: c.kind, id: c.id, isCorrect }]);
-      setResults(next);
-      if (index + 1 >= total) {
-        const correctCount = next.filter(r => r.isCorrect).length;
-        const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
-        db.evaluateUnlocks(profile.id, { sessionCompleted: true });
-        db.evaluateAchievements(profile.id, {
-          daily20Done: true, perfectSession: correctCount === total && total > 0,
-        });
-        db.pushFeed(profile.id, 'session_done', { feature: 'daily20', correct: correctCount, total, accuracy: acc });
-        setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
-        setPhase('done');
-        return;
-      }
-      setIndex(index + 1);
-      setRevealed(false);
-    }
-
-    const topBar = e('div', {
-      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
-    },
-      e('button', { onClick: onBack,
-        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-      }, '‹'),
-      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '今日の20問'),
-      phase === 'study' && e('div', {
-        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
-      }, (index + 1) + ' / ' + total),
-    );
-
-    // ============ INTRO ============
-    if (phase === 'intro') {
-      return e('div', { style: pageStyle },
-        topBar,
-        e('div', { style: { padding: '24px 4px 18px' } },
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, '今日の20問'),
-          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
-            '単語と英作文を ' + total + ' 問。\n復習も少しまぜています。'),
-        ),
-        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
-        e('div', {
-          style: {
-            background: C.card, border: '1px solid ' + C.line,
-            borderRadius: 14, padding: '14px 18px', marginBottom: 22,
-            display: 'flex', justifyContent: 'space-between', textAlign: 'center',
-          }
-        },
-          e('div', null,
-            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '単語'),
-            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.vocabCount),
-          ),
-          e('div', null,
-            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '英作文'),
-            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.sentenceCount),
-          ),
-          e('div', null,
-            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 700, letterSpacing: '0.12em' } }, '復習'),
-            e('div', { style: { fontSize: 22, fontWeight: 700, color: C.text, fontFamily: SERIF, marginTop: 2 } }, bundle.reviewCount),
-          ),
-        ),
-        e('button', {
-          onClick: () => setPhase('study'),
-          style: {
-            width: '100%', padding: '16px 0', borderRadius: 14,
-            background: profile.color, color: '#fff',
-            fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
-          }
-        }, '始める'),
-      );
-    }
-
-    // ============ EMPTY ============
-    if (phase === 'empty') {
-      return e('div', { style: pageStyle },
-        topBar,
-        e('div', {
-          style: {
-            background: C.softer, border: '1px dashed ' + C.line,
-            borderRadius: 14, padding: '32px 20px', textAlign: 'center', color: C.sub,
-            marginTop: 12,
-          }
-        },
-          e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
-            '出題できる問題がありません'),
-          e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
-            'もう少し学習を進めると、ここに復習も加わります。'),
-        ),
-      );
-    }
-
-    // ============ DONE ============
-    if (phase === 'done') {
-      return e(SessionDoneCard, { profile, correct, total, onBack });
-    }
-
-    // ============ STUDY ============
-    if (!cur) return null;
-    const it      = cur.item;
-    const isVocab = cur.kind === 'vocab';
-    const promptJa = it.ja;
-    const answerEn = it.en;
-    const exEn = isVocab ? it.exEn : null;
-    const exJa = isVocab ? it.exJa : null;
-    const kindLabel = isVocab ? '単語' : '英作文';
-
-    return e('div', { style: pageStyle },
-      topBar,
-      // Progress bar
-      e('div', {
-        style: {
-          height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden',
-        }
-      },
-        e('div', {
-          style: { width: ((index) / total * 100) + '%', height: '100%', background: profile.color }
-        }),
-      ),
-      // Quiz card
-      e('div', {
-        style: {
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 18, padding: '22px 20px', marginBottom: 18,
-          minHeight: 280, display: 'flex', flexDirection: 'column', gap: 16,
-        }
-      },
-        // Header chips
-        e('div', { style: { display: 'flex', gap: 8 } },
-          e('span', {
-            style: {
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-              background: profile.color + '1A', color: profile.color, fontFamily: SANS_UI,
-            }
-          }, kindLabel),
-          e('span', {
-            style: {
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
-              background: C.softer, color: C.sub, fontFamily: SANS_UI,
-            }
-          }, 'レベル ' + (it.level || 1)),
-        ),
-        // Prompt: Japanese
-        e('div', { style: { padding: '4px 0' } },
-          e('div', {
-            style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8, fontFamily: SANS_UI }
-          }, '日本語'),
-          e('div', {
-            style: { fontSize: isVocab ? 38 : 26, fontWeight: 800, color: C.text, lineHeight: 1.4 }
-          }, promptJa),
-        ),
-        // Reveal area
-        !revealed
-          ? e('button', {
-              onClick: () => setRevealed(true),
-              style: {
-                marginTop: 'auto', padding: '14px 0', borderRadius: 12,
-                background: C.softer, color: profile.color,
-                fontSize: 14, fontWeight: 700, border: '1px solid ' + profile.color + '33',
-                fontFamily: SANS_UI,
-              }
-            }, '答えを見る')
-          : e('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 } },
-              e('div', {
-                style: {
-                  borderTop: '1px dashed ' + C.line, paddingTop: 14,
-                  display: 'flex', alignItems: 'center', gap: 12,
-                }
-              },
-                e('div', {
-                  style: { fontFamily: SERIF, fontSize: isVocab ? 38 : 24, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.3 }
-                }, answerEn),
-                e(SpeakerBtn, { onClick: () => speak(answerEn), color: profile.color, size: 56 }),
-              ),
-              isVocab && exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
-                e('div', {
-                  style: { flex: 1, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.5, fontStyle: 'italic', fontFamily: SERIF }
-                }, exEn),
-                e(SpeakerBtn, { onClick: () => speak(exEn), color: profile.color, size: 44 }),
-              ),
-              isVocab && exJa && e('div', {
-                style: { fontSize: 14, color: C.sub, lineHeight: 1.6 }
-              }, exJa),
-            ),
-      ),
-      // Action buttons (only after reveal)
-      revealed && e('div', { style: { display: 'flex', gap: 10 } },
-        e('button', {
-          onClick: () => record(false),
-          style: {
-            flex: 1, padding: '15px 0', borderRadius: 12,
-            background: C.danger + '14', color: C.danger,
-            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.danger + '33',
-            fontFamily: SANS_UI,
-          }
-        }, 'わからなかった'),
-        e('button', {
-          onClick: () => record(true),
-          style: {
-            flex: 1, padding: '15px 0', borderRadius: 12,
-            background: C.success, color: '#fff',
-            fontWeight: 700, fontSize: 15, border: '1px solid ' + C.success,
-            fontFamily: SANS_UI,
-          }
-        }, '知ってた'),
-      ),
-    );
-  }
 
   const pageStyle = {
     maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
@@ -3959,8 +3501,6 @@
     const [index, setIndex]     = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
-    const [unlockedCount, setUnlockedCount] = useState(0);
-    const [newBadges, setNewBadges] = useState([]);
 
     function startAll() {
       if (initialList.length === 0) return;
@@ -3989,14 +3529,6 @@
       if (index + 1 >= queue.length) {
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = newResults.length > 0 ? Math.round(correctCount * 100 / newResults.length) : 0;
-        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const badges = db.evaluateAchievements(profile.id, {
-          mistakeReviewSession: true,
-          perfectSession: correctCount === newResults.length && newResults.length > 0,
-        });
-        setNewBadges(badges);
-        db.pushFeed(profile.id, 'session_done', { feature: 'mistakes', correct: correctCount, total: newResults.length, accuracy: acc });
-        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -4247,216 +3779,6 @@
   }
 
   // ---------- Family Ranking ----------
-  function FamilyRanking({ profile, onBack }) {
-    const [metric, setMetric] = useState('weekly'); // 'weekly' | 'total'
-
-    // Build entries: real stats for the active learner, dummy for others.
-    const entries = useMemo(() => {
-      return PROFILES.map(p => {
-        if (p.role === 'viewer') {
-          const d = DUMMY_STATS[p.id] || {};
-          return {
-            profile: p, kind: 'viewer', isMe: p.id === profile.id,
-            cheers: d.cheers || 0,
-          };
-        }
-        if (p.id === profile.id) {
-          const real = computeStats(profile.id);
-          return {
-            profile: p, kind: 'real', isMe: true,
-            weeklyCorrect: real.weeklyCorrect,
-            totalCorrect:  real.totalCorrect,
-            accuracy:      real.accuracy,
-            streakDays:    real.streakDays,
-            learnedCount:  real.learnedCount,
-            masteredCount: real.masteredCount,
-          };
-        }
-        const d = DUMMY_STATS[p.id] || { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 };
-        return Object.assign({ profile: p, kind: 'dummy', isMe: false }, d);
-      });
-    }, [profile.id]);
-
-    // Separate learners and viewer; sort learners by chosen metric desc.
-    const learners = entries.filter(e_ => e_.kind !== 'viewer');
-    const viewers  = entries.filter(e_ => e_.kind === 'viewer');
-    const key = metric === 'weekly' ? 'weeklyCorrect' : 'totalCorrect';
-    learners.sort((a, b) => (b[key] || 0) - (a[key] || 0));
-    const maxValue = Math.max(1, ...learners.map(l => l[key] || 0));
-
-    const medal = (rank) => rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : (rank + 1) + '位';
-
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
-        e('button', { onClick: onBack,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-        }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          '家族ランキング'),
-      ),
-
-      // Header
-      e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '🏆'),
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, 'Family Leaderboard'),
-        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
-          'みんなのがんばりが一目でわかります。'),
-      ),
-
-      // Metric toggle
-      e('div', {
-        style: {
-          display: 'inline-flex', background: C.softer, borderRadius: 999,
-          padding: 4, marginBottom: 16, border: '1px solid ' + C.line,
-        }
-      },
-        ['weekly', 'total'].map(k => e('button', {
-          key: k, onClick: () => setMetric(k),
-          style: {
-            padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 700,
-            background: metric === k ? C.card  : 'transparent',
-            color:      metric === k ? C.text  : C.sub,
-            boxShadow:  metric === k ? '0 2px 6px rgba(42,37,32,0.08)' : 'none',
-            transition: 'all .2s ease',
-          }
-        }, k === 'weekly' ? '今週' : '累計')),
-      ),
-
-      // Disclaimer about dummy data
-      e('div', {
-        style: {
-          fontSize: 11, color: C.sub, marginBottom: 14, padding: '8px 12px',
-          background: C.softer, borderRadius: 10, lineHeight: 1.5,
-        }
-      },
-        '※ 自分の数字（今週・累計・連続日数）は本物。他のメンバーは Supabase 接続後にリアルタイム同期されます。'),
-
-      // Ranked learner list
-      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 } },
-        learners.map((entry, rank) => {
-          const value = entry[key] || 0;
-          const pct = Math.round(value * 100 / maxValue);
-          const top3 = rank < 3;
-          return e('div', {
-            key: entry.profile.id,
-            style: {
-              background: entry.isMe ? entry.profile.color + '0E' : C.card,
-              border: '1px solid ' + (entry.isMe ? entry.profile.color + '55' : C.line),
-              borderRadius: 16, padding: '14px 16px',
-              boxShadow: top3 ? '0 6px 16px rgba(42,37,32,0.06)' : 'none',
-              display: 'flex', alignItems: 'center', gap: 12,
-            }
-          },
-            // Rank
-            e('div', {
-              style: {
-                width: 36, fontSize: top3 ? 22 : 14, fontWeight: 700,
-                color: top3 ? C.text : C.sub, textAlign: 'center', flexShrink: 0,
-              }
-            }, medal(rank)),
-            // Avatar
-            e('div', {
-              style: {
-                width: 42, height: 42, borderRadius: 14,
-                background: entry.profile.color + '22', color: entry.profile.color,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 22, flexShrink: 0,
-                border: '1px solid ' + entry.profile.color + '33',
-              }
-            }, entry.profile.emoji),
-            // Body
-            e('div', { style: { flex: 1, minWidth: 0 } },
-              e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                e('div', {
-                  style: { fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1 }
-                }, getDisplayName(entry.profile)),
-                entry.isMe && e('span', {
-                  style: {
-                    fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-                    background: entry.profile.color, color: '#fff', letterSpacing: '0.06em',
-                  }
-                }, 'YOU'),
-                entry.kind === 'dummy' && e('span', {
-                  style: { fontSize: 10, color: C.sub, opacity: 0.7 }
-                }, 'demo'),
-              ),
-              // Bar
-              e('div', {
-                style: {
-                  height: 6, background: C.line, borderRadius: 999, overflow: 'hidden', marginBottom: 6,
-                }
-              },
-                e('div', {
-                  style: {
-                    width: pct + '%', height: '100%',
-                    background: entry.profile.color, transition: 'width .35s ease',
-                  }
-                }),
-              ),
-              // Stats line
-              e('div', {
-                style: {
-                  fontSize: 11, color: C.sub, display: 'flex', gap: 10,
-                  fontVariantNumeric: 'tabular-nums',
-                }
-              },
-                e('span', null, '正解 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, value), '問'),
-                e('span', null, '精度 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, (entry.accuracy || 0) + '%')),
-                (entry.streakDays || 0) > 0 && e('span', null, '連続 ',
-                  e('strong', { style: { color: C.text, fontWeight: 700 } }, entry.streakDays + '日')),
-              ),
-            ),
-          );
-        }),
-      ),
-
-      // Viewer card (mother)
-      viewers.length > 0 && e('div', null,
-        e('div', {
-          style: {
-            fontSize: 11, color: C.sub, fontWeight: 600,
-            letterSpacing: '0.12em', marginBottom: 8, paddingLeft: 4,
-          }
-        }, 'CHEERLEADER'),
-        viewers.map(v => e('div', {
-          key: v.profile.id,
-          style: {
-            background: v.isMe ? v.profile.color + '0E' : C.card,
-            border: '1px solid ' + (v.isMe ? v.profile.color + '55' : C.line),
-            borderRadius: 16, padding: '14px 16px',
-            display: 'flex', alignItems: 'center', gap: 12,
-          }
-        },
-          e('div', {
-            style: {
-              width: 42, height: 42, borderRadius: 14,
-              background: v.profile.color + '22', color: v.profile.color,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, flexShrink: 0,
-              border: '1px solid ' + v.profile.color + '33',
-            }
-          }, v.profile.emoji),
-          e('div', { style: { flex: 1 } },
-            e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
-              e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, getDisplayName(v.profile)),
-              v.isMe && e('span', {
-                style: {
-                  fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-                  background: v.profile.color, color: '#fff', letterSpacing: '0.06em',
-                }
-              }, 'YOU'),
-            ),
-            e('div', { style: { fontSize: 12, color: C.sub } },
-              '応援 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, v.cheers), ' 回 送信'),
-          ),
-          e('div', { style: { fontSize: 24 } }, '💐'),
-        )),
-      ),
-    );
-  }
 
   // ---------- Message Compose Form (cheerleader → recipient) ----------
   function MessageCompose({ sender, onCancel, onSubmit }) {
@@ -4853,276 +4175,6 @@
   }
 
   // ---------- Support Messages (cheerleader can compose; learners react) ----------
-  function SupportMessages({ profile, onBack }) {
-    const isMother = profile.isCheerleader === true;
-    const dummyMessages = useMemo(buildDummyMessages, []);
-    const [userMessages, setUserMessages] = useState(() => loadUserMessages());
-    const [composeMode, setComposeMode] = useState(false);
-
-    // Evaluate streak-based unlocks the moment the user opens the inbox.
-    // (session_complete unlocks happen at session end, before navigation here.)
-    useEffect(() => {
-      const newly = db.evaluateUnlocks(profile.id);
-      if (newly > 0) setUserMessages(loadUserMessages());
-    }, [profile.id]);
-
-    // Combined list: user's own + dummy seed
-    const allMessages = useMemo(() => userMessages.concat(dummyMessages), [userMessages, dummyMessages]);
-
-    function refreshUserMessages() { setUserMessages(loadUserMessages()); }
-    function handleSubmitNew(msg) {
-      addUserMessage(msg);
-      refreshUserMessages();
-      setComposeMode(false);
-    }
-    function handleDelete(id) {
-      if (!confirm('このメッセージを削除しますか？')) return;
-      deleteUserMessage(id);
-      refreshUserMessages();
-    }
-
-    // Recipients see only their messages or family-wide; cheerleaders see all.
-    const visible = useMemo(() => {
-      const list = isMother
-        ? allMessages
-        : allMessages.filter(m => m.toMemberId === null || m.toMemberId === profile.id);
-      return list.slice().sort((a, b) => {
-        const au = !!a.unlockedAt, bu = !!b.unlockedAt;
-        if (au !== bu) return au ? -1 : 1;
-        return (b.createdAt || '').localeCompare(a.createdAt || '');
-      });
-    }, [allMessages, isMother, profile.id]);
-
-    const [reactions, setReactions] = useState(() => loadReactions(profile.id));
-
-    // ============ COMPOSE FORM ============
-    if (composeMode) {
-      return e(MessageCompose, {
-        sender: profile,
-        onCancel: () => setComposeMode(false),
-        onSubmit: handleSubmitNew,
-      });
-    }
-
-    function react(messageId, emoji) {
-      const next = Object.assign({}, reactions);
-      if (next[messageId] === emoji) delete next[messageId]; else next[messageId] = emoji;
-      setReactions(next);
-      saveReactions(profile.id, next);
-    }
-
-    const motherProfile = PROFILES.find(p => p.id === 'mother');
-    const lookupMember  = (id) => PROFILES.find(p => p.id === id);
-
-    const hueToColor = {
-      rose: C.rose, orange: C.accent, sun: C.sun, ocean: C.ocean, forest: C.forest,
-    };
-
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
-        e('button', { onClick: onBack,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-        }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          '応援メッセージ'),
-      ),
-
-      // Header
-      e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '💌'),
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, 'Cheer Mail'),
-        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
-          isMother
-            ? 'みんなへの応援を、ためたり開けてもらったり。'
-            : getDisplayName(motherProfile) + 'からの一言メッセージ。'),
-      ),
-
-      // Cheerleader compose CTA
-      isMother && e('button', {
-        onClick: () => setComposeMode(true),
-        style: {
-          width: '100%', padding: '14px 0', borderRadius: 14,
-          background: motherProfile.color, color: '#fff',
-          fontSize: 14, fontWeight: 700, marginBottom: 18,
-          boxShadow: '0 6px 16px ' + motherProfile.color + '55',
-        }
-      }, '＋ 新しい応援を送る'),
-
-      // Empty state
-      visible.length === 0 && e('div', {
-        style: {
-          background: C.softer, border: '1px dashed ' + C.line,
-          borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
-        }
-      },
-        e('div', { style: { fontSize: 36, marginBottom: 10 } }, '📭'),
-        e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
-          'まだメッセージはありません'),
-      ),
-
-      // Messages
-      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
-        visible.map(m => {
-          const sender = lookupMember(m.fromMemberId) || motherProfile;
-          const recipient = m.toMemberId ? lookupMember(m.toMemberId) : null;
-          const isLocked = !m.unlockedAt;
-          const accent = hueToColor[m.imageHue] || sender.color;
-          const myReaction = reactions[m.id];
-
-          return e('div', {
-            key: m.id,
-            style: {
-              background: C.card,
-              border: '1px solid ' + (isLocked ? C.line : accent + '33'),
-              borderRadius: 20, overflow: 'hidden',
-              boxShadow: isLocked ? 'none' : '0 6px 18px rgba(42,37,32,0.05)',
-              opacity: isLocked && isMother ? 0.85 : 1,
-            }
-          },
-            // Image area: photo if attached, otherwise hue gradient
-            e('div', {
-              style: {
-                height: m.imageUrl ? 200 : 88,
-                background: m.imageUrl
-                  ? '#000'
-                  : 'linear-gradient(135deg, ' + accent + ' 0%, ' + accent + 'AA 100%)',
-                position: 'relative', overflow: 'hidden',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }
-            },
-              // Actual photo (blurred when locked, sharp when unlocked)
-              m.imageUrl && e('img', {
-                src: m.imageUrl,
-                style: {
-                  position: 'absolute', inset: 0,
-                  width: '100%', height: '100%', objectFit: 'cover',
-                  filter: isLocked ? 'blur(18px) brightness(0.55) saturate(0.7)' : 'none',
-                  transform: isLocked ? 'scale(1.1)' : 'scale(1)',  // hide blur edges
-                  transition: 'filter .4s ease, transform .4s ease',
-                },
-                alt: '',
-              }),
-              // Foreground icon (lock or flower) overlays both photo and gradient
-              e('div', {
-                style: {
-                  position: 'relative', fontSize: 36,
-                  opacity: isLocked ? 0.95 : 0.9,
-                  textShadow: m.imageUrl ? '0 2px 12px rgba(0,0,0,0.5)' : 'none',
-                }
-              }, isLocked ? '🔒' : (m.imageUrl ? '' : '💐')),
-              // LOCKED chip (bottom-right)
-              isLocked && e('div', {
-                style: {
-                  position: 'absolute', bottom: 8, right: 10, fontSize: 9,
-                  color: '#fff', background: 'rgba(0,0,0,0.55)',
-                  padding: '3px 8px', borderRadius: 999, fontWeight: 700, letterSpacing: '0.08em',
-                }
-              }, 'LOCKED'),
-            ),
-
-            // Body
-            e('div', { style: { padding: '14px 16px' } },
-              // From / to row
-              e('div', {
-                style: {
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  marginBottom: 10, fontSize: 12, color: C.sub,
-                }
-              },
-                e('span', { style: { fontSize: 16 } }, sender.emoji),
-                e('span', { style: { fontWeight: 600, color: C.text } }, getDisplayName(sender)),
-                e('span', null, '→'),
-                e('span', { style: { fontWeight: 600, color: C.text } },
-                  recipient ? getDisplayName(recipient) : '家族みんな'),
-                e('span', { style: { flex: 1 } }),
-                e('span', { style: { fontSize: 11 } }, timeAgo(m.createdAt)),
-                isMother && m.id && m.id.indexOf('usr_') === 0 && e('button', {
-                  onClick: () => handleDelete(m.id),
-                  title: '削除',
-                  style: {
-                    width: 22, height: 22, borderRadius: 999,
-                    background: C.softer, color: C.sub, border: '1px solid ' + C.line,
-                    fontSize: 11, lineHeight: 1, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }
-                }, '✕'),
-              ),
-
-              // Content
-              isLocked
-                ? e('div', null,
-                    e('div', {
-                      style: {
-                        fontSize: 13, color: C.sub, lineHeight: 1.6,
-                        padding: '12px 14px',
-                        background: C.softer, borderRadius: 12,
-                        border: '1px dashed ' + C.line,
-                      }
-                    },
-                      e('div', { style: { fontWeight: 700, color: C.text, marginBottom: 4 } },
-                        unlockLabel(m.unlockCondition)),
-                      e('div', null, '達成したら自動で開きます。'),
-                    ),
-                  )
-                : e('div', null,
-                    e('div', {
-                      style: {
-                        fontSize: 15, color: C.text, lineHeight: 1.7,
-                        whiteSpace: 'pre-wrap', marginBottom: 12,
-                      }
-                    }, m.message),
-
-                    // Voice playback (only if a voice message was attached)
-                    m.voiceUrl && e('div', {
-                      style: {
-                        marginBottom: 12, padding: '10px 12px',
-                        background: C.softer, borderRadius: 10,
-                        border: '1px solid ' + C.line,
-                        display: 'flex', alignItems: 'center', gap: 10,
-                      }
-                    },
-                      e('div', { style: { fontSize: 16 } }, '🎤'),
-                      e('audio', {
-                        src: m.voiceUrl, controls: true,
-                        style: { flex: 1, height: 32, maxWidth: 'calc(100% - 40px)' },
-                      }),
-                    ),
-
-                    // Reactions (recipients pick; mother sees readonly)
-                    !isMother && e('div', {
-                      style: { display: 'flex', gap: 8, flexWrap: 'wrap' }
-                    },
-                      REACT_EMOJIS.map(em => e('button', {
-                        key: em, onClick: () => react(m.id, em),
-                        style: {
-                          padding: '7px 12px', borderRadius: 999, fontSize: 14,
-                          background: myReaction === em ? accent + '22' : C.softer,
-                          border: '1px solid ' + (myReaction === em ? accent : C.line),
-                          color: C.text, transition: 'all .15s ease',
-                          transform: myReaction === em ? 'scale(1.05)' : 'scale(1)',
-                        }
-                      }, em)),
-                    ),
-                    isMother && myReactionFromOthers(m.id, profile.id) /* always null in this prototype, but keeps the API ready */,
-                  ),
-            ),
-          );
-        }),
-      ),
-
-      // Footer note about future phases
-      e('div', {
-        style: {
-          marginTop: 22, fontSize: 11, color: C.sub, textAlign: 'center',
-          padding: '12px 16px', background: C.softer, borderRadius: 12, lineHeight: 1.6,
-        }
-      },
-        '※ 写真添付・自動開封・通知は次のフェーズで実装します。'),
-    );
-  }
 
   function unlockLabel(cond) {
     switch (cond) {
@@ -5186,8 +4238,6 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
-    const [unlockedCount, setUnlockedCount] = useState(0);
-    const [newBadges, setNewBadges] = useState([]);
 
     function startSession() {
       const opts = selectedLevel === 'auto' ? {} : { level: selectedLevel };
@@ -5214,13 +4264,6 @@
       if (index + 1 >= total) {
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
-        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const badges = db.evaluateAchievements(profile.id, {
-          perfectSession: correctCount === total && total > 0,
-        });
-        setNewBadges(badges);
-        db.pushFeed(profile.id, 'session_done', { feature: 'composition', correct: correctCount, total, accuracy: acc });
-        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -6113,28 +5156,6 @@
   }
 
   // ---------- UnlockBanner (shown on session-done when messages just unlocked) ----------
-  function UnlockBanner({ count }) {
-    return e('div', {
-      style: {
-        background: 'linear-gradient(135deg, #FFE9C8 0%, #FFD8A1 100%)',
-        border: '1px solid #E8C28A',
-        borderRadius: 16, padding: '14px 16px', marginBottom: 16,
-        display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 6px 16px rgba(232, 194, 138, 0.35)',
-
-      }
-    },
-      e('div', { style: { fontSize: 26 } }, '✨'),
-      e('div', { style: { flex: 1 } },
-        e('div', {
-          style: { fontSize: 14, fontWeight: 700, color: '#7A4D1A' }
-        }, count + ' 件の応援メッセージが開きました！'),
-        e('div', {
-          style: { fontSize: 11, color: '#9C6E40', marginTop: 2 }
-        }, '💌 応援メッセージから見られます'),
-      ),
-    );
-  }
 
   // ---------- Combined mastered (vocab + sentences in one screen) ----------
   // Tabs at the top, each list is the same UI as the standalone screen.
@@ -6404,203 +5425,8 @@
   // Renders activity entries posted across the family (session done, badges
   // earned). Each entry can receive emoji reactions from any member on this
   // device (per-feed-id, per-member-id; toggle on second tap).
-  function FamilyFeedScreen({ profile, onBack }) {
-    const [tick, setTick] = useState(0);
-    const items = db.getFeed();
-    const memberById = (id) => PROFILES.find(p => p.id === id) || PROFILES[0];
-
-    function describe(item) {
-      const m = memberById(item.memberId);
-      const name = getDisplayName(m);
-      if (item.kind === 'session_done') {
-        const featLabel =
-          item.payload.feature === 'daily20'     ? '今日の20問' :
-          item.payload.feature === 'composition' ? '瞬間英作文' :
-          item.payload.feature === 'mistakes'    ? '間違い復習' : 'セッション';
-        return {
-          icon: item.payload.accuracy >= 70 ? '🎯' : '🌱',
-          headline: name + ' が ' + featLabel + ' を完了',
-          subline: item.payload.correct + ' / ' + item.payload.total +
-            '・精度 ' + (item.payload.accuracy || 0) + '%',
-        };
-      }
-      if (item.kind === 'achievement') {
-        const a = ACHIEVEMENT_BY_ID[item.payload.achievementId];
-        return {
-          icon: a ? a.icon : '🏅',
-          headline: name + ' が「' + (a ? a.label : 'バッジ') + '」を獲得',
-          subline: a ? a.desc : '',
-        };
-      }
-      return { icon: '📰', headline: name + ' のアクティビティ', subline: '' };
-    }
-
-    function react(itemId, emoji) {
-      db.addFeedReaction(itemId, profile.id, emoji);
-      setTick(t => t + 1);
-    }
-
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
-        e('button', { onClick: onBack,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-        }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          '家族の今'),
-      ),
-      // Header
-      e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '📰'),
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, 'Family Feed'),
-        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
-          items.length === 0
-            ? 'まだ投稿はありません。練習を完了するとここに流れます。'
-            : items.length + ' 件のアクティビティ'),
-      ),
-      // List
-      items.length === 0
-        ? e('div', {
-            style: {
-              background: C.softer, border: '1px dashed ' + C.line,
-              borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
-            }
-          },
-            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
-            e('div', { style: { fontSize: 13, lineHeight: 1.7 } },
-              '誰かが学習を完了すると、ここに自動でカードが流れます。'),
-          )
-        : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
-            items.map(item => {
-              const m = memberById(item.memberId);
-              const d = describe(item);
-              const myReaction = item.reactions && item.reactions[profile.id];
-              return e('div', {
-                key: item.id,
-                style: {
-                  background: C.card, border: '1px solid ' + C.line,
-                  borderRadius: 18, padding: '14px 16px',
-                  boxShadow: '0 4px 12px rgba(42,37,32,0.04)',
-                }
-              },
-                // Header row
-                e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                  e('div', {
-                    style: {
-                      width: 36, height: 36, borderRadius: 12,
-                      background: m.color + '22', color: m.color,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 20, flexShrink: 0,
-                      border: '1px solid ' + m.color + '33',
-                    }
-                  }, m.emoji),
-                  e('div', { style: { flex: 1, minWidth: 0 } },
-                    e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600 } }, getDisplayName(m)),
-                    e('div', { style: { fontSize: 11, color: C.sub, opacity: 0.7 } }, timeAgo(item.at)),
-                  ),
-                  e('div', { style: { fontSize: 22 } }, d.icon),
-                ),
-                // Content
-                e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 4 } },
-                  d.headline),
-                d.subline && e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 10 } }, d.subline),
-                // Reactions row
-                e('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 } },
-                  REACT_EMOJIS.map(em => e('button', {
-                    key: em, onClick: () => react(item.id, em),
-                    style: {
-                      padding: '5px 10px', borderRadius: 999, fontSize: 13,
-                      background: myReaction === em ? m.color + '22' : C.softer,
-                      border: '1px solid ' + (myReaction === em ? m.color : C.line),
-                      color: C.text, cursor: 'pointer',
-                      transform: myReaction === em ? 'scale(1.05)' : 'scale(1)',
-                      transition: 'all .15s ease',
-                    }
-                  }, em)),
-                ),
-                // Other members' reactions summary
-                item.reactions && Object.keys(item.reactions).length > 1 && e('div', {
-                  style: { fontSize: 11, color: C.sub, marginTop: 6 }
-                },
-                  Object.entries(item.reactions)
-                    .filter(([id]) => id !== profile.id)
-                    .map(([id, em]) => {
-                      const r = memberById(id);
-                      return getDisplayName(r) + ' ' + em;
-                    }).join(' / ')
-                ),
-              );
-            })
-          ),
-    );
-  }
 
   // ---------- Achievements Screen (full grid of all 23 badges) ----------
-  function AchievementsScreen({ profile, onBack }) {
-    const earned = (db.load(profile.id).achievements) || {};
-    const earnedCount = Object.keys(earned).length;
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
-        e('button', { onClick: onBack,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-        }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          'バッジ'),
-      ),
-      // Header
-      e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '🏅'),
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, 'Achievements'),
-        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
-          earnedCount + ' / ' + ACHIEVEMENTS.length + ' 獲得済み'),
-      ),
-      // Grid
-      e('div', {
-        style: {
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-        }
-      },
-        ACHIEVEMENTS.map(a => {
-          const isEarned = !!earned[a.id];
-          return e('div', {
-            key: a.id,
-            style: {
-              background: isEarned ? '#FAF0D9' : C.card,
-              border: '1px solid ' + (isEarned ? '#D4AF37' : C.line),
-              borderRadius: 14, padding: '14px 12px',
-              opacity: isEarned ? 1 : 0.5,
-              boxShadow: isEarned ? '0 4px 12px rgba(212, 175, 55, 0.2)' : 'none',
-              transition: 'all .2s ease',
-            }
-          },
-            e('div', {
-              style: {
-                fontSize: 28, marginBottom: 8,
-                filter: isEarned ? 'none' : 'grayscale(0.8)',
-              }
-            }, a.icon),
-            e('div', {
-              style: { fontSize: 13, fontWeight: 700, color: isEarned ? '#7A5A1A' : C.text, marginBottom: 4, lineHeight: 1.2 }
-            }, a.label),
-            e('div', {
-              style: { fontSize: 11, color: C.sub, lineHeight: 1.5 }
-            }, a.desc),
-            isEarned && e('div', {
-              style: {
-                fontSize: 10, color: '#9C7A30', marginTop: 6,
-                fontFamily: SANS_UI, letterSpacing: '0.04em',
-              }
-            }, '✓ ' + (earned[a.id].earnedAt ? new Date(earned[a.id].earnedAt).toLocaleDateString('ja-JP') : '獲得済み')),
-          );
-        }),
-      ),
-    );
-  }
 
   // ---------- Daily Phrases (簡単英語) ----------
   // Scene-tagged phrasebook with a Daily20-style practice flow.
@@ -6616,8 +5442,6 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
-    const [unlockedCount, setUnlockedCount] = useState(0);
-    const [newBadges, setNewBadges] = useState([]);
 
     // When filter changes from idle, jump back to intro
     useEffect(() => { if (phase !== 'study' && phase !== 'done') setPhase(filtered.length > 0 ? 'intro' : 'empty'); }, [filter]);
@@ -6644,13 +5468,6 @@
       if (index + 1 >= queue.length) {
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = Math.round(correctCount * 100 / queue.length);
-        setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-        const badges = db.evaluateAchievements(profile.id, {
-          perfectSession: correctCount === queue.length,
-        });
-        setNewBadges(badges);
-        db.pushFeed(profile.id, 'session_done', { feature: 'phrases', correct: correctCount, total: queue.length, accuracy: acc });
-        badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
@@ -6911,8 +5728,6 @@
     const [index, setIndex]   = useState(0);
     const [chosen, setChosen] = useState(null);
     const [results, setResults] = useState([]);
-    const [unlockedCount, setUnlockedCount] = useState(0);
-    const [newBadges, setNewBadges] = useState([]);
 
     const current = queue[index] || null;
     const optsObj = useMemo(() => current ? buildOptions(current, pool) : null, [current, pool]);
@@ -6935,13 +5750,6 @@
         if (index + 1 >= queue.length) {
           const correctCount = newResults.filter(r => r.isCorrect).length;
           const acc = Math.round(correctCount * 100 / queue.length);
-          setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
-          const badges = db.evaluateAchievements(profile.id, {
-            perfectSession: correctCount === queue.length,
-          });
-          setNewBadges(badges);
-          db.pushFeed(profile.id, 'session_done', { feature: 'random_test', correct: correctCount, total: queue.length, accuracy: acc });
-          badges.forEach(id => db.pushFeed(profile.id, 'achievement', { achievementId: id }));
           setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 100);
           setPhase('done');
         } else {
