@@ -103,6 +103,8 @@
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
+    { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
   ];
@@ -2525,6 +2527,149 @@
   };
   const SCENE_ORDER = ['school', 'cafeteria', 'friends', 'shopping'];
 
+  // ---------- 1分英語解説 (English Lessons) ----------
+  // Tiny self-contained lessons for kids who freeze when they see grammar.
+  // Each lesson has a short explanation block (today's question, imagery,
+  // a one-line rule, examples, points) followed by a 5-question MCQ quiz.
+  // Designed to fit comfortably in 3 minutes.
+  //
+  // Adding a new lesson = adding one entry to this list. Levels 1–3 are
+  // implemented incrementally; for now we ship 3 topics each at L1 / L2.
+  //
+  // Quiz item shape: { q, choices, answer (index), explain }.
+  // The "q" string can carry English with a Japanese hint in parentheses;
+  // the speaker button reads the English part by stripping anything in
+  // 全角 / 半角 parens.
+  const ENGLISH_LESSONS = [
+    // ============ Level 1 ============
+    {
+      id: 'l1_in_on_under',
+      level: 1,
+      title: 'in / on / under',
+      subtitle: '中・上・下',
+      icon: '📦',
+      todayQ: '「ボールはどこ？」を、英語ではどう言う？',
+      imagery: '中なら in、(上に乗っているなら) on、下なら under。3つの絵で覚えよう。',
+      rule: 'in =「中」 / on =「面に乗っている」 / under =「真下」',
+      examples: [
+        { en: 'The cat is in the box.',     ja: 'ねこは箱の中にいます。' },
+        { en: 'The book is on the table.',  ja: '本はテーブルの上にあります。' },
+        { en: 'The ball is under the chair.', ja: 'ボールはいすの下にあります。' },
+      ],
+      points: [
+        'in は「囲まれている中」のイメージ。バッグの中、部屋の中、車の中。',
+        'on は「表面にくっついている」イメージ。テーブルの上だけでなく、壁にかかっている絵も on。',
+        'under は「真下」のイメージ。机の下、橋の下。',
+      ],
+      quiz: [
+        {
+          q: 'The cat is ___ the bed. (ねこはベッドの上で寝ています)',
+          choices: ['in', 'on', 'under'],
+          answer: 1,
+          explain: 'ベッドの「上」に乗っているので on。in だと「布団の中」になります。',
+        },
+        {
+          q: 'My ball is ___ the sofa. (ソファの下にボールがある)',
+          choices: ['in', 'on', 'under'],
+          answer: 2,
+          explain: 'ソファの「下」だから under。',
+        },
+        {
+          q: 'The fish is ___ the water. (魚は水の中)',
+          choices: ['in', 'on', 'under'],
+          answer: 0,
+          explain: '水に囲まれている=「中」なので in。',
+        },
+        {
+          q: 'There is a picture ___ the wall. (壁に絵がかかっている)',
+          choices: ['in', 'on', 'under'],
+          answer: 1,
+          explain: '壁に「貼り付いている」感じなので on。日本語では「壁に」だけど、英語は「面にくっつく」イメージで on を使います。',
+        },
+        {
+          q: 'My dog sleeps ___ the table. (犬は机の下で寝る)',
+          choices: ['in', 'on', 'under'],
+          answer: 2,
+          explain: '机の「真下」だから under。on にすると机の上で寝ているイメージ。',
+        },
+      ],
+    },
+  ];
+  const LESSON_BY_ID    = Object.fromEntries(ENGLISH_LESSONS.map(l => [l.id, l]));
+  const LESSONS_BY_LEVEL = ENGLISH_LESSONS.reduce((acc, l) => {
+    (acc[l.level] = acc[l.level] || []).push(l); return acc;
+  }, {});
+
+  // ---------- Lesson progress + mistake storage (per profile) ----------
+  // progress  : { [lessonId]: { lastDoneTs, bestScore, attempts } }
+  // mistakes  : { [lessonId]: [ { q: <q text>, ts } ] } — keyed so we can
+  //             reissue them later as a "review" pass.
+  const LESSON_PROGRESS_KEY = (memberId) => 'hfe_lesson_progress_v1_' + memberId;
+  const LESSON_MISTAKES_KEY = (memberId) => 'hfe_lesson_mistakes_v1_' + memberId;
+  function loadLessonProgress(memberId) {
+    try { return JSON.parse(localStorage.getItem(LESSON_PROGRESS_KEY(memberId)) || '{}') || {}; }
+    catch { return {}; }
+  }
+  function saveLessonProgress(memberId, p) {
+    try { localStorage.setItem(LESSON_PROGRESS_KEY(memberId), JSON.stringify(p)); } catch {}
+  }
+  function recordLessonResult(memberId, lessonId, score, total) {
+    const p = loadLessonProgress(memberId);
+    const cur = p[lessonId] || { bestScore: 0, attempts: 0, lastDoneTs: 0 };
+    p[lessonId] = {
+      lastDoneTs: Date.now(),
+      bestScore: Math.max(cur.bestScore || 0, score),
+      attempts: (cur.attempts || 0) + 1,
+      lastTotal: total,
+    };
+    saveLessonProgress(memberId, p);
+  }
+  function loadLessonMistakes(memberId) {
+    try { return JSON.parse(localStorage.getItem(LESSON_MISTAKES_KEY(memberId)) || '{}') || {}; }
+    catch { return {}; }
+  }
+  function saveLessonMistakes(memberId, m) {
+    try { localStorage.setItem(LESSON_MISTAKES_KEY(memberId), JSON.stringify(m)); } catch {}
+  }
+  // Persist every wrong question by its full q text so re-shuffles or future
+  // edits to a quiz won't accidentally bring back the wrong stale entry.
+  function pushLessonMistakes(memberId, lessonId, wrongQItems) {
+    if (!wrongQItems || wrongQItems.length === 0) return;
+    const all = loadLessonMistakes(memberId);
+    const list = all[lessonId] || [];
+    const seen = new Set(list.map(x => x.q));
+    wrongQItems.forEach(item => {
+      if (!seen.has(item.q)) {
+        list.push({ q: item.q, ts: Date.now() });
+        seen.add(item.q);
+      }
+    });
+    all[lessonId] = list;
+    saveLessonMistakes(memberId, all);
+  }
+  function clearLessonMistake(memberId, lessonId, qText) {
+    const all = loadLessonMistakes(memberId);
+    const list = (all[lessonId] || []).filter(x => x.q !== qText);
+    if (list.length === 0) delete all[lessonId];
+    else all[lessonId] = list;
+    saveLessonMistakes(memberId, all);
+  }
+  // Aggregate mistakes across every lesson for the profile, returning
+  // [{ lesson, items: [<quiz item>] }] so the review screen can group by
+  // lesson.
+  function getLessonMistakeReview(memberId) {
+    const all = loadLessonMistakes(memberId);
+    const out = [];
+    Object.keys(all).forEach((lessonId) => {
+      const lesson = LESSON_BY_ID[lessonId];
+      if (!lesson) return;
+      const ids = new Set(all[lessonId].map(x => x.q));
+      const items = lesson.quiz.filter(q => ids.has(q.q));
+      if (items.length > 0) out.push({ lesson, items });
+    });
+    return out;
+  }
+
 
   // ---------- Data layer (localStorage today, swappable to Supabase later) ----------
   // Storage shape per member:
@@ -4058,6 +4203,7 @@
       else if (route.feature === 'mastered')          body = e(CombinedMastered,  { profile, onBack: back });
       else if (route.feature === 'ai_translate')      body = e(AITranslate,       { profile, onBack: back });
       else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
+      else if (route.feature === 'english_lessons')   body = e(EnglishLessons,    { profile, onBack: back });
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
@@ -4333,6 +4479,11 @@
             subtitle = loadApiKey()
               ? '日本語 ⇄ 英語 / 写真の文字も翻訳できる'
               : '設定で API キーを登録してください';
+          } else if (f.id === 'english_lessons') {
+            const total = ENGLISH_LESSONS.length;
+            const progress = loadLessonProgress(profile.id);
+            const done = ENGLISH_LESSONS.filter(l => progress[l.id]).length;
+            subtitle = '1テーマずつ、解説 + 5問クイズ · ' + done + ' / ' + total + ' 挑戦済み';
           } else if (f.id === 'saved_translate') {
             const n = loadSavedTranslations(profile.id).length;
             subtitle = n > 0 ? '保存した翻訳 ' + n + ' 件 · タップで復習' : 'AI翻訳の★で保存した文をここで復習';
@@ -8749,6 +8900,558 @@
               );
             })
           ),
+    );
+  }
+
+  // ---------- 1分英語解説 ----------
+  // Single-lesson reading + 5-question MCQ flow. Phases:
+  //   list   — pick a lesson (grouped by level)
+  //   detail — read the 1-minute explanation, then "クイズへ"
+  //   quiz   — one question at a time, immediate feedback
+  //   result — score + retry / review wrong / back
+  //
+  // Audio: every English string has a 🔊. The helper strips the
+  // "(日本語ヒント)" tail and replaces ___ with the right word so the
+  // speech-synth voice reads a natural sentence.
+  function speakLessonEnglish(text, fillBlankWith) {
+    if (!text) return;
+    let s = String(text);
+    // Strip Japanese hint in trailing (...) or （...）
+    s = s.replace(/[\(（][^)）]*[\)）]\s*/g, '');
+    // Strip em-dash hints "— watch の過去形は？" style
+    s = s.replace(/—.*$/, '').replace(/-{2,}.*$/, '');
+    if (fillBlankWith) s = s.replace(/_{2,}/g, fillBlankWith);
+    else               s = s.replace(/_{2,}/g, 'blank');
+    speak(s.trim());
+  }
+
+  function EnglishLessons({ profile, onBack }) {
+    const [phase, setPhase]       = useState('list');     // list | detail | quiz | result
+    const [activeId, setActiveId] = useState(null);
+    const [qIndex, setQIndex]     = useState(0);
+    const [picked, setPicked]     = useState(null);       // selected choice index (null = not picked yet)
+    const [results, setResults]   = useState([]);         // [{q, correct, picked}]
+    const [retryWrongOnly, setRetryWrongOnly] = useState(false);
+
+    const lesson = activeId ? LESSON_BY_ID[activeId] : null;
+    const quizSet = (() => {
+      if (!lesson) return [];
+      if (!retryWrongOnly) return lesson.quiz;
+      // After "復習する" is tapped, drill only the questions that were wrong
+      const wrongIds = new Set(results.filter(r => !r.correct).map(r => r.q));
+      return lesson.quiz.filter(q => wrongIds.has(q.q));
+    })();
+    const currentQ = quizSet[qIndex] || null;
+    const lastQ    = qIndex >= quizSet.length - 1;
+
+    function startLesson(id) {
+      setActiveId(id); setPhase('detail');
+      setQIndex(0); setPicked(null); setResults([]); setRetryWrongOnly(false);
+    }
+    function startQuiz() {
+      setPhase('quiz');
+      setQIndex(0); setPicked(null); setResults([]);
+    }
+    function pick(i) {
+      if (picked !== null) return;
+      setPicked(i);
+    }
+    function nextQuestion() {
+      const correct = picked === currentQ.answer;
+      const newResults = [...results, { q: currentQ.q, correct, picked }];
+      setResults(newResults);
+      if (lastQ) {
+        // Persist mistakes + a record of the attempt
+        const wrong = newResults.filter(r => !r.correct).map(r => ({ q: r.q }));
+        if (wrong.length > 0) pushLessonMistakes(profile.id, lesson.id, wrong);
+        // Clear mistakes the learner just got right (so 復習 list shrinks)
+        newResults.forEach(r => { if (r.correct) clearLessonMistake(profile.id, lesson.id, r.q); });
+        const score = newResults.filter(r => r.correct).length;
+        recordLessonResult(profile.id, lesson.id, score, newResults.length);
+        if (db && typeof db.recordTurn === 'function') db.recordTurn(profile.id, 'lesson');
+        setPhase('result');
+      } else {
+        setQIndex(qIndex + 1);
+        setPicked(null);
+      }
+    }
+    function reviewWrong() {
+      setRetryWrongOnly(true);
+      setPhase('quiz'); setQIndex(0); setPicked(null); setResults([]);
+    }
+    function retryAll() {
+      setRetryWrongOnly(false);
+      setPhase('quiz'); setQIndex(0); setPicked(null); setResults([]);
+    }
+    function backToList() {
+      setActiveId(null); setPhase('list');
+      setQIndex(0); setPicked(null); setResults([]); setRetryWrongOnly(false);
+    }
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', {
+          onClick: () => phase === 'list' ? onBack() : backToList(),
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 },
+          'aria-label': '戻る',
+        }, '‹'),
+        e('div', {
+          style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 }
+        }, '1分英語解説'),
+      ),
+
+      phase === 'list'   && e(LessonListView,   { profile, onPick: startLesson }),
+      phase === 'detail' && e(LessonDetailView, { profile, lesson, onStartQuiz: startQuiz }),
+      phase === 'quiz'   && currentQ && e(LessonQuizView, {
+        profile, lesson, q: currentQ, qIndex, total: quizSet.length, picked,
+        onPick: pick, onNext: nextQuestion, isLast: lastQ,
+      }),
+      phase === 'result' && e(LessonResultView, {
+        profile, lesson, results,
+        onRetryAll: retryAll,
+        onReviewWrong: reviewWrong,
+        onBack: backToList,
+      }),
+    );
+  }
+
+  // ---------- Lesson list (grouped by level) ----------
+  function LessonListView({ profile, onPick }) {
+    const progress = loadLessonProgress(profile.id);
+    const levels = [1, 2, 3];
+    return e('div', null,
+      e('div', { style: { padding: '4px 4px 22px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, '1分英語解説'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+          '短い解説と 5 問のクイズで、文法と単語の感覚を 1 テーマずつ。1 つ 3 分以内で終わります。'),
+      ),
+      levels.map((lv) => {
+        const lessons = LESSONS_BY_LEVEL[lv] || [];
+        return e('div', { key: 'lv_' + lv, style: { marginBottom: 22 } },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 10, paddingLeft: 4,
+            }
+          }, 'LEVEL ' + lv + (lv === 1 ? ' · 超初級' : lv === 2 ? ' · 中学初級' : ' · 中学後半〜')),
+          lessons.length === 0
+            ? e('div', {
+                style: {
+                  background: C.softer, border: '1px dashed ' + C.line,
+                  borderRadius: 12, padding: '18px 20px',
+                  fontSize: 13, color: C.sub, textAlign: 'center',
+                }
+              }, '準備中…')
+            : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                lessons.map((l) => {
+                  const p = progress[l.id];
+                  const sub = p
+                    ? '最高 ' + (p.bestScore || 0) + '/' + (p.lastTotal || 5) + ' · ' + (p.attempts || 1) + ' 回挑戦'
+                    : '未挑戦';
+                  return e('button', {
+                    key: l.id,
+                    onClick: () => onPick(l.id),
+                    style: {
+                      display: 'flex', width: '100%', textAlign: 'left',
+                      padding: '16px 16px', gap: 14, alignItems: 'center',
+                      background: C.card, border: '1px solid ' + C.line,
+                      borderRadius: 14, cursor: 'pointer',
+                    }
+                  },
+                    e('div', {
+                      style: {
+                        width: 44, height: 44, flexShrink: 0,
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        background: C.softer, border: '1px solid ' + C.line,
+                        borderRadius: 12, fontSize: 22,
+                      }
+                    }, l.icon || '✦'),
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('div', {
+                        style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+                      }, l.title),
+                      e('div', {
+                        style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
+                      }, l.subtitle),
+                      e('div', {
+                        style: {
+                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.06em', color: p && p.bestScore >= 4 ? C.success : C.sub,
+                          marginTop: 6,
+                        }
+                      }, sub),
+                    ),
+                    e('span', {
+                      style: { fontSize: 18, color: C.sub, flexShrink: 0 }
+                    }, '›'),
+                  );
+                })
+              ),
+        );
+      }),
+    );
+  }
+
+  // ---------- Lesson detail (1分解説) ----------
+  function LessonDetailView({ profile, lesson, onStartQuiz }) {
+    if (!lesson) return null;
+    const sectionTitle = (label) => e('div', {
+      style: {
+        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+        letterSpacing: '0.18em', textTransform: 'uppercase',
+        color: C.sub, marginBottom: 10,
+      }
+    }, label);
+    return e('div', null,
+      // Header card with title + today's question
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 16, padding: '20px 20px 18px', marginBottom: 16,
+        }
+      },
+        e('div', {
+          style: {
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '4px 10px', borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 11, fontWeight: 700, color: C.sub,
+            fontFamily: SANS_UI, letterSpacing: '0.06em',
+            marginBottom: 12,
+          }
+        }, 'LEVEL ' + lesson.level),
+        e('div', {
+          style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }
+        },
+          e('span', { style: { fontSize: 32, lineHeight: 1 } }, lesson.icon || '✦'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, lesson.title),
+        ),
+        e('div', {
+          style: { fontSize: 13, color: C.sub, marginTop: 4, marginBottom: 14 }
+        }, lesson.subtitle),
+        lesson.todayQ && e('div', {
+          style: {
+            fontFamily: SERIF, fontSize: 18, fontWeight: 600,
+            color: C.text, lineHeight: 1.5,
+          }
+        }, '🤔  ' + lesson.todayQ),
+      ),
+
+      // Imagery / one-line rule
+      lesson.imagery && e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 12,
+        }
+      },
+        sectionTitle('IMAGE'),
+        e('div', {
+          style: { fontSize: 14, color: C.text, lineHeight: 1.7 }
+        }, lesson.imagery),
+      ),
+
+      lesson.rule && e('div', {
+        style: {
+          background: profile.color + '0F',
+          border: '1px solid ' + profile.color + '55',
+          borderRadius: 14, padding: '14px 16px', marginBottom: 12,
+        }
+      },
+        sectionTitle('一言ルール'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.6 }
+        }, lesson.rule),
+      ),
+
+      // Examples
+      lesson.examples && lesson.examples.length > 0 && e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 12,
+        }
+      },
+        sectionTitle('例文'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          lesson.examples.map((ex, i) => e('div', {
+            key: i,
+            style: {
+              paddingTop: i === 0 ? 0 : 12,
+              borderTop: i === 0 ? 'none' : '1px solid ' + C.line,
+            }
+          },
+            e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              e('div', {
+                style: { flex: 1, fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.5 }
+              }, ex.en),
+              e(SpeakerBtn, { onClick: () => speak(ex.en), color: profile.color, size: 30 }),
+            ),
+            e('div', {
+              style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+            }, ex.ja),
+          )),
+        ),
+      ),
+
+      // Points
+      lesson.points && lesson.points.length > 0 && e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 18,
+        }
+      },
+        sectionTitle('ポイント'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          lesson.points.map((p, i) => e('div', {
+            key: i,
+            style: { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: C.text, lineHeight: 1.7 }
+          },
+            e('span', {
+              style: {
+                width: 18, height: 18, flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: profile.color + '1A', color: profile.color,
+                borderRadius: 999, fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                marginTop: 2,
+              }
+            }, String(i + 1)),
+            e('span', { style: { flex: 1 } }, p),
+          )),
+        ),
+      ),
+
+      // CTA
+      e('button', {
+        onClick: onStartQuiz,
+        style: {
+          width: '100%', padding: '16px 0', borderRadius: 14,
+          background: C.brand, color: '#fff',
+          border: '1px solid ' + C.brand,
+          fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
+          letterSpacing: '0.04em', cursor: 'pointer',
+        }
+      }, '5問クイズへ →'),
+    );
+  }
+
+  // ---------- Lesson quiz (1 question at a time) ----------
+  function LessonQuizView({ profile, lesson, q, qIndex, total, picked, onPick, onNext, isLast }) {
+    const isAnswered = picked !== null;
+    const isCorrect  = isAnswered && picked === q.answer;
+    return e('div', null,
+      // Progress
+      e('div', {
+        style: {
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14,
+        }
+      },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em' }
+        }, lesson.title),
+        e('div', { style: { flex: 1 } }),
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.text,
+            fontVariantNumeric: 'tabular-nums',
+          }
+        }, (qIndex + 1) + ' / ' + total),
+      ),
+      e('div', {
+        style: {
+          height: 4, background: C.line, borderRadius: 999,
+          marginBottom: 22, overflow: 'hidden',
+        }
+      },
+        e('div', {
+          style: {
+            width: ((qIndex + 1) / total * 100) + '%',
+            height: '100%', background: profile.color,
+            transition: 'width .3s ease',
+          }
+        }),
+      ),
+
+      // Question card
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 16, padding: '20px 20px 18px', marginBottom: 16,
+        }
+      },
+        e('div', {
+          style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }
+        },
+          e('div', {
+            style: { flex: 1, fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.text, lineHeight: 1.55 }
+          }, q.q),
+          e(SpeakerBtn, {
+            onClick: () => speakLessonEnglish(q.q, isAnswered ? q.choices[q.answer] : null),
+            color: profile.color, size: 32,
+          }),
+        ),
+      ),
+
+      // Choices
+      e('div', {
+        style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }
+      },
+        q.choices.map((c, i) => {
+          let bg = C.card, border = '1px solid ' + C.line, color = C.text;
+          if (isAnswered) {
+            if (i === q.answer)        { bg = C.success + '1A'; border = '1px solid ' + C.success; color = C.success; }
+            else if (i === picked)     { bg = C.danger  + '1A'; border = '1px solid ' + C.danger;  color = C.danger;  }
+            else                       { bg = C.softer; border = '1px solid ' + C.line; color = C.sub; }
+          }
+          return e('button', {
+            key: i,
+            onClick: () => onPick(i),
+            disabled: isAnswered,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 16px',
+              background: bg, border, color,
+              borderRadius: 14, textAlign: 'left',
+              fontFamily: SERIF, fontSize: 18, fontWeight: 600,
+              cursor: isAnswered ? 'default' : 'pointer',
+              transition: 'background .15s, border-color .15s',
+            }
+          },
+            e('span', {
+              style: {
+                width: 26, height: 26, flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,0,0,0.04)', color: 'inherit',
+                borderRadius: 999, fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+              }
+            }, String.fromCharCode(65 + i)),
+            e('span', { style: { flex: 1 } }, c),
+            e(SpeakerBtn, { onClick: (ev) => { ev.stopPropagation(); speak(c); }, color: profile.color, size: 24 }),
+          );
+        }),
+      ),
+
+      // Feedback panel + next button
+      isAnswered && e('div', {
+        style: {
+          background: (isCorrect ? C.success : C.danger) + '0F',
+          border: '1px solid ' + (isCorrect ? C.success : C.danger) + '55',
+          borderRadius: 14, padding: '14px 16px', marginBottom: 14,
+        }
+      },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em',
+            color: isCorrect ? C.success : C.danger, marginBottom: 6,
+          }
+        }, isCorrect ? '⭕  正解！' : '✕  おしい！'),
+        e('div', {
+          style: { fontSize: 13, color: C.text, lineHeight: 1.7 }
+        }, q.explain),
+      ),
+      isAnswered && e('button', {
+        onClick: onNext,
+        style: {
+          width: '100%', padding: '14px 0', borderRadius: 14,
+          background: C.brand, color: '#fff',
+          border: '1px solid ' + C.brand,
+          fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
+          letterSpacing: '0.04em', cursor: 'pointer',
+        }
+      }, isLast ? '結果を見る →' : '次の問題 →'),
+    );
+  }
+
+  // ---------- Lesson result (score + retry) ----------
+  function LessonResultView({ profile, lesson, results, onRetryAll, onReviewWrong, onBack }) {
+    const score = results.filter(r => r.correct).length;
+    const total = results.length;
+    const ratio = total === 0 ? 0 : score / total;
+    const wrongCount = total - score;
+    const headline = ratio === 1 ? '全問正解！'
+                    : ratio >= 0.8 ? 'すごい！'
+                    : ratio >= 0.6 ? 'いい調子！'
+                    : 'もう一回トライ！';
+    return e('div', null,
+      e('div', { style: { padding: '4px 4px 22px', textAlign: 'center' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, headline),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
+        }, score + ' / ' + total),
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+            letterSpacing: '0.18em', color: C.sub, marginTop: 10,
+          }
+        }, lesson.title.toUpperCase()),
+      ),
+
+      // Per-question summary
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '6px 0', marginBottom: 18,
+        }
+      },
+        results.map((r, i) => e('div', {
+          key: i,
+          style: {
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 16px',
+            borderBottom: i === results.length - 1 ? 'none' : '1px solid ' + C.line,
+          }
+        },
+          e('span', {
+            style: {
+              width: 22, height: 22, flexShrink: 0,
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              background: (r.correct ? C.success : C.danger) + '1A',
+              color: r.correct ? C.success : C.danger,
+              borderRadius: 999, fontSize: 11, fontWeight: 800,
+            }
+          }, r.correct ? '○' : '✕'),
+          e('span', {
+            style: { flex: 1, fontSize: 12, color: C.text, lineHeight: 1.5, fontFamily: SERIF }
+          }, r.q),
+        )),
+      ),
+
+      // Action buttons
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        wrongCount > 0 && e('button', {
+          onClick: onReviewWrong,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color + '14', color: profile.color,
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, '間違えた ' + wrongCount + ' 問だけ復習する'),
+        e('button', {
+          onClick: onRetryAll,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: C.softer, color: C.text,
+            border: '1px solid ' + C.line,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, 'もう一度 5 問やる'),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: 'none', color: C.sub,
+            border: 'none',
+            fontSize: 13, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, '一覧に戻る'),
+      ),
     );
   }
 
