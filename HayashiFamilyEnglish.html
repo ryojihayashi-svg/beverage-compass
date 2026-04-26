@@ -60,7 +60,7 @@
   const PROFILES = [
     { id: 'father', name: '父',   subtitle: '英検準2級レベル',     emoji: '🌲', color: C.forest, role: 'learner', level: 3 },
     { id: 'son1',   name: '長男', subtitle: '高2・英検2級',          emoji: '🎯', color: C.ocean,  role: 'learner', level: 4 },
-    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',   emoji: '⚽', color: C.accent, role: 'learner', level: 2 },
+    { id: 'son2',   name: '次男', subtitle: '高1・中学レベル復習',   emoji: '⚽', color: C.accent, role: 'learner', level: 2, maxLevel: 2 },
     { id: 'son3',   name: '三男', subtitle: '小6・はじめての英語',   emoji: '🌟', color: C.sun,    role: 'learner', level: 1 },
     { id: 'mother', name: '母',   subtitle: '中学レベル基礎・応援担当', emoji: '💐', color: C.rose,   role: 'learner', level: 2, isCheerleader: true },
   ];
@@ -1572,6 +1572,23 @@
     { id:'s289', level:2, grammar:'be + comfortable',      ja:'祐天寺の家は快適です。',                    en:'Our house in Yutenji is comfortable.' },
     { id:'s290', level:1, grammar:'be動詞 + 形容詞',       ja:'2匹の豚は可愛いです。',                     en:'The two pigs are cute.' },
     { id:'s291', level:1, grammar:'be動詞 + name',         ja:'豚の名前はウリとゴマです。',                en:"The pigs' names are Uri and Goma." },
+
+    // ========== Self-introduction / family / friends — extra L1/L2 (s292-s306) ==========
+    { id:'s292', level:1, grammar:'be動詞',                ja:'私は林吉成です。',                          en:'I am Yoshinari Hayashi.' },
+    { id:'s293', level:1, grammar:'挨拶',                  ja:'はじめまして。',                            en:'Nice to meet you.' },
+    { id:'s294', level:1, grammar:'be動詞 + 年齢',         ja:'私は16歳です。',                            en:'I am 16 years old.' },
+    { id:'s295', level:1, grammar:'be動詞 + 国籍',         ja:'私は日本人です。',                          en:'I am Japanese.' },
+    { id:'s296', level:1, grammar:'be動詞 + 趣味',         ja:'私の趣味はサッカーです。',                  en:'My hobby is soccer.' },
+    { id:'s297', level:2, grammar:'have + 家族',           ja:'5人家族で、兄一人と弟一人がいます。',       en:'I have a family of five, one older brother and one younger brother.' },
+    { id:'s298', level:2, grammar:'現在進行形 + 場所',     ja:'学校で英語を勉強しています。',              en:'I am studying English at school.' },
+    { id:'s299', level:1, grammar:'be動詞 + favorite',     ja:'私の好きな食べ物は麻婆豆腐です。',          en:'My favorite food is mapo tofu.' },
+    { id:'s300', level:1, grammar:'三単現/like',           ja:'桃仙閣のフカヒレご飯が好きです。',          en:'I like the shark fin rice at Tousenkaku.' },
+    { id:'s301', level:2, grammar:'will + when',           ja:'日本に帰ったら桃仙閣に行きます。',          en:'I will go to Tousenkaku when I get back to Japan.' },
+    { id:'s302', level:2, grammar:'want to + good at',     ja:'サッカーが上手になりたいです。',            en:'I want to be good at soccer.' },
+    { id:'s303', level:2, grammar:'動名詞 + with',         ja:'友達と遊ぶのが好きです。',                  en:'I like playing with my friends.' },
+    { id:'s304', level:2, grammar:'be動詞 + 学年',         ja:'兄は高校生です。',                          en:'My older brother is a high school student.' },
+    { id:'s305', level:2, grammar:'be動詞 + 学年',         ja:'弟は小学生です。',                          en:'My younger brother is an elementary school student.' },
+    { id:'s306', level:1, grammar:'be in + club',          ja:'私はサッカー部に入っています。',            en:'I am in the soccer club.' },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
@@ -4690,12 +4707,32 @@
   // intro → study (JP prompt → reveal EN → self-grade) → done (score + list).
   const COMP_COUNT = 10;
 
-  function pickComposition(memberLevel, count) {
-    // Prefer sentences near the member's level (allow ±1), then fall back to all.
-    const inRange = SENTENCES.filter(s => Math.abs(s.level - (memberLevel || 1)) <= 1);
-    const pool = inRange.length >= count ? inRange : SENTENCES.slice();
+  function pickComposition(profile, count) {
+    // Build a unified pool of SENTENCES + DAILY_PHRASES tagged with kind, so
+    // recordPhrase / recordSentence can be dispatched cleanly at answer time.
+    const pool = [];
+    SENTENCES.forEach(s => pool.push({
+      kind: 'sentence',
+      id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
+    }));
+    DAILY_PHRASES.forEach(p => pool.push({
+      kind: 'phrase',
+      id: p.id, level: 2, ja: p.ja, en: p.en,
+      grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
+    }));
+    // If the profile has maxLevel set (e.g. Yoshinari capped at L2 until he
+    // masters the middle-school content), filter strictly. Otherwise prefer
+    // ±1 of memberLevel and fall back to the whole pool when too sparse.
+    let candidates;
+    if (profile && profile.maxLevel) {
+      candidates = pool.filter(it => it.level <= profile.maxLevel);
+    } else {
+      const memberLevel = (profile && profile.level) || 1;
+      const near = pool.filter(it => Math.abs(it.level - memberLevel) <= 1);
+      candidates = near.length >= count ? near : pool;
+    }
     // Fisher-Yates shuffle
-    const arr = pool.slice();
+    const arr = candidates.slice();
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
@@ -4704,7 +4741,7 @@
   }
 
   function SprintComposition({ profile, onBack }) {
-    const [queue]    = useState(() => pickComposition(profile.level, COMP_COUNT));
+    const [queue]    = useState(() => pickComposition(profile, COMP_COUNT));
     const [phase, setPhase]   = useState(queue.length > 0 ? 'intro' : 'empty');
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
@@ -4718,10 +4755,13 @@
 
     function record(isCorrect) {
       const cur = queue[index];
-      db.recordSentence(profile.id, cur.id, isCorrect);
+      // Dispatch by kind so phrase wrongs hit recordPhrase (and the unified
+      // mistake log) rather than being recorded as sentences.
+      if (cur.kind === 'phrase') db.recordPhrase(profile.id, cur.id, isCorrect);
+      else                       db.recordSentence(profile.id, cur.id, isCorrect);
       if (isCorrect) { soundCorrect(); hapticTap(); }
       else           { soundWrong();   hapticBuzz(); }
-      const newResults = results.concat([{ sentenceId: cur.id, isCorrect }]);
+      const newResults = results.concat([{ sentenceId: cur.id, isCorrect, kind: cur.kind }]);
       setResults(newResults);
       if (index + 1 >= total) {
         const correctCount = newResults.filter(r=>r.isCorrect).length;
@@ -4866,7 +4906,9 @@
           }
         },
           results.map((r, i) => {
-            const s = SENTENCE_BY_ID[r.sentenceId];
+            // Resolve from sentence master OR phrase master based on kind.
+            const isPhrase = r.kind === 'phrase';
+            const s = isPhrase ? PHRASE_BY_ID[r.sentenceId] : SENTENCE_BY_ID[r.sentenceId];
             if (!s) return null;
             return e('div', {
               key: r.sentenceId,
@@ -4893,7 +4935,8 @@
                   style: { fontSize: 13, fontFamily: SERIF, fontStyle: 'italic', color: C.text }
                 }, s.en),
               ),
-              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } }, 'L' + s.level),
+              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
+                isPhrase ? '会話' : ('L' + (s.level || 2))),
             );
           }),
         ),
