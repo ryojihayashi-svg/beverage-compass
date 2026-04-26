@@ -4566,21 +4566,77 @@
     );
   }
 
-  // ---------- Cloud sync status panel (Supabase health + manual sync) ----------
-  function CloudStatusPanel() {
-    const [tick, setTick] = useState(0);
-    const [pinging, setPinging] = useState(false);
-    useEffect(() => cloud.subscribe(() => setTick(t => t + 1)), []);
-    const s = cloud.status;
+  // Friendly relative time. "数秒前 / 12分前 / 3時間前 / 2日前 / 2026/4/26 12:00".
+  function formatRelativeTime(iso) {
+    if (!iso) return '';
+    const t = new Date(iso).getTime();
+    if (!t || isNaN(t)) return '';
+    const sec = Math.max(0, Math.round((Date.now() - t) / 1000));
+    if (sec < 5)    return 'たった今';
+    if (sec < 60)   return sec + ' 秒前';
+    const min = Math.round(sec / 60);
+    if (min < 60)   return min + ' 分前';
+    const hr = Math.round(min / 60);
+    if (hr  < 24)   return hr  + ' 時間前';
+    const day = Math.round(hr / 24);
+    if (day < 30)   return day + ' 日前';
+    return new Date(iso).toLocaleDateString('ja-JP');
+  }
 
+  // ---------- Cloud sync status panel (Supabase health + per-member detail) ----------
+  function CloudStatusPanel() {
+    const [, setTick] = useState(0);
+    const [pinging, setPinging] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [memberRows, setMemberRows] = useState([]);   // [{ profile, updatedAt }]
+    const [familyRow,  setFamilyRow]  = useState(null); // { updatedAt }
+    // Re-render every 30s so the relative-time labels stay fresh.
+    const [, setNowTick] = useState(0);
+    useEffect(() => {
+      const id = setInterval(() => setNowTick(t => t + 1), 30_000);
+      return () => clearInterval(id);
+    }, []);
+    useEffect(() => cloud.subscribe(() => setTick(t => t + 1)), []);
+
+    async function refreshDetail() {
+      if (!cloud.status.enabled || syncing) return;
+      setSyncing(true);
+      try {
+        // Pull every member row + the family-shared row in parallel so we can
+        // show one consistent snapshot of "what cloud has".
+        const ids = PROFILES.map(p => p.id).concat([FAMILY_SHARED_ID]);
+        const results = await Promise.all(ids.map(id =>
+          cloud.pull(id).then(r => ({ id, r })).catch(() => ({ id, r: null }))
+        ));
+        const byId = {};
+        results.forEach(({ id, r }) => { byId[id] = r; });
+        setMemberRows(PROFILES.map(p => ({
+          profile: p,
+          updatedAt: byId[p.id] && byId[p.id].updated_at ? byId[p.id].updated_at : null,
+        })));
+        setFamilyRow(byId[FAMILY_SHARED_ID]
+          ? { updatedAt: byId[FAMILY_SHARED_ID].updated_at }
+          : null);
+        // Also refresh local copies of the family-shared row (names/avatars/
+        // photos) in case another device wrote to it.
+        await hydrateFamilySharedFromCloud();
+      } finally {
+        setSyncing(false);
+      }
+    }
+    // First time the panel mounts, do the detail pull so the UI lights up
+    // with real per-member timestamps.
+    useEffect(() => { refreshDetail(); /* eslint-disable-next-line */ }, []);
+
+    const s = cloud.status;
     const dotColor = !s.enabled ? C.sub
                     : s.lastError ? C.danger
-                    : s.pending ? C.accent
+                    : (s.pending || syncing) ? C.accent
                     : C.success;
     const statusText = !s.enabled ? '未接続'
                       : s.lastError ? 'エラー'
-                      : s.pending ? '同期中…'
-                      : (s.lastSyncAt ? '同期済み' : '待機中');
+                      : (s.pending || syncing) ? '同期中…'
+                      : (s.lastSyncAt ? formatRelativeTime(s.lastSyncAt) + 'に同期' : '待機中');
 
     return e('div', { style: { marginTop: 32 } },
       e('div', {
@@ -4596,7 +4652,8 @@
           borderRadius: 14, padding: '14px 16px',
         }
       },
-        e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+        // Status row
+        e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
           e('span', {
             style: {
               width: 10, height: 10, borderRadius: 999, background: dotColor, flexShrink: 0,
@@ -4605,30 +4662,80 @@
           e('div', { style: { flex: 1, fontSize: 13, fontWeight: 700, color: C.text } }, statusText),
           e('button', {
             onClick: async () => {
-              if (pinging) return;
+              if (pinging || syncing) return;
               setPinging(true);
               await cloud.pingTest();
+              await refreshDetail();
               setPinging(false);
             },
-            disabled: !s.enabled || pinging,
+            disabled: !s.enabled || pinging || syncing,
             style: {
               padding: '6px 12px', borderRadius: 999,
               background: C.softer, border: '1px solid ' + C.line,
               fontSize: 11, fontWeight: 600, color: C.sub, fontFamily: SANS_UI,
-              cursor: !s.enabled || pinging ? 'default' : 'pointer',
-              opacity: !s.enabled || pinging ? 0.5 : 1,
+              cursor: !s.enabled || pinging || syncing ? 'default' : 'pointer',
+              opacity: !s.enabled || pinging || syncing ? 0.5 : 1,
             }
-          }, pinging ? '確認中…' : '接続テスト'),
+          }, (pinging || syncing) ? '同期中…' : '今すぐ同期'),
         ),
-        e('div', { style: { fontSize: 11, color: C.sub, lineHeight: 1.6 } },
+        // What's being synced
+        e('div', { style: { fontSize: 11, color: C.sub, lineHeight: 1.6, marginBottom: 12 } },
           s.enabled
-            ? '学習データは Supabase に同期されます。別の端末で同じプロフィールを開けば続きから始められます。'
+            ? '学習データ・名前・プロフィール写真・ファミリー写真を Supabase に保存しています。別の端末で同じプロフィールを開けば、そのまま続きから始められます。'
             : 'Supabase クライアントを読み込めませんでした。オフラインのまま使えます。'),
-        s.lastSyncAt && e('div', {
-          style: { fontSize: 10, color: C.sub, marginTop: 6, fontVariantNumeric: 'tabular-nums' }
-        }, '最終同期: ' + new Date(s.lastSyncAt).toLocaleString('ja-JP')),
+        // Per-member rows (only once we have detail)
+        s.enabled && memberRows.length > 0 && e('div', {
+          style: { borderTop: '1px solid ' + C.line, paddingTop: 10 }
+        },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 9, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 8,
+            }
+          }, 'メンバーごとの同期'),
+          e('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+            memberRows.map(row => e('div', {
+              key: row.profile.id,
+              style: {
+                display: 'flex', alignItems: 'center', gap: 10,
+                fontSize: 12, color: C.text,
+              }
+            },
+              e('div', { style: { flex: 1, fontWeight: 600 } }, getDisplayName(row.profile)),
+              e('div', {
+                style: {
+                  fontSize: 11, color: row.updatedAt ? C.sub : C.sub + 'AA',
+                  fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI,
+                }
+              }, row.updatedAt ? formatRelativeTime(row.updatedAt) : 'まだクラウドにありません'),
+            )),
+            // Family-shared row
+            e('div', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: 10,
+                fontSize: 12, color: C.text,
+                paddingTop: 6, borderTop: '1px dashed ' + C.line, marginTop: 4,
+              }
+            },
+              e('div', { style: { flex: 1, fontWeight: 600 } }, '家族の共有データ'),
+              e('div', {
+                style: {
+                  fontSize: 11, color: C.sub,
+                  fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI,
+                }
+              }, familyRow && familyRow.updatedAt
+                  ? formatRelativeTime(familyRow.updatedAt)
+                  : 'まだクラウドにありません'),
+            ),
+          ),
+        ),
         s.lastError && e('div', {
-          style: { fontSize: 10, color: C.danger, marginTop: 6, lineHeight: 1.5, wordBreak: 'break-word' }
+          style: {
+            fontSize: 10, color: C.danger, marginTop: 10, lineHeight: 1.5,
+            wordBreak: 'break-word', padding: '8px 10px',
+            background: C.danger + '0F', borderRadius: 8, border: '1px solid ' + C.danger + '33',
+          }
         }, s.lastError),
       ),
     );
