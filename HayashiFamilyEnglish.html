@@ -905,8 +905,18 @@
             }, current.ja),
             e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginTop: 4 } },
               'EXAMPLE'),
-            e('div', { style: { fontSize: 15, color: C.text, lineHeight: 1.5, fontFamily: SERIF, fontStyle: 'italic' } },
-              current.exEn),
+            e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              e('div', {
+                style: { flex: 1, fontSize: 15, color: C.text, lineHeight: 1.5, fontFamily: SERIF, fontStyle: 'italic' }
+              }, current.exEn),
+              e('button', {
+                onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
+                style: {
+                  width: 34, height: 34, borderRadius: 999, fontSize: 14,
+                  background: C.softer, color: profile.color, flexShrink: 0,
+                }
+              }, '🔊'),
+            ),
             e('div', { style: { fontSize: 13, color: C.sub, lineHeight: 1.6 } },
               current.exJa),
           ),
@@ -1234,8 +1244,18 @@
                   }
                 }, '🔊'),
               ),
-              e('div', { style: { fontSize: 14, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF } },
-                current.exEn),
+              e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                e('div', {
+                  style: { flex: 1, fontSize: 14, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
+                }, current.exEn),
+                e('button', {
+                  onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
+                  style: {
+                    width: 32, height: 32, borderRadius: 999, fontSize: 14,
+                    background: C.softer, color: profile.color, flexShrink: 0,
+                  }
+                }, '🔊'),
+              ),
               e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.6 } },
                 current.exJa),
             ),
@@ -1523,8 +1543,18 @@
                     }
                   }, '🔊'),
                 ),
-                e('div', { style: { fontSize: 14, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF } },
-                  current.exEn),
+                e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                  e('div', {
+                    style: { flex: 1, fontSize: 14, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
+                  }, current.exEn),
+                  e('button', {
+                    onClick: (ev) => { ev.stopPropagation(); speak(current.exEn); },
+                    style: {
+                      width: 32, height: 32, borderRadius: 999, fontSize: 14,
+                      background: C.softer, color: profile.color, flexShrink: 0,
+                    }
+                  }, '🔊'),
+                ),
                 e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.6 } },
                   current.exJa),
               ),
