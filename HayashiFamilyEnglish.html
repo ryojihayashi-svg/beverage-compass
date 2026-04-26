@@ -8541,10 +8541,22 @@
     '(colour, centre, flat, lift, queue, rubbish, brilliant, cheers, mate) ' +
     'over American English whenever both are natural. ' +
     'Always reply with one JSON object — no markdown, no code fences, no commentary.';
-  function buildTranslatePrompt(text) {
+  // direction: 'auto' | 'ja2en' | 'en2ja'. The user can lock the
+  // direction with the picker on the AI翻訳 screen; 'auto' (the default)
+  // lets the model detect whichever is the source. The locked modes are
+  // useful when the user is typing in their second language and wants
+  // a forced target.
+  function buildTranslatePrompt(text, direction) {
+    let intro;
+    if (direction === 'ja2en') {
+      intro = 'Translate the user input from Japanese into natural, modern British English.';
+    } else if (direction === 'en2ja') {
+      intro = 'Translate the user input from English into natural, modern Japanese (with explicit subjects: 私は・あなたは・私たちは).';
+    } else {
+      intro = 'Translate the user input. Detect whether it is Japanese or English, then translate to the other language. Use natural, modern British English when the target is English.';
+    }
     return (
-      'Translate the user input. Detect whether it is Japanese or English, ' +
-      'then translate to the other language. Use natural, modern British English. ' +
+      intro + ' ' +
       'Reply with ONE JSON object that matches this exact shape:\n\n' +
       '{\n' +
       '  "srcLang": "ja" | "en",\n' +
@@ -8647,6 +8659,12 @@
     const [error, setError]   = useState('');
     const [hasKey] = useState(() => !!loadApiKey());
     const [saved, setSaved]   = useState(false);
+    // Translation direction picker. 'auto' (the default) detects which
+    // language the user typed and translates to the other one — the
+    // family's most common case. 'ja2en' / 'en2ja' force a direction
+    // when the user is e.g. practising the language they're weaker in
+    // and wants a specific target.
+    const [direction, setDirection] = useState('auto');
     // Two separate hidden file inputs so iOS / Android can offer either
     // "take a photo now" or "pick from library" cleanly. iOS Safari treats
     // capture="environment" as "open camera"; without the attribute the
@@ -8671,7 +8689,7 @@
       if (!text || busy) return;
       setBusy(true); setError(''); setResult(null); setSaved(false);
       try {
-        const raw = await callClaudeText(buildTranslatePrompt(text), TRANSLATE_SYSTEM);
+        const raw = await callClaudeText(buildTranslatePrompt(text, direction), TRANSLATE_SYSTEM);
         const obj = parseTranslateJSON(raw);
         if (!obj || !obj.main) {
           // Fallback: if the model gave us plain text, show it as 'main'
@@ -8741,7 +8759,14 @@
         return;
       }
       try {
-        const lang = detectLang(input || '') === 'en' ? 'en-US' : 'ja-JP';
+        // Pick the speech-recognition language. If the user has locked
+        // a direction, the SOURCE side of that direction is what they
+        // intend to speak. In auto mode, fall back to detecting from
+        // whatever is already typed.
+        let lang;
+        if (direction === 'ja2en')      lang = 'ja-JP';
+        else if (direction === 'en2ja') lang = 'en-US';
+        else                            lang = detectLang(input || '') === 'en' ? 'en-US' : 'ja-JP';
         const r = new SR();
         r.lang = lang;
         r.continuous     = false;
@@ -8813,8 +8838,6 @@
       }
     }
 
-    const lang = detectLang(input);
-    const targetLabel = lang === 'ja' ? '日本語 → 英語 (UK)' : '英語 → 日本語';
 
     return e('div', { style: pageStyle },
       e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
@@ -8846,12 +8869,37 @@
             e('div', null, '④ 設定 → AI チャット欄に貼り付け'),
           )
         : e('div', null,
-            input.trim() && e('div', {
+            // Direction picker pills — always visible at the top of the
+            // input area. 自動 detects from whatever the user types and
+            // translates to the other language. The locked options force
+            // a target so the user can practise typing in their weaker
+            // language without the auto-detect doing the wrong thing.
+            e('div', {
               style: {
-                fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
-                color: C.sub, letterSpacing: '0.06em', marginBottom: 6, paddingLeft: 4,
+                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+                gap: 6, marginBottom: 12,
               }
-            }, targetLabel),
+            },
+              [
+                { id: 'auto',  label: '自動 ⇄' },
+                { id: 'ja2en', label: '日本語 → 英語' },
+                { id: 'en2ja', label: '英語 → 日本語' },
+              ].map(d => {
+                const isActive = direction === d.id;
+                return e('button', {
+                  key: d.id,
+                  onClick: () => setDirection(d.id),
+                  style: {
+                    padding: '8px 0', borderRadius: 999,
+                    background: isActive ? profile.color : C.softer,
+                    color: isActive ? '#fff' : C.text,
+                    border: '1px solid ' + (isActive ? profile.color : C.line),
+                    fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                    cursor: 'pointer', letterSpacing: '0.02em',
+                  }
+                }, d.label);
+              }),
+            ),
             e('textarea', {
               value: input,
               onChange: (ev) => { setInput(ev.target.value); setSaved(false); },
