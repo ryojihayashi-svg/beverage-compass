@@ -6639,6 +6639,63 @@
       setTimeout(() => setApiKeyMsg(''), 1800);
     }
 
+    // Ping Claude with a tiny request to confirm the key is accepted.
+    // Uses whatever is currently in the input field (not necessarily the
+    // saved value), so the user can paste-and-test in one go. On success,
+    // we also auto-save so they don't have to click "保存" separately.
+    const [apiKeyTestBusy,   setApiKeyTestBusy]   = useState(false);
+    const [apiKeyTestStatus, setApiKeyTestStatus] = useState(null); // { ok: bool, msg: string }
+    async function testApiKeyNow() {
+      const key = (apiKey || '').trim();
+      if (!key) {
+        setApiKeyTestStatus({ ok: false, msg: 'キーを入力してから試してください。' });
+        return;
+      }
+      setApiKeyTestBusy(true);
+      setApiKeyTestStatus(null);
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 16,
+            messages: [{ role: 'user', content: 'Reply with exactly the two letters: OK' }],
+          }),
+        });
+        if (!res.ok) {
+          const body = await res.text().catch(() => '');
+          let hint;
+          if (res.status === 401)      hint = 'キーが正しくないか、無効になっています。console.anthropic.com で再発行してください。';
+          else if (res.status === 403) hint = 'このキーには権限がないようです。';
+          else if (res.status === 429) hint = 'リクエスト数の上限です。少し待ってから試してください。';
+          else if (res.status === 400) hint = 'リクエストが拒否されました（モデル名やフォーマット）。';
+          else if (res.status >= 500)  hint = 'Anthropic 側のエラーです。少し待ってから試してください。';
+          else                          hint = 'エラーが返ってきました。';
+          throw new Error(hint + '  [HTTP ' + res.status + '] ' + body.slice(0, 160));
+        }
+        const j = await res.json();
+        const out = (j.content && j.content[0] && j.content[0].text) || '';
+        // Save on successful test so they don't have to press 保存 separately.
+        saveApiKey(key);
+        setApiKeyTestStatus({
+          ok: true,
+          msg: 'つながりました。キーも保存しました。 (Claude の返答: "' + (out.trim() || '—').slice(0, 40) + '")',
+        });
+      } catch (err) {
+        let m = (err && err.message) || String(err);
+        if (!navigator.onLine) m = 'オフラインです。Wi-Fi / 通信を確認してください。';
+        setApiKeyTestStatus({ ok: false, msg: m });
+      } finally {
+        setApiKeyTestBusy(false);
+      }
+    }
+
     async function pickAvatar(profileId, file) {
       if (!file) return;
       setAvatarErr('');
@@ -6850,7 +6907,7 @@
             }
           }, apiKeyVisible ? '🙈' : '👁'),
         ),
-        e('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+        e('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           e('button', {
             onClick: saveApiKeyNow,
             style: {
@@ -6859,14 +6916,49 @@
               border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
             }
           }, 'キーを保存'),
+          e('button', {
+            onClick: testApiKeyNow,
+            disabled: apiKeyTestBusy,
+            style: {
+              padding: '8px 16px', borderRadius: 10,
+              background: apiKeyTestBusy ? C.softer : C.card,
+              color: apiKeyTestBusy ? C.sub : C.text,
+              border: '1px solid ' + (apiKeyTestBusy ? C.line : C.brand),
+              fontSize: 12, fontWeight: 700,
+              cursor: apiKeyTestBusy ? 'default' : 'pointer',
+            }
+          }, apiKeyTestBusy ? 'テスト中…' : '接続テスト'),
           apiKeyMsg && e('div', {
             style: { fontSize: 12, color: C.success, fontWeight: 600 }
           }, '✓ ' + apiKeyMsg),
         ),
+
+        // Test status — color-coded so success / failure is unmistakable.
+        apiKeyTestStatus && e('div', {
+          style: {
+            marginTop: 10, padding: '10px 12px',
+            background: (apiKeyTestStatus.ok ? C.success : C.danger) + '14',
+            border: '1px solid ' + (apiKeyTestStatus.ok ? C.success : C.danger) + '55',
+            borderRadius: 10,
+            fontSize: 12, color: C.text, lineHeight: 1.6, wordBreak: 'break-word',
+          }
+        },
+          e('span', {
+            style: {
+              fontWeight: 800,
+              color: apiKeyTestStatus.ok ? C.success : C.danger,
+              marginRight: 6,
+            }
+          }, apiKeyTestStatus.ok ? '✓' : '✕'),
+          apiKeyTestStatus.msg,
+        ),
+
         e('div', {
           style: { fontSize: 11, color: C.sub, marginTop: 10, lineHeight: 1.7 }
         },
           'console.anthropic.com で無料アカウント作成 → "API Keys" → "Create Key" → コピー → 上に貼り付け。',
+          e('br'),
+          '貼り付けたら「接続テスト」を押すと、ちゃんとつながるか確認できます（成功時は自動で保存されます）。',
           e('br'),
           '🔒 キーはこの端末の中だけに保存されます。',
         ),
