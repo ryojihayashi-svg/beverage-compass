@@ -653,6 +653,9 @@
             : '今日もちょっとずつ。続けることがいちばん。'),
       ),
 
+      // Progress chips (learners only)
+      !isViewer && e(ProgressChips, { profile, includeTotal: true, style: { marginBottom: 18 } }),
+
       // Section label
       e('div', {
         style: {
@@ -985,6 +988,7 @@
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
             total + ' 問の準備ができました。'),
         ),
+        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
         e('div', {
           style: {
             background: C.softer, border: '1px solid ' + C.line,
@@ -1247,6 +1251,45 @@
     animation: 'fadeIn .3s ease',
   };
 
+  // ---------- Reusable chips ----------
+  function Chip({ icon, label, value, color, highlight }) {
+    return e('div', {
+      style: {
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '6px 12px', borderRadius: 999,
+        background: highlight ? (color || C.accent) + '1A' : C.softer,
+        border: '1px solid ' + (highlight ? (color || C.accent) + '40' : C.line),
+        fontSize: 12, color: highlight ? (color || C.accent) : C.sub,
+        fontVariantNumeric: 'tabular-nums',
+      }
+    },
+      icon && e('span', { style: { fontSize: 12 } }, icon),
+      e('span', { style: { fontWeight: 600 } }, label),
+      e('strong', { style: { fontWeight: 700, color: highlight ? (color || C.accent) : C.text } }, value),
+    );
+  }
+
+  // Compact "今日 N問 / 連続 N日 / 累計 N正解" strip for the active learner.
+  // Returns null for viewer profiles (mother) since they don't study.
+  function ProgressChips({ profile, includeTotal, style }) {
+    if (profile.role === 'viewer') return null;
+    const stats = computeStats(profile.id);
+    const today = (db.getDailyStats(profile.id)[db.todayKey()] || {});
+    const todayAttempts = today.attempts || 0;
+    return e('div', {
+      style: Object.assign({ display: 'flex', gap: 8, flexWrap: 'wrap' }, style || {}),
+    },
+      e(Chip, { label: '今日', value: todayAttempts + '問', color: profile.color }),
+      stats.streakDays > 0 && e(Chip, {
+        icon: '🔥', label: '連続', value: stats.streakDays + '日',
+        color: profile.color, highlight: true,
+      }),
+      includeTotal && e(Chip, {
+        label: '累計', value: stats.totalCorrect + '正解', color: profile.color,
+      }),
+    );
+  }
+
   // ---------- Mistake Review (drives a session from the mistakes log) ----------
   function MistakeReview({ profile, onBack }) {
     // Build the deduped list once on mount
@@ -1311,6 +1354,7 @@
               ? 'まだ間違いはありません。'
               : initialList.length + ' 件の間違いをためました。'),
         ),
+        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
         empty
           ? e('div', {
               style: {
@@ -2049,6 +2093,7 @@
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.6 } },
             '日本語を見て、すぐに英語に直す練習。\n頭の中で組み立ててから「答えを見る」を押そう。'),
         ),
+        e(ProgressChips, { profile, style: { marginBottom: 16 } }),
         e('div', {
           style: {
             background: C.softer, border: '1px solid ' + C.line,
