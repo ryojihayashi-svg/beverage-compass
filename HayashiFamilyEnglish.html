@@ -3365,13 +3365,13 @@
     );
   }
 
-  // ---------- Vocab Browse (20-question session, accordion reveal) ----------
-  // Each session draws 20 shuffled words from the chosen level filter,
+  // ---------- Vocab Browse (10-question session, accordion reveal) ----------
+  // Each session draws 10 shuffled words from the chosen level filter,
   // shows them one at a time with the answer hidden behind a tap, and
   // ends on the shared SessionDoneCard once the learner has gone through
-  // all 20. The 20-question cap exists so kids see a clear finish line
-  // and don't burn out mid-deck.
-  const VOCAB_SESSION_COUNT = 20;
+  // all 10. The short cap matches kids' attention span and gives a clear
+  // finish line every few minutes.
+  const VOCAB_SESSION_COUNT = 10;
   function VocabBrowse({ profile, onBack, forcedDirection }) {
     const [filter, setFilter] = useState('all');                 // 'all' | '1'..'5'
     const [direction, setDirection] = useState(forcedDirection || 'en2ja'); // 'en2ja' | 'ja2en'
@@ -3456,7 +3456,7 @@
             fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
             marginBottom: 12, cursor: 'pointer',
           }
-        }, 'もう20問やる'),
+        }, 'もう10問やる'),
       });
     }
 
@@ -4447,7 +4447,7 @@
   // ---------- Sprint Composition (瞬間英作文) ----------
   // Picks ~10 sentences near the member's level, runs a Daily20-style flow:
   // intro → study (JP prompt → reveal EN → self-grade) → done (score + list).
-  const COMP_COUNT = 20;
+  const COMP_COUNT = 10;
 
   function pickComposition(profile, count, opts) {
     opts = opts || {};
