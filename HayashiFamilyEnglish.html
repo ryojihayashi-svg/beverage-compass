@@ -232,6 +232,33 @@
     } catch (err) { /* ignore */ }
   }
 
+  // ---------- Dummy stats (used until Supabase is connected) ----------
+  // Realistic-looking placeholder numbers per member, deterministic across reloads.
+  // Replace with live data from `daily_stats` once Supabase is wired up.
+  const DUMMY_STATS = {
+    father: { weeklyCorrect: 142, totalCorrect: 980, accuracy: 89, streakDays: 12 },
+    son1:   { weeklyCorrect:  98, totalCorrect: 540, accuracy: 76, streakDays:  8 },
+    son2:   { weeklyCorrect:  46, totalCorrect: 210, accuracy: 64, streakDays:  3 },
+    son3:   { weeklyCorrect:  72, totalCorrect: 168, accuracy: 70, streakDays:  5 },
+    mother: { cheers: 38 },
+  };
+
+  // Aggregate the current user's real stats from localStorage vocab progress.
+  function computeStats(memberId) {
+    const state = db.load(memberId);
+    const vocab = state.vocab || {};
+    let totalAttempts = 0, totalCorrect = 0, learnedCount = 0, masteredCount = 0;
+    for (const vid in vocab) {
+      const p = vocab[vid];
+      totalAttempts += p.totalAttempts || 0;
+      totalCorrect  += p.totalCorrect  || 0;
+      if ((p.totalAttempts || 0) > 0) learnedCount++;
+      if (p.status === 'mastered') masteredCount++;
+    }
+    const accuracy = totalAttempts > 0 ? Math.round(totalCorrect * 100 / totalAttempts) : 0;
+    return { totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount };
+  }
+
   // ---------- Time helper (relative, ja) ----------
   function timeAgo(iso) {
     if (!iso) return '';
@@ -272,6 +299,7 @@
       if (route.feature === 'vocab')    return e(VocabBrowse,   { profile, onBack: back });
       if (route.feature === 'daily20')  return e(Daily20,       { profile, onBack: back });
       if (route.feature === 'mistakes') return e(MistakeReview, { profile, onBack: back });
+      if (route.feature === 'ranking')  return e(FamilyRanking, { profile, onBack: back });
       return e(ComingSoon, { profile, feature: feat, onBack: back });
     }
     return null;
@@ -1375,6 +1403,220 @@
     }
 
     return null;
+  }
+
+  // ---------- Family Ranking ----------
+  function FamilyRanking({ profile, onBack }) {
+    const [metric, setMetric] = useState('weekly'); // 'weekly' | 'total'
+
+    // Build entries: real stats for the active learner, dummy for others.
+    const entries = useMemo(() => {
+      return PROFILES.map(p => {
+        if (p.role === 'viewer') {
+          const d = DUMMY_STATS[p.id] || {};
+          return {
+            profile: p, kind: 'viewer', isMe: p.id === profile.id,
+            cheers: d.cheers || 0,
+          };
+        }
+        if (p.id === profile.id) {
+          const real = computeStats(profile.id);
+          // Cap weekly at totalCorrect — a brand-new user has 0 weekly. We use
+          // totalCorrect as a stand-in for "weekly" until per-day stats are wired.
+          return {
+            profile: p, kind: 'real', isMe: true,
+            weeklyCorrect: real.totalCorrect,
+            totalCorrect:  real.totalCorrect,
+            accuracy:      real.accuracy,
+            streakDays:    0, // cannot be computed without per-day timestamps yet
+            learnedCount:  real.learnedCount,
+            masteredCount: real.masteredCount,
+          };
+        }
+        const d = DUMMY_STATS[p.id] || { weeklyCorrect: 0, totalCorrect: 0, accuracy: 0, streakDays: 0 };
+        return Object.assign({ profile: p, kind: 'dummy', isMe: false }, d);
+      });
+    }, [profile.id]);
+
+    // Separate learners and viewer; sort learners by chosen metric desc.
+    const learners = entries.filter(e_ => e_.kind !== 'viewer');
+    const viewers  = entries.filter(e_ => e_.kind === 'viewer');
+    const key = metric === 'weekly' ? 'weeklyCorrect' : 'totalCorrect';
+    learners.sort((a, b) => (b[key] || 0) - (a[key] || 0));
+    const maxValue = Math.max(1, ...learners.map(l => l[key] || 0));
+
+    const medal = (rank) => rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : (rank + 1) + '位';
+
+    return e('div', { style: pageStyle },
+      // Top bar
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '家族ランキング'),
+      ),
+
+      // Header
+      e('div', { style: { padding: '8px 4px 22px' } },
+        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '🏆'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, 'Family Leaderboard'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+          'みんなのがんばりが一目でわかります。'),
+      ),
+
+      // Metric toggle
+      e('div', {
+        style: {
+          display: 'inline-flex', background: C.softer, borderRadius: 999,
+          padding: 4, marginBottom: 16, border: '1px solid ' + C.line,
+        }
+      },
+        ['weekly', 'total'].map(k => e('button', {
+          key: k, onClick: () => setMetric(k),
+          style: {
+            padding: '8px 16px', borderRadius: 999, fontSize: 12, fontWeight: 700,
+            background: metric === k ? C.card  : 'transparent',
+            color:      metric === k ? C.text  : C.sub,
+            boxShadow:  metric === k ? '0 2px 6px rgba(42,37,32,0.08)' : 'none',
+            transition: 'all .2s ease',
+          }
+        }, k === 'weekly' ? '今週' : '累計')),
+      ),
+
+      // Disclaimer about dummy data
+      e('div', {
+        style: {
+          fontSize: 11, color: C.sub, marginBottom: 14, padding: '8px 12px',
+          background: C.softer, borderRadius: 10, lineHeight: 1.5,
+        }
+      },
+        '※ 自分の数字は本物。他のメンバーは Supabase 接続後にリアルタイム同期されます。'),
+
+      // Ranked learner list
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 } },
+        learners.map((entry, rank) => {
+          const value = entry[key] || 0;
+          const pct = Math.round(value * 100 / maxValue);
+          const top3 = rank < 3;
+          return e('div', {
+            key: entry.profile.id,
+            style: {
+              background: entry.isMe ? entry.profile.color + '0E' : C.card,
+              border: '1px solid ' + (entry.isMe ? entry.profile.color + '55' : C.line),
+              borderRadius: 16, padding: '14px 16px',
+              boxShadow: top3 ? '0 6px 16px rgba(42,37,32,0.06)' : 'none',
+              display: 'flex', alignItems: 'center', gap: 12,
+            }
+          },
+            // Rank
+            e('div', {
+              style: {
+                width: 36, fontSize: top3 ? 22 : 14, fontWeight: 700,
+                color: top3 ? C.text : C.sub, textAlign: 'center', flexShrink: 0,
+              }
+            }, medal(rank)),
+            // Avatar
+            e('div', {
+              style: {
+                width: 42, height: 42, borderRadius: 14,
+                background: entry.profile.color + '22', color: entry.profile.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, flexShrink: 0,
+                border: '1px solid ' + entry.profile.color + '33',
+              }
+            }, entry.profile.emoji),
+            // Body
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                e('div', {
+                  style: { fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1 }
+                }, entry.profile.name),
+                entry.isMe && e('span', {
+                  style: {
+                    fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                    background: entry.profile.color, color: '#fff', letterSpacing: '0.06em',
+                  }
+                }, 'YOU'),
+                entry.kind === 'dummy' && e('span', {
+                  style: { fontSize: 10, color: C.sub, opacity: 0.7 }
+                }, 'demo'),
+              ),
+              // Bar
+              e('div', {
+                style: {
+                  height: 6, background: C.line, borderRadius: 999, overflow: 'hidden', marginBottom: 6,
+                }
+              },
+                e('div', {
+                  style: {
+                    width: pct + '%', height: '100%',
+                    background: entry.profile.color, transition: 'width .35s ease',
+                  }
+                }),
+              ),
+              // Stats line
+              e('div', {
+                style: {
+                  fontSize: 11, color: C.sub, display: 'flex', gap: 10,
+                  fontVariantNumeric: 'tabular-nums',
+                }
+              },
+                e('span', null, '正解 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, value), '問'),
+                e('span', null, '精度 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, (entry.accuracy || 0) + '%')),
+                (entry.streakDays || 0) > 0 && e('span', null, '連続 ',
+                  e('strong', { style: { color: C.text, fontWeight: 700 } }, entry.streakDays + '日')),
+              ),
+            ),
+          );
+        }),
+      ),
+
+      // Viewer card (mother)
+      viewers.length > 0 && e('div', null,
+        e('div', {
+          style: {
+            fontSize: 11, color: C.sub, fontWeight: 600,
+            letterSpacing: '0.12em', marginBottom: 8, paddingLeft: 4,
+          }
+        }, 'CHEERLEADER'),
+        viewers.map(v => e('div', {
+          key: v.profile.id,
+          style: {
+            background: v.isMe ? v.profile.color + '0E' : C.card,
+            border: '1px solid ' + (v.isMe ? v.profile.color + '55' : C.line),
+            borderRadius: 16, padding: '14px 16px',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }
+        },
+          e('div', {
+            style: {
+              width: 42, height: 42, borderRadius: 14,
+              background: v.profile.color + '22', color: v.profile.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22, flexShrink: 0,
+              border: '1px solid ' + v.profile.color + '33',
+            }
+          }, v.profile.emoji),
+          e('div', { style: { flex: 1 } },
+            e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+              e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, v.profile.name),
+              v.isMe && e('span', {
+                style: {
+                  fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                  background: v.profile.color, color: '#fff', letterSpacing: '0.06em',
+                }
+              }, 'YOU'),
+            ),
+            e('div', { style: { fontSize: 12, color: C.sub } },
+              '応援 ', e('strong', { style: { color: C.text, fontWeight: 700 } }, v.cheers), ' 回 送信'),
+          ),
+          e('div', { style: { fontSize: 24 } }, '💐'),
+        )),
+      ),
+    );
   }
 
   // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
