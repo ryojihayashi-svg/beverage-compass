@@ -1728,27 +1728,35 @@
   // ---------- Per-profile level distribution ----------
   // The "おまかせ" (auto) picker for vocab + sprint composition uses these
   // weights so each family member sees a level mix that fits their stage.
+  //
   // Distributions per family request:
-  //   Ryoji (father):       L2 45% / L3 45% / L4 10%
-  //   Narumichi (son1):     L2 20% / L3 40% / L4 40%
-  //   Ayumi / Yoshinari /   L1 45% / L2 45% / L3 10%
-  //     Kippei
+  //   Kippei (son3, 小6 はじめての英語):  L1 80% / L2 20%
+  //   Yoshinari (son2, 中学復習):        L1 40% / L2 60%
+  //   Ayumi (mother, 中学基礎):          L1 40% / L2 60%
+  //   Ryoji (father, 英検準2級):         L2 40% / L3 60%
+  //   Narumichi (son1, 英検2級):         L3 40% / L4 60%
+  //
+  // The ladder is one level apart per family member, so each kid sees
+  // mostly content one notch above their comfort zone — easy enough not
+  // to freeze, hard enough to stretch.
   function pickLevelForProfile(profile) {
     const r = Math.random();
     const id = (profile && profile.id) || '';
-    if (id === 'father') {
-      if (r < 0.45) return 2;
-      if (r < 0.90) return 3;
-      return 4;
+    if (id === 'son3') {                       // Kippei
+      return r < 0.80 ? 1 : 2;
     }
-    if (id === 'son1') {
-      if (r < 0.20) return 2;
-      if (r < 0.60) return 3;
-      return 4;
+    if (id === 'son2' || id === 'mother') {    // Yoshinari, Ayumi
+      return r < 0.40 ? 1 : 2;
     }
-    // mother / son2 / son3 — basics first
-    if (r < 0.45) return 1;
-    if (r < 0.90) return 2;
+    if (id === 'father') {                     // Ryoji
+      return r < 0.40 ? 2 : 3;
+    }
+    if (id === 'son1') {                       // Narumichi
+      return r < 0.40 ? 3 : 4;
+    }
+    // Generic fallback — moderate mix.
+    if (r < 0.40) return 1;
+    if (r < 0.85) return 2;
     return 3;
   }
 
@@ -2447,6 +2455,20 @@
     { id:'s451', level:1, grammar:'はじめて want',            ja:'私は水がほしい。',             en:'I want water.' },
     { id:'s452', level:1, grammar:'はじめて 家族',            ja:'私はお兄さんが一人います。',   en:'I have one brother.' },
     { id:'s453', level:1, grammar:'はじめて 疑問',            ja:'これは何ですか？',             en:'What is this?' },
+
+    // ---- Simple Q&A pairs for Kippei ----
+    // The questions sit in L1 with the same "はじめて〜" tag so the
+    // weighted picker brings them up alongside the basic statements.
+    // The answers are also L1 so a kid can see "ask + answer" rhythm
+    // back-to-back across two sessions.
+    { id:'s454', level:1, grammar:'はじめて this',            ja:'これは私のえんぴつです。',     en:'This is my pencil.' },
+    { id:'s455', level:1, grammar:'はじめて 疑問 What',       ja:'あれは何ですか？',             en:'What is that?' },
+    { id:'s456', level:1, grammar:'はじめて Do you ~?',       ja:'あなたはねこがすきですか？',   en:'Do you like cats?' },
+    { id:'s457', level:1, grammar:'はじめて Do you ~?',       ja:'あなたは犬をかっていますか？', en:'Do you have a dog?' },
+    { id:'s458', level:1, grammar:'はじめて Are you ~?',      ja:'あなたは学生ですか？',         en:'Are you a student?' },
+    { id:'s459', level:1, grammar:'はじめて Are you ~?',      ja:'あなたはうれしいですか？',     en:'Are you happy?' },
+    { id:'s460', level:1, grammar:'はじめて Yes 答え',        ja:'はい、私はうれしいです。',     en:'Yes, I am happy.' },
+    { id:'s461', level:1, grammar:'はじめて 一般動詞',        ja:'私はサッカーをします。',       en:'I play soccer.' },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
