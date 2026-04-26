@@ -1748,6 +1748,120 @@
     return SENTENCES.filter(s => isSentenceMastered(composition[s.id]));
   }
 
+  // ---------- Sound effects (Web Audio synthesis, no files) ----------
+  // Tiny synthesised tones with envelope so we don't ship audio files.
+  // First call requires a user gesture to unlock the AudioContext (we wire
+  // session record() into the user's tap, so that's already satisfied).
+  let _audioCtx = null;
+  function getAudioCtx() {
+    if (_audioCtx) return _audioCtx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { _audioCtx = new AC(); } catch { _audioCtx = null; }
+    return _audioCtx;
+  }
+  function playTone(freq, durationMs, vol, type) {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (vol == null) vol = 0.12;
+    if (!type) type = 'sine';
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(vol, t0 + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + durationMs / 1000);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + durationMs / 1000 + 0.05);
+  }
+  function soundCorrect() {
+    playTone(880, 90);                                 // A5
+    setTimeout(() => playTone(1318.5, 130), 70);       // E6
+  }
+  function soundWrong() {
+    playTone(196, 220, 0.08);                          // G3, soft
+  }
+  function soundComplete() {
+    const notes = [523.25, 659.25, 783.99, 1046.5];    // C E G C
+    notes.forEach((f, i) => setTimeout(() => playTone(f, 200, 0.13), i * 90));
+  }
+
+  // ---------- Haptic (iOS / Android navigator.vibrate) ----------
+  function hapticTap()  { if (navigator.vibrate) navigator.vibrate(12); }
+  function hapticBuzz() { if (navigator.vibrate) navigator.vibrate([25, 50, 25]); }
+  function hapticWin()  { if (navigator.vibrate) navigator.vibrate([15, 50, 15, 50, 80]); }
+
+  // ---------- Confetti (canvas burst, used on session-done) ----------
+  function ConfettiBurst() {
+    const canvasRef = useRef(null);
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.scale(dpr, dpr);
+      const colors = ['#C97D3B', '#4A6840', '#3D6FA0', '#D4A22F', '#C97A8A', '#8B6914'];
+      const N = 90;
+      const particles = [];
+      for (let i = 0; i < N; i++) {
+        particles.push({
+          x: W * (0.3 + Math.random() * 0.4),
+          y: H * 0.32 + (Math.random() - 0.5) * 40,
+          vx: (Math.random() - 0.5) * 9,
+          vy: (Math.random() - 0.85) * 10,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.32,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          w: Math.random() * 9 + 5,
+          h: Math.random() * 4 + 3,
+        });
+      }
+      const duration = 3500;
+      const start = Date.now();
+      let raf;
+      function frame() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => {
+          p.vy += 0.18;
+          p.vx *= 0.995;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vrot;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+        const elapsed = Date.now() - start;
+        canvas.style.opacity = elapsed > duration - 800
+          ? Math.max(0, (duration - elapsed) / 800).toFixed(2)
+          : 1;
+        if (elapsed < duration) raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+      return () => { cancelAnimationFrame(raf); };
+    }, []);
+    return e('canvas', {
+      ref: canvasRef,
+      style: {
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 9999,
+        transition: 'opacity .8s ease',
+      }
+    });
+  }
+
   // ---------- Image compression (for photo attachments) ----------
   // Uses a canvas to downscale and re-encode as JPEG so photos don't blow up
   // localStorage. ~50-150KB per photo at maxDim 800.
@@ -2143,6 +2257,8 @@
     function mark(isKnown) {
       if (!current) return;
       db.recordAnswer(profile.id, current.id, isKnown);
+      if (isKnown) { soundCorrect(); hapticTap(); }
+      else         { soundWrong();   hapticBuzz(); }
       setTick(t => t + 1);
       // Auto-advance after a short beat so the user can see the new badge
       setTimeout(() => go(1), 200);
@@ -2360,10 +2476,14 @@
     function record(isCorrect) {
       const cur = bundle.items[index];
       db.recordAnswer(profile.id, cur.id, isCorrect);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= total) {
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        const acc = total > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / total) : 0;
+        setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
       }
@@ -2461,6 +2581,7 @@
         accuracy >= 70 ? 'よくできた！' :
         accuracy >= 50 ? 'いい調子。' : 'お疲れさま。';
       return e('div', { style: pageStyle },
+        accuracy >= 70 && e(ConfettiBurst),
         topBar,
         e('div', { style: { padding: '32px 4px 20px' } },
           e('div', { style: { fontSize: 44, marginBottom: 10 } }, accuracy >= 70 ? '🎉' : '🌱'),
@@ -2742,10 +2863,14 @@
     function record(isCorrect) {
       const cur = queue[index];
       db.recordAnswer(profile.id, cur.id, isCorrect, { removeOnCorrect: true });
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
       const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= queue.length) {
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        const acc = newResults.length > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / newResults.length) : 0;
+        setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
       }
@@ -2976,6 +3101,7 @@
       const accuracy = total > 0 ? Math.round(correct * 100 / total) : 0;
       const remaining = (db.load(profile.id).mistakes || []).length;
       return e('div', { style: pageStyle },
+        accuracy >= 70 && e(ConfettiBurst),
         topBar,
         e('div', { style: { padding: '32px 4px 20px' } },
           e('div', { style: { fontSize: 44, marginBottom: 10 } }, correct === total ? '🎉' : '💪'),
@@ -3826,10 +3952,14 @@
     function record(isCorrect) {
       const cur = queue[index];
       db.recordSentence(profile.id, cur.id, isCorrect);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
       const newResults = results.concat([{ sentenceId: cur.id, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= total) {
         setUnlockedCount(db.evaluateUnlocks(profile.id, { sessionCompleted: true }));
+        const acc = total > 0 ? Math.round(newResults.filter(r=>r.isCorrect).length * 100 / total) : 0;
+        setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         setPhase('done');
         return;
       }
@@ -3931,6 +4061,7 @@
         accuracy >= 70 ? 'いい感じ！' :
         accuracy >= 50 ? 'もう一歩。' : 'お疲れさま。';
       return e('div', { style: pageStyle },
+        accuracy >= 70 && e(ConfettiBurst),
         topBar,
         e('div', { style: { padding: '32px 4px 20px' } },
           e('div', { style: { fontSize: 44, marginBottom: 10 } }, accuracy >= 70 ? '🎉' : '💪'),
