@@ -1616,6 +1616,18 @@
     { id:'s329', level:1, grammar:'現在形 + every day',    ja:'私は毎日歩きます。',                        en:'I walk every day.' },
     { id:'s330', level:2, grammar:'三単現 + like ing',     ja:'成道はおしゃれが好きです。',                en:'Narumichi likes being stylish.' },
     { id:'s331', level:2, grammar:'be + still',            ja:'吉平はまだ小さいです。',                    en:'Kippei is still small.' },
+
+    // ========== 父の名言 / regrets / encouragement (s332-s341) ==========
+    { id:'s332', level:3, grammar:'should have',           ja:'イギリスに来る前にもっと英語を勉強しておけばよかったです。', en:'I should have studied English more before coming to the UK.' },
+    { id:'s333', level:3, grammar:'動名詞主語 + for',      ja:'若い頃に苦労した方が、将来のためになります。', en:'Going through hardship when you are young pays off in the future.' },
+    { id:'s334', level:2, grammar:'when + 主節',           ja:'英語ができるようになると、世界が変わります。',en:'When you can speak English, your world changes.' },
+    { id:'s335', level:1, grammar:'命令形',                ja:'女の子には優しくしなさい。',                en:'Be kind to girls.' },
+    { id:'s336', level:2, grammar:'Let’s + learn to', ja:'人に気を遣えるようになりましょう。',        en:"Let's learn to be considerate of others." },
+    { id:'s337', level:2, grammar:'even when + 命令',      ja:'怒りたいときでも、我慢しよう。',            en:'Hold back even when you want to get angry.' },
+    { id:'s338', level:2, grammar:'even when + 命令',      ja:'疲れているときでも、ニコニコしよう。',      en:'Smile even when you are tired.' },
+    { id:'s339', level:2, grammar:'命令形 + if',           ja:'困っている人がいたら、助けてあげなさい。',  en:'Help people who are in trouble.' },
+    { id:'s340', level:2, grammar:'三単現 + always',       ja:'父はいつも私に大切なことを教えてくれます。',en:'Dad always teaches me important things.' },
+    { id:'s341', level:1, grammar:'be + in heart',         ja:'父の言葉はいつも心に残ります。',            en:"Dad's words always stay in my heart." },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
@@ -1690,6 +1702,28 @@
     { id:'p058', scene:'school', ja:'ジムでエクササイズしてもいいですか？',   en:'May I exercise at the gym?' },
     { id:'p059', scene:'school', ja:'日本から来ました。',                     en:"I'm from Japan." },
     { id:'p060', scene:'friends', ja:'家族が恋しいです。',                    en:'I miss my family.' },
+
+    // ----- Short greetings / responses / quick utterances -----
+    { id:'p061', scene:'school',  ja:'すみません、もう一度？',                en:'Pardon?' },
+    { id:'p062', scene:'school',  ja:'いいえ、結構です。',                    en:'No, thank you.' },
+    { id:'p063', scene:'school',  ja:'もちろん。',                            en:'Of course.' },
+    { id:'p064', scene:'friends', ja:'いいよ。',                              en:'Sure.' },
+    { id:'p065', scene:'friends', ja:'ごめんね。',                            en:"I'm sorry." },
+    { id:'p066', scene:'friends', ja:'本当にありがとう。',                    en:'Thank you so much.' },
+    { id:'p067', scene:'friends', ja:'本当？',                                en:'Really?' },
+    { id:'p068', scene:'school',  ja:'分かります。',                          en:'Makes sense.' },
+    { id:'p069', scene:'school',  ja:'知っています。',                        en:'I know.' },
+    { id:'p070', scene:'school',  ja:'知りません。',                          en:"I don't know." },
+    { id:'p071', scene:'school',  ja:'分かりました。',                        en:'I understand.' },
+    { id:'p072', scene:'friends', ja:'すぐ行きます。',                        en:"I'll come right away." },
+    { id:'p073', scene:'friends', ja:'早くして！',                            en:'Hurry up!' },
+    { id:'p074', scene:'school',  ja:'ちょっと待ってください。',              en:'Please wait a moment.' },
+    { id:'p075', scene:'school',  ja:'明日やります。',                        en:"I'll do it tomorrow." },
+    { id:'p076', scene:'school',  ja:'今すぐやります。',                      en:"I'll do it right now." },
+    { id:'p077', scene:'school',  ja:'今日はできませんでした。',              en:"I couldn't do it today." },
+    { id:'p078', scene:'school',  ja:'もっと勉強頑張ります。',                en:"I'll study harder." },
+    { id:'p079', scene:'school',  ja:'もっと簡単に言ってもらえますか？',      en:'Could you say it more simply?' },
+    { id:'p080', scene:'friends', ja:'すみません。',                          en:'Excuse me.' },
   ];
   const PHRASE_BY_ID = Object.fromEntries(DAILY_PHRASES.map(p => [p.id, p]));
   const SCENE_LABELS = { school: '学校', cafeteria: '食事', friends: '友達・買い物' };
