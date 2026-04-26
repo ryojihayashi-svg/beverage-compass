@@ -2545,6 +2545,7 @@
   function computeStats(memberId) {
     const state = db.load(memberId);
     const vocab = state.vocab || {};
+    const composition = state.composition || {};
     const daily = state.daily || {};
     let totalAttempts = 0, totalCorrect = 0, learnedCount = 0, masteredCount = 0;
     for (const vid in vocab) {
@@ -2554,12 +2555,34 @@
       if ((p.totalAttempts || 0) > 0) learnedCount++;
       if (p.status === 'mastered') masteredCount++;
     }
+    // Sentences contribute to total time too — count their attempts on top.
+    let sentenceAttempts = 0;
+    for (const sid in composition) sentenceAttempts += composition[sid].attempts || 0;
+    // Rough study-time estimate: ~10s per vocab attempt, ~15s per sentence
+    // attempt. Honest enough for a profile-card summary; we'll switch to
+    // measured time if we ever start tracking elapsedMs per question.
+    const totalMinutes = Math.round(
+      ((totalAttempts * 10) + (sentenceAttempts * 15)) / 60
+    );
     const accuracy = totalAttempts > 0 ? Math.round(totalCorrect * 100 / totalAttempts) : 0;
     return {
       totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount,
+      sentenceAttempts, totalMinutes,
       weeklyCorrect: computeWeeklyCorrect(daily),
       streakDays:    computeStreak(daily),
     };
+  }
+
+  // Format minutes as a compact, friendly string for profile cards:
+  //   < 1m   → "—"
+  //   < 60m  → "12分"
+  //   ≥ 60m  → "2時間"  or "2.5時間"
+  function formatStudyTime(minutes) {
+    if (!minutes || minutes < 1) return '—';
+    if (minutes < 60) return minutes + '分';
+    const hours = minutes / 60;
+    if (hours < 10) return hours.toFixed(1).replace(/\.0$/, '') + '時間';
+    return Math.round(hours) + '時間';
   }
 
   // ---------- Mastery helpers ----------
@@ -3006,20 +3029,21 @@
         position: 'relative',
       }
     },
-      // Header — both lines in matching elegant serif, same size, no
-      // subtitle. Pushed down so the page breathes at the top.
-      e('div', { style: { textAlign: 'center', marginBottom: 44, paddingTop: 40 } },
+      // Header — quiet, elegant Cormorant Garamond. Smaller than before so
+      // the type feels refined rather than billboard-loud. Both lines in
+      // English with restrained letter-spacing.
+      e('div', { style: { textAlign: 'center', marginBottom: 40, paddingTop: 36 } },
         e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 38, fontWeight: 500,
-            color: C.text, lineHeight: 1.15,
+            fontFamily: SERIF, fontSize: 26, fontWeight: 500,
+            letterSpacing: '0.04em', color: C.text, lineHeight: 1.2,
           }
-        }, '林ファミリー'),
+        }, 'Hayashi Family'),
         e('div', {
           style: {
             fontFamily: SERIF, fontStyle: 'italic',
-            fontSize: 38, fontWeight: 500,
-            color: C.text, lineHeight: 1.15, marginTop: 4,
+            fontSize: 26, fontWeight: 500,
+            letterSpacing: '0.02em', color: C.text, lineHeight: 1.2, marginTop: 2,
           }
         }, 'English'),
       ),
@@ -3062,15 +3086,16 @@
     const [pressed, setPressed] = useState(false);
     const isViewer = profile.role === 'viewer';
     const avatar = getAvatar(profile);
+    const stats = computeStats(profile.id);
     return e('button', {
       onClick,
       onPointerDown: () => setPressed(true),
       onPointerUp:   () => setPressed(false),
       onPointerLeave:() => setPressed(false),
       style: {
-        display: 'flex', alignItems: 'center', gap: 16,
-        background: C.card, padding: '16px 18px',
-        borderRadius: 20, textAlign: 'left', width: '100%',
+        display: 'flex', alignItems: 'center', gap: 14,
+        background: C.card, padding: '14px 16px',
+        borderRadius: 18, textAlign: 'left', width: '100%',
         border: '1px solid ' + C.line,
         boxShadow: pressed
           ? '0 1px 2px rgba(42,37,32,0.05)'
@@ -3082,11 +3107,11 @@
       // Avatar (custom photo if set, else emoji)
       e('div', {
         style: {
-          width: 56, height: 56, borderRadius: 18,
+          width: 52, height: 52, borderRadius: 16,
           background: profile.color + '1F',
           color: profile.color,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 28, flexShrink: 0,
+          fontSize: 26, flexShrink: 0,
           border: '1px solid ' + profile.color + '33',
           overflow: 'hidden',
         }
@@ -3095,11 +3120,11 @@
           ? e('img', { src: avatar, style: { width: '100%', height: '100%', objectFit: 'cover' } })
           : profile.emoji),
 
-      // Name + subtitle
+      // Name + 3-stat strip
       e('div', { style: { flex: 1, minWidth: 0 } },
         e('div', {
           style: {
-            fontSize: 17, fontWeight: 700, color: C.text,
+            fontSize: 16, fontWeight: 700, color: C.text,
             display: 'flex', alignItems: 'center', gap: 8,
           }
         },
@@ -3113,13 +3138,30 @@
             }
           }, '観覧'),
         ),
-        e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3 } }, profile.subtitle),
+        // Stat strip: 覚えた / 連続 / 学習時間
+        e('div', {
+          style: {
+            display: 'flex', gap: 14, marginTop: 6,
+            fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+            fontVariantNumeric: 'tabular-nums',
+          }
+        },
+          e('span', null,
+            e('span', { style: { color: C.text, fontWeight: 700 } }, stats.masteredCount),
+            ' 覚えた'),
+          e('span', null,
+            e('span', { style: { color: C.text, fontWeight: 700 } }, stats.streakDays),
+            ' 日連続'),
+          e('span', null,
+            e('span', { style: { color: C.text, fontWeight: 700 } }, formatStudyTime(stats.totalMinutes)),
+            ' 学習'),
+        ),
       ),
 
       e('div', {
         style: {
-          color: profile.color, fontSize: 22, fontWeight: 300,
-          opacity: 0.8, paddingRight: 4,
+          color: profile.color, fontSize: 20, fontWeight: 300,
+          opacity: 0.7, paddingRight: 4,
         }
       }, '›'),
     );
