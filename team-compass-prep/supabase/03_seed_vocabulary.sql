@@ -68,6 +68,66 @@ insert into vocabulary_items (word_en, meaning_ja, pos, level, category, example
   ('apple',   'りんご',              'noun', 1, 'daily',  'I eat an apple every day.',         '私は毎日りんごを食べます。'),
   ('fish',    '魚',                  'noun', 1, 'daily',  'Fish swim in the sea.',             '魚は海で泳ぎます。'),
   ('tree',    '木',                  'noun', 1, 'general','There is a big tree.',              '大きな木があります。'),
+  -- L1 (continued) — numbers 6-10
+  ('six',     '6・むっつ',           'num',  1, 'general','I have six fish.',                  '魚を6匹飼っています。'),
+  ('seven',   '7・ななつ',           'num',  1, 'general','I get up at seven.',                '私は7時に起きます。'),
+  ('eight',   '8・やっつ',           'num',  1, 'general','He sleeps for eight hours.',        '彼は8時間寝ます。'),
+  ('nine',    '9・ここのつ',         'num',  1, 'general','I am nine years old.',              '私は9歳です。'),
+  ('ten',     '10・とお',            'num',  1, 'general','There are ten students.',           '生徒は10人います。'),
+  -- L1 (continued) — animals
+  ('bird',    '鳥',                  'noun', 1, 'daily',  'A bird is flying in the sky.',      '鳥が空を飛んでいます。'),
+  ('horse',   '馬',                  'noun', 1, 'daily',  'The horse runs fast.',              '馬は速く走ります。'),
+  ('cow',     '牛',                  'noun', 1, 'daily',  'Cows give us milk.',                '牛は私たちにミルクをくれます。'),
+  ('pig',     '豚',                  'noun', 1, 'daily',  'Our pig is very cute.',             'うちの豚はとてもかわいいです。'),
+  -- L1 (continued) — body
+  ('nose',    '鼻',                  'noun', 1, 'general','She has a small nose.',             '彼女は小さな鼻をしています。'),
+  ('mouth',   '口',                  'noun', 1, 'general','Open your mouth.',                  '口を開けて。'),
+  ('ear',     '耳',                  'noun', 1, 'general','Rabbits have long ears.',           'うさぎは長い耳を持っています。'),
+  ('leg',     '脚',                  'noun', 1, 'general','My legs are tired.',                '脚が疲れました。'),
+  ('arm',     '腕',                  'noun', 1, 'general','He hurt his arm.',                  '彼は腕をけがしました。'),
+  -- L1 (continued) — food/drink
+  ('milk',    '牛乳',                'noun', 1, 'daily',  'I drink milk every morning.',       '私は毎朝牛乳を飲みます。'),
+  ('cake',    'ケーキ',              'noun', 1, 'daily',  'This cake is sweet.',               'このケーキは甘いです。'),
+  ('egg',     '卵',                  'noun', 1, 'daily',  'I want two eggs, please.',          '卵を2つください。'),
+  ('banana',  'バナナ',              'noun', 1, 'daily',  'Bananas are yellow.',               'バナナは黄色いです。'),
+  ('tea',     'お茶',                'noun', 1, 'daily',  'Would you like some tea?',          'お茶はいかがですか？'),
+  -- L1 (continued) — common verbs
+  ('stop',    '止まる・止める',      'verb', 1, 'daily',  'Please stop here.',                 'ここで止まってください。'),
+  ('sit',     '座る',                'verb', 1, 'daily',  'Please sit down.',                  '座ってください。'),
+  ('stand',   '立つ',                'verb', 1, 'daily',  'Stand up, please.',                 '立ってください。'),
+  ('open',    '開ける',              'verb', 1, 'daily',  'Open the door, please.',            'ドアを開けてください。'),
+  ('close',   '閉める',              'verb', 1, 'daily',  'Close your books.',                 '本を閉じてください。'),
+  ('make',    '作る',                'verb', 1, 'daily',  'Let''s make dinner together.',      '一緒に夕食を作ろう。'),
+  ('give',    '与える',              'verb', 1, 'daily',  'Please give me the salt.',          '塩を取ってください。'),
+  ('take',    '取る・持っていく',    'verb', 1, 'daily',  'Take this umbrella.',               'この傘を持っていってください。'),
+  -- L1 (continued) — adjectives
+  ('hot',     '熱い・暑い',          'adj',  1, 'general','The soup is hot.',                  'スープは熱いです。'),
+  ('cold',    '冷たい・寒い',        'adj',  1, 'general','It''s cold today.',                 '今日は寒いです。'),
+  ('long',    '長い',                'adj',  1, 'general','She has long hair.',                '彼女は長い髪をしています。'),
+  ('fast',    '速い',                'adj',  1, 'general','He runs fast.',                     '彼は速く走ります。'),
+  ('slow',    '遅い',                'adj',  1, 'general','The bus is slow today.',            '今日のバスは遅いです。'),
+  -- L1 (continued) — common nouns
+  ('door',    'ドア',                'noun', 1, 'daily',  'Please close the door.',            'ドアを閉めてください。'),
+  ('window',  '窓',                  'noun', 1, 'daily',  'Open the window.',                  '窓を開けて。'),
+  ('kitchen', '台所',                'noun', 1, 'daily',  'Mom is in the kitchen.',            '母は台所にいます。'),
+  ('room',    '部屋',                'noun', 1, 'daily',  'My room is small.',                 '私の部屋は小さいです。'),
+  ('park',    '公園',                'noun', 1, 'daily',  'Let''s go to the park.',            '公園に行こう。'),
+  ('road',    '道',                  'noun', 1, 'general','This is a long road.',              'これは長い道です。'),
+  ('street',  '通り',                'noun', 1, 'general','Don''t play in the street.',        '通りで遊ばないで。'),
+  ('city',    '都市',                'noun', 1, 'general','Tokyo is a big city.',              '東京は大きな都市です。'),
+  -- L1 (continued) — weather
+  ('sun',     '太陽',                'noun', 1, 'general','The sun is bright.',                '太陽は明るいです。'),
+  ('rain',    '雨',                  'noun', 1, 'general','It''s going to rain.',              '雨が降りそうです。'),
+  ('snow',    '雪',                  'noun', 1, 'general','Snow is white.',                    '雪は白いです。'),
+  ('wind',    '風',                  'noun', 1, 'general','The wind is strong today.',         '今日は風が強いです。'),
+  -- L1 (continued) — family/people
+  ('family',  '家族',                'noun', 1, 'family', 'I love my family.',                 '私は家族を愛しています。'),
+  ('baby',    '赤ちゃん',            'noun', 1, 'family', 'The baby is sleeping.',             '赤ちゃんは寝ています。'),
+  ('girl',    '女の子',              'noun', 1, 'general','She is a kind girl.',               '彼女は親切な女の子です。'),
+  ('boy',     '男の子',              'noun', 1, 'general','The boy is reading a book.',        'その男の子は本を読んでいます。'),
+  -- L1 (continued) — time
+  ('week',    '週',                  'noun', 1, 'general','I have school five days a week.',   '私は週5日学校があります。'),
+  ('year',    '年',                  'noun', 1, 'general','Happy New Year!',                   '新年おめでとう！'),
 
   -- ----- L2 (middle school basic, Eiken 4/3) -----
   ('play',     '(スポーツを)する・遊ぶ', 'verb', 2, 'soccer',  'I play soccer with my friends.',     '私は友達とサッカーをします。'),
