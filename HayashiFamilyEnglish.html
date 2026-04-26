@@ -89,15 +89,15 @@
   //   row 3: 瞬間英作文(日→英)     | 瞬間英作文(英→日)
   //   row 4: 間違い復習(単語+英作文)| 覚えた一覧(単語+英作文)
   const FEATURES = [
-    { id: 'random_test',        label: 'ランダムテスト',  desc: '混合10問・4択',           forLearner: true, forViewer: false },
-    { id: 'phrases',            label: 'Daily English',  desc: 'シーン別・すぐ使える英語', forLearner: true, forViewer: false },
-    { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',           forLearner: true, forViewer: false },
-    { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',           forLearner: true, forViewer: true  },
-    { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',           forLearner: true, forViewer: false },
-    { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',           forLearner: true, forViewer: false },
-    { id: 'mistakes',           label: '間違い復習',     desc: '単語と英作文',            forLearner: true, forViewer: false },
-    { id: 'mastered',           label: '覚えた一覧',     desc: '単語と英作文',            forLearner: true, forViewer: true  },
-    { id: 'ai_chat',            label: 'AIに質問',       desc: '英語でわからないこと、何でも聞ける',
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
+    { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
+    { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
+    { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true  },
+    { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false },
+    { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false },
+    { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
+    { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
+    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
   ];
 
@@ -2468,6 +2468,43 @@
       this.save(memberId, s);
     },
 
+    // Per-day "turn" counters keyed by activity kind:
+    //   'vocab'      — finished a 10-question vocab session
+    //   'composition'— finished a 10-question 瞬間英作文 session
+    //   'random_test'— finished a 10-question ランダムテスト
+    //   'mctest'     — finished Daily English's 10問テスト
+    //   'flip'       — flipped a Daily English phrasebook card open
+    //   'overcome'   — answered a mistake correctly in 間違い復習
+    // Stored at state.turns[YYYY-MM-DD][kind] = N. Mirrors recordDaily.
+    recordTurn(memberId, kind, n) {
+      const inc = n || 1;
+      const s = this.load(memberId);
+      if (!s.turns) s.turns = {};
+      const k = this.todayKey();
+      if (!s.turns[k]) s.turns[k] = {};
+      s.turns[k][kind] = (s.turns[k][kind] || 0) + inc;
+      this.save(memberId, s);
+    },
+    getTurns(memberId) {
+      return this.load(memberId).turns || {};
+    },
+    // Returns the last `days` days' data as [{ date: 'YYYY-MM-DD', counts: {...} }],
+    // ordered oldest → newest, including days with no activity (counts={}).
+    getTurnsByDate(memberId, days) {
+      const turns = this.getTurns(memberId);
+      const out = [];
+      const d = new Date(); d.setHours(0, 0, 0, 0);
+      const arr = [];
+      for (let i = (days || 7) - 1; i >= 0; i--) {
+        const dd = new Date(d); dd.setDate(d.getDate() - i);
+        const m = String(dd.getMonth() + 1).padStart(2, '0');
+        const day = String(dd.getDate()).padStart(2, '0');
+        const key = dd.getFullYear() + '-' + m + '-' + day;
+        arr.push({ date: key, mm: parseInt(m, 10), dd: parseInt(day, 10), counts: turns[key] || {} });
+      }
+      return arr;
+    },
+
     // Sentence (composition) progress: simple per-sentence counters.
     // Shape: state.composition[sentenceId] = { attempts, correct, lastAt }
     getSentenceProgress(memberId, sentenceId) {
@@ -3199,6 +3236,20 @@
     return Math.round(hours) + '時間';
   }
 
+  // 'M/D' for today, used as the date prefix on tile subtitles.
+  function formatTodayShort() {
+    const d = new Date();
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  // Sum of all-time '克服' counts (correct answers in 間違い復習).
+  function computeTotalOvercome(memberId) {
+    const turns = db.getTurns(memberId);
+    let total = 0;
+    for (const day in turns) total += turns[day].overcome || 0;
+    return total;
+  }
+
   // ---------- Mastery helpers ----------
   // A vocab item is "mastered" once the SRS engine sets status = 'mastered'
   // (interval grows past ~30 days of correct answers).
@@ -3703,7 +3754,8 @@
       else if (route.feature === 'composition_en2ja') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
       else if (route.feature === 'mistakes')          body = e(MistakeReview,     { profile, onBack: back });
       else if (route.feature === 'mastered')          body = e(CombinedMastered,  { profile, onBack: back });
-      else if (route.feature === 'ai_chat')           body = e(AIChat,            { profile, onBack: back });
+      else if (route.feature === 'ai_translate')      body = e(AITranslate,       { profile, onBack: back });
+      else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -3940,18 +3992,35 @@
         }
       },
         visibleFeatures.map(f => {
-          // Inject live counts where useful
+          // Inject live numbers — today's date + activity count for practice
+          // tiles, total counts for the summary tiles.
+          const turns  = db.getTurns(profile.id);
+          const todayK = db.todayKey();
+          const today  = turns[todayK] || {};
+          const dateLabel = formatTodayShort();   // e.g. '5/2'
           let subtitle = f.desc;
-          if (f.id === 'mistakes') {
-            const n = db.getMistakesNormalized(profile.id).length;
-            subtitle = n === 0 ? '単語と英作文' : n + ' 件の復習';
+          if (f.id === 'random_test') {
+            subtitle = dateLabel + ' ' + (today.random_test || 0) + '回';
+          } else if (f.id === 'phrases') {
+            subtitle = dateLabel + ' ' + (today.flip || 0) + 'めくり';
+          } else if (f.id === 'vocab_ja2en' || f.id === 'vocab_en2ja') {
+            // Both directions share the same counter — turning over 10
+            // questions in either direction counts as one vocab turn.
+            subtitle = (f.desc ? f.desc + ' · ' : '') + dateLabel + ' ' + (today.vocab || 0) + '回';
+          } else if (f.id === 'composition_ja2en' || f.id === 'composition_en2ja') {
+            subtitle = (f.desc ? f.desc + ' · ' : '') + dateLabel + ' ' + (today.composition || 0) + '回';
+          } else if (f.id === 'mistakes') {
+            // Total mistakes overcome (lifetime) instead of pending count
+            // per the new spec — '何個の間違いを克服したか'.
+            const t = computeTotalOvercome(profile.id);
+            subtitle = '間違い克服数: ' + t + ' 件';
           } else if (f.id === 'mastered') {
             const v = getMasteredVocab(profile.id).length;
             const s = getMasteredSentences(profile.id).length;
-            subtitle = v + '語 / ' + s + '文';
-          } else if (f.id === 'ai_chat') {
+            subtitle = '一語一文 · ' + v + '語 / ' + s + '文';
+          } else if (f.id === 'ai_translate') {
             subtitle = loadApiKey()
-              ? '英語でわからないこと、何でも聞ける'
+              ? '日本語 ⇄ 英語 / 写真の文字も翻訳できる'
               : '設定で API キーを登録してください';
           }
           return e(FeatureTile, {
@@ -3962,6 +4031,124 @@
         }),
       ),
 
+      // 7-day activity panel — date columns × activity rows. Replaces the
+      // previous bare grid with a quick at-a-glance look at how many turns
+      // each activity has clocked over the last week.
+      e(ActivityPanel, { profile }),
+    );
+  }
+
+  // ---------- 7-day activity panel ----------
+  // Compact table: date columns (oldest → newest) × activity rows.
+  // Bars are drawn with the same styling so big values pop visually,
+  // but the raw number is also printed under each bar for clarity.
+  function ActivityPanel({ profile }) {
+    // Re-render every minute so the 'today' column flips at midnight.
+    const [, setTick] = useState(0);
+    useEffect(() => {
+      const id = setInterval(() => setTick(t => t + 1), 60_000);
+      return () => clearInterval(id);
+    }, []);
+    const days = db.getTurnsByDate(profile.id, 7);
+    const rows = [
+      { key: 'vocab',       label: '単語学習' },
+      { key: 'composition', label: '瞬間英作文' },
+      { key: 'random_test', label: 'ランダムテスト' },
+      { key: 'mctest',      label: 'Daily English テスト' },
+      { key: 'flip',        label: 'Daily English めくり' },
+      { key: 'overcome',    label: '間違い克服' },
+    ];
+    // Per-row max for normalising the bar heights.
+    const rowMax = {};
+    rows.forEach(r => {
+      let max = 0;
+      days.forEach(d => { max = Math.max(max, d.counts[r.key] || 0); });
+      rowMax[r.key] = max;
+    });
+    const todayKey = db.todayKey();
+
+    return e('div', { style: { marginTop: 26 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, '学習記録 · 直近7日'),
+
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 12px 10px',
+        }
+      },
+        // Date header row
+        e('div', {
+          style: {
+            display: 'grid',
+            gridTemplateColumns: '110px repeat(7, 1fr)',
+            gap: 4,
+            marginBottom: 6,
+            paddingBottom: 6,
+            borderBottom: '1px solid ' + C.line,
+            alignItems: 'end',
+          }
+        },
+          e('div', null),
+          days.map((d, i) => e('div', {
+            key: 'h_' + i,
+            style: {
+              fontSize: 10, color: d.date === todayKey ? C.text : C.sub,
+              fontWeight: d.date === todayKey ? 700 : 500,
+              fontFamily: SANS_UI, textAlign: 'center',
+              fontVariantNumeric: 'tabular-nums',
+            }
+          }, d.mm + '/' + d.dd)),
+        ),
+
+        rows.map(r => e('div', {
+          key: r.key,
+          style: {
+            display: 'grid',
+            gridTemplateColumns: '110px repeat(7, 1fr)',
+            gap: 4,
+            alignItems: 'center',
+            padding: '6px 0',
+          }
+        },
+          e('div', { style: { fontSize: 11, color: C.text, fontFamily: SANS_UI, fontWeight: 600 } }, r.label),
+          days.map((d, i) => {
+            const v = d.counts[r.key] || 0;
+            const max = Math.max(1, rowMax[r.key]);
+            const ratio = v > 0 ? Math.max(0.18, v / max) : 0;
+            return e('div', {
+              key: r.key + '_' + i,
+              style: {
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'flex-end', gap: 2, minHeight: 30,
+              }
+            },
+              // Bar
+              e('div', {
+                style: {
+                  width: '70%', height: Math.round(ratio * 24) + 'px',
+                  background: v > 0 ? C.brand : 'transparent',
+                  borderRadius: 3,
+                  transition: 'height .25s ease',
+                }
+              }),
+              // Number
+              e('div', {
+                style: {
+                  fontSize: 10, color: v > 0 ? C.text : C.sub + 'AA',
+                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                  fontWeight: v > 0 ? 700 : 500,
+                }
+              }, v),
+            );
+          }),
+        )),
+      ),
     );
   }
 
@@ -4053,6 +4240,7 @@
       setTimeout(() => {
         if (index + 1 >= total) {
           soundComplete();
+          db.recordTurn(profile.id, 'vocab');
           setPhase('done');
         } else {
           setRevealed(false);
@@ -4469,8 +4657,13 @@
         db.recordPhrase(profile.id, cur.id, isCorrect);
         if (isCorrect) db.removeMistakeEx(profile.id, 'phrase', cur.id);
       }
-      if (isCorrect) { soundCorrect(); hapticTap(); }
-      else           { soundWrong();   hapticBuzz(); }
+      if (isCorrect) {
+        soundCorrect(); hapticTap();
+        // Each correct answer in 間違い復習 counts as one '克服' (overcome).
+        db.recordTurn(profile.id, 'overcome');
+      } else {
+        soundWrong(); hapticBuzz();
+      }
       const newResults = results.concat([{ item: cur, isCorrect }]);
       setResults(newResults);
       if (index + 1 >= queue.length) {
@@ -5216,6 +5409,7 @@
         const correctCount = newResults.filter(r=>r.isCorrect).length;
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
+        db.recordTurn(profile.id, 'composition');
         setPhase('done');
         return;
       }
@@ -6534,7 +6728,12 @@
     function toggleFlip(id) {
       setFlippedIds(prev => {
         const next = new Set(prev);
+        const willOpen = !next.has(id);
         if (next.has(id)) next.delete(id); else next.add(id);
+        // Count only the moment the card is OPENED so quick close-and-
+        // reopen still increments, but a single tap-and-tap-back doesn't
+        // double-count.
+        if (willOpen) db.recordTurn(profile.id, 'flip');
         return next;
       });
     }
@@ -6628,6 +6827,7 @@
       setTimeout(() => {
         if (index + 1 >= queue.length) {
           soundComplete();
+          db.recordTurn(profile.id, 'mctest');
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -7059,6 +7259,7 @@
           const correctCount = newResults.filter(r => r.isCorrect).length;
           const acc = Math.round(correctCount * 100 / queue.length);
           setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 100);
+          db.recordTurn(profile.id, 'random_test');
           setPhase('done');
         } else {
           setIndex(index + 1);
@@ -7235,221 +7436,237 @@
     );
   }
 
-  // ---------- AI Chat screen ----------
-  function AIChat({ profile, onBack }) {
-    const [messages, setMessages] = useState(() => loadChatHistory(profile.id));
-    const [input, setInput]       = useState('');
-    const [sending, setSending]   = useState(false);
-    const [error, setError]       = useState('');
-    const [hasKey, setHasKey]     = useState(() => !!loadApiKey());
-    const scrollRef = useRef(null);
-
-    useEffect(() => {
-      // Auto-scroll to the bottom whenever messages change
-      const el = scrollRef.current;
-      if (el) el.scrollTop = el.scrollHeight;
-    }, [messages.length, sending]);
-
-    async function send() {
-      const text = input.trim();
-      if (!text || sending) return;
-      setError('');
-      const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
-      const next = messages.concat([userMsg]);
-      setMessages(next);
-      saveChatHistory(profile.id, next);
-      setInput('');
-      setSending(true);
-      try {
-        const reply = await askClaude(profile, text, messages);
-        const botMsg = { role: 'assistant', content: reply, at: new Date().toISOString() };
-        const updated = next.concat([botMsg]);
-        setMessages(updated);
-        saveChatHistory(profile.id, updated);
-      } catch (err) {
-        setError(err.message || '応答の取得に失敗しました');
-      } finally {
-        setSending(false);
-      }
-    }
-
-    function clearChat() {
-      if (!confirm('チャット履歴を全部消しますか？')) return;
-      setMessages([]);
-      saveChatHistory(profile.id, []);
-    }
-
-    return e('div', {
-      style: {
-        maxWidth: 480, margin: '0 auto',
-        display: 'flex', flexDirection: 'column',
-        height: '100vh', height: '100dvh',
-      }
-    },
-      // Top bar
-      e('div', {
-        style: {
-          display: 'flex', alignItems: 'center', gap: 4,
-          padding: '12px 22px 10px', flexShrink: 0,
-          borderBottom: '1px solid ' + C.line, background: C.bg,
-        }
+  // ---------- Claude API helpers (text + vision) ----------
+  async function callClaudeText(prompt) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
       },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error('翻訳に失敗しました (' + res.status + ') ' + txt.slice(0, 120));
+    }
+    const j = await res.json();
+    const out = j.content && j.content[0] && j.content[0].text;
+    return out || '';
+  }
+  async function callClaudeVision(mediaType, base64) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text:
+              'この画像に写っている文字を読み取り、もう一方の言語に翻訳してください。\n' +
+              '回答の形式（ラベルや余計な説明はつけない）：\n' +
+              '1行目: 元の文字（そのまま）\n' +
+              '空行\n' +
+              '2行目以降: 自然な翻訳\n' +
+              '元が日本語なら英語に、元が英語なら日本語に翻訳すること。' },
+          ],
+        }],
+      }),
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error('画像翻訳に失敗しました (' + res.status + ') ' + txt.slice(0, 120));
+    }
+    const j = await res.json();
+    const out = j.content && j.content[0] && j.content[0].text;
+    return out || '';
+  }
+
+  // ---------- AI Translate ----------
+  function AITranslate({ profile, onBack }) {
+    const [input, setInput]   = useState('');
+    const [output, setOutput] = useState('');
+    const [busy, setBusy]     = useState(false);
+    const [error, setError]   = useState('');
+    const [hasKey] = useState(() => !!loadApiKey());
+    const photoRef = useRef(null);
+
+    function detectLang(s) {
+      // Hiragana / katakana / CJK ideograph → treat as Japanese.
+      return /[぀-ヿ一-鿿]/.test(s || '') ? 'ja' : 'en';
+    }
+    async function translateNow() {
+      const text = (input || '').trim();
+      if (!text || busy) return;
+      setBusy(true); setError(''); setOutput('');
+      try {
+        const lang = detectLang(text);
+        const target = lang === 'ja' ? 'English' : 'Japanese';
+        const prompt =
+          'Translate the following ' + (lang === 'ja' ? 'Japanese' : 'English') +
+          ' text into natural ' + target +
+          '. Reply with the translation only — no quotes, no labels, no commentary.\n\n' +
+          'Text:\n' + text;
+        const result = await callClaudeText(prompt);
+        setOutput(result.trim());
+      } catch (err) {
+        setError((err && err.message) || String(err));
+      } finally {
+        setBusy(false);
+      }
+    }
+    async function handlePhoto(file) {
+      if (!file || busy) return;
+      setBusy(true); setError(''); setOutput('');
+      try {
+        const dataUrl = await compressImageToDataUrl(file, 1400, 0.85);
+        const m = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.*)$/);
+        if (!m) throw new Error('画像を読み込めませんでした');
+        const result = await callClaudeVision(m[1], m[2]);
+        setOutput(result.trim());
+        setInput('');
+      } catch (err) {
+        setError((err && err.message) || String(err));
+      } finally {
+        setBusy(false);
+        if (photoRef.current) photoRef.current.value = '';
+      }
+    }
+
+    const lang = detectLang(input);
+    const targetLabel = lang === 'ja' ? '日本語 → 英語' : '英語 → 日本語';
+
+    return e('div', { style: pageStyle },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
         e('button', { onClick: onBack,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1, cursor: 'pointer' }
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
-        e('div', { style: { fontSize: 20, marginRight: 6 } }, '💡'),
-        e('div', { style: { flex: 1 } },
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.1 }
-          }, 'AI 質問'),
-          e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
-            '英語のことなら何でも'),
-        ),
-        messages.length > 0 && e('button', {
-          onClick: clearChat,
-          title: '履歴を消す',
-          style: {
-            width: 32, height: 32, borderRadius: 999,
-            background: C.softer, border: '1px solid ' + C.line,
-            color: C.sub, fontSize: 14, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }
-        }, '🗑'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, 'AI翻訳'),
+      ),
+      e('div', { style: { padding: '4px 4px 18px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, 'AI翻訳'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+          '日本語を入れると英語に、英語を入れると日本語に翻訳します。写真の文字も読み取って翻訳できます。'),
       ),
 
-      // No-key onboarding
       !hasKey
-        ? e('div', { style: { padding: '32px 22px', overflowY: 'auto', flex: 1 } },
-            e('div', { style: { fontSize: 36, marginBottom: 12 } }, '💡'),
-            e('div', {
-              style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 10 }
-            }, 'AI 質問を有効にする'),
-            e('div', {
-              style: { fontSize: 14, color: C.sub, lineHeight: 1.7, marginBottom: 18 }
-            }, 'Anthropic の API キーを設定すると、Claude があなたの英語チューターになります。家族にぴったりの説明と例文を、いつでも返してくれます。'),
-            e('div', {
-              style: {
-                background: C.softer, border: '1px solid ' + C.line,
-                borderRadius: 14, padding: '14px 16px', marginBottom: 18,
-                fontSize: 13, color: C.text, lineHeight: 1.7,
-              }
-            },
-              e('div', { style: { fontWeight: 700, marginBottom: 6 } }, '取得手順 (約1分)'),
-              e('div', null, '①「console.anthropic.com」にアクセス'),
-              e('div', null, '② 無料アカウント作成 → 「API Keys」'),
-              e('div', null, '③ "Create Key" → コピー'),
-              e('div', null, '④ 設定 ⚙️ → AI チャットに貼り付け'),
-            ),
-            e('div', {
-              style: {
-                fontSize: 11, color: C.sub, padding: '10px 14px',
-                background: C.softer, borderRadius: 10, lineHeight: 1.6,
-              }
-            },
-              '🔒 キーはこの端末の中だけに保存され、Anthropic 以外には送られません。',
-              e('br'),
-              '⚠️ ブラウザ直接呼び出しのため、自分の端末以外で開かないでください。',
-            ),
-          )
-        : // Messages list
-          e('div', {
-            ref: scrollRef,
+        ? e('div', {
             style: {
-              flex: 1, overflowY: 'auto',
-              padding: '16px 22px 8px',
-              background: C.bg,
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 14, padding: '18px 18px',
+              fontSize: 13, color: C.text, lineHeight: 1.7,
             }
           },
-            messages.length === 0 && e('div', {
-              style: { padding: '40px 12px', textAlign: 'center', color: C.sub }
-            },
-              e('div', { style: { fontSize: 36, marginBottom: 10 } }, '💬'),
-              e('div', { style: { fontSize: 14, lineHeight: 1.7 } },
-                '何でも聞いてみてください。',
-                e('br'),
-                '例:「\"used to\" の使い方を教えて」'),
-            ),
-            messages.map((m, i) => e('div', {
-              key: i,
+            e('div', { style: { fontWeight: 700, marginBottom: 8 } }, 'API キーを設定すると使えます'),
+            e('div', null, '① console.anthropic.com にアクセス'),
+            e('div', null, '② 無料アカウント作成 → 「API Keys」'),
+            e('div', null, '③ "Create Key" → コピー'),
+            e('div', null, '④ 設定 → AI チャット欄に貼り付け'),
+          )
+        : e('div', null,
+            input.trim() && e('div', {
               style: {
-                display: 'flex',
-                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-                marginBottom: 10,
+                fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                color: C.sub, letterSpacing: '0.06em', marginBottom: 6, paddingLeft: 4,
               }
-            },
-              e('div', {
+            }, targetLabel),
+            e('textarea', {
+              value: input,
+              onChange: (ev) => setInput(ev.target.value),
+              placeholder: '日本語または英語を入力…',
+              rows: 4,
+              style: {
+                width: '100%', padding: '14px 14px', fontSize: 16,
+                fontFamily: 'inherit', lineHeight: 1.5, color: C.text,
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, resize: 'vertical', outline: 'none',
+                boxSizing: 'border-box', marginBottom: 10,
+              }
+            }),
+            e('div', { style: { display: 'flex', gap: 10, marginBottom: 16 } },
+              e('input', {
+                ref: photoRef, type: 'file', accept: 'image/*',
+                capture: 'environment',
+                style: { display: 'none' },
+                onChange: (ev) => handlePhoto(ev.target.files && ev.target.files[0]),
+              }),
+              e('button', {
+                onClick: () => { if (photoRef.current) photoRef.current.click(); },
+                disabled: busy,
                 style: {
-                  maxWidth: '80%',
-                  padding: '10px 14px',
-                  borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  background: m.role === 'user' ? profile.color : C.card,
-                  color:      m.role === 'user' ? '#fff'         : C.text,
-                  border: m.role === 'user' ? 'none' : '1px solid ' + C.line,
-                  fontSize: 14, lineHeight: 1.65,
-                  whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                  boxShadow: m.role === 'user' ? '0 4px 12px ' + profile.color + '33' : '0 2px 6px rgba(42,37,32,0.05)',
+                  padding: '14px 18px', borderRadius: 14,
+                  background: C.softer, border: '1px solid ' + C.line,
+                  fontSize: 14, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                  cursor: busy ? 'default' : 'pointer',
+                  opacity: busy ? 0.5 : 1,
                 }
-              }, m.content),
-            )),
-            sending && e('div', {
-              style: { display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }
-            },
-              e('div', {
+              }, '写真'),
+              e('button', {
+                onClick: translateNow,
+                disabled: busy || !input.trim(),
                 style: {
-                  padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
-                  background: C.card, border: '1px solid ' + C.line,
-                  fontSize: 13, color: C.sub, fontStyle: 'italic',
+                  flex: 1, padding: '14px 0', borderRadius: 14,
+                  background: (busy || !input.trim()) ? C.softer : C.brand,
+                  color: (busy || !input.trim()) ? C.sub : '#fff',
+                  border: '1px solid ' + ((busy || !input.trim()) ? C.line : C.brand),
+                  fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+                  cursor: (busy || !input.trim()) ? 'default' : 'pointer',
                 }
-              }, '考え中...'),
+              }, busy ? '翻訳中…' : '翻訳する'),
             ),
             error && e('div', {
               style: {
-                background: C.danger + '14', border: '1px solid ' + C.danger + '44',
-                color: C.danger, borderRadius: 12, padding: '10px 14px',
-                fontSize: 12, marginTop: 8,
+                fontSize: 12, color: C.danger, marginBottom: 10,
+                padding: '10px 12px',
+                background: C.danger + '0F', borderRadius: 10,
+                border: '1px solid ' + C.danger + '33',
+                lineHeight: 1.5, wordBreak: 'break-word',
               }
-            }, '⚠ ' + error),
+            }, error),
+            output && e('div', {
+              style: {
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, padding: '14px 16px',
+              }
+            },
+              e('div', {
+                style: {
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                  letterSpacing: '0.16em', color: C.sub, marginBottom: 8,
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }
+              },
+                e('span', { style: { flex: 1 } }, '翻訳結果'),
+                e(SpeakerBtn, { onClick: () => speak(output), color: profile.color, size: 28 }),
+              ),
+              e('div', {
+                style: {
+                  fontFamily: SERIF, fontSize: 18, fontWeight: 600,
+                  color: C.text, lineHeight: 1.6, whiteSpace: 'pre-wrap',
+                }
+              }, output),
+            ),
           ),
-
-      // Input bar (only when key is set)
-      hasKey && e('div', {
-        style: {
-          flexShrink: 0,
-          padding: '10px 14px 16px',
-          borderTop: '1px solid ' + C.line,
-          background: C.bg,
-          display: 'flex', alignItems: 'flex-end', gap: 10,
-        }
-      },
-        e('textarea', {
-          value: input,
-          onChange: (ev) => setInput(ev.target.value),
-          onKeyDown: (ev) => {
-            if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) { ev.preventDefault(); send(); }
-          },
-          placeholder: '質問を入力 (Cmd+Enter で送信)',
-          rows: 1,
-          style: {
-            flex: 1, resize: 'none', minHeight: 44, maxHeight: 120,
-            padding: '12px 14px', borderRadius: 14,
-            border: '1px solid ' + C.line, background: C.card,
-            fontSize: 15, fontFamily: 'inherit', color: C.text,
-            outline: 'none', lineHeight: 1.5,
-          },
-        }),
-        e('button', {
-          onClick: send,
-          disabled: sending || !input.trim(),
-          style: {
-            padding: '0 16px', height: 44, borderRadius: 14,
-            background: profile.color, color: '#fff',
-            border: 'none', fontSize: 14, fontWeight: 700,
-            cursor: sending || !input.trim() ? 'default' : 'pointer',
-            opacity: sending || !input.trim() ? 0.5 : 1,
-            flexShrink: 0,
-          }
-        }, sending ? '…' : '送信'),
-      ),
     );
   }
 
