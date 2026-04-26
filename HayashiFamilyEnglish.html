@@ -81,6 +81,7 @@
   const FEATURES = [
     { id: 'daily20',                label: '今日の20問',     emoji: '🎯', desc: 'まずはここから',     primary: true, forLearner: true, forViewer: false },
     { id: 'random_test',            label: 'ランダムテスト', emoji: '🎲', desc: '混合10問・4択',                     forLearner: true, forViewer: false },
+    { id: 'ai_chat',                label: 'AI質問',         emoji: '💡', desc: '英語のことなんでも',                forLearner: true, forViewer: true  },
     { id: 'vocab',                  label: '単語学習',       emoji: '🔤', desc: 'カードでじっくり',                  forLearner: true, forViewer: false },
     { id: 'composition',            label: '瞬間英作文',     emoji: '✍️', desc: '日本語 → 英語',                      forLearner: true, forViewer: false },
     { id: 'phrases',                label: '日常英会話',     emoji: '💬', desc: 'シーン別・簡単英語',                forLearner: true, forViewer: false },
@@ -2447,6 +2448,72 @@
     return loadAvatars()[profile.id] || null;
   }
 
+  // ---------- AI Chat (Anthropic Claude, browser-direct) ----------
+  // Key lives in localStorage and we call api.anthropic.com directly with the
+  // 'anthropic-dangerous-direct-browser-access' header. No server hop. The
+  // tradeoff (key visible in this device's browser) is acceptable for a
+  // family-only app.
+  const AI_KEY_STORAGE = 'hfe_anthropic_key_v1';
+  function loadApiKey() {
+    try { return localStorage.getItem(AI_KEY_STORAGE) || ''; } catch { return ''; }
+  }
+  function saveApiKey(k) {
+    try {
+      if (k) localStorage.setItem(AI_KEY_STORAGE, k);
+      else   localStorage.removeItem(AI_KEY_STORAGE);
+    } catch (err) { console.warn('saveApiKey failed', err); }
+  }
+  function chatHistoryKey(memberId) { return 'hfe_chat_v1_' + memberId; }
+  function loadChatHistory(memberId) {
+    try { return JSON.parse(localStorage.getItem(chatHistoryKey(memberId)) || '[]'); }
+    catch { return []; }
+  }
+  function saveChatHistory(memberId, msgs) {
+    try { localStorage.setItem(chatHistoryKey(memberId), JSON.stringify(msgs.slice(-50))); }
+    catch (err) { console.warn('saveChatHistory failed', err); }
+  }
+  function aiSystemPrompt(profile) {
+    const name = getDisplayName(profile);
+    const levelLabel = ({ 1: '英検5/4級', 2: '英検4/3級', 3: '英検3/準2級', 4: '英検2級', 5: '英検準1級' })[profile.level] || '基礎';
+    return [
+      'あなたは「林ファミリーイングリッシュ」という家族向け英語学習アプリの中で動いているチューターです。',
+      '今あなたと話しているのは ' + name + ' さん（目安レベル ' + levelLabel + '）。',
+      '日本語で答えるのを基本に、英語の例も短く混ぜてOK。',
+      '回答は150〜250文字程度に収め、温かく、具体例を1つ添える。',
+      '生徒が間違えても優しく訂正し、覚え方やヒントを添えてください。',
+    ].join('\n');
+  }
+  async function askClaude(profile, userMessage, history) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const trimmed = (history || []).slice(-32).map(m => ({ role: m.role, content: m.content }));
+    const messages = trimmed.concat([{ role: 'user', content: userMessage }]);
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system: aiSystemPrompt(profile),
+        messages,
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    return text || '(空の応答)';
+  }
+
   // ---------- PWA install detection ----------
   // Lightweight detector for whether the app is already running standalone
   // (iOS or Android), and a flag persistence helper so the install prompt is
@@ -2577,6 +2644,7 @@
       else if (route.feature === 'composition')            body = e(SprintComposition,  { profile, onBack: back });
       else if (route.feature === 'phrases')                body = e(DailyPhrases,       { profile, onBack: back });
       else if (route.feature === 'random_test')            body = e(RandomTest,         { profile, onBack: back });
+      else if (route.feature === 'ai_chat')                body = e(AIChat,             { profile, onBack: back });
       else if (route.feature === 'mistakes')               body = e(MistakeReview,      { profile, onBack: back });
       else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,      { profile, onBack: back });
       else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences,  { profile, onBack: back });
@@ -5282,6 +5350,16 @@
     const [avatars, setAvatars] = useState(() => loadAvatars());
     const [avatarErr, setAvatarErr] = useState('');
     const fileInputRefs = useRef({});
+    const [apiKey, setApiKey] = useState(() => loadApiKey());
+    const [apiKeyVisible, setApiKeyVisible] = useState(false);
+    const [apiKeyMsg, setApiKeyMsg] = useState('');
+
+    function saveApiKeyNow() {
+      const trimmed = (apiKey || '').trim();
+      saveApiKey(trimmed);
+      setApiKeyMsg(trimmed ? '保存しました' : '削除しました');
+      setTimeout(() => setApiKeyMsg(''), 1800);
+    }
 
     async function pickAvatar(profileId, file) {
       if (!file) return;
@@ -5439,6 +5517,68 @@
       avatarErr && e('div', {
         style: { fontSize: 12, color: C.danger, marginTop: -14, marginBottom: 16, paddingLeft: 4 }
       }, avatarErr),
+
+      // ----- Section: AI チャット -----
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, 'AI チャット (Anthropic API Key)'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 8,
+        }
+      },
+        e('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+          e('input', {
+            type: apiKeyVisible ? 'text' : 'password',
+            value: apiKey,
+            onChange: (ev) => setApiKey(ev.target.value),
+            placeholder: 'sk-ant-...',
+            spellCheck: false,
+            autoComplete: 'off',
+            style: {
+              flex: 1, padding: '10px 12px', fontSize: 13,
+              fontFamily: 'monospace', color: C.text,
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 10, outline: 'none', minWidth: 0,
+            }
+          }),
+          e('button', {
+            onClick: () => setApiKeyVisible(v => !v),
+            title: apiKeyVisible ? '隠す' : '表示',
+            style: {
+              width: 40, height: 40, borderRadius: 10,
+              background: C.softer, border: '1px solid ' + C.line,
+              color: C.sub, cursor: 'pointer', flexShrink: 0,
+            }
+          }, apiKeyVisible ? '🙈' : '👁'),
+        ),
+        e('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+          e('button', {
+            onClick: saveApiKeyNow,
+            style: {
+              padding: '8px 16px', borderRadius: 10,
+              background: C.gold, color: '#fff',
+              border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            }
+          }, 'キーを保存'),
+          apiKeyMsg && e('div', {
+            style: { fontSize: 12, color: C.success, fontWeight: 600 }
+          }, '✓ ' + apiKeyMsg),
+        ),
+        e('div', {
+          style: { fontSize: 11, color: C.sub, marginTop: 10, lineHeight: 1.7 }
+        },
+          'console.anthropic.com で無料アカウント作成 → "API Keys" → "Create Key" → コピー → 上に貼り付け。',
+          e('br'),
+          '🔒 キーはこの端末の中だけに保存されます。',
+        ),
+      ),
+      e('div', { style: { marginBottom: 22 } }),
 
       // ----- Section: 名前 (names) -----
       e('div', {
@@ -6607,6 +6747,224 @@
             }
           }, opt);
         }),
+      ),
+    );
+  }
+
+  // ---------- AI Chat screen ----------
+  function AIChat({ profile, onBack }) {
+    const [messages, setMessages] = useState(() => loadChatHistory(profile.id));
+    const [input, setInput]       = useState('');
+    const [sending, setSending]   = useState(false);
+    const [error, setError]       = useState('');
+    const [hasKey, setHasKey]     = useState(() => !!loadApiKey());
+    const scrollRef = useRef(null);
+
+    useEffect(() => {
+      // Auto-scroll to the bottom whenever messages change
+      const el = scrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }, [messages.length, sending]);
+
+    async function send() {
+      const text = input.trim();
+      if (!text || sending) return;
+      setError('');
+      const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
+      const next = messages.concat([userMsg]);
+      setMessages(next);
+      saveChatHistory(profile.id, next);
+      setInput('');
+      setSending(true);
+      try {
+        const reply = await askClaude(profile, text, messages);
+        const botMsg = { role: 'assistant', content: reply, at: new Date().toISOString() };
+        const updated = next.concat([botMsg]);
+        setMessages(updated);
+        saveChatHistory(profile.id, updated);
+      } catch (err) {
+        setError(err.message || '応答の取得に失敗しました');
+      } finally {
+        setSending(false);
+      }
+    }
+
+    function clearChat() {
+      if (!confirm('チャット履歴を全部消しますか？')) return;
+      setMessages([]);
+      saveChatHistory(profile.id, []);
+    }
+
+    return e('div', {
+      style: {
+        maxWidth: 480, margin: '0 auto',
+        display: 'flex', flexDirection: 'column',
+        height: '100vh', height: '100dvh',
+      }
+    },
+      // Top bar
+      e('div', {
+        style: {
+          display: 'flex', alignItems: 'center', gap: 4,
+          padding: '12px 22px 10px', flexShrink: 0,
+          borderBottom: '1px solid ' + C.line, background: C.bg,
+        }
+      },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1, cursor: 'pointer' }
+        }, '‹'),
+        e('div', { style: { fontSize: 20, marginRight: 6 } }, '💡'),
+        e('div', { style: { flex: 1 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.1 }
+          }, 'AI 質問'),
+          e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+            '英語のことなら何でも'),
+        ),
+        messages.length > 0 && e('button', {
+          onClick: clearChat,
+          title: '履歴を消す',
+          style: {
+            width: 32, height: 32, borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            color: C.sub, fontSize: 14, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }
+        }, '🗑'),
+      ),
+
+      // No-key onboarding
+      !hasKey
+        ? e('div', { style: { padding: '32px 22px', overflowY: 'auto', flex: 1 } },
+            e('div', { style: { fontSize: 36, marginBottom: 12 } }, '💡'),
+            e('div', {
+              style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 10 }
+            }, 'AI 質問を有効にする'),
+            e('div', {
+              style: { fontSize: 14, color: C.sub, lineHeight: 1.7, marginBottom: 18 }
+            }, 'Anthropic の API キーを設定すると、Claude があなたの英語チューターになります。家族にぴったりの説明と例文を、いつでも返してくれます。'),
+            e('div', {
+              style: {
+                background: C.softer, border: '1px solid ' + C.line,
+                borderRadius: 14, padding: '14px 16px', marginBottom: 18,
+                fontSize: 13, color: C.text, lineHeight: 1.7,
+              }
+            },
+              e('div', { style: { fontWeight: 700, marginBottom: 6 } }, '取得手順 (約1分)'),
+              e('div', null, '①「console.anthropic.com」にアクセス'),
+              e('div', null, '② 無料アカウント作成 → 「API Keys」'),
+              e('div', null, '③ "Create Key" → コピー'),
+              e('div', null, '④ 設定 ⚙️ → AI チャットに貼り付け'),
+            ),
+            e('div', {
+              style: {
+                fontSize: 11, color: C.sub, padding: '10px 14px',
+                background: C.softer, borderRadius: 10, lineHeight: 1.6,
+              }
+            },
+              '🔒 キーはこの端末の中だけに保存され、Anthropic 以外には送られません。',
+              e('br'),
+              '⚠️ ブラウザ直接呼び出しのため、自分の端末以外で開かないでください。',
+            ),
+          )
+        : // Messages list
+          e('div', {
+            ref: scrollRef,
+            style: {
+              flex: 1, overflowY: 'auto',
+              padding: '16px 22px 8px',
+              background: C.bg,
+            }
+          },
+            messages.length === 0 && e('div', {
+              style: { padding: '40px 12px', textAlign: 'center', color: C.sub }
+            },
+              e('div', { style: { fontSize: 36, marginBottom: 10 } }, '💬'),
+              e('div', { style: { fontSize: 14, lineHeight: 1.7 } },
+                '何でも聞いてみてください。',
+                e('br'),
+                '例:「\"used to\" の使い方を教えて」'),
+            ),
+            messages.map((m, i) => e('div', {
+              key: i,
+              style: {
+                display: 'flex',
+                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
+                marginBottom: 10,
+              }
+            },
+              e('div', {
+                style: {
+                  maxWidth: '80%',
+                  padding: '10px 14px',
+                  borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  background: m.role === 'user' ? profile.color : C.card,
+                  color:      m.role === 'user' ? '#fff'         : C.text,
+                  border: m.role === 'user' ? 'none' : '1px solid ' + C.line,
+                  fontSize: 14, lineHeight: 1.65,
+                  whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                  boxShadow: m.role === 'user' ? '0 4px 12px ' + profile.color + '33' : '0 2px 6px rgba(42,37,32,0.05)',
+                }
+              }, m.content),
+            )),
+            sending && e('div', {
+              style: { display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }
+            },
+              e('div', {
+                style: {
+                  padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
+                  background: C.card, border: '1px solid ' + C.line,
+                  fontSize: 13, color: C.sub, fontStyle: 'italic',
+                }
+              }, '考え中...'),
+            ),
+            error && e('div', {
+              style: {
+                background: C.danger + '14', border: '1px solid ' + C.danger + '44',
+                color: C.danger, borderRadius: 12, padding: '10px 14px',
+                fontSize: 12, marginTop: 8,
+              }
+            }, '⚠ ' + error),
+          ),
+
+      // Input bar (only when key is set)
+      hasKey && e('div', {
+        style: {
+          flexShrink: 0,
+          padding: '10px 14px 16px',
+          borderTop: '1px solid ' + C.line,
+          background: C.bg,
+          display: 'flex', alignItems: 'flex-end', gap: 10,
+        }
+      },
+        e('textarea', {
+          value: input,
+          onChange: (ev) => setInput(ev.target.value),
+          onKeyDown: (ev) => {
+            if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)) { ev.preventDefault(); send(); }
+          },
+          placeholder: '質問を入力 (Cmd+Enter で送信)',
+          rows: 1,
+          style: {
+            flex: 1, resize: 'none', minHeight: 44, maxHeight: 120,
+            padding: '12px 14px', borderRadius: 14,
+            border: '1px solid ' + C.line, background: C.card,
+            fontSize: 15, fontFamily: 'inherit', color: C.text,
+            outline: 'none', lineHeight: 1.5,
+          },
+        }),
+        e('button', {
+          onClick: send,
+          disabled: sending || !input.trim(),
+          style: {
+            padding: '0 16px', height: 44, borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: 'none', fontSize: 14, fontWeight: 700,
+            cursor: sending || !input.trim() ? 'default' : 'pointer',
+            opacity: sending || !input.trim() ? 0.5 : 1,
+            flexShrink: 0,
+          }
+        }, sending ? '…' : '送信'),
       ),
     );
   }
