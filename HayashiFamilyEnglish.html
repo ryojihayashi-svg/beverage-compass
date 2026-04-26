@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#FBF8F3">
+<meta name="theme-color" content="#F6F4F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="林ファミリーEnglish">
+<meta name="mobile-web-app-capable" content="yes">
 <title>林ファミリーイングリッシュ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2443,60 +2447,143 @@
     return loadAvatars()[profile.id] || null;
   }
 
+  // ---------- PWA install detection ----------
+  // Lightweight detector for whether the app is already running standalone
+  // (iOS or Android), and a flag persistence helper so the install prompt is
+  // not shown more than once unless the user explicitly clears site data.
+  function isStandalonePWA() {
+    try {
+      if (window.navigator && window.navigator.standalone === true) return true; // iOS Safari
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    } catch {}
+    return false;
+  }
+  function isIOSDevice() {
+    const ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod/i.test(ua);
+  }
+  const INSTALL_DISMISS_KEY = 'hfe_install_dismissed_v1';
+  function isInstallDismissed() {
+    try { return localStorage.getItem(INSTALL_DISMISS_KEY) === '1'; } catch { return false; }
+  }
+  function dismissInstallPrompt() {
+    try { localStorage.setItem(INSTALL_DISMISS_KEY, '1'); } catch {}
+  }
+
+  // ---------- InstallPrompt (bottom sheet, dismissable, one-time) ----------
+  function InstallPrompt({ onClose }) {
+    const ios = isIOSDevice();
+    return e('div', {
+      style: {
+        position: 'fixed', left: 12, right: 12, bottom: 12, zIndex: 9000,
+        maxWidth: 460, margin: '0 auto',
+        background: C.card, border: '1px solid ' + C.line, borderRadius: 18,
+        padding: '16px 18px',
+        boxShadow: '0 14px 36px rgba(42,37,32,0.22)',
+      }
+    },
+      e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+        e('div', { style: { fontSize: 28, lineHeight: 1, marginTop: 2 } }, '📱'),
+        e('div', { style: { flex: 1 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }
+          }, 'ホーム画面に追加すると毎日開きやすい'),
+          ios
+            ? e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.7 } },
+                '①下の ',
+                e('span', { style: { padding: '0 5px', borderRadius: 5, background: C.softer, fontWeight: 700 } }, '⎘'),
+                ' (シェア) ボタンを押す',
+                e('br'),
+                '②「ホーム画面に追加」を選ぶ',
+              )
+            : e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.7 } },
+                'ブラウザのメニュー →「アプリをインストール」または「ホーム画面に追加」を選んでください。',
+              ),
+        ),
+        e('button', {
+          onClick: () => { dismissInstallPrompt(); onClose(); },
+          'aria-label': '閉じる',
+          style: {
+            width: 32, height: 32, borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            color: C.sub, fontSize: 14, lineHeight: 1, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }
+        }, '✕'),
+      ),
+    );
+  }
+
   // ---------- App ----------
   function App() {
     const [route, setRoute] = useState({ name: 'profiles' });
     const [activeId, setActiveId] = useState(null);
+    const [showInstall, setShowInstall] = useState(false);
     const profile = PROFILES.find(p => p.id === activeId) || null;
 
+    // Check install prompt eligibility once on mount, with a small delay so
+    // it doesn't flash before the rest of the UI settles.
+    useEffect(() => {
+      if (isStandalonePWA() || isInstallDismissed()) return;
+      const t = setTimeout(() => setShowInstall(true), 1800);
+      return () => clearTimeout(t);
+    }, []);
+
+    const installEl = showInstall && e(InstallPrompt, { onClose: () => setShowInstall(false) });
+
+    // Helper: every route renders alongside the install prompt overlay.
+    const wrap = (el) => e(React.Fragment, null, el, installEl);
+
     if (route.name === 'profiles') {
-      return e(ProfileSelect, {
+      return wrap(e(ProfileSelect, {
         onPick:        (id) => { setActiveId(id); setRoute({ name: 'home' }); },
         onOpenSettings: () => setRoute({ name: 'settings' }),
-      });
+      }));
     }
     if (route.name === 'settings') {
-      return e(SettingsScreen, {
+      return wrap(e(SettingsScreen, {
         onBack: () => setRoute({ name: 'profiles' }),
-      });
+      }));
     }
     if (!profile) return null;
 
     if (route.name === 'home') {
-      return e(EnglishHome, {
+      return wrap(e(EnglishHome, {
         profile,
         onBackToProfiles:   () => setRoute({ name: 'profiles' }),
         onPickFeature:      (id) => setRoute({ name: 'feature', feature: id }),
         onOpenAchievements: () => setRoute({ name: 'achievements' }),
         onOpenFeed:         () => setRoute({ name: 'feed' }),
-      });
+      }));
     }
     if (route.name === 'achievements') {
-      return e(AchievementsScreen, {
+      return wrap(e(AchievementsScreen, {
         profile,
         onBack: () => setRoute({ name: 'home' }),
-      });
+      }));
     }
     if (route.name === 'feed') {
-      return e(FamilyFeedScreen, {
+      return wrap(e(FamilyFeedScreen, {
         profile,
         onBack: () => setRoute({ name: 'home' }),
-      });
+      }));
     }
     if (route.name === 'feature') {
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
-      if (route.feature === 'vocab')                  return e(VocabBrowse,        { profile, onBack: back });
-      if (route.feature === 'daily20')                return e(Daily20,            { profile, onBack: back });
-      if (route.feature === 'composition')            return e(SprintComposition,  { profile, onBack: back });
-      if (route.feature === 'phrases')                return e(DailyPhrases,       { profile, onBack: back });
-      if (route.feature === 'random_test')            return e(RandomTest,         { profile, onBack: back });
-      if (route.feature === 'mistakes')               return e(MistakeReview,      { profile, onBack: back });
-      if (route.feature === 'mastered_vocab')         return e(MasteredVocab,      { profile, onBack: back });
-      if (route.feature === 'mastered_compositions')  return e(MasteredSentences,  { profile, onBack: back });
-      if (route.feature === 'ranking')                return e(FamilyRanking,      { profile, onBack: back });
-      if (route.feature === 'support')                return e(SupportMessages,    { profile, onBack: back });
-      return e(ComingSoon, { profile, feature: feat, onBack: back });
+      let body;
+      if      (route.feature === 'vocab')                  body = e(VocabBrowse,        { profile, onBack: back });
+      else if (route.feature === 'daily20')                body = e(Daily20,            { profile, onBack: back });
+      else if (route.feature === 'composition')            body = e(SprintComposition,  { profile, onBack: back });
+      else if (route.feature === 'phrases')                body = e(DailyPhrases,       { profile, onBack: back });
+      else if (route.feature === 'random_test')            body = e(RandomTest,         { profile, onBack: back });
+      else if (route.feature === 'mistakes')               body = e(MistakeReview,      { profile, onBack: back });
+      else if (route.feature === 'mastered_vocab')         body = e(MasteredVocab,      { profile, onBack: back });
+      else if (route.feature === 'mastered_compositions')  body = e(MasteredSentences,  { profile, onBack: back });
+      else if (route.feature === 'ranking')                body = e(FamilyRanking,      { profile, onBack: back });
+      else if (route.feature === 'support')                body = e(SupportMessages,    { profile, onBack: back });
+      else                                                  body = e(ComingSoon, { profile, feature: feat, onBack: back });
+      return wrap(body);
     }
     return null;
   }
