@@ -2563,34 +2563,38 @@
       ],
       quiz: [
         {
-          q: 'The ball is ___ the box. (ボールは箱の中にあります)',
+          q:   'The ball is ___ the box.',
+          qJa: 'ボールは箱の中にあります。',
           choices: ['in', 'on', 'under'],
           answer: 0,
-          explain: '箱に「囲まれている」=「中」なので in。',
+          explain: '「中」だから in だね。箱に囲まれているイメージ。',
         },
         {
-          q: 'The ball is ___ the box. (ボールは箱の上にのっています)',
+          q:   'The ball is ___ the box.',
+          qJa: 'ボールは箱の上にのっています。',
           choices: ['in', 'on', 'under'],
           answer: 1,
-          explain: '箱に「のっかっている」=「面にくっついている」ので on。',
+          explain: '「上にのっている」だから on。面にくっついているイメージ。',
         },
         {
-          q: 'The ball is ___ the box. (ボールは箱の下にあります)',
+          q:   'The ball is ___ the box.',
+          qJa: 'ボールは箱の下にあります。',
           choices: ['in', 'on', 'under'],
           answer: 2,
-          explain: '箱の「真下」にあるので under。',
+          explain: '「下」だから under。箱の真下にあるイメージ。',
         },
         {
-          q: 'The ball is ___ the box. (中)',
+          q:   'The ball is ___ the box.',
+          qJa: 'ボールは箱の「中」(語順を変えてみました)',
           choices: ['on', 'in', 'under'],
           answer: 1,
-          explain: '「中」は in。語順を変えても答えは変わりません。',
+          explain: '「中」は in。順番が変わっても答えは変わらないよ。',
         },
         {
-          q: '「ボールは箱の上にあります」を英語で正しいのはどれ？',
+          q:   '「ボールは箱の上にあります」を英語で正しいのはどれ？',
           choices: ['The ball is in the box.', 'The ball is on the box.', 'The ball is under the box.'],
           answer: 1,
-          explain: '「上にのっている」は on。in は「中」、under は「下」。',
+          explain: '「上にのっている」は on。in は「中」、under は「下」だね。',
         },
       ],
     },
@@ -3704,6 +3708,44 @@
     return Math.round(hours) + '時間';
   }
 
+  // Friendly Japanese relative-time string used on profile cards: "3時間前",
+  // "12分前", "5日前", etc. Falls back to "つい先ほど" for events younger
+  // than ~30 seconds so the line never reads "0分前".
+  function humanRelativeJa(thenMs, nowMs) {
+    if (!thenMs || isNaN(thenMs)) return '';
+    const dt = (nowMs || Date.now()) - thenMs;
+    if (dt < 30_000)            return 'つい先ほど';
+    if (dt < 60_000)            return '少し前';
+    const m = Math.floor(dt / 60_000);
+    if (m < 60)                 return m + '分前';
+    const h = Math.floor(m / 60);
+    if (h < 24)                 return h + '時間前';
+    const d = Math.floor(h / 24);
+    if (d < 14)                 return d + '日前';
+    const w = Math.floor(d / 7);
+    if (w < 8)                  return w + '週間前';
+    return Math.floor(d / 30) + 'ヶ月前';
+  }
+
+  // Approximate the duration of a session event when no measured value
+  // is attached. We started capturing real durationMs only on newer
+  // sessions, so older events fall back to "total questions × seconds-
+  // per-question". The per-kind rate is rough but better than blank.
+  const KIND_SECS_PER_Q = {
+    vocab: 12, composition: 14, random_test: 10, mctest: 10,
+    overcome: 14, lesson: 25, flip: 4,
+  };
+  function eventDurationMinutes(ev) {
+    if (!ev) return 0;
+    if (typeof ev.durationMs === 'number' && ev.durationMs > 0) {
+      return Math.max(1, Math.round(ev.durationMs / 60_000));
+    }
+    const total = typeof ev.total === 'number' ? ev.total : 0;
+    if (!total) return 0;
+    const perQ = KIND_SECS_PER_Q[ev.kind] || 12;
+    return Math.max(1, Math.round((total * perQ) / 60));
+  }
+
   // 'M/D' for today, used as the date prefix on tile subtitles.
   function formatTodayShort() {
     const d = new Date();
@@ -4286,6 +4328,13 @@
 
   // ---------- Profile selection ----------
   function ProfileSelect({ onPick, onOpenSettings }) {
+    // Tick every 30s so each card's "X分前" relative time stays roughly
+    // accurate without the user having to navigate away and back.
+    const [, setTick] = useState(0);
+    useEffect(() => {
+      const id = setInterval(() => setTick(t => t + 1), 30_000);
+      return () => clearInterval(id);
+    }, []);
     return e('div', {
       style: {
         maxWidth: 480, margin: '0 auto', padding: '64px 22px 64px',
@@ -4350,6 +4399,18 @@
     const isViewer = profile.role === 'viewer';
     const avatar = getAvatar(profile);
     const stats = computeStats(profile.id);
+    // Most recent activity event — used to show "X時間前に Y分勉強" so
+    // the parent can see at a glance when each kid last studied.
+    const latestEvent = (function () {
+      try { const list = db.getEvents(profile.id); return (list && list[0]) || null; }
+      catch { return null; }
+    })();
+    const KIND_LABEL_SHORT = {
+      vocab: '単語', composition: '英作文',
+      random_test: 'ランダム', mctest: 'Daily',
+      flip: 'めくり',         overcome: '間違い克服',
+      lesson: '1分英語解説',
+    };
     return e('button', {
       onClick,
       onPointerDown: () => setPressed(true),
@@ -4418,6 +4479,28 @@
           e('span', null,
             e('span', { style: { color: C.text, fontWeight: 700 } }, formatStudyTime(stats.totalMinutes)),
             ' 学習'),
+        ),
+        // Most-recent activity line: "3時間前 · 単語学習 · 4分"
+        // Falls back to a friendly placeholder if the profile has no
+        // session events yet.
+        latestEvent && e('div', {
+          style: {
+            marginTop: 5,
+            fontFamily: SANS_UI, fontSize: 10.5, color: C.sub,
+            fontVariantNumeric: 'tabular-nums',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }
+        },
+          (function () {
+            const ago = humanRelativeJa(new Date(latestEvent.at).getTime(), Date.now());
+            const kindShort = KIND_LABEL_SHORT[latestEvent.kind] || latestEvent.kind || '';
+            const mins = eventDurationMinutes(latestEvent);
+            const parts = [];
+            if (ago) parts.push(ago);
+            if (kindShort) parts.push(kindShort);
+            if (mins >= 1) parts.push(mins + '分');
+            return '✏️ ' + parts.join(' · ');
+          })(),
         ),
       ),
 
@@ -4710,6 +4793,7 @@
       vocab: '単語学習', composition: '瞬間英作文',
       random_test: 'ランダムテスト',  mctest: 'Daily English テスト',
       flip: 'Daily English めくり',   overcome: '間違い克服',
+      lesson: '1分英語解説',
     };
     return e('div', { style: { marginTop: 26 } },
       e('div', {
@@ -4731,11 +4815,15 @@
           const tm  = timeFmt.format(at);
           const kindLabel = KIND_LABEL[ev.kind] || ev.kind;
           let detail = '';
+          // For lessons, the topic title (carried in ev.label) is the
+          // most useful detail — show it before the score.
+          if (ev.kind === 'lesson' && ev.label) {
+            detail = ev.label;
+          }
           if (typeof ev.total === 'number') {
-            detail = ev.total + '問';
-            if (typeof ev.correct === 'number') {
-              detail += ' (' + ev.correct + '/' + ev.total + ' 正解)';
-            }
+            const scorePart = ev.total + '問'
+              + (typeof ev.correct === 'number' ? ' (' + ev.correct + '/' + ev.total + ' 正解)' : '');
+            detail = (detail ? detail + ' · ' : '') + scorePart;
           }
           if (ev.direction) {
             const dirJa = ev.direction === 'ja2en' ? '日本語 → 英語'
@@ -4744,6 +4832,12 @@
           }
           if (ev.level && ev.level !== 'auto') {
             detail = (detail ? detail + ' · ' : '') + 'レベル ' + ev.level;
+          }
+          // Show measured session duration (when the firing component
+          // recorded one) as a small "(N分)" tail.
+          if (typeof ev.durationMs === 'number' && ev.durationMs >= 30_000) {
+            const mins = Math.round(ev.durationMs / 60000);
+            if (mins >= 1) detail = (detail ? detail + ' · ' : '') + mins + '分';
           }
           return e('div', {
             key: ev.at + '_' + i,
@@ -9473,6 +9567,10 @@
     const [picked, setPicked]     = useState(null);       // selected choice index (null = not picked yet)
     const [results, setResults]   = useState([]);         // [{q, correct, picked}]
     const [retryWrongOnly, setRetryWrongOnly] = useState(false);
+    // Wall-clock time the current quiz attempt began. Used to attach an
+    // accurate `durationMs` to the session event when the last question
+    // is answered.
+    const quizStartRef = useRef(null);
 
     const lesson = activeId ? LESSON_BY_ID[activeId] : null;
     const quizSet = (() => {
@@ -9492,6 +9590,7 @@
     function startQuiz() {
       setPhase('quiz');
       setQIndex(0); setPicked(null); setResults([]);
+      quizStartRef.current = Date.now();
     }
     function pick(i) {
       if (picked !== null) return;
@@ -9510,6 +9609,18 @@
         const score = newResults.filter(r => r.correct).length;
         recordLessonResult(profile.id, lesson.id, score, newResults.length);
         if (db && typeof db.recordTurn === 'function') db.recordTurn(profile.id, 'lesson');
+        // Stamp this lesson into the activity log just like vocab /
+        // composition / mctest sessions do, so the home page shows that
+        // 1分英語解説 was completed (lesson title carried in `label`).
+        const durationMs = quizStartRef.current ? Date.now() - quizStartRef.current : null;
+        db.pushEvent(profile.id, {
+          kind: 'lesson',
+          total: newResults.length,
+          correct: score,
+          label: lesson.title,
+          durationMs,
+        });
+        quizStartRef.current = null;
         setPhase('result');
       } else {
         setQIndex(qIndex + 1);
@@ -9876,7 +9987,10 @@
         }),
       ),
 
-      // Question card
+      // Question card — English (big) on top, optional Japanese hint
+      // (small, dimmer) on a separate line below. Splitting the two makes
+      // the English the visual centrepiece while still giving a nudge for
+      // kids who don't know what the sentence means.
       e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
@@ -9884,16 +9998,23 @@
         }
       },
         e('div', {
-          style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }
+          style: { display: 'flex', alignItems: 'flex-start', gap: 10 }
         },
           e('div', {
-            style: { flex: 1, fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.text, lineHeight: 1.55 }
+            style: { flex: 1, fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
           }, q.q),
           e(SpeakerBtn, {
             onClick: () => speakLessonEnglish(q.q, isAnswered ? q.choices[q.answer] : null),
             color: profile.color, size: 32,
           }),
         ),
+        q.qJa && e('div', {
+          style: {
+            marginTop: 10, paddingTop: 10,
+            borderTop: '1px dashed ' + C.line,
+            fontSize: 13, color: C.sub, lineHeight: 1.6,
+          }
+        }, q.qJa),
       ),
 
       // Choices
@@ -9935,22 +10056,72 @@
         }),
       ),
 
-      // Feedback panel + next button
+      // Explanation card — shown after the user picks an answer. Made
+      // generous (big icon, headline result, the correct word in serif,
+      // a short note in plain text) so it reads like its own page rather
+      // than a tiny annotation under the choices.
       isAnswered && e('div', {
         style: {
-          background: (isCorrect ? C.success : C.danger) + '0F',
-          border: '1px solid ' + (isCorrect ? C.success : C.danger) + '55',
-          borderRadius: 14, padding: '14px 16px', marginBottom: 14,
+          background: (isCorrect ? C.success : C.danger) + '12',
+          border: '1px solid ' + (isCorrect ? C.success : C.danger) + '66',
+          borderRadius: 16, padding: '18px 18px 16px', marginBottom: 14,
         }
       },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em',
-            color: isCorrect ? C.success : C.danger, marginBottom: 6,
+            display: 'flex', alignItems: 'center', gap: 10,
+            marginBottom: 12,
           }
-        }, isCorrect ? '⭕  正解！' : '✕  おしい！'),
+        },
+          e('span', {
+            style: {
+              fontSize: 22, fontWeight: 800,
+              color: isCorrect ? C.success : C.danger,
+              lineHeight: 1,
+            }
+          }, isCorrect ? '⭕' : '✕'),
+          e('span', {
+            style: {
+              fontFamily: SERIF, fontSize: 20, fontWeight: 700,
+              color: isCorrect ? C.success : C.danger,
+            }
+          }, isCorrect ? '正解！' : 'おしい！'),
+          e('span', { style: { flex: 1 } }),
+          e('span', {
+            style: {
+              fontSize: 11, color: C.sub, fontFamily: SANS_UI,
+              fontWeight: 700, letterSpacing: '0.16em',
+            }
+          }, '解説'),
+        ),
+        // Correct answer pulled out so it's unmissable, even when the
+        // explanation text is long.
         e('div', {
-          style: { fontSize: 13, color: C.text, lineHeight: 1.7 }
+          style: {
+            display: 'flex', alignItems: 'center', gap: 10,
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 12, padding: '10px 14px', marginBottom: 12,
+          }
+        },
+          e('span', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.12em', color: C.sub, flexShrink: 0,
+            }
+          }, '答え'),
+          e('span', {
+            style: {
+              flex: 1, fontFamily: SERIF, fontSize: 18, fontWeight: 700,
+              color: C.text, lineHeight: 1.4,
+            }
+          }, q.choices[q.answer]),
+          e(SpeakerBtn, {
+            onClick: () => speak(q.choices[q.answer]),
+            color: profile.color, size: 26,
+          }),
+        ),
+        e('div', {
+          style: { fontSize: 14, color: C.text, lineHeight: 1.75 }
         }, q.explain),
       ),
       isAnswered && e('button', {
