@@ -3104,6 +3104,26 @@
   // Pull cloud state into local on first use of a profile. If the cloud copy
   // is newer than local (or local is empty), replace local. Returns a Promise
   // that resolves once local has been hydrated.
+  // Returns true when localStorage has been touched (it has a timestamp /
+  // some keys) but contains none of the actual learning data — vocab
+  // progress, daily counters, turns, events, or mistakes. This is the
+  // signature of a fresh install where the user briefly poked the app
+  // before the cloud hydrate finished. In that case we WANT cloud to win
+  // even though local has a stamp, otherwise we lock the kid out of all
+  // their previous progress just because they tapped something during the
+  // ~1s the cloud round-trip was running.
+  function isMemberStateEmptyish(state) {
+    if (!state || typeof state !== 'object') return true;
+    const events  = Array.isArray(state.events) ? state.events.length : 0;
+    const vocab   = state.vocab    ? Object.keys(state.vocab).length    : 0;
+    const turns   = state.turns    ? Object.keys(state.turns).length    : 0;
+    const daily   = state.daily    ? Object.keys(state.daily).length    : 0;
+    const mistakes = Array.isArray(state.mistakes) ? state.mistakes.length : 0;
+    const sentences = state.sentences ? Object.keys(state.sentences).length : 0;
+    const phrases   = state.phrases   ? Object.keys(state.phrases).length   : 0;
+    return events === 0 && vocab === 0 && turns === 0 && daily === 0
+        && mistakes === 0 && sentences === 0 && phrases === 0;
+  }
   async function hydrateFromCloud(memberId) {
     if (!cloud.status.enabled) return false;
     const remote = await cloud.pull(memberId);
@@ -3113,8 +3133,11 @@
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
     const localTs  = (local && local._localUpdatedAt) || '';
     const remoteTs = remote.updated_at || '';
-    // If we have nothing locally, or cloud is strictly newer, take the cloud.
-    if (!local || (remoteTs && remoteTs > localTs)) {
+    const localEmptyish = isMemberStateEmptyish(local);
+    // Take cloud when (a) we have nothing locally, (b) local is just a
+    // stamp with no real learning data (fresh-install poke), or (c) cloud
+    // is strictly newer than what we've got.
+    if (!local || localEmptyish || (remoteTs && remoteTs > localTs)) {
       try {
         localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
         return true;
@@ -3904,19 +3927,22 @@
   // and vice versa. localStorage is the fast read path; cloud is the
   // durable backup that survives storage clearing / reinstalls / new devices.
   function buildFamilySharedState() {
-    return {
+    const out = {
       photos:  loadFamilyPhotos(),
       names:   loadDisplayNames(),
       avatars: loadAvatars(),
-      // Anthropic API key is mirrored via this same shared row so the
-      // family doesn't have to set it up on every device. Only the family
-      // can read this row (Supabase RLS) and the key only authorises
-      // their own Anthropic spend, so this matches the trust boundary.
-      // We always include the field so that an explicit "delete" on one
-      // device clears it everywhere on next sync.
-      apiKey:  loadApiKey() || '',
       _localUpdatedAt: new Date().toISOString(),
     };
+    // Mirror the Anthropic API key through this same shared row (gated to
+    // the family by Supabase RLS), but only when this device actually has
+    // a key set locally. Pushing `apiKey: ''` on a fresh install would
+    // clobber the working key that's already in cloud, locking everyone
+    // out of AI features. To EXPLICITLY clear the key everywhere, the
+    // user does a save with an empty key — saveApiKey() detects that
+    // case and pushes an explicit empty string then.
+    const k = loadApiKey();
+    if (k) out.apiKey = k;
+    return out;
   }
   function pushFamilySharedState() {
     try {
@@ -3932,6 +3958,25 @@
   // because that's how the kids' devices stay in sync with the parents'.
   // If cloud is empty, push local up so we never lose what's on disk.
   // Returns true if any localStorage value changed (so the UI can re-render).
+  // True when the family-shared local store has nothing real in it —
+  // names + avatars + photos all empty AND no API key. After a fresh
+  // PWA install, the user might tap something (e.g., open settings)
+  // before the cloud hydrate completes; that single tap stamps a
+  // localTs but leaves the actual data empty. Without this guard, the
+  // newer-but-empty local would beat cloud's real data and we'd lose
+  // the family's names / avatars / photos / API key on the new device.
+  function isFamilySharedLocalEmptyish() {
+    try {
+      const names   = loadDisplayNames();
+      const avatars = loadAvatars();
+      const photos  = loadFamilyPhotos();
+      const key     = loadApiKey();
+      return Object.keys(names || {}).length   === 0
+          && Object.keys(avatars || {}).length === 0
+          && (photos || []).length             === 0
+          && !key;
+    } catch { return true; }
+  }
   async function hydrateFamilySharedFromCloud() {
     if (!cloud.status.enabled) return false;
     let remote = null;
@@ -3948,10 +3993,11 @@
     // is STRICTLY newer than the last local edit on this device.
     const cloudTs = String(d._localUpdatedAt || remote.updated_at || '');
     const localTs = loadFamilySharedLocalTs();
-    if (localTs && (!cloudTs || localTs >= cloudTs)) {
-      // Local has been edited at least once on this device and we're at
-      // least as fresh as cloud. Don't touch local — push it up instead so
-      // cloud catches up to whatever the user just did.
+    const localEmpty = isFamilySharedLocalEmptyish();
+    if (!localEmpty && localTs && (!cloudTs || localTs >= cloudTs)) {
+      // Local has real data AND a fresh-or-equal stamp → it wins; bring
+      // cloud up to date so other devices catch up to whatever was
+      // changed on this one.
       pushFamilySharedState();
       return false;
     }
