@@ -1419,9 +1419,184 @@
     'reason':       ['cause', 'purpose'],
     'goal':         ['target', 'aim', 'objective'],
     'effort':       ['hard work', 'endeavor'],
+    'probably':     ['maybe', 'perhaps', 'likely', 'possibly'],
+    'maybe':        ['perhaps', 'probably', 'possibly'],
+    'often':        ['frequently', 'regularly'],
+    'sometimes':    ['occasionally', 'at times'],
+    'always':       ['constantly', 'forever'],
+    'never':        ['not ever', 'at no time'],
+    'usually':      ['normally', 'typically', 'generally'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
+  }
+
+  // ---------- Verb conjugations (past + past participle) ----------
+  // Shown as a small annotation under the example on the answer side of
+  // every verb / idiom card so the learner can pick up irregular forms
+  // alongside the base meaning.
+  const IRREGULAR_VERBS = {
+    // (past, past participle)
+    'be':         ['was/were', 'been'],
+    'have':       ['had',      'had'],
+    'do':         ['did',      'done'],
+    'go':         ['went',     'gone'],
+    'come':       ['came',     'come'],
+    'see':        ['saw',      'seen'],
+    'get':        ['got',      'gotten'],
+    'take':       ['took',     'taken'],
+    'make':       ['made',     'made'],
+    'give':       ['gave',     'given'],
+    'find':       ['found',    'found'],
+    'think':      ['thought',  'thought'],
+    'know':       ['knew',     'known'],
+    'say':        ['said',     'said'],
+    'tell':       ['told',     'told'],
+    'begin':      ['began',    'begun'],
+    'bring':      ['brought',  'brought'],
+    'buy':        ['bought',   'bought'],
+    'catch':      ['caught',   'caught'],
+    'choose':     ['chose',    'chosen'],
+    'drink':      ['drank',    'drunk'],
+    'eat':        ['ate',      'eaten'],
+    'fall':       ['fell',     'fallen'],
+    'feel':       ['felt',     'felt'],
+    'forget':     ['forgot',   'forgotten'],
+    'forgive':    ['forgave',  'forgiven'],
+    'grow':       ['grew',     'grown'],
+    'hear':       ['heard',    'heard'],
+    'hold':       ['held',     'held'],
+    'keep':       ['kept',     'kept'],
+    'leave':      ['left',     'left'],
+    'lose':       ['lost',     'lost'],
+    'meet':       ['met',      'met'],
+    'pay':        ['paid',     'paid'],
+    'read':       ['read',     'read'],   // pronounced /red/
+    'ride':       ['rode',     'ridden'],
+    'rise':       ['rose',     'risen'],
+    'run':        ['ran',      'run'],
+    'send':       ['sent',     'sent'],
+    'shake':      ['shook',    'shaken'],
+    'show':       ['showed',   'shown'],
+    'sing':       ['sang',     'sung'],
+    'sit':        ['sat',      'sat'],
+    'sleep':      ['slept',    'slept'],
+    'speak':      ['spoke',    'spoken'],
+    'spend':      ['spent',    'spent'],
+    'stand':      ['stood',    'stood'],
+    'swim':       ['swam',     'swum'],
+    'teach':      ['taught',   'taught'],
+    'understand': ['understood','understood'],
+    'wear':       ['wore',     'worn'],
+    'win':        ['won',      'won'],
+    'write':      ['wrote',    'written'],
+    'become':     ['became',   'become'],
+    'build':      ['built',    'built'],
+    'cut':        ['cut',      'cut'],
+    'drive':      ['drove',    'driven'],
+    'fly':        ['flew',     'flown'],
+    'hit':        ['hit',      'hit'],
+    'hurt':       ['hurt',     'hurt'],
+    'let':        ['let',      'let'],
+    'lend':       ['lent',     'lent'],
+    'mean':       ['meant',    'meant'],
+    'put':        ['put',      'put'],
+    'set':        ['set',      'set'],
+    'shut':       ['shut',     'shut'],
+    'break':      ['broke',    'broken'],
+    'draw':       ['drew',     'drawn'],
+    'ring':       ['rang',     'rung'],
+    'shoot':      ['shot',     'shot'],
+    'steal':      ['stole',    'stolen'],
+    'swear':      ['swore',    'sworn'],
+    'throw':      ['threw',    'thrown'],
+    'wake':       ['woke',     'woken'],
+    'fight':      ['fought',   'fought'],
+    'feed':       ['fed',      'fed'],
+    'lead':       ['led',      'led'],
+    'leap':       ['leapt',    'leapt'],
+    'spread':     ['spread',   'spread'],
+    'cost':       ['cost',     'cost'],
+    'sell':       ['sold',     'sold'],
+    'lay':        ['laid',     'laid'],
+    'lie':        ['lay',      'lain'],
+    'sink':       ['sank',     'sunk'],
+    'tear':       ['tore',     'torn'],
+    'bite':       ['bit',      'bitten'],
+    'fit':        ['fit',      'fit'],
+    'forecast':   ['forecast', 'forecast'],
+    'hide':       ['hid',      'hidden'],
+    'kneel':      ['knelt',    'knelt'],
+    'quit':       ['quit',     'quit'],
+    'spit':       ['spat',     'spat'],
+    'split':      ['split',    'split'],
+    'strike':     ['struck',   'struck'],
+    'sweep':      ['swept',    'swept'],
+    'weep':       ['wept',     'wept'],
+    'spin':       ['spun',     'spun'],
+    'wind':       ['wound',    'wound'],
+    'beat':       ['beat',     'beaten'],
+    'bind':       ['bound',    'bound'],
+    'breed':      ['bred',     'bred'],
+    'cling':      ['clung',    'clung'],
+    'creep':      ['crept',    'crept'],
+    'deal':       ['dealt',    'dealt'],
+    'dig':        ['dug',      'dug'],
+    'flee':       ['fled',     'fled'],
+    'arise':      ['arose',    'arisen'],
+    'awake':      ['awoke',    'awoken'],
+    'mistake':    ['mistook',  'mistaken'],
+    'overcome':   ['overcame', 'overcome'],
+    // Verbs whose only irregularity is consonant doubling — easier to
+    // hard-code than to detect in regularPast()
+    'stop':       ['stopped',  'stopped'],
+    'plan':       ['planned',  'planned'],
+    'beg':        ['begged',   'begged'],
+    'rob':        ['robbed',   'robbed'],
+    'rub':        ['rubbed',   'rubbed'],
+    'hop':        ['hopped',   'hopped'],
+  };
+  function regularPast(verb) {
+    if (!verb) return verb;
+    if (verb.endsWith('e')) return verb + 'd';
+    // consonant + y → ied (try → tried)
+    if (/[^aeiou]y$/.test(verb)) return verb.slice(0, -1) + 'ied';
+    return verb + 'ed';
+  }
+  // Returns { past, pp } strings or null if the entry isn't a verb / idiom.
+  // Phrasal verbs like "go out" only conjugate the leading verb.
+  function getConjugation(item) {
+    if (!item) return null;
+    if (item.pos !== 'verb' && item.pos !== 'idiom') return null;
+    const phrase = (item.en || '').trim();
+    if (!phrase) return null;
+    const tokens = phrase.split(' ');
+    const head = tokens[0].toLowerCase();
+    const tail = tokens.slice(1).join(' ');
+    const irr = IRREGULAR_VERBS[head];
+    const past = irr ? irr[0] : regularPast(head);
+    const pp   = irr ? irr[1] : regularPast(head);
+    return {
+      past: tail ? past + ' ' + tail : past,
+      pp:   tail ? pp   + ' ' + tail : pp,
+    };
+  }
+
+  // Friendly Japanese label for the part-of-speech tag stored on each
+  // VOCAB entry. Keeps the chip readable instead of showing 'noun' / 'adj'.
+  const POS_LABELS = {
+    noun:    '名詞',
+    verb:    '動詞',
+    adj:     '形容詞',
+    adv:     '副詞',
+    prep:    '前置詞',
+    pron:    '代名詞',
+    conj:    '接続詞',
+    idiom:   'イディオム',
+  };
+  function posLabelJa(pos) {
+    if (!pos) return '';
+    return POS_LABELS[pos] || pos;
   }
 
   // ---------- Idioms / phrasal verbs (added to VOCAB at runtime) ----------
@@ -3881,7 +4056,7 @@
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub, fontFamily: SANS_UI,
               }
-            }, current.pos),
+            }, posLabelJa(current.pos)),
           ),
           e('span', {
             style: {
@@ -3984,6 +4159,33 @@
                       e('span', null, w),
                       e(SpeakerBtn, { onClick: () => speak(w), color: profile.color, size: 24 }),
                     )),
+                  ),
+                );
+              })(),
+              // Past tense / past participle — only for verbs and idioms.
+              // Shown as a small annotation under the synonyms so the
+              // learner picks up irregular forms alongside the meaning.
+              (function () {
+                const conj = getConjugation(current);
+                if (!conj) return null;
+                const samePast = conj.past === current.en;
+                const samePp   = conj.pp   === current.en;
+                return e('div', null,
+                  e('div', {
+                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                             textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+                  }, '活用 (Past tense)'),
+                  e('div', {
+                    style: {
+                      fontSize: 14, color: C.text, lineHeight: 1.6,
+                      fontFamily: SERIF, fontWeight: 600,
+                    }
+                  },
+                    e('span', null, '過去形: '),
+                    e('span', { style: samePast ? { color: C.sub, fontStyle: 'italic' } : null }, conj.past),
+                    e('span', { style: { color: C.sub, margin: '0 8px' } }, '/'),
+                    e('span', null, '過去分詞: '),
+                    e('span', { style: samePp ? { color: C.sub, fontStyle: 'italic' } : null }, conj.pp),
                   ),
                 );
               })(),
@@ -4310,7 +4512,7 @@
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
-            }, current.pos),
+            }, posLabelJa(current.pos)),
             current.grammar && e('span', {
               style: {
                 fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
@@ -6227,6 +6429,17 @@
     // but stays inside Daily English so the kid doesn't have to navigate
     // out and back.
     const [mcChosen, setMcChosen] = useState(null);   // current option string
+    // Memoize the options for the current MCQ question so they don't get
+    // re-shuffled on every render. Without this, tapping an option causes
+    // a re-render which used to call buildPhraseTestOptions() again, and
+    // the picked answer (now flashing green) could appear in a different
+    // slot than where the user actually tapped — that was the 'option
+    // jumped to position 2' bug.
+    const mcOpts = useMemo(
+      () => (phase === 'mctest' && queue[index] ? buildPhraseTestOptions(queue[index]) : null),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [phase, index, queue]
+    );
     function startMcTest() {
       const arr = filtered.slice();
       for (let i = arr.length - 1; i > 0; i--) {
@@ -6452,9 +6665,9 @@
     // 10 phrases, each with a random direction. The learner picks the
     // matching translation from 4 choices (correct + 3 distractors from
     // the same scene where possible). Auto-advances after 700ms.
-    if (phase === 'mctest' && queue.length > 0) {
+    if (phase === 'mctest' && queue.length > 0 && mcOpts) {
       const cur = queue[index];
-      const opts = buildPhraseTestOptions(cur);
+      const opts = mcOpts;
       const dirLabel = cur.direction === 'en2ja' ? '英語 → 日本語' : '日本語 → 英語';
       return e('div', { style: pageStyle },
         topBar,
