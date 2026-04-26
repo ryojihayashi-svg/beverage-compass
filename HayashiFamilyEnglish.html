@@ -5362,11 +5362,19 @@
     }
 
     function resetAllData() {
-      if (!confirm('この端末のすべての学習データを消去しますか？\n\n・語彙の進捗\n・間違いの記録\n・日次統計\n・応援メッセージとリアクション\n・カスタム名前\n\nが消えます。元に戻せません。')) return;
+      if (!confirm('この端末の学習データを消去しますか？\n\n・語彙の進捗\n・間違いの記録\n・日次統計\n・応援メッセージとリアクション\n・家族タイムライン\n\nが消えます。\n\nカスタム名・プロフィール写真・ファミリーフォト・APIキーは残ります。\n元に戻せません。')) return;
+      // Keys we want to PRESERVE through a learning-data reset.
+      const PRESERVE = new Set([
+        NAMES_KEY,            // hfe_names_v1            — custom display names
+        AVATARS_KEY,          // hfe_avatars_v1          — profile photos
+        FAMILY_PHOTOS_KEY,    // hfe_family_photos_v1    — family photo gallery
+        AI_KEY_STORAGE,       // hfe_anthropic_key_v1    — AI chat key
+        INSTALL_DISMISS_KEY,  // hfe_install_dismissed_v1 — install prompt state
+      ]);
       const keys = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && k.indexOf('hfe_') === 0) keys.push(k);
+        if (k && k.indexOf('hfe_') === 0 && !PRESERVE.has(k)) keys.push(k);
       }
       keys.forEach(k => localStorage.removeItem(k));
       location.reload();
@@ -5719,7 +5727,7 @@
             fontSize: 11, color: C.sub, marginTop: 8, lineHeight: 1.6,
             paddingLeft: 4,
           }
-        }, 'この端末の全データ（進捗・間違い・統計・応援メッセージ・名前）を消去します。'),
+        }, '進捗・間違い・統計・応援メッセージのみを消去します。\nカスタム名・プロフィール写真・ファミリーフォトはそのまま残ります。'),
       ),
     );
   }
