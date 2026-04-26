@@ -8393,7 +8393,19 @@
     const [error, setError]   = useState('');
     const [hasKey] = useState(() => !!loadApiKey());
     const [saved, setSaved]   = useState(false);
-    const photoRef = useRef(null);
+    // Two separate hidden file inputs so iOS / Android can offer either
+    // "take a photo now" or "pick from library" cleanly. iOS Safari treats
+    // capture="environment" as "open camera"; without the attribute the
+    // native picker (Photo Library / Files / etc.) opens.
+    const cameraRef  = useRef(null);
+    const libraryRef = useRef(null);
+    // Voice input state. Web Speech API is available on Safari (iOS 14.5+),
+    // Chrome, and Edge — not Firefox. We feature-detect on first tap and
+    // surface a friendly message if it's missing instead of silently
+    // failing.
+    const [recording, setRecording]  = useState(false);
+    const recognitionRef = useRef(null);
+    const voiceBaseRef   = useRef('');
 
     function detectLang(s) {
       // Hiragana / katakana / CJK ideograph → treat as Japanese.
@@ -8458,8 +8470,70 @@
         setError((err && err.message) || String(err));
       } finally {
         setBusy(false);
-        if (photoRef.current) photoRef.current.value = '';
+        if (cameraRef.current)  cameraRef.current.value  = '';
+        if (libraryRef.current) libraryRef.current.value = '';
       }
+    }
+
+    // ---------- Voice input (Web Speech API) ----------
+    // Tap to start, tap again to stop. While recording, the partial
+    // transcript streams into the textarea so the user can see it land.
+    // Language is guessed from what's already typed: empty / Japanese →
+    // ja-JP, otherwise en-US. Errors are surfaced via setError.
+    function startVoice() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        setError('この端末は音声入力に対応していません（Safari / Chrome 推奨）。');
+        return;
+      }
+      try {
+        const lang = detectLang(input || '') === 'en' ? 'en-US' : 'ja-JP';
+        const r = new SR();
+        r.lang = lang;
+        r.continuous     = false;
+        r.interimResults = true;
+        voiceBaseRef.current = input ? (input.replace(/\s+$/, '') + ' ') : '';
+        r.onresult = (ev) => {
+          let txt = '';
+          for (let i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+          setInput(voiceBaseRef.current + txt);
+          setSaved(false);
+        };
+        r.onerror = (ev) => {
+          let m = 'マイクが使えませんでした。';
+          if (ev && ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+            m = 'マイクが許可されていません。ブラウザの設定で許可してください。';
+          } else if (ev && ev.error === 'no-speech') {
+            m = '声が聞こえませんでした。もう一度試してください。';
+          } else if (ev && ev.error === 'network') {
+            m = 'ネットワークエラーで音声認識に失敗しました。';
+          } else if (ev && ev.error) {
+            m = '音声入力エラー: ' + ev.error;
+          }
+          setError(m);
+          setRecording(false);
+        };
+        r.onend = () => {
+          setRecording(false);
+          recognitionRef.current = null;
+        };
+        r.start();
+        recognitionRef.current = r;
+        setRecording(true);
+        setError('');
+      } catch (err) {
+        setError('音声入力を開始できませんでした: ' + ((err && err.message) || String(err)));
+        setRecording(false);
+      }
+    }
+    function stopVoice() {
+      const r = recognitionRef.current;
+      if (r) { try { r.stop(); } catch {} }
+      // r.onend will flip recording to false
+    }
+    function toggleVoice() {
+      if (recording) stopVoice();
+      else           startVoice();
     }
 
     function toggleSave() {
@@ -8528,37 +8602,99 @@
                 boxSizing: 'border-box', marginBottom: 10,
               }
             }),
-            e('div', { style: { display: 'flex', gap: 10, marginBottom: 16 } },
-              e('input', {
-                ref: photoRef, type: 'file', accept: 'image/*',
-                capture: 'environment',
-                style: { display: 'none' },
-                onChange: (ev) => handlePhoto(ev.target.files && ev.target.files[0]),
-              }),
+            // Hidden file inputs — one for the camera, one for the
+            // library. The camera one carries `capture="environment"`
+            // which iOS / Android interpret as "open camera". The
+            // library one has no capture, so iOS shows the native
+            // chooser sheet (Photo Library / Files).
+            e('input', {
+              ref: cameraRef, type: 'file', accept: 'image/*',
+              capture: 'environment',
+              style: { display: 'none' },
+              onChange: (ev) => handlePhoto(ev.target.files && ev.target.files[0]),
+            }),
+            e('input', {
+              ref: libraryRef, type: 'file', accept: 'image/*',
+              style: { display: 'none' },
+              onChange: (ev) => handlePhoto(ev.target.files && ev.target.files[0]),
+            }),
+
+            // Input-method row: camera / library / voice.
+            e('div', {
+              style: {
+                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+                gap: 8, marginBottom: 10,
+              }
+            },
               e('button', {
-                onClick: () => { if (photoRef.current) photoRef.current.click(); },
+                onClick: () => { if (cameraRef.current) cameraRef.current.click(); },
+                disabled: busy || recording,
+                style: {
+                  padding: '14px 0', borderRadius: 14,
+                  background: C.softer, border: '1px solid ' + C.line,
+                  fontSize: 13, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                  cursor: (busy || recording) ? 'default' : 'pointer',
+                  opacity: (busy || recording) ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }
+              },
+                e('span', { style: { fontSize: 16 } }, '📷'),
+                e('span', null, '撮影'),
+              ),
+              e('button', {
+                onClick: () => { if (libraryRef.current) libraryRef.current.click(); },
+                disabled: busy || recording,
+                style: {
+                  padding: '14px 0', borderRadius: 14,
+                  background: C.softer, border: '1px solid ' + C.line,
+                  fontSize: 13, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                  cursor: (busy || recording) ? 'default' : 'pointer',
+                  opacity: (busy || recording) ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }
+              },
+                e('span', { style: { fontSize: 16 } }, '🖼'),
+                e('span', null, 'ライブラリ'),
+              ),
+              e('button', {
+                onClick: toggleVoice,
                 disabled: busy,
                 style: {
-                  padding: '14px 18px', borderRadius: 14,
-                  background: C.softer, border: '1px solid ' + C.line,
-                  fontSize: 14, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                  padding: '14px 0', borderRadius: 14,
+                  background: recording ? C.danger + '14' : C.softer,
+                  border: '1px solid ' + (recording ? C.danger : C.line),
+                  fontSize: 13, fontWeight: 700,
+                  color: recording ? C.danger : C.text, fontFamily: SANS_UI,
                   cursor: busy ? 'default' : 'pointer',
                   opacity: busy ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }
-              }, '写真'),
-              e('button', {
-                onClick: translateNow,
-                disabled: busy || !input.trim(),
-                style: {
-                  flex: 1, padding: '14px 0', borderRadius: 14,
-                  background: (busy || !input.trim()) ? C.softer : C.brand,
-                  color: (busy || !input.trim()) ? C.sub : '#fff',
-                  border: '1px solid ' + ((busy || !input.trim()) ? C.line : C.brand),
-                  fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
-                  cursor: (busy || !input.trim()) ? 'default' : 'pointer',
-                }
-              }, busy ? '翻訳中…' : '翻訳する'),
+              },
+                e('span', { style: { fontSize: 16 } }, '🎤'),
+                e('span', null, recording ? '録音中' : '音声'),
+              ),
             ),
+            recording && e('div', {
+              style: {
+                fontSize: 11, color: C.danger, fontFamily: SANS_UI,
+                fontWeight: 700, letterSpacing: '0.06em',
+                marginBottom: 10, paddingLeft: 4,
+              }
+            }, '🎙 話してください…（もう一度タップで止まります）'),
+
+            e('button', {
+              onClick: translateNow,
+              disabled: busy || !input.trim(),
+              style: {
+                width: '100%', padding: '14px 0', borderRadius: 14,
+                background: (busy || !input.trim()) ? C.softer : C.brand,
+                color: (busy || !input.trim()) ? C.sub : '#fff',
+                border: '1px solid ' + ((busy || !input.trim()) ? C.line : C.brand),
+                fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: (busy || !input.trim()) ? 'default' : 'pointer',
+                marginBottom: 16,
+              }
+            }, busy ? '翻訳中…' : '翻訳する'),
             error && e('div', {
               style: {
                 fontSize: 12, color: C.danger, marginBottom: 10,
