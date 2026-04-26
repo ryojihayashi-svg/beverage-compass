@@ -7,10 +7,10 @@
 <title>林ファミリーイングリッシュ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *,*:before,*:after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; min-height: 100%; background: #FBF8F3; color: #2A2520; font-family: 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  html, body { margin: 0; padding: 0; min-height: 100%; background: #F6F4F0; color: #1A1714; font-family: 'Shippori Mincho', 'Noto Sans JP', 'DM Sans', serif; -webkit-font-smoothing: antialiased; }
   body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; padding: 0; }
   #root { min-height: 100vh; min-height: 100dvh; }
@@ -34,23 +34,28 @@
   const { useState, useEffect, useMemo, useRef } = React;
 
   // ---------- Design tokens ----------
+  // Inspired by Beverage Compass: warm off-white background, very dark warm
+  // text, restrained gold for premium accents, subtle borders, mincho/serif
+  // body type, Cormorant Garamond display, DM Sans for small UI labels.
   const C = {
-    bg:      '#FBF8F3',
-    card:    '#FFFFFF',
-    soft:    '#F4ECDD',
-    softer:  '#FAF3E5',
-    text:    '#2A2520',
-    sub:     '#8C7F6D',
-    line:    '#E8DFD0',
-    accent:  '#C97D3B',
+    bg:      '#F6F4F0',   // warm off-white
+    card:    '#FDFCFA',   // slightly cooler card
+    soft:    '#F0EDE8',   // soft tint
+    softer:  '#F6F4F0',   // matches bg
+    text:    '#1A1714',   // very dark warm
+    sub:     '#A09A8C',   // muted warm grey
+    line:    '#E8E4DC',   // hairline border
+    gold:    '#8B6914',   // restrained luxe accent (BC signature)
+    accent:  '#C97D3B',   // warm orange — Yoshinari's color
     forest:  '#4A6840',
     ocean:   '#3D6FA0',
     sun:     '#D4A22F',
     rose:    '#C97A8A',
-    danger:  '#C2604E',
-    success: '#7DA66E',
+    danger:  '#B0533F',
+    success: '#6E9560',
   };
-  const SERIF = '"Fraunces", "Noto Serif JP", Georgia, serif';
+  const SERIF   = "'Cormorant Garamond', 'Shippori Mincho', 'Noto Serif JP', Georgia, serif";
+  const SANS_UI = "'DM Sans', 'Noto Sans JP', system-ui, sans-serif";
 
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
@@ -713,35 +718,36 @@
         'aria-label': '設定',
       }, '⚙️'),
 
-      // Header
-      e('div', { style: { textAlign: 'center', marginBottom: 40 } },
+      // Header — Cormorant Garamond display, restrained gold rule
+      e('div', { style: { textAlign: 'center', marginBottom: 36, paddingTop: 12 } },
         e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 44, fontWeight: 800,
-            letterSpacing: '-0.025em', color: C.text, lineHeight: 1,
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.32em', textTransform: 'uppercase',
+            color: C.gold, marginBottom: 14,
           }
-        }, 'Hayashi'),
+        }, 'Hayashi Family'),
         e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 38, fontWeight: 600,
-            letterSpacing: '-0.02em', color: C.accent,
-            fontStyle: 'italic', marginTop: 2, lineHeight: 1.05,
+            fontFamily: SERIF, fontSize: 46, fontWeight: 500,
+            letterSpacing: '-0.01em', color: C.text, lineHeight: 1.05,
           }
-        }, 'Family English'),
+        }, 'English'),
         e('div', {
           style: {
-            marginTop: 16, fontSize: 12, color: C.sub,
-            letterSpacing: '0.18em', fontWeight: 500,
+            fontFamily: SERIF, fontSize: 22, fontWeight: 400,
+            color: C.sub, fontStyle: 'italic',
+            marginTop: 4, lineHeight: 1.2,
           }
-        }, '林ファミリーイングリッシュ'),
+        }, 'a family practice'),
+        // Hairline gold rule
+        e('div', {
+          style: {
+            width: 36, height: 1, background: C.gold, opacity: 0.55,
+            margin: '20px auto 0',
+          }
+        }),
       ),
-
-      e('div', {
-        style: {
-          fontSize: 13, color: C.sub, textAlign: 'center',
-          marginBottom: 18, letterSpacing: '0.06em',
-        }
-      }, 'だれが学びますか？'),
 
       // Cards
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
