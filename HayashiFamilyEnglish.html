@@ -34,6 +34,7 @@
 <div id="root"></div>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function () {
   const e = React.createElement;
@@ -2010,6 +2011,147 @@
     },
   };
 
+  // ---------- Cloud sync (Supabase) ----------
+  // Strategy:
+  //   - localStorage stays the source of truth on each device (offline-first).
+  //   - Every db.save() also schedules a debounced upsert into Supabase's
+  //     member_state table (a single jsonb blob keyed by member_id).
+  //   - On profile select we pull the cloud row; if it's newer than the local
+  //     copy we replace local. Last-write-wins.
+  // Tradeoff: simultaneous edits on two devices for the same member can lose
+  // each other. Acceptable for a personal family app; revisit if needed.
+  const SUPABASE_URL  = 'https://rfuuhelnojqgnfkhpyxn.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_bCxvDUceZIT6rHK6pAcV4w_f3l-njzp';
+  const CLOUD_TABLE   = 'member_state';
+
+  const cloud = (function () {
+    let client = null;
+    try {
+      if (window.supabase && window.supabase.createClient) {
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+      }
+    } catch (err) { console.warn('Supabase init failed', err); }
+
+    const status = {
+      enabled: !!client,
+      lastError: null,
+      lastSyncAt: null,    // ISO string
+      pending: false,      // an upsert is queued or in flight
+    };
+    const listeners = new Set();
+    function notify() { listeners.forEach(fn => { try { fn(status); } catch {} }); }
+
+    // Debounced per-member upsert. We coalesce rapid db.save() calls (e.g.
+    // many record() in a session) into a single network round-trip per member.
+    const timers  = {};
+    const pending = {};
+    function schedulePush(memberId, state) {
+      if (!client) return;
+      pending[memberId] = state;
+      status.pending = true;
+      notify();
+      clearTimeout(timers[memberId]);
+      timers[memberId] = setTimeout(() => flushPush(memberId), 800);
+    }
+    async function flushPush(memberId) {
+      if (!client) return;
+      const state = pending[memberId];
+      if (!state) return;
+      delete pending[memberId];
+      try {
+        const { error } = await client
+          .from(CLOUD_TABLE)
+          .upsert({ member_id: memberId, data: state }, { onConflict: 'member_id' });
+        if (error) throw error;
+        status.lastError  = null;
+        status.lastSyncAt = new Date().toISOString();
+      } catch (err) {
+        status.lastError = (err && err.message) || String(err);
+        console.warn('cloud upsert failed', err);
+      } finally {
+        status.pending = Object.keys(pending).length > 0;
+        notify();
+      }
+    }
+    async function pull(memberId) {
+      if (!client) return null;
+      try {
+        const { data, error } = await client
+          .from(CLOUD_TABLE)
+          .select('data, updated_at')
+          .eq('member_id', memberId)
+          .maybeSingle();
+        if (error) throw error;
+        return data; // null if no row yet
+      } catch (err) {
+        status.lastError = (err && err.message) || String(err);
+        notify();
+        return null;
+      }
+    }
+    async function pingTest() {
+      if (!client) return false;
+      try {
+        const { error } = await client
+          .from(CLOUD_TABLE)
+          .select('member_id', { count: 'exact', head: true });
+        if (error) throw error;
+        status.lastError  = null;
+        status.lastSyncAt = new Date().toISOString();
+        notify();
+        return true;
+      } catch (err) {
+        status.lastError = (err && err.message) || String(err);
+        notify();
+        return false;
+      }
+    }
+
+    return {
+      status,
+      subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+      schedulePush, pull, pingTest,
+    };
+  })();
+
+  // Wrap db.save so every local write triggers a debounced cloud push.
+  // We keep db.save synchronous for the UI; the network happens in the
+  // background and never blocks the user.
+  (function wrapDbSave() {
+    const originalSave = db.save.bind(db);
+    db.save = function (memberId, state) {
+      // Stamp the local state with a version so we can compare against cloud.
+      try { state._localUpdatedAt = new Date().toISOString(); } catch {}
+      originalSave(memberId, state);
+      cloud.schedulePush(memberId, state);
+    };
+  })();
+
+  // Pull cloud state into local on first use of a profile. If the cloud copy
+  // is newer than local (or local is empty), replace local. Returns a Promise
+  // that resolves once local has been hydrated.
+  async function hydrateFromCloud(memberId) {
+    if (!cloud.status.enabled) return;
+    const remote = await cloud.pull(memberId);
+    if (!remote) return;
+    const localRaw = localStorage.getItem(STORAGE_KEY(memberId));
+    let local = null;
+    try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
+    const localTs  = (local && local._localUpdatedAt) || '';
+    const remoteTs = remote.updated_at || '';
+    // If we have nothing locally, or cloud is strictly newer, take the cloud.
+    if (!local || (remoteTs && remoteTs > localTs)) {
+      try {
+        localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
+      } catch {}
+    } else if (local && (!remoteTs || localTs > remoteTs)) {
+      // Local is newer — push it up so cloud catches up.
+      cloud.schedulePush(memberId, local);
+    }
+  }
+
   // ---------- Streak + weekly helpers ----------
   function dateKey(d) {
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -2711,7 +2853,13 @@
 
     if (route.name === 'profiles') {
       return wrap(e(ProfileSelect, {
-        onPick:        (id) => { setActiveId(id); setRoute({ name: 'home' }); },
+        onPick: (id) => {
+          // Pull cloud state in the background — local UI shows immediately,
+          // and the next render after hydration will pick up the freshest data.
+          hydrateFromCloud(id).catch(() => {});
+          setActiveId(id);
+          setRoute({ name: 'home' });
+        },
         onOpenSettings: () => setRoute({ name: 'settings' }),
       }));
     }
@@ -5246,6 +5394,74 @@
     );
   }
 
+  // ---------- Cloud sync status panel (Supabase health + manual sync) ----------
+  function CloudStatusPanel() {
+    const [tick, setTick] = useState(0);
+    const [pinging, setPinging] = useState(false);
+    useEffect(() => cloud.subscribe(() => setTick(t => t + 1)), []);
+    const s = cloud.status;
+
+    const dotColor = !s.enabled ? C.sub
+                    : s.lastError ? C.danger
+                    : s.pending ? C.accent
+                    : C.success;
+    const statusText = !s.enabled ? '未接続'
+                      : s.lastError ? 'エラー'
+                      : s.pending ? '同期中…'
+                      : (s.lastSyncAt ? '同期済み' : '待機中');
+
+    return e('div', { style: { marginTop: 32 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 10, paddingLeft: 4,
+        }
+      }, 'Cloud Sync'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px',
+        }
+      },
+        e('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+          e('span', {
+            style: {
+              width: 10, height: 10, borderRadius: 999, background: dotColor, flexShrink: 0,
+            }
+          }),
+          e('div', { style: { flex: 1, fontSize: 13, fontWeight: 700, color: C.text } }, statusText),
+          e('button', {
+            onClick: async () => {
+              if (pinging) return;
+              setPinging(true);
+              await cloud.pingTest();
+              setPinging(false);
+            },
+            disabled: !s.enabled || pinging,
+            style: {
+              padding: '6px 12px', borderRadius: 999,
+              background: C.softer, border: '1px solid ' + C.line,
+              fontSize: 11, fontWeight: 600, color: C.sub, fontFamily: SANS_UI,
+              cursor: !s.enabled || pinging ? 'default' : 'pointer',
+              opacity: !s.enabled || pinging ? 0.5 : 1,
+            }
+          }, pinging ? '確認中…' : '接続テスト'),
+        ),
+        e('div', { style: { fontSize: 11, color: C.sub, lineHeight: 1.6 } },
+          s.enabled
+            ? '学習データは Supabase に同期されます。別の端末で同じプロフィールを開けば続きから始められます。'
+            : 'Supabase クライアントを読み込めませんでした。オフラインのまま使えます。'),
+        s.lastSyncAt && e('div', {
+          style: { fontSize: 10, color: C.sub, marginTop: 6, fontVariantNumeric: 'tabular-nums' }
+        }, '最終同期: ' + new Date(s.lastSyncAt).toLocaleString('ja-JP')),
+        s.lastError && e('div', {
+          style: { fontSize: 10, color: C.danger, marginTop: 6, lineHeight: 1.5, wordBreak: 'break-word' }
+        }, s.lastError),
+      ),
+    );
+  }
+
   // ---------- Settings (custom display names — local to this device) ----------
   function SettingsScreen({ onBack }) {
     const [names, setNames] = useState(() => loadDisplayNames());
@@ -5600,6 +5816,9 @@
         }
       },
         '🔒 名前はこの端末の localStorage にのみ保存され、サーバーや GitHub には送られません。'),
+
+      // ----- Cloud sync (Supabase) -----
+      e(CloudStatusPanel),
 
       // ----- Family photo gallery -----
       e('div', { style: { marginTop: 32 } },
@@ -7007,6 +7226,13 @@
 
   // ---------- Mount ----------
   ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+
+  // Verify the cloud connection on boot so the Settings panel shows a green
+  // dot immediately when everything's healthy. Failure is silent — the app
+  // keeps working offline.
+  if (cloud.status.enabled) {
+    cloud.pingTest().catch(() => {});
+  }
 
   // ---------- Service Worker registration (offline support) ----------
   // Registered relative to this HTML file so it works on GitHub Pages
