@@ -232,6 +232,20 @@
     } catch (err) { /* ignore */ }
   }
 
+  // ---------- Time helper (relative, ja) ----------
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const ms = Date.now() - new Date(iso).getTime();
+    if (ms < 60_000) return 'たった今';
+    const min = Math.floor(ms / 60_000);
+    if (min < 60)    return min + '分前';
+    const hr  = Math.floor(min / 60);
+    if (hr < 24)     return hr + '時間前';
+    const d   = Math.floor(hr / 24);
+    if (d < 30)      return d + '日前';
+    return Math.floor(d / 30) + 'ヶ月前';
+  }
+
   // ---------- App ----------
   function App() {
     const [route, setRoute] = useState({ name: 'profiles' });
@@ -255,8 +269,9 @@
     if (route.name === 'feature') {
       const feat = FEATURE_BY_ID[route.feature];
       const back = () => setRoute({ name: 'home' });
-      if (route.feature === 'vocab')   return e(VocabBrowse, { profile, onBack: back });
-      if (route.feature === 'daily20') return e(Daily20,     { profile, onBack: back });
+      if (route.feature === 'vocab')    return e(VocabBrowse,   { profile, onBack: back });
+      if (route.feature === 'daily20')  return e(Daily20,       { profile, onBack: back });
+      if (route.feature === 'mistakes') return e(MistakeReview, { profile, onBack: back });
       return e(ComingSoon, { profile, feature: feat, onBack: back });
     }
     return null;
@@ -1026,6 +1041,341 @@
     maxWidth: 480, margin: '0 auto', padding: '20px 22px 96px',
     animation: 'fadeIn .3s ease',
   };
+
+  // ---------- Mistake Review (drives a session from the mistakes log) ----------
+  function MistakeReview({ profile, onBack }) {
+    // Build the deduped list once on mount
+    const initialList = useMemo(() => {
+      const ms = (db.load(profile.id).mistakes) || [];
+      const seen = new Set(); const out = [];
+      for (const m of ms) {
+        if (seen.has(m.vocabId)) continue;
+        seen.add(m.vocabId);
+        const v = VOCAB.find(x => x.id === m.vocabId);
+        if (v) out.push({ vocab: v, at: m.at });
+      }
+      return out;
+    }, [profile.id]);
+
+    const [phase, setPhase]     = useState('list');     // 'list' | 'study' | 'done'
+    const [queue, setQueue]     = useState([]);
+    const [index, setIndex]     = useState(0);
+    const [revealed, setRevealed] = useState(false);
+    const [results, setResults] = useState([]);
+
+    function startAll() {
+      if (initialList.length === 0) return;
+      setQueue(initialList.map(m => m.vocab));
+      setResults([]); setIndex(0); setRevealed(false);
+      setPhase('study');
+    }
+
+    function record(isCorrect) {
+      const cur = queue[index];
+      const prev = db.getVocabProgress(profile.id, cur.id);
+      db.setVocabProgress(profile.id, cur.id, srs.apply(prev, isCorrect));
+
+      if (isCorrect) {
+        // Correct in mistake review -> remove from the mistakes log
+        const s = db.load(profile.id);
+        if (s.mistakes) {
+          s.mistakes = s.mistakes.filter(m => m.vocabId !== cur.id);
+          db.save(profile.id, s);
+        }
+      } else {
+        db.pushMistake(profile.id, cur.id);
+      }
+
+      const newResults = results.concat([{ vocabId: cur.id, isCorrect }]);
+      setResults(newResults);
+      if (index + 1 >= queue.length) { setPhase('done'); return; }
+      setIndex(index + 1); setRevealed(false);
+    }
+
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '間違い復習'),
+      phase === 'study' && e('div', {
+        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+      }, (index + 1) + ' / ' + queue.length),
+    );
+
+    // ============ LIST ============
+    if (phase === 'list') {
+      const empty = initialList.length === 0;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '20px 4px 18px' } },
+          e('div', { style: { fontSize: 32, marginBottom: 10 } }, '🔁'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, 'Review your slips'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+            empty
+              ? 'まだ間違いはありません。'
+              : initialList.length + ' 件の間違いをためました。'),
+        ),
+        empty
+          ? e('div', {
+              style: {
+                background: C.softer, border: '1px dashed ' + C.line,
+                borderRadius: 20, padding: '40px 22px', textAlign: 'center', color: C.sub,
+                marginTop: 8,
+              }
+            },
+              e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
+              e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
+                'まだ間違いがありません'),
+              e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
+                '今日の20問や単語学習で間違えた語が、ここに集まります。'),
+            )
+          : e('div', null,
+              e('button', {
+                onClick: startAll,
+                style: {
+                  width: '100%', padding: '15px 0', borderRadius: 16,
+                  background: profile.color, color: '#fff',
+                  fontSize: 15, fontWeight: 700, letterSpacing: '0.02em',
+                  boxShadow: '0 8px 22px ' + profile.color + '55',
+                  marginBottom: 16,
+                }
+              }, 'まとめて復習する (' + initialList.length + '問)'),
+              e('div', {
+                style: {
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 18, overflow: 'hidden',
+                }
+              },
+                initialList.map((m, i) => e('div', {
+                  key: m.vocab.id,
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '14px 14px',
+                    borderBottom: i < initialList.length - 1 ? '1px solid ' + C.line : 'none',
+                  }
+                },
+                  e('div', {
+                    style: {
+                      width: 30, height: 30, borderRadius: 10,
+                      background: C.danger + '18', color: C.danger,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, fontWeight: 700, flexShrink: 0,
+                    }
+                  }, '✗'),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                      e('div', {
+                        style: {
+                          fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text,
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }
+                      }, m.vocab.en),
+                      e('span', {
+                        style: {
+                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                          background: C.softer, color: C.sub, flexShrink: 0,
+                        }
+                      }, 'L' + m.vocab.level),
+                    ),
+                    e('div', {
+                      style: {
+                        fontSize: 12, color: C.sub, marginTop: 2,
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }
+                    }, m.vocab.ja),
+                  ),
+                  e('div', { style: { fontSize: 11, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
+                )),
+              ),
+            ),
+      );
+    }
+
+    // ============ STUDY ============
+    if (phase === 'study') {
+      const current = queue[index];
+      if (!current) return null;
+      return e('div', { style: pageStyle },
+        topBar,
+        // Progress bar
+        e('div', {
+          style: {
+            height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden',
+          }
+        },
+          e('div', {
+            style: {
+              width: ((index) / queue.length * 100) + '%',
+              height: '100%', background: profile.color,
+              transition: 'width .35s ease',
+            }
+          }),
+        ),
+        // Quiz card
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 24, padding: '26px 22px', marginBottom: 18,
+            boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
+            minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
+          }
+        },
+          e('div', { style: { display: 'flex', gap: 8 } },
+            e('span', {
+              style: {
+                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                background: profile.color + '1A', color: profile.color,
+              }
+            }, 'L' + current.level),
+            e('span', {
+              style: {
+                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                background: C.softer, color: C.sub,
+              }
+            }, current.pos),
+          ),
+          e('div', { style: { textAlign: 'center', padding: '8px 0' } },
+            e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 8 } },
+              '日本語'),
+            e('div', { style: { fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.3 } }, current.ja),
+          ),
+          !revealed
+            ? e('button', {
+                onClick: () => setRevealed(true),
+                style: {
+                  marginTop: 'auto', padding: '14px 0', borderRadius: 14,
+                  background: C.softer, color: profile.color,
+                  fontSize: 14, fontWeight: 700, border: '1px solid ' + profile.color + '33',
+                }
+              }, '答えを見る')
+            : e('div', { style: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 } },
+                e('div', {
+                  style: {
+                    borderTop: '1px dashed ' + C.line, paddingTop: 14,
+                    display: 'flex', alignItems: 'center', gap: 10,
+                  }
+                },
+                  e('div', {
+                    style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, flex: 1 }
+                  }, current.en),
+                  e('button', {
+                    onClick: (ev) => { ev.stopPropagation(); speak(current.en); },
+                    style: {
+                      width: 38, height: 38, borderRadius: 999, fontSize: 16,
+                      background: C.softer, color: profile.color,
+                    }
+                  }, '🔊'),
+                ),
+                e('div', { style: { fontSize: 14, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF } },
+                  current.exEn),
+                e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.6 } },
+                  current.exJa),
+              ),
+        ),
+        revealed && e('div', { style: { display: 'flex', gap: 10 } },
+          e('button', {
+            onClick: () => record(false),
+            style: {
+              flex: 1, padding: '15px 0', borderRadius: 14,
+              background: C.danger + '14', color: C.danger,
+              fontWeight: 700, fontSize: 15, border: '1px solid ' + C.danger + '33',
+            }
+          }, 'まだだめ'),
+          e('button', {
+            onClick: () => record(true),
+            style: {
+              flex: 1, padding: '15px 0', borderRadius: 14,
+              background: C.success, color: '#fff',
+              fontWeight: 700, fontSize: 15, border: '1px solid ' + C.success,
+              boxShadow: '0 6px 14px ' + C.success + '40',
+            }
+          }, '克服した'),
+        ),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      const correct = results.filter(r => r.isCorrect).length;
+      const total = results.length;
+      const accuracy = total > 0 ? Math.round(correct * 100 / total) : 0;
+      const remaining = (db.load(profile.id).mistakes || []).length;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '32px 4px 20px' } },
+          e('div', { style: { fontSize: 44, marginBottom: 10 } }, correct === total ? '🎉' : '💪'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 32, fontWeight: 700, color: C.text, lineHeight: 1.15 }
+          }, correct === total ? '全部克服！' : 'お疲れさま'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6 } },
+            '間違いが ' + remaining + ' 件 残っています。'),
+        ),
+        e('div', {
+          style: {
+            background: 'linear-gradient(135deg, ' + profile.color + ' 0%, ' + profile.color + 'D9 100%)',
+            color: '#fff', padding: '22px 22px', borderRadius: 22, marginBottom: 18,
+            boxShadow: '0 10px 28px ' + profile.color + '33',
+          }
+        },
+          e('div', { style: { fontSize: 11, opacity: 0.85, letterSpacing: '0.14em', fontWeight: 600 } }, 'CLEARED'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 42, fontWeight: 700, marginTop: 4, lineHeight: 1 }
+          }, correct + ' / ' + total),
+          e('div', { style: { fontSize: 13, opacity: 0.92, marginTop: 8 } },
+            '克服率 ' + accuracy + '%'),
+        ),
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 18, padding: 8, marginBottom: 18,
+          }
+        },
+          results.map((r, i) => {
+            const v = VOCAB.find(x => x.id === r.vocabId);
+            if (!v) return null;
+            return e('div', {
+              key: r.vocabId,
+              style: {
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 12px',
+                borderBottom: i < results.length - 1 ? '1px solid ' + C.line : 'none',
+              }
+            },
+              e('div', {
+                style: {
+                  width: 24, height: 24, borderRadius: 999, fontSize: 13,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: r.isCorrect ? C.success + '22' : C.danger + '22',
+                  color:      r.isCorrect ? C.success         : C.danger,
+                  fontWeight: 700,
+                }
+              }, r.isCorrect ? '✓' : '✗'),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', { style: { fontSize: 14, fontWeight: 600, color: C.text } }, v.en),
+                e('div', { style: { fontSize: 11, color: C.sub, marginTop: 1 } }, v.ja),
+              ),
+              e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600 } }, 'L' + v.level),
+            );
+          }),
+        ),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontSize: 14, fontWeight: 700,
+            boxShadow: '0 6px 14px ' + profile.color + '44',
+          }
+        }, 'ホームへ'),
+      );
+    }
+
+    return null;
+  }
 
   // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
   function ComingSoon({ profile, feature, onBack }) {
