@@ -103,6 +103,8 @@
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
+    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -3956,6 +3958,7 @@
       else if (route.feature === 'mastered')          body = e(CombinedMastered,  { profile, onBack: back });
       else if (route.feature === 'ai_translate')      body = e(AITranslate,       { profile, onBack: back });
       else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
+      else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -4230,6 +4233,9 @@
             subtitle = loadApiKey()
               ? '日本語 ⇄ 英語 / 写真の文字も翻訳できる'
               : '設定で API キーを登録してください';
+          } else if (f.id === 'saved_translate') {
+            const n = loadSavedTranslations(profile.id).length;
+            subtitle = n > 0 ? '保存した翻訳 ' + n + ' 件 · タップで復習' : 'AI翻訳の★で保存した文をここで復習';
           }
           return e(FeatureTile, {
             key: f.id, feature: f,
@@ -7840,9 +7846,19 @@
   }
 
   // ---------- Claude API helpers (text + vision) ----------
-  async function callClaudeText(prompt) {
+  // ---------- Claude API (used by AI Translate) ----------
+  // Both helpers call Claude Haiku 4.5 via the browser-direct path. Higher
+  // max_tokens than before because the new translate UI asks for a structured
+  // JSON response with multiple expressions, vocab, grammar, and an example.
+  async function callClaudeText(prompt, system) {
     const apiKey = loadApiKey();
     if (!apiKey) throw new Error('API キーが設定されていません');
+    const body = {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1600,
+      messages: [{ role: 'user', content: prompt }],
+    };
+    if (system) body.system = system;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -7851,11 +7867,7 @@
         'anthropic-dangerous-direct-browser-access': 'true',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
@@ -7865,9 +7877,21 @@
     const out = j.content && j.content[0] && j.content[0].text;
     return out || '';
   }
-  async function callClaudeVision(mediaType, base64) {
+  async function callClaudeVision(mediaType, base64, prompt, system) {
     const apiKey = loadApiKey();
     if (!apiKey) throw new Error('API キーが設定されていません');
+    const body = {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1600,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    };
+    if (system) body.system = system;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -7876,23 +7900,7 @@
         'anthropic-dangerous-direct-browser-access': 'true',
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text:
-              'この画像に写っている文字を読み取り、もう一方の言語に翻訳してください。\n' +
-              '回答の形式（ラベルや余計な説明はつけない）：\n' +
-              '1行目: 元の文字（そのまま）\n' +
-              '空行\n' +
-              '2行目以降: 自然な翻訳\n' +
-              '元が日本語なら英語に、元が英語なら日本語に翻訳すること。' },
-          ],
-        }],
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => '');
@@ -7903,49 +7911,185 @@
     return out || '';
   }
 
+  // ---------- Translate prompt + JSON parser ----------
+  // The model is asked to return a single JSON object with main / casual /
+  // formal / vocab / grammar / example. We strip optional code fences and
+  // extract the first {...} block before parsing so a stray prefix like
+  // "Here is the JSON:" doesn't break us.
+  const TRANSLATE_SYSTEM =
+    'You are a careful Japanese–English tutor for the Hayashi family. ' +
+    'The middle son Yoshinari (吉成) is 16 and lives at a UK boarding school, ' +
+    'so the family is learning British English. Prefer BrE spelling and idiom ' +
+    '(colour, centre, flat, lift, queue, rubbish, brilliant, cheers, mate) ' +
+    'over American English whenever both are natural. ' +
+    'Always reply with one JSON object — no markdown, no code fences, no commentary.';
+  function buildTranslatePrompt(text) {
+    return (
+      'Translate the user input. Detect whether it is Japanese or English, ' +
+      'then translate to the other language. Use natural, modern British English. ' +
+      'Reply with ONE JSON object that matches this exact shape:\n\n' +
+      '{\n' +
+      '  "srcLang": "ja" | "en",\n' +
+      '  "main":    "標準的で自然な訳（一番おすすめの言い方）",\n' +
+      '  "casual":  "親しい人と話すときのカジュアルな言い方",\n' +
+      '  "formal":  "丁寧・書き言葉的な言い方",\n' +
+      '  "vocab": [\n' +
+      '    { "word": "...", "phonetic": "発音 (IPA か カナ)", "meaning": "意味 (日本語、30字以内)" }\n' +
+      '  ],\n' +
+      '  "grammar": "この文で押さえたい文法ポイントを 1 つだけ、日本語で 1〜2 文、具体的に。",\n' +
+      '  "example": { "en": "同じ文型の別の英文", "ja": "その日本語訳" }\n' +
+      '}\n\n' +
+      'Rules:\n' +
+      '- main / casual / formal は 3 つとも違う表現にする。原文と同じ言語で書かない（必ず訳した側の言語で）。\n' +
+      '- vocab は 2〜4 件。中学初級レベルの語 (I, you, the, is …) は外し、学習価値の高い語を選ぶ。\n' +
+      '  word は英語側を入れる。phonetic は英語なら IPA、日本語語彙なら ふりがな。\n' +
+      '- 日本語の文では主語を必ず明示する（私は／あなたは／私たちは など）。省略しない。\n' +
+      '- 英訳は BrE。American 綴り (color, center, apartment, elevator, sidewalk, garbage) は使わない。\n' +
+      '- example は main と同じ文型を使った別の例にする。main の単純な反復にしない。\n' +
+      '- JSON のみ出力。前置きや ``` フェンスを付けない。\n\n' +
+      'Input:\n' + text
+    );
+  }
+  function buildVisionTranslatePrompt() {
+    return (
+      'Read the text in the image, then translate it. Detect language; ' +
+      'translate Japanese to English and English to Japanese. ' +
+      'Reply with ONE JSON object — no markdown, no fences, no commentary — ' +
+      'matching this exact shape:\n\n' +
+      '{\n' +
+      '  "source":    "画像から読み取った原文（そのまま、改行は \\\\n）",\n' +
+      '  "srcLang":   "ja" | "en",\n' +
+      '  "main":      "標準的で自然な訳",\n' +
+      '  "casual":    "親しい人と話すときのカジュアルな言い方",\n' +
+      '  "formal":    "丁寧・書き言葉的な言い方",\n' +
+      '  "vocab":     [ { "word": "...", "phonetic": "...", "meaning": "..." } ],\n' +
+      '  "grammar":   "文法のポイントを 1 つ、日本語で 1〜2 文。",\n' +
+      '  "example":   { "en": "...", "ja": "..." }\n' +
+      '}\n\n' +
+      'Rules: BrE 寄り。日本語の例文は主語を必ず明示。vocab は 2〜4 件。' +
+      'main / casual / formal は 3 つとも違う表現にする。JSON のみ出力。'
+    );
+  }
+  function parseTranslateJSON(text) {
+    if (!text) return null;
+    let s = String(text).trim();
+    // Strip ```json ... ``` or ``` ... ``` fences if the model added them.
+    s = s.replace(/^```(?:json|JSON)?\s*/, '').replace(/\s*```\s*$/, '').trim();
+    const i = s.indexOf('{');
+    const j = s.lastIndexOf('}');
+    if (i < 0 || j < 0 || j <= i) return null;
+    try { return JSON.parse(s.slice(i, j + 1)); } catch { return null; }
+  }
+
+  // ---------- Saved Translations storage ----------
+  // Each profile has its own saved-translations list so Yoshinari can build
+  // up a personal phrasebook he can flip-card-review later. Newest first;
+  // capped at 200 entries so localStorage stays small.
+  const SAVED_TRANSLATE_KEY = (memberId) => 'hfe_saved_translate_v1_' + memberId;
+  const SAVED_TRANSLATE_MAX = 200;
+  function loadSavedTranslations(memberId) {
+    try {
+      const raw = localStorage.getItem(SAVED_TRANSLATE_KEY(memberId));
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+  function saveSavedTranslations(memberId, list) {
+    try {
+      const trimmed = list.slice(0, SAVED_TRANSLATE_MAX);
+      localStorage.setItem(SAVED_TRANSLATE_KEY(memberId), JSON.stringify(trimmed));
+    } catch {}
+  }
+  function addSavedTranslation(memberId, entry) {
+    const list = loadSavedTranslations(memberId);
+    // Dedup by src text — re-saving the same input replaces the old entry
+    // (keeps the latest rich result).
+    const filtered = list.filter(x => x.src !== entry.src);
+    filtered.unshift({ ...entry, id: 'tr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), ts: Date.now() });
+    saveSavedTranslations(memberId, filtered);
+  }
+  function removeSavedTranslation(memberId, id) {
+    const list = loadSavedTranslations(memberId).filter(x => x.id !== id);
+    saveSavedTranslations(memberId, list);
+  }
+  function isSavedTranslation(memberId, src) {
+    if (!src) return false;
+    return loadSavedTranslations(memberId).some(x => x.src === src);
+  }
+
   // ---------- AI Translate ----------
+  // Rich output: main / casual / formal expressions, key vocab with phonetics,
+  // a single grammar note, and an example sentence using the same pattern.
+  // Tap ★ to save into the profile's personal phrasebook for later review.
   function AITranslate({ profile, onBack }) {
     const [input, setInput]   = useState('');
-    const [output, setOutput] = useState('');
+    const [result, setResult] = useState(null); // { src, srcLang, main, casual, formal, vocab, grammar, example }
     const [busy, setBusy]     = useState(false);
     const [error, setError]   = useState('');
     const [hasKey] = useState(() => !!loadApiKey());
+    const [saved, setSaved]   = useState(false);
     const photoRef = useRef(null);
 
     function detectLang(s) {
       // Hiragana / katakana / CJK ideograph → treat as Japanese.
       return /[぀-ヿ一-鿿]/.test(s || '') ? 'ja' : 'en';
     }
+
     async function translateNow() {
       const text = (input || '').trim();
       if (!text || busy) return;
-      setBusy(true); setError(''); setOutput('');
+      setBusy(true); setError(''); setResult(null); setSaved(false);
       try {
-        const lang = detectLang(text);
-        const target = lang === 'ja' ? 'English' : 'Japanese';
-        const prompt =
-          'Translate the following ' + (lang === 'ja' ? 'Japanese' : 'English') +
-          ' text into natural ' + target +
-          '. Reply with the translation only — no quotes, no labels, no commentary.\n\n' +
-          'Text:\n' + text;
-        const result = await callClaudeText(prompt);
-        setOutput(result.trim());
+        const raw = await callClaudeText(buildTranslatePrompt(text), TRANSLATE_SYSTEM);
+        const obj = parseTranslateJSON(raw);
+        if (!obj || !obj.main) {
+          // Fallback: if the model gave us plain text, show it as 'main'
+          setResult({ src: text, srcLang: detectLang(text), main: (raw || '').trim(),
+                      casual: '', formal: '', vocab: [], grammar: '', example: null });
+        } else {
+          setResult({
+            src: text,
+            srcLang: obj.srcLang || detectLang(text),
+            main: obj.main || '', casual: obj.casual || '', formal: obj.formal || '',
+            vocab: Array.isArray(obj.vocab) ? obj.vocab : [],
+            grammar: obj.grammar || '',
+            example: obj.example && obj.example.en ? obj.example : null,
+          });
+          setSaved(isSavedTranslation(profile.id, text));
+        }
       } catch (err) {
         setError((err && err.message) || String(err));
       } finally {
         setBusy(false);
       }
     }
+
     async function handlePhoto(file) {
       if (!file || busy) return;
-      setBusy(true); setError(''); setOutput('');
+      setBusy(true); setError(''); setResult(null); setSaved(false);
       try {
         const dataUrl = await compressImageToDataUrl(file, 1400, 0.85);
         const m = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.*)$/);
         if (!m) throw new Error('画像を読み込めませんでした');
-        const result = await callClaudeVision(m[1], m[2]);
-        setOutput(result.trim());
-        setInput('');
+        const raw = await callClaudeVision(m[1], m[2], buildVisionTranslatePrompt(), TRANSLATE_SYSTEM);
+        const obj = parseTranslateJSON(raw);
+        if (!obj || !obj.main) {
+          setResult({ src: '(写真)', srcLang: 'en', main: (raw || '').trim(),
+                      casual: '', formal: '', vocab: [], grammar: '', example: null });
+        } else {
+          const src = obj.source || '(写真)';
+          setResult({
+            src,
+            srcLang: obj.srcLang || detectLang(src),
+            main: obj.main || '', casual: obj.casual || '', formal: obj.formal || '',
+            vocab: Array.isArray(obj.vocab) ? obj.vocab : [],
+            grammar: obj.grammar || '',
+            example: obj.example && obj.example.en ? obj.example : null,
+          });
+          setInput(src);
+          setSaved(isSavedTranslation(profile.id, src));
+        }
       } catch (err) {
         setError((err && err.message) || String(err));
       } finally {
@@ -7954,8 +8098,22 @@
       }
     }
 
+    function toggleSave() {
+      if (!result) return;
+      if (saved) {
+        // Find by src
+        const list = loadSavedTranslations(profile.id);
+        const hit = list.find(x => x.src === result.src);
+        if (hit) removeSavedTranslation(profile.id, hit.id);
+        setSaved(false);
+      } else {
+        addSavedTranslation(profile.id, result);
+        setSaved(true);
+      }
+    }
+
     const lang = detectLang(input);
-    const targetLabel = lang === 'ja' ? '日本語 → 英語' : '英語 → 日本語';
+    const targetLabel = lang === 'ja' ? '日本語 → 英語 (UK)' : '英語 → 日本語';
 
     return e('div', { style: pageStyle },
       e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
@@ -7969,7 +8127,7 @@
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, 'AI翻訳'),
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-          '日本語を入れると英語に、英語を入れると日本語に翻訳します。写真の文字も読み取って翻訳できます。'),
+          '日本語 ⇄ 英語（イギリス英語寄り）。訳に加えて、カジュアル／丁寧な言い方、重要単語、文法ポイント、同じ文型の例文も返します。'),
       ),
 
       !hasKey
@@ -7995,7 +8153,7 @@
             }, targetLabel),
             e('textarea', {
               value: input,
-              onChange: (ev) => setInput(ev.target.value),
+              onChange: (ev) => { setInput(ev.target.value); setSaved(false); },
               placeholder: '日本語または英語を入力…',
               rows: 4,
               style: {
@@ -8046,29 +8204,429 @@
                 lineHeight: 1.5, wordBreak: 'break-word',
               }
             }, error),
-            output && e('div', {
-              style: {
-                background: C.card, border: '1px solid ' + C.line,
-                borderRadius: 14, padding: '14px 16px',
-              }
-            },
+            result && e(TranslateResult, {
+              result, profile, saved, onToggleSave: toggleSave,
+            }),
+          ),
+    );
+  }
+
+  // ---------- Translate Result Card ----------
+  // Pulls main / casual / formal / vocab / grammar / example out of the
+  // result object and stacks them in a single card with thin dividers. The
+  // "more" expressions (casual/formal/example) are collapsible so the
+  // card stays scannable on first view.
+  function TranslateResult({ result, profile, saved, onToggleSave }) {
+    const [showMore, setShowMore] = useState(false);
+    if (!result) return null;
+    const tgtLang = result.srcLang === 'ja' ? 'en' : 'ja';
+    const speakLang = (s) => /[぀-ヿ一-鿿]/.test(s || '') ? 'ja' : 'en';
+
+    const sectionTitle = (label) => e('div', {
+      style: {
+        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+        letterSpacing: '0.16em', color: C.sub, textTransform: 'uppercase',
+        marginBottom: 8,
+      }
+    }, label);
+
+    return e('div', {
+      style: {
+        background: C.card, border: '1px solid ' + C.line,
+        borderRadius: 14, padding: '16px 16px 14px',
+      }
+    },
+      // Header: 翻訳結果 + speaker + ★
+      e('div', {
+        style: {
+          display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
+        }
+      },
+        e('span', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.16em', color: C.sub, flex: 1,
+          }
+        }, '翻訳結果'),
+        e(SpeakerBtn, { onClick: () => speak(result.main), color: profile.color, size: 30 }),
+        e('button', {
+          onClick: onToggleSave,
+          'aria-label': saved ? '保存解除' : '保存',
+          style: {
+            width: 30, height: 30, borderRadius: 999,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            background: saved ? profile.color + '1A' : C.softer,
+            border: '1px solid ' + (saved ? profile.color : C.line),
+            color: saved ? profile.color : C.sub,
+            fontSize: 16, lineHeight: 1, cursor: 'pointer',
+          }
+        }, saved ? '★' : '☆'),
+      ),
+
+      // Main translation
+      e('div', {
+        style: {
+          fontFamily: SERIF, fontSize: 22, fontWeight: 600,
+          color: C.text, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+        }
+      }, result.main || '—'),
+
+      // Show more / less toggle. Only render the toggle if there is
+      // anything else to show (casual / formal / example).
+      (result.casual || result.formal || result.example) &&
+        e('button', {
+          onClick: () => setShowMore(v => !v),
+          style: {
+            marginTop: 12, padding: '6px 0',
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+            color: profile.color, fontFamily: SANS_UI,
+            background: 'none', border: 'none', cursor: 'pointer',
+          }
+        }, showMore ? '言い換えを閉じる ▲' : '別の言い方を見る ▼'),
+
+      // Casual / formal alternatives (collapsible)
+      showMore && (result.casual || result.formal) && e('div', {
+        style: {
+          marginTop: 10, paddingTop: 12,
+          borderTop: '1px solid ' + C.line,
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }
+      },
+        result.casual && e('div', null,
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }
+          },
+            e('span', { style: { flex: 1 } }, 'CASUAL · 友達向き'),
+            e(SpeakerBtn, { onClick: () => speak(result.casual), color: profile.color, size: 22 }),
+          ),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5 }
+          }, result.casual),
+        ),
+        result.formal && e('div', null,
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }
+          },
+            e('span', { style: { flex: 1 } }, 'FORMAL · 丁寧'),
+            e(SpeakerBtn, { onClick: () => speak(result.formal), color: profile.color, size: 22 }),
+          ),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5 }
+          }, result.formal),
+        ),
+      ),
+
+      // Vocab list — always shown when present
+      result.vocab && result.vocab.length > 0 && e('div', {
+        style: {
+          marginTop: 14, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        sectionTitle('KEY WORDS'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          result.vocab.map((v, i) => e('div', {
+            key: i,
+            style: { display: 'flex', alignItems: 'flex-start', gap: 10 }
+          },
+            e('div', { style: { flex: 1, minWidth: 0 } },
               e('div', {
                 style: {
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
-                  letterSpacing: '0.16em', color: C.sub, marginBottom: 8,
-                  display: 'flex', alignItems: 'center', gap: 10,
+                  display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap',
                 }
               },
-                e('span', { style: { flex: 1 } }, '翻訳結果'),
-                e(SpeakerBtn, { onClick: () => speak(output), color: profile.color, size: 28 }),
+                e('span', {
+                  style: { fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: C.text }
+                }, v.word || ''),
+                v.phonetic && e('span', {
+                  style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+                }, v.phonetic),
               ),
-              e('div', {
-                style: {
-                  fontFamily: SERIF, fontSize: 18, fontWeight: 600,
-                  color: C.text, lineHeight: 1.6, whiteSpace: 'pre-wrap',
-                }
-              }, output),
+              v.meaning && e('div', {
+                style: { fontSize: 13, color: C.text, marginTop: 2, lineHeight: 1.5 }
+              }, v.meaning),
             ),
+            v.word && e(SpeakerBtn, { onClick: () => speak(v.word), color: profile.color, size: 24 }),
+          )),
+        ),
+      ),
+
+      // Grammar note
+      result.grammar && e('div', {
+        style: {
+          marginTop: 14, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        sectionTitle('GRAMMAR'),
+        e('div', {
+          style: { fontSize: 13, color: C.text, lineHeight: 1.7 }
+        }, result.grammar),
+      ),
+
+      // Example (collapsible with the alternatives)
+      showMore && result.example && (result.example.en || result.example.ja) && e('div', {
+        style: {
+          marginTop: 14, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        sectionTitle('EXAMPLE · 同じ文型で'),
+        e('div', {
+          style: {
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+          }
+        },
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            result.example.en && e('div', {
+              style: { fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.5 }
+            }, result.example.en),
+            result.example.ja && e('div', {
+              style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+            }, result.example.ja),
+          ),
+          result.example.en && e(SpeakerBtn, {
+            onClick: () => speak(result.example.en), color: profile.color, size: 24,
+          }),
+        ),
+      ),
+    );
+  }
+
+  // ---------- Saved Translations ("翻訳ノート") ----------
+  // Personal phrasebook of every translation the profile starred. Each row
+  // is collapsed to source + main; tap to expand the full detail (casual /
+  // formal / vocab / grammar / example). ★ removes the entry.
+  function SavedTranslations({ profile, onBack }) {
+    const [items, setItems] = useState(() => loadSavedTranslations(profile.id));
+    const [expandedId, setExpandedId] = useState(null);
+
+    function unsave(id) {
+      removeSavedTranslation(profile.id, id);
+      setItems(loadSavedTranslations(profile.id));
+      if (expandedId === id) setExpandedId(null);
+    }
+
+    function fmtDate(ts) {
+      try {
+        const d = new Date(ts);
+        const pad = (n) => String(n).padStart(2, '0');
+        return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      } catch { return ''; }
+    }
+
+    return e('div', { style: pageStyle },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '翻訳ノート'),
+      ),
+      e('div', { style: { padding: '4px 4px 18px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+        }, '翻訳ノート'),
+        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
+          'AI翻訳で ★ を押した文がここに溜まります。タップで詳細を開きます。'),
+      ),
+
+      items.length === 0
+        ? e('div', {
+            style: {
+              background: C.softer, border: '1px dashed ' + C.line,
+              borderRadius: 14, padding: '24px 22px',
+              fontSize: 13, color: C.sub, lineHeight: 1.7, textAlign: 'center',
+            }
+          },
+            e('div', { style: { fontSize: 24, marginBottom: 8 } }, '☆'),
+            e('div', null, 'まだ保存した翻訳はありません。'),
+            e('div', null, 'AI翻訳の結果カードにある ☆ を押すと、ここに溜まっていきます。'),
+          )
+        : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            items.map((item) => {
+              const expanded = expandedId === item.id;
+              const dirLabel = item.srcLang === 'ja' ? '日本語 → 英語' : '英語 → 日本語';
+              return e('div', {
+                key: item.id,
+                style: {
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 14, padding: '14px 16px',
+                }
+              },
+                // Tap area: source + main translation
+                e('button', {
+                  onClick: () => setExpandedId(expanded ? null : item.id),
+                  style: {
+                    display: 'block', width: '100%', textAlign: 'left',
+                    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                  }
+                },
+                  e('div', {
+                    style: {
+                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
+                      display: 'flex', gap: 10, alignItems: 'center',
+                    }
+                  },
+                    e('span', { style: { flex: 1 } }, dirLabel),
+                    item.ts && e('span', { style: { fontWeight: 500, letterSpacing: 0 } }, fmtDate(item.ts)),
+                  ),
+                  e('div', {
+                    style: {
+                      fontSize: 13, color: C.sub, marginBottom: 6, lineHeight: 1.6,
+                      whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                    }
+                  }, item.src || ''),
+                  e('div', {
+                    style: {
+                      fontFamily: SERIF, fontSize: 18, fontWeight: 600,
+                      color: C.text, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                    }
+                  }, item.main || ''),
+                ),
+
+                // Action row
+                e('div', {
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    marginTop: 12, paddingTop: 10,
+                    borderTop: '1px solid ' + C.line,
+                  }
+                },
+                  e('span', {
+                    style: {
+                      flex: 1, fontSize: 11, color: profile.color,
+                      fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em',
+                    }
+                  }, expanded ? '閉じる ▲' : 'もっと見る ▼'),
+                  e(SpeakerBtn, { onClick: () => speak(item.main || ''), color: profile.color, size: 26 }),
+                  e('button', {
+                    onClick: (ev) => { ev.stopPropagation(); unsave(item.id); },
+                    'aria-label': '保存解除',
+                    style: {
+                      width: 30, height: 30, borderRadius: 999,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      background: profile.color + '1A',
+                      border: '1px solid ' + profile.color,
+                      color: profile.color, fontSize: 16, lineHeight: 1, cursor: 'pointer',
+                    }
+                  }, '★'),
+                ),
+
+                // Expanded body — casual / formal / vocab / grammar / example
+                expanded && e('div', {
+                  style: {
+                    marginTop: 12, paddingTop: 12,
+                    borderTop: '1px solid ' + C.line,
+                    display: 'flex', flexDirection: 'column', gap: 14,
+                  }
+                },
+                  (item.casual || item.formal) && e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                    item.casual && e('div', null,
+                      e('div', {
+                        style: {
+                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }
+                      },
+                        e('span', { style: { flex: 1 } }, 'CASUAL · 友達向き'),
+                        e(SpeakerBtn, { onClick: () => speak(item.casual), color: profile.color, size: 22 }),
+                      ),
+                      e('div', {
+                        style: { fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.5 }
+                      }, item.casual),
+                    ),
+                    item.formal && e('div', null,
+                      e('div', {
+                        style: {
+                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }
+                      },
+                        e('span', { style: { flex: 1 } }, 'FORMAL · 丁寧'),
+                        e(SpeakerBtn, { onClick: () => speak(item.formal), color: profile.color, size: 22 }),
+                      ),
+                      e('div', {
+                        style: { fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.5 }
+                      }, item.formal),
+                    ),
+                  ),
+                  item.vocab && item.vocab.length > 0 && e('div', null,
+                    e('div', {
+                      style: {
+                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        letterSpacing: '0.16em', color: C.sub, marginBottom: 8,
+                      }
+                    }, 'KEY WORDS'),
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                      item.vocab.map((v, i) => e('div', {
+                        key: i,
+                        style: { display: 'flex', alignItems: 'flex-start', gap: 10 }
+                      },
+                        e('div', { style: { flex: 1, minWidth: 0 } },
+                          e('div', {
+                            style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }
+                          },
+                            e('span', {
+                              style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text }
+                            }, v.word || ''),
+                            v.phonetic && e('span', {
+                              style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI }
+                            }, v.phonetic),
+                          ),
+                          v.meaning && e('div', {
+                            style: { fontSize: 13, color: C.text, marginTop: 2, lineHeight: 1.5 }
+                          }, v.meaning),
+                        ),
+                        v.word && e(SpeakerBtn, { onClick: () => speak(v.word), color: profile.color, size: 22 }),
+                      )),
+                    ),
+                  ),
+                  item.grammar && e('div', null,
+                    e('div', {
+                      style: {
+                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
+                      }
+                    }, 'GRAMMAR'),
+                    e('div', {
+                      style: { fontSize: 13, color: C.text, lineHeight: 1.7 }
+                    }, item.grammar),
+                  ),
+                  item.example && (item.example.en || item.example.ja) && e('div', null,
+                    e('div', {
+                      style: {
+                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
+                      }
+                    }, 'EXAMPLE · 同じ文型で'),
+                    e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                      e('div', { style: { flex: 1, minWidth: 0 } },
+                        item.example.en && e('div', {
+                          style: { fontFamily: SERIF, fontSize: 15, color: C.text, lineHeight: 1.5 }
+                        }, item.example.en),
+                        item.example.ja && e('div', {
+                          style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+                        }, item.example.ja),
+                      ),
+                      item.example.en && e(SpeakerBtn, {
+                        onClick: () => speak(item.example.en), color: profile.color, size: 22,
+                      }),
+                    ),
+                  ),
+                ),
+              );
+            })
           ),
     );
   }
