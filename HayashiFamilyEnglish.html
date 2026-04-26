@@ -2477,6 +2477,45 @@
     { id:'s459', level:1, grammar:'はじめて Are you ~?',      ja:'あなたはうれしいですか？',     en:'Are you happy?' },
     { id:'s460', level:1, grammar:'はじめて Yes 答え',        ja:'はい、私はうれしいです。',     en:'Yes, I am happy.' },
     { id:'s461', level:1, grammar:'はじめて 一般動詞',        ja:'私はサッカーをします。',       en:'I play soccer.' },
+
+    // ---- Q&A pairs (疑問文 + 答え) ----
+    // Each pair lives as two adjacent SENTENCES entries — one for the
+    // question, one for the answer — so the 瞬間英作文 session can
+    // surface either side. Grouped by level: L1 = WH-questions kids
+    // already say in Japanese (時間 / 元気 / 何色), L2 = adds Why /
+    // Because and When, L3 = 現在完了 / would / 仮定法.
+    { id:'s462', level:1, grammar:'WH 疑問 What',  ja:'あなたは何時に起きますか？',         en:'What time do you wake up?' },
+    { id:'s463', level:1, grammar:'答え 時間',     ja:'私は7時に起きます。',                en:'I wake up at seven.' },
+    { id:'s464', level:1, grammar:'WH 疑問 How',   ja:'あなたは元気ですか？',               en:'How are you?' },
+    { id:'s465', level:1, grammar:'答え 元気',     ja:'私は元気です、ありがとう。',         en:'I am fine, thank you.' },
+    { id:'s466', level:1, grammar:'WH 疑問 Who',   ja:'彼女はだれですか？',                 en:'Who is she?' },
+    { id:'s467', level:1, grammar:'答え 家族',     ja:'彼女は私のお母さんです。',           en:'She is my mother.' },
+    { id:'s468', level:1, grammar:'WH 疑問 What',  ja:'あなたは何色がすきですか？',         en:'What colour do you like?' },
+    { id:'s469', level:1, grammar:'答え 色',       ja:'私は青がすきです。',                 en:'I like blue.' },
+    { id:'s470', level:1, grammar:'WH 疑問 What',  ja:'今日は何曜日ですか？',               en:'What day is it today?' },
+    { id:'s471', level:1, grammar:'答え 曜日',     ja:'今日は月曜日です。',                 en:'It is Monday today.' },
+
+    { id:'s472', level:2, grammar:'WH 疑問 Why',     ja:'あなたはどうして悲しいのですか？',   en:'Why are you sad?' },
+    { id:'s473', level:2, grammar:'答え Because',    ja:'なぜなら、私はペンをなくしたからです。', en:'Because I lost my pen.' },
+    { id:'s474', level:2, grammar:'WH 疑問 When',    ja:'あなたはいつ学校に行きますか？',     en:'When do you go to school?' },
+    { id:'s475', level:2, grammar:'答え 時刻',       ja:'私は朝8時に学校に行きます。',        en:'I go to school at 8 in the morning.' },
+    { id:'s476', level:2, grammar:'WH 疑問 Where',   ja:'あなたはどこの出身ですか？',         en:'Where are you from?' },
+    { id:'s477', level:2, grammar:'答え from',       ja:'私は日本の出身です。',               en:'I am from Japan.' },
+    { id:'s478', level:2, grammar:'WH 疑問 What',    ja:'あなたはお昼に何が食べたいですか？', en:'What do you want for lunch?' },
+    { id:'s479', level:2, grammar:'答え want',       ja:'私はカレーライスが食べたいです。',   en:'I want curry rice.' },
+    { id:'s480', level:2, grammar:'WH 疑問 進行形',  ja:'あなたは今何をしていますか？',       en:'What are you doing now?' },
+    { id:'s481', level:2, grammar:'答え 進行形',     ja:'私は本を読んでいます。',             en:'I am reading a book.' },
+
+    { id:'s482', level:3, grammar:'WH 疑問 完了形 How long', ja:'あなたはどのくらいここに住んでいますか？', en:'How long have you lived here?' },
+    { id:'s483', level:3, grammar:'答え 完了形',             ja:'私はここに3年住んでいます。',              en:'I have lived here for three years.' },
+    { id:'s484', level:3, grammar:'WH 疑問 think about',     ja:'あなたはそれについてどう思いますか？',     en:'What do you think about it?' },
+    { id:'s485', level:3, grammar:'答え I think',            ja:'私はそれはすばらしい考えだと思います。',   en:'I think it is a great idea.' },
+    { id:'s486', level:3, grammar:'WH 疑問 完了形 ever',     ja:'あなたはロンドンに行ったことがありますか？', en:'Have you ever been to London?' },
+    { id:'s487', level:3, grammar:'答え 完了形 twice',       ja:'はい、私は2回行ったことがあります。',      en:'Yes, I have been there twice.' },
+    { id:'s488', level:3, grammar:'WH 疑問 want to be',      ja:'あなたは将来何になりたいですか？',         en:'What do you want to be in the future?' },
+    { id:'s489', level:3, grammar:'答え 職業',               ja:'私はサッカー選手になりたいです。',         en:'I want to be a soccer player.' },
+    { id:'s490', level:3, grammar:'WH 疑問 仮定法',          ja:'もし時間があったら、あなたは何をしますか？', en:'If you had time, what would you do?' },
+    { id:'s491', level:3, grammar:'答え 仮定法 would',       ja:'私は別の言語を学びたいです。',             en:'I would learn another language.' },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
