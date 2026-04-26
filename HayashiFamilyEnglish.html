@@ -2760,9 +2760,9 @@
   // is newer than local (or local is empty), replace local. Returns a Promise
   // that resolves once local has been hydrated.
   async function hydrateFromCloud(memberId) {
-    if (!cloud.status.enabled) return;
+    if (!cloud.status.enabled) return false;
     const remote = await cloud.pull(memberId);
-    if (!remote) return;
+    if (!remote) return false;
     const localRaw = localStorage.getItem(STORAGE_KEY(memberId));
     let local = null;
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
@@ -2772,10 +2772,35 @@
     if (!local || (remoteTs && remoteTs > localTs)) {
       try {
         localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
-      } catch {}
+        return true;
+      } catch { return false; }
     } else if (local && (!remoteTs || localTs > remoteTs)) {
       // Local is newer — push it up so cloud catches up.
       cloud.schedulePush(memberId, local);
+    }
+    return false;
+  }
+
+  // Pull EVERY family member's progress row so the ProfileSelect screen
+  // shows up-to-date '覚えた / 連続日数 / 累計正解' for everyone, even
+  // when that member's data was last written from a different device
+  // (e.g. Yoshinari studying overnight in his UK dorm and the parents
+  // checking from Tokyo the next morning).
+  async function hydrateAllProfilesFromCloud() {
+    if (!cloud.status.enabled || !cloud.status.online) return;
+    let anyChanged = false;
+    // Sequential rather than parallel to keep the request burst small —
+    // 5 members × 1 round-trip is fast enough either way.
+    for (const p of PROFILES) {
+      try {
+        const changed = await hydrateFromCloud(p.id);
+        if (changed) anyChanged = true;
+      } catch {}
+    }
+    if (anyChanged) {
+      // Same event the family-shared hydrate uses — App bumps a render
+      // tick and ProfileCard re-reads localStorage with the new data.
+      try { window.dispatchEvent(new CustomEvent('hfe:family-hydrated')); } catch {}
     }
   }
 
@@ -7500,6 +7525,23 @@
     // so anything set on another device shows up here too. Names + avatars
     // + photos all live in one shared row so one save can't wipe the rest.
     hydrateFamilySharedFromCloud().catch(() => {});
+    // Pull every family member's learning progress so the ProfileSelect
+    // screen shows fresh stats for everyone, not only the profile that's
+    // most recently been opened on this device. This is what makes
+    // 'Yoshinari studied overnight in the UK' visible to Dad's iPad
+    // the next morning.
+    hydrateAllProfilesFromCloud().catch(() => {});
+  }
+  // When the device comes back online, also re-pull everyone's progress
+  // so a parent who's been offline picks up the kids' overnight study
+  // without having to relaunch the app.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => {
+      if (cloud.status.enabled) {
+        hydrateAllProfilesFromCloud().catch(() => {});
+        hydrateFamilySharedFromCloud().catch(() => {});
+      }
+    });
   }
 
   // ---------- Service Worker registration (offline support) ----------
