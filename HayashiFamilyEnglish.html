@@ -3049,6 +3049,53 @@
     { id:'qa66_a', role:'A', level:5, ja:'失敗を「終わり」ではなくデータとして捉えることかな。', en:'I treat failure as data, not as the end.' },
     { id:'qa67_q', role:'Q', level:5, ja:'幸せの定義は人によって違うと思う？',               en:'Do you think the definition of happiness varies from person to person?' },
     { id:'qa67_a', role:'A', level:5, ja:'もちろん。だからこそ、自分にとっての幸せを言葉にできる人は強い。', en:"Of course — that's why people who can articulate their own happiness are strong." },
+
+    // ---- "Others": online English lesson script (level:'others') ----
+    // A separate bucket — not part of the LV1-5 progression. Use this when
+    // preparing for a Filipino / online English tutor session: opening
+    // exchange, ground rules, free-talk lead-in, closing remarks.
+    // Order matches the natural lesson flow but each entry is a standalone
+    // shadowing target.
+
+    // Opening / introduction / requests
+    { id:'oc01', level:'others', ja:'私の声が聞こえて顔が見えますか？',                 en:'Can you hear and see me?' },
+    { id:'oc02', level:'others', ja:'はい、ハッキリと聞こえて見えます。',                 en:'Yes, I can hear and see you clearly.' },
+    { id:'oc03', level:'others', ja:'こんにちは！お元気ですか？',                         en:'Hi, how are you doing?' },
+    { id:'oc04', level:'others', ja:'元気です、あなたは？',                                en:"I'm good, thank you. And you?" },
+    { id:'oc05', level:'others', ja:'聞いてくれて有難う、元気です。',                     en:"Thank you for asking me. I'm good." },
+    { id:'oc06', level:'others', ja:'何とお呼びすればいいですか？',                       en:'What can I call you?' },
+    { id:'oc07', level:'others', ja:'ヨシと呼んで下さい。',                                en:'Call me Yoshi.' },
+    { id:'oc08', level:'others', ja:'今回が初めてのレッスンなので自己紹介させて下さい。', en:'Since this is our first lesson, let me introduce myself.' },
+    { id:'oc09', level:'others', ja:'以上です。聴いてくれてありがとう。',                 en:"That's it. Thank you for listening." },
+    { id:'oc10', level:'others', ja:'そして2つリクエストがあります。',                   en:'And I have two requests.' },
+    { id:'oc11', level:'others', ja:'1つ目は、出来る限りゆっくり話して下さい。',         en:'First, please speak as slowly as you can.' },
+    { id:'oc12', level:'others', ja:'2つ目は、話す時は同時にたくさん話さないで下さい。', en:"Second, when you speak, please don't say many sentences at the same time." },
+    { id:'oc13', level:'others', ja:'なぜならそれらを聴き取るのが難しいからです。',       en:"Because it's difficult for me to listen to them." },
+    { id:'oc14', level:'others', ja:'一度に英文は1つだけ話して下さい。',                 en:'Speak one sentence at a time.' },
+    { id:'oc15', level:'others', ja:'では、あなたの番です。',                              en:"Well, it's your turn." },
+    { id:'oc16', level:'others', ja:'自己紹介して下さい。',                                en:'Please introduce yourself.' },
+    { id:'oc17', level:'others', ja:'出身はどちらですか。',                                en:'Where are you from?' },
+    { id:'oc18', level:'others', ja:'フィリピンのどこに住んでいるのですか？',             en:'Where in the Philippines do you live?' },
+    { id:'oc19', level:'others', ja:'マニラはどんな所ですか？',                            en:'What is Manila like?' },
+    { id:'oc20', level:'others', ja:'あなたの情報をシェアしてくれて有難う。',             en:'Thank you for sharing your information.' },
+
+    // Free talk / mid-lesson / closing
+    { id:'oc21', level:'others', ja:'フリートークがしたいです。',                          en:"I'd like to have free talk." },
+    { id:'oc22', level:'others', ja:'このレッスンの間は主導権を握らせて下さい。',         en:'Let me take the lead during this lesson.' },
+    { id:'oc23', level:'others', ja:'質問せずに私の話を聞いて欲しいです。',               en:'I want you to listen to me without asking me questions.' },
+    { id:'oc24', level:'others', ja:'いいですか？',                                        en:'Is it OK?' },
+    { id:'oc25', level:'others', ja:'仕事についてお話しさせて下さい。',                   en:'Let me talk about my work.' },
+    { id:'oc26', level:'others', ja:'私の話は分かりますか？',                              en:'Do you understand me?' },
+    { id:'oc27', level:'others', ja:'1つ質問させて下さい。',                              en:'Let me ask you a question.' },
+    { id:'oc28', level:'others', ja:'あぁ、時間が経つのは早いですね。',                   en:'Oh, time flies.' },
+    { id:'oc29', level:'others', ja:'私はここでレッスンを終わりたいと思います。',         en:'I will finish this lesson here.' },
+    { id:'oc30', level:'others', ja:'私の英語についてどう思いますか？',                   en:'What do you think about my English?' },
+    { id:'oc31', level:'others', ja:'レッスン後にフィードバックをメッセージボックスに送ってもらえますか？', en:'Could you send me the feedback on the message box after this lesson?' },
+    { id:'oc32', level:'others', ja:'今日はレッスンを有難うございます。',                 en:'Thank you for the lesson today.' },
+    { id:'oc33', level:'others', ja:'それはとても楽しかったです。',                        en:'I enjoyed it so much.' },
+    { id:'oc34', level:'others', ja:'次のレッスンを楽しみにしています。',                 en:"I'm looking forward to the next lesson." },
+    { id:'oc35', level:'others', ja:'あなたのような講師に出会えて幸運です。',             en:"I'm lucky to meet a great teacher like you." },
+    { id:'oc36', level:'others', ja:'では良い1日を。',                                    en:'See you and have a nice day! Bye bye!' },
   ];
 
   // ---------- Famous long-form passages for shadowing ----------
@@ -13150,8 +13197,10 @@
   })();
 
   // How many sentences live at a level (or total for 'auto').
+  // 'auto' only counts the LV1-5 progression — 'others' is a side bucket
+  // (online-lesson script) that the おまかせ picker never draws from.
   function shadowLevelSize(lv) {
-    if (lv === 'auto') return SHADOWING_QA.length;
+    if (lv === 'auto') return SHADOWING_QA.filter(s => typeof s.level === 'number').length;
     return SHADOWING_QA.filter(s => s.level === lv).length;
   }
 
@@ -13550,7 +13599,7 @@
         },
           [{ id: 'auto', label: 'おまかせ' }].concat(
             SHADOW_LEVELS.map(lv => ({ id: lv, label: 'LV' + lv }))
-          ).map(opt => {
+          ).concat([{ id: 'others', label: '英会話' }]).map(opt => {
             const isActive = selectedLevel === opt.id;
             const count = shadowLevelSize(opt.id);
             const empty = count === 0;
