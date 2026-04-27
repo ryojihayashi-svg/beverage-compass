@@ -4127,9 +4127,13 @@
     const undoneLessons = ENGLISH_LESSONS.filter(
       l => !(loadLessonProgress(memberId)[l.id])
     ).length;
-    // 1. Daily English warm-up (60% of the time)
-    if (rand() < 0.6) out.push({ id: 'phrases' });
-    // 2 + 4. Two main inputs in random order
+    // 1. Shadowing warm-up (70% of the time). Mouth + ear before
+    // anything visual. Yoshinari can skip with 'あとでやる' on the
+    // intro screen when the dorm is asleep.
+    if (rand() < 0.7) out.push({ id: 'shadowing' });
+    // 2. Daily English warm-up (40% of the time)
+    if (rand() < 0.4) out.push({ id: 'phrases' });
+    // 3 + 5. Two main inputs in random order
     const main = ['vocab_ja2en', 'composition_ja2en'];
     if (rand() < 0.5) main.reverse();
     out.push({ id: main[0] });
@@ -4138,9 +4142,9 @@
     out.push({ id: 'mistakes' });
     out.push({ id: main[1] });
     out.push({ id: 'mistakes' });
-    // 6. 1分英語解説 (50% if there's an unfinished lesson)
+    // 7. 1分英語解説 (50% if there's an unfinished lesson)
     if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
-    // 7. Random test as the closer
+    // 8. Random test as the closer
     out.push({ id: 'random_test' });
     return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
   }
@@ -4209,6 +4213,7 @@
     composition_en2ja: '瞬間英作文',
     mistakes:          '間違い復習',
     english_lessons:   '1分英語解説',
+    shadowing:         'シャドーイング',
     random_test:       'ランダムテスト',
   };
 
@@ -11644,6 +11649,25 @@
             letterSpacing: '0.04em', cursor: canStart ? 'pointer' : 'default',
           }
         }, canStart ? 'スタート (最大 ' + SHADOW_SESSION_COUNT + ' 文)' : 'このレベルは準備中'),
+
+        // Skip-for-now option — when the dorm is asleep and声 can't
+        // come out. Marks today's shadowing step as done without
+        // playing, then bounces back to home so the path glow moves
+        // on to the next activity. Doesn't ship a 'shadowing' event,
+        // so the activity log stays honest.
+        e('button', {
+          onClick: () => {
+            try { markPathStepDone(profile, 'shadowing'); } catch {}
+            backToHome();
+          },
+          style: {
+            width: '100%', padding: '12px 0', borderRadius: 14,
+            background: 'none', color: C.sub,
+            border: 'none', marginTop: 6,
+            fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+            cursor: 'pointer', letterSpacing: '0.04em',
+          }
+        }, '今は声を出せない（あとでやる）'),
       );
     }
 
