@@ -6441,13 +6441,15 @@
         }, todayPhrase.ja),
       ),
 
-      // Today's guided path — a small banner above the feature tiles
-      // showing how far the learner has progressed and what's up next.
-      // Hidden for viewer-only profiles since they don't get the path.
+      // Today's guided path — a small banner above the feature tiles.
+      // When the path is "done" we deliberately don't celebrate hard:
+      // English fluency comes from one more rep, not from finishing a
+      // checklist. Push the learner toward 間違い復習 (固める) /
+      // shadowing (口を動かす) / もう 1 セット any of the inputs.
       path && e('div', {
         style: {
-          background: allDone ? (C.success + '14') : C.card,
-          border: '1px solid ' + (allDone ? C.success : C.line),
+          background: allDone ? (profile.color + '0F') : C.card,
+          border: '1px solid ' + (allDone ? profile.color : C.line),
           borderRadius: 14, padding: '12px 14px', marginBottom: 16,
         }
       },
@@ -6456,12 +6458,43 @@
               e('div', {
                 style: {
                   fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
-                  letterSpacing: '0.12em', color: C.success, marginBottom: 4,
+                  letterSpacing: '0.12em', color: profile.color, marginBottom: 4,
                 }
-              }, '🎉  今日の学習 完了！'),
+              }, 'ベース完走 ✓ もう一歩、いってみる？'),
               e('div', {
-                style: { fontSize: 13, color: C.text, lineHeight: 1.6 }
-              }, totalSteps + ' ステップぜんぶやりました。お疲れさま！'),
+                style: { fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }
+              }, '英語は「もう一回」で伸びる。間違いを復習して固めるか、口をもう一周動かすかしよう。'),
+              // Bonus action row — surface the most useful next move.
+              // Mistake review takes priority when there's anything to
+              // review; otherwise nudge toward shadowing (mouth) →
+              // vocab → composition.
+              (function () {
+                const mistakeCount = (db.getMistakesNormalized
+                  ? db.getMistakesNormalized(profile.id).length : 0);
+                const buttons = [];
+                if (mistakeCount > 0) {
+                  buttons.push({ id: 'mistakes', label: '🎯 間違い復習 ' + mistakeCount + '問', primary: true });
+                }
+                buttons.push({ id: 'shadowing',         label: '🎤 シャドーイングもう 1 セット' });
+                buttons.push({ id: 'vocab_ja2en',       label: '📚 単語をもう 10 問' });
+                buttons.push({ id: 'composition_ja2en', label: '✏️ 瞬間英作文をもう 10 問' });
+                return e('div', {
+                  style: { display: 'flex', flexDirection: 'column', gap: 6 }
+                },
+                  buttons.map(b => e('button', {
+                    key: b.id,
+                    onClick: () => onPickFeature(b.id),
+                    style: {
+                      padding: '10px 14px', borderRadius: 10,
+                      background: b.primary ? profile.color : 'transparent',
+                      color:      b.primary ? '#fff' : profile.color,
+                      border: '1px solid ' + (b.primary ? profile.color : profile.color + '66'),
+                      fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
+                      cursor: 'pointer', textAlign: 'left',
+                    }
+                  }, b.label)),
+                );
+              })(),
             )
           : e('div', null,
               e('div', {
