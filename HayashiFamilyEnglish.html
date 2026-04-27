@@ -2684,6 +2684,60 @@
   };
   const SCENE_ORDER = ['school', 'cafeteria', 'friends', 'shopping'];
 
+  // ---------- Shadowing Q&A pool ----------
+  // Things Yoshinari actually gets asked at his UK boarding dorm and the
+  // natural answers a high-schooler would give. Stored as adjacent Q + A
+  // entries; the shadowing queue builder keeps each pair together so the
+  // ear hears the question right before the answer. British English,
+  // contractions OK (it's natural, fast spoken English).
+  const SHADOWING_QA = [
+    // L1 — daily small talk
+    { id:'qa01_q', role:'Q', level:1, ja:'元気？',                              en:'How are you?' },
+    { id:'qa01_a', role:'A', level:1, ja:'元気だよ、ありがとう。',              en:"I'm good, thanks." },
+    { id:'qa02_q', role:'Q', level:1, ja:'大丈夫？',                            en:'Are you OK?' },
+    { id:'qa02_a', role:'A', level:1, ja:'うん、大丈夫だよ。',                  en:"Yeah, I'm fine." },
+    { id:'qa03_q', role:'Q', level:1, ja:'どこの出身？',                         en:'Where are you from?' },
+    { id:'qa03_a', role:'A', level:1, ja:'日本から来たよ。',                     en:"I'm from Japan." },
+    { id:'qa04_q', role:'Q', level:1, ja:'何歳？',                              en:'How old are you?' },
+    { id:'qa04_a', role:'A', level:1, ja:'16歳だよ。',                          en:"I'm sixteen." },
+    { id:'qa05_q', role:'Q', level:1, ja:'サッカー好き？',                       en:'Do you like football?' },
+    { id:'qa05_a', role:'A', level:1, ja:'うん、大好き。',                       en:'Yeah, I love it.' },
+
+    // L2 — everyday school chat
+    { id:'qa06_q', role:'Q', level:2, ja:'今日はどうだった？',                   en:'How was your day?' },
+    { id:'qa06_a', role:'A', level:2, ja:'まあまあ良かったよ。',                 en:'It was pretty good.' },
+    { id:'qa07_q', role:'Q', level:2, ja:'週末はどうだった？',                   en:'How was your weekend?' },
+    { id:'qa07_a', role:'A', level:2, ja:'悪くなかったよ。家にいた。',           en:"Not bad. I just stayed in." },
+    { id:'qa08_q', role:'Q', level:2, ja:'お昼に何食べた？',                     en:'What did you have for lunch?' },
+    { id:'qa08_a', role:'A', level:2, ja:'サンドイッチを食べた。',               en:'I had a sandwich.' },
+    { id:'qa09_q', role:'Q', level:2, ja:'よく眠れた？',                         en:'Did you sleep well?' },
+    { id:'qa09_a', role:'A', level:2, ja:'あんまり。夜更かししちゃった。',       en:'Not really. I was up late.' },
+    { id:'qa10_q', role:'Q', level:2, ja:'どんなスポーツやるの？',               en:'What sports do you play?' },
+    { id:'qa10_a', role:'A', level:2, ja:'サッカーとバスケをやるよ。',           en:'I play football and basketball.' },
+    { id:'qa11_q', role:'Q', level:2, ja:'ロンドンに行ったことある？',           en:'Have you been to London?' },
+    { id:'qa11_a', role:'A', level:2, ja:'うん、何回かあるよ。',                 en:"Yeah, a couple of times." },
+    { id:'qa12_q', role:'Q', level:2, ja:'今、何時？',                           en:"What's the time?" },
+    { id:'qa12_a', role:'A', level:2, ja:'3時半だよ。',                          en:"It's half past three." },
+    { id:'qa13_q', role:'Q', level:2, ja:'何してるの？',                         en:'What are you doing?' },
+    { id:'qa13_a', role:'A', level:2, ja:'特に何も、まったりしてる。',           en:"Not much, just chilling." },
+
+    // L3 — more nuanced UK boarding-school questions
+    { id:'qa14_q', role:'Q', level:3, ja:'イギリス来てどのくらい？',             en:'How long have you been in the UK?' },
+    { id:'qa14_a', role:'A', level:3, ja:'もう半年くらいになるよ。',             en:'About six months now.' },
+    { id:'qa15_q', role:'Q', level:3, ja:'日本が恋しい？',                       en:'Do you miss Japan?' },
+    { id:'qa15_a', role:'A', level:3, ja:'ちょっとね、特に食べ物が。',           en:'A little bit, especially the food.' },
+    { id:'qa16_q', role:'Q', level:3, ja:'こっちで一番大変なことは？',           en:"What's the hardest thing about being here?" },
+    { id:'qa16_a', role:'A', level:3, ja:'正直、食べ物に慣れるのに時間かかった。', en:'Honestly, the food took a while to get used to.' },
+    { id:'qa17_q', role:'Q', level:3, ja:'休みは家に帰るの？',                   en:'Are you going home for the holidays?' },
+    { id:'qa17_a', role:'A', level:3, ja:'うん、来週帰るよ。',                   en:"Yeah, I'm flying back next week." },
+    { id:'qa18_q', role:'Q', level:3, ja:'放課後は普段なにしてるの？',           en:'What do you usually do after school?' },
+    { id:'qa18_a', role:'A', level:3, ja:'宿題して、あとは仲間と過ごすかな。',   en:'I usually do homework, then hang out with mates.' },
+    { id:'qa19_q', role:'Q', level:3, ja:'友達はできた？',                       en:'Have you made many friends?' },
+    { id:'qa19_a', role:'A', level:3, ja:'うん、こっちの仲間はいいやつばっかり。', en:'Yeah, the lads here are really cool.' },
+    { id:'qa20_q', role:'Q', level:3, ja:'卒業したらどうしたい？',               en:'What do you want to do after school?' },
+    { id:'qa20_a', role:'A', level:3, ja:'イギリスの大学に行こうかなって思ってる。', en:"I'm thinking about going to uni in the UK." },
+  ];
+
   // ---------- 1分英語解説 (English Lessons) ----------
   // Tiny self-contained lessons for kids who freeze when they see grammar.
   // Each lesson has a short explanation block (today's question, imagery,
@@ -11271,12 +11325,35 @@
     }, [phase, index, repNumber, paused, replayKey]);
 
     function startSession() {
-      const pool = DAILY_PHRASES.slice();
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+      // Build candidate "groups". A group is either a Q+A pair (must
+      // stay adjacent so the ear hears the question right before its
+      // answer) or a single phrase. Then shuffle the groups and pull
+      // groups in until we hit SESSION_COUNT slots.
+      const groups = [];
+      for (let i = 0; i < SHADOWING_QA.length; i++) {
+        const cur = SHADOWING_QA[i];
+        const nxt = SHADOWING_QA[i + 1];
+        if (cur.role === 'Q' && nxt && nxt.role === 'A') {
+          groups.push([cur, nxt]);
+          i++;
+        } else {
+          groups.push([cur]);
+        }
       }
-      setQueue(pool.slice(0, SHADOW_SESSION_COUNT));
+      DAILY_PHRASES.forEach(p => groups.push([p]));
+      // Fisher-Yates on groups
+      for (let i = groups.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = groups[i]; groups[i] = groups[j]; groups[j] = t;
+      }
+      const queueOut = [];
+      for (const g of groups) {
+        if (queueOut.length + g.length <= SHADOW_SESSION_COUNT) {
+          queueOut.push(...g);
+        }
+        if (queueOut.length >= SHADOW_SESSION_COUNT) break;
+      }
+      setQueue(queueOut);
       setIndex(0);
       setRepNumber(1);
       setPaused(false);
@@ -11364,6 +11441,10 @@
     }
 
     // ============ DONE ============
+    // Review screen — now shows EN + JA + role badge so the user can
+    // finally check "ah, that's what I was saying". Shadowing trains
+    // ear/tongue without thinking about meaning; the meaning check
+    // happens here, after the mouth has done its job.
     if (phase === 'done') {
       return e('div', { style: pageStyle },
         topBar,
@@ -11380,25 +11461,51 @@
         ),
         e('div', {
           style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'なんて言ってたか、いま確認しよう'),
+        e('div', {
+          style: {
             background: C.card, border: '1px solid ' + C.line,
             borderRadius: 14, padding: '6px 0', marginBottom: 18,
           }
         },
           queue.map((p, i) => e('div', {
-            key: p.id || i,
+            key: (p.id || '') + '_' + i,
             style: {
-              display: 'flex', alignItems: 'center', gap: 12,
+              display: 'flex', alignItems: 'flex-start', gap: 12,
               padding: '12px 16px',
               borderBottom: i === queue.length - 1 ? 'none' : '1px solid ' + C.line,
             }
           },
             e('span', {
-              style: { fontSize: 13, color: C.sub, fontFamily: SANS_UI, width: 18, textAlign: 'right' }
+              style: {
+                fontSize: 12, color: C.sub, fontFamily: SANS_UI,
+                width: 22, textAlign: 'right', flexShrink: 0,
+                marginTop: 3, fontVariantNumeric: 'tabular-nums',
+              }
             }, String(i + 1)),
-            e('span', {
-              style: { flex: 1, fontFamily: SERIF, fontSize: 14, color: C.text, lineHeight: 1.5 }
-            }, p.en),
-            e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 24 }),
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              p.role && e('span', {
+                style: {
+                  display: 'inline-block', marginRight: 8, marginBottom: 4,
+                  padding: '1px 7px', borderRadius: 999,
+                  background: p.role === 'Q' ? C.ocean + '14' : C.success + '14',
+                  color:      p.role === 'Q' ? C.ocean        : C.success,
+                  fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                  letterSpacing: '0.1em',
+                }
+              }, p.role === 'Q' ? '質問' : '答え'),
+              e('div', {
+                style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5 }
+              }, p.en),
+              e('div', {
+                style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.6 }
+              }, p.ja),
+            ),
+            e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 26 }),
           )),
         ),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -11482,15 +11589,28 @@
           }, '🔊'),
           e('span', null, paused ? '一時停止中' : (isSpeaking ? '聞いて → 真似してみよう' : 'もう一度言ってみよう')),
         ),
+        // Q/A role pill — only for entries from the SHADOWING_QA pool.
+        // Tells the ear "this is the question" / "this is the answer"
+        // without breaking the meaning-doesn't-matter flow.
+        current.role && e('div', {
+          style: {
+            display: 'inline-flex', alignSelf: 'center',
+            padding: '2px 10px', borderRadius: 999,
+            background: current.role === 'Q' ? C.ocean + '14' : C.success + '14',
+            color:      current.role === 'Q' ? C.ocean        : C.success,
+            border: '1px solid ' + (current.role === 'Q' ? C.ocean : C.success) + '55',
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 800,
+            letterSpacing: '0.12em',
+          }
+        }, current.role === 'Q' ? '質問 · QUESTION' : '答え · ANSWER'),
         e('div', {
           style: {
             fontFamily: SERIF, fontSize: 26, fontWeight: 700,
             color: C.text, lineHeight: 1.45,
           }
         }, current.en),
-        e('div', {
-          style: { fontSize: 13, color: C.sub, lineHeight: 1.6 }
-        }, current.ja),
+        // Japanese is intentionally hidden during shadowing — we don't
+        // want the kid reading it. Meaning gets revealed at the end.
         repDots,
       ),
 
