@@ -11246,12 +11246,23 @@
 
   // ---------- シャドーイング ----------
   // Pure listen-and-repeat. No recording, no scoring. The app reads each
-  // sentence, pauses for the user to say it back, plays it again, and
-  // after N reps auto-advances to the next sentence. 10 sentences per
-  // session × 3 reps each = ~3 minutes of mouth-moving practice.
+  // sentence, pauses briefly for the user to say it back, plays it again,
+  // and after N reps auto-advances to the next sentence. 10 sentences ×
+  // 5 reps each = ~3 minutes of mouth-moving practice. Tempo and gap are
+  // tuned for native-feel: rate 1.1 (just above neutral), 1300ms pause
+  // between reps so you have to keep up, not loaf.
   const SHADOW_SESSION_COUNT = 10;
-  const SHADOW_REPS          = 3;
-  const SHADOW_PAUSE_MS      = 2200; // gap after TTS for the user to repeat
+  const SHADOW_REPS          = 5;
+  const SHADOW_PAUSE_MS      = 1300;
+  const SHADOW_TTS_RATE      = 1.1;
+  const SHADOW_LEVELS        = [1, 2, 3, 4, 5];
+
+  // How many shadowing sentences exist at a given level. 'auto' uses
+  // every available source (DAILY_PHRASES + SHADOWING_QA).
+  function shadowLevelSize(lv) {
+    if (lv === 'auto') return DAILY_PHRASES.length + SHADOWING_QA.length;
+    return SHADOWING_QA.filter(s => s.level === lv).length;
+  }
 
   function ShadowingPractice({ profile, onBack }) {
     const [phase, setPhase]         = useState('intro');    // 'intro' | 'practice' | 'done'
@@ -11262,6 +11273,16 @@
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [replayKey, setReplayKey] = useState(0);          // bump to re-trigger current rep
     const sessionStartRef = useRef(null);
+
+    // Default level = the user's profile level if it has content,
+    // walking down then up to find the closest level with sentences.
+    // Falls back to 'auto' (mixed pool) when nothing matches.
+    const [selectedLevel, setSelectedLevel] = useState(() => {
+      const want = (profile && profile.level) || 1;
+      for (let lv = want; lv >= 1; lv--) if (shadowLevelSize(lv) > 0) return lv;
+      for (let lv = want + 1; lv <= 5; lv++) if (shadowLevelSize(lv) > 0) return lv;
+      return 'auto';
+    });
 
     const current = queue[index] || null;
 
@@ -11277,7 +11298,7 @@
 
       const u = new SpeechSynthesisUtterance(current.en);
       u.lang = 'en-GB';
-      u.rate = 0.95;
+      u.rate = SHADOW_TTS_RATE;
       u.onstart = () => { if (!cancelled) setIsSpeaking(true); };
       const finish = () => {
         if (cancelled) return;
@@ -11325,22 +11346,29 @@
     }, [phase, index, repNumber, paused, replayKey]);
 
     function startSession() {
-      // Build candidate "groups". A group is either a Q+A pair (must
-      // stay adjacent so the ear hears the question right before its
-      // answer) or a single phrase. Then shuffle the groups and pull
-      // groups in until we hit SESSION_COUNT slots.
+      // Build candidate "groups" filtered by the picked level. A group
+      // is either a Q+A pair (must stay adjacent so the ear hears the
+      // question right before its answer) or a single phrase. 'auto'
+      // uses every Q&A pair plus DAILY_PHRASES singletons; a specific
+      // level uses only Q&A pairs at that level (DAILY_PHRASES doesn't
+      // carry levels).
       const groups = [];
-      for (let i = 0; i < SHADOWING_QA.length; i++) {
-        const cur = SHADOWING_QA[i];
-        const nxt = SHADOWING_QA[i + 1];
-        if (cur.role === 'Q' && nxt && nxt.role === 'A') {
+      const qaPool = selectedLevel === 'auto'
+        ? SHADOWING_QA
+        : SHADOWING_QA.filter(s => s.level === selectedLevel);
+      for (let i = 0; i < qaPool.length; i++) {
+        const cur = qaPool[i];
+        const nxt = qaPool[i + 1];
+        if (cur.role === 'Q' && nxt && nxt.role === 'A' && cur.level === nxt.level) {
           groups.push([cur, nxt]);
           i++;
         } else {
           groups.push([cur]);
         }
       }
-      DAILY_PHRASES.forEach(p => groups.push([p]));
+      if (selectedLevel === 'auto') {
+        DAILY_PHRASES.forEach(p => groups.push([p]));
+      }
       // Fisher-Yates on groups
       for (let i = groups.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -11404,6 +11432,7 @@
 
     // ============ INTRO ============
     if (phase === 'intro') {
+      const canStart = shadowLevelSize(selectedLevel) > 0;
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '4px 4px 18px' } },
@@ -11414,6 +11443,64 @@
             '英文が ' + SHADOW_REPS + ' 回くりかえし流れる → そのたびに声に出してマネをする。' +
             SHADOW_SESSION_COUNT + ' 文ぶん終わったらゴール。録音はしない、口を動かすことに集中。'),
         ),
+
+        // Level picker — おまかせ + LV1〜5. Empty levels show 準備中
+        // and are not selectable.
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'LEVEL'),
+        e('div', {
+          style: {
+            display: 'flex', gap: 8, marginBottom: 18,
+            overflowX: 'auto', paddingBottom: 4,
+            WebkitOverflowScrolling: 'touch',
+          }
+        },
+          [{ id: 'auto', label: 'おまかせ' }].concat(
+            SHADOW_LEVELS.map(lv => ({ id: lv, label: 'LV' + lv }))
+          ).map(opt => {
+            const isActive = selectedLevel === opt.id;
+            const count = shadowLevelSize(opt.id);
+            const empty = count === 0;
+            return e('button', {
+              key: 'lv_' + opt.id,
+              onClick: () => { if (!empty) setSelectedLevel(opt.id); },
+              disabled: empty,
+              style: {
+                flexShrink: 0,
+                padding: '8px 14px', borderRadius: 999,
+                background: isActive ? profile.color : C.card,
+                color:      isActive ? '#fff' : (empty ? C.sub : C.text),
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: empty ? 'default' : 'pointer',
+                opacity: empty ? 0.45 : 1, letterSpacing: '0.04em',
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+              }
+            },
+              e('span', null, opt.label),
+              !empty && e('span', {
+                style: {
+                  fontSize: 10, fontWeight: 800,
+                  background: isActive ? 'rgba(255,255,255,0.25)' : C.softer,
+                  color:      isActive ? '#fff' : C.sub,
+                  padding: '1px 6px', borderRadius: 999,
+                }
+              }, String(count)),
+              empty && e('span', {
+                style: {
+                  fontSize: 9, fontWeight: 700, letterSpacing: 0,
+                  color: C.sub,
+                }
+              }, '準備中'),
+            );
+          }),
+        ),
+
         e('div', {
           style: {
             background: C.softer, border: '1px solid ' + C.line,
@@ -11422,21 +11509,23 @@
           }
         },
           e('div', { style: { fontWeight: 700, marginBottom: 6 } }, '進め方'),
-          e('div', null, '①  英文が自動で流れる'),
+          e('div', null, '①  英文が自動で流れる（早めの自然なスピード）'),
           e('div', null, '②  すぐに声に出してそっくりマネする'),
           e('div', null, '③  同じ文が ' + SHADOW_REPS + ' 回くりかえし → 自動で次へ'),
-          e('div', null, '④  ' + SHADOW_SESSION_COUNT + ' 文で 1 セット（約 3 分）'),
+          e('div', null, '④  ' + SHADOW_SESSION_COUNT + ' 文で 1 セット'),
         ),
         e('button', {
-          onClick: startSession,
+          onClick: () => { if (canStart) startSession(); },
+          disabled: !canStart,
           style: {
             width: '100%', padding: '16px 0', borderRadius: 14,
-            background: profile.color, color: '#fff',
-            border: '1px solid ' + profile.color,
+            background: canStart ? profile.color : C.softer,
+            color: canStart ? '#fff' : C.sub,
+            border: '1px solid ' + (canStart ? profile.color : C.line),
             fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
-            letterSpacing: '0.04em', cursor: 'pointer',
+            letterSpacing: '0.04em', cursor: canStart ? 'pointer' : 'default',
           }
-        }, 'スタート (' + SHADOW_SESSION_COUNT + ' 文)'),
+        }, canStart ? 'スタート (最大 ' + SHADOW_SESSION_COUNT + ' 文)' : 'このレベルは準備中'),
       );
     }
 
