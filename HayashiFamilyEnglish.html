@@ -4871,6 +4871,129 @@
     return events === 0 && vocab === 0 && turns === 0 && daily === 0
         && mistakes === 0 && sentences === 0 && phrases === 0;
   }
+
+  // ---------- Per-member state merge ----------
+  // Field-level merge so two devices that drifted out of sync (e.g.
+  // Yoshinari studying offline at the dorm while Dad worked through
+  // his own session online) NEVER lose either side's contributions.
+  // No more "last write wins" — both sides' work survives.
+  //
+  // Strategy per field:
+  //   events    : union, dedupe by (at, kind, total, correct)
+  //   daily     : per-date, MAX of attempts / correct
+  //   turns     : per-date, per-kind, MAX
+  //   vocab     : per-id, take the entry with higher totalAttempts;
+  //               OR-in the "known" flags so mastery is monotonic.
+  //   composition / phrases : same shape as vocab → reuse
+  //   mistakes  : union by (kind, id). May briefly re-surface a
+  //               mistake one device already cleared; that's a
+  //               one-tap re-clear vs losing all progress, so we
+  //               accept the trade.
+  //   *Backfilled / boolean flags : OR
+  function mergeEventsArrays(a, b) {
+    const out = [];
+    const seen = new Set();
+    for (const ev of [...(a || []), ...(b || [])]) {
+      if (!ev) continue;
+      const k = (ev.at || '') + '|' + (ev.kind || '') + '|' +
+        (ev.total || '') + '|' + (ev.correct || '') + '|' + (ev.label || '');
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(ev);
+    }
+    out.sort((x, y) => String(y.at || '').localeCompare(String(x.at || '')));
+    return out.slice(0, 200);
+  }
+  function mergeDailyMaps(a, b) {
+    const out = {};
+    const dates = new Set([...(Object.keys(a || {})), ...(Object.keys(b || {}))]);
+    for (const d of dates) {
+      const x = (a && a[d]) || {};
+      const y = (b && b[d]) || {};
+      out[d] = {
+        attempts: Math.max(x.attempts || 0, y.attempts || 0),
+        correct:  Math.max(x.correct  || 0, y.correct  || 0),
+      };
+    }
+    return out;
+  }
+  function mergeTurnsMaps(a, b) {
+    const out = {};
+    const dates = new Set([...(Object.keys(a || {})), ...(Object.keys(b || {}))]);
+    for (const d of dates) {
+      const x = (a && a[d]) || {};
+      const y = (b && b[d]) || {};
+      const merged = {};
+      const kinds = new Set([...Object.keys(x), ...Object.keys(y)]);
+      for (const k of kinds) merged[k] = Math.max(Number(x[k]) || 0, Number(y[k]) || 0);
+      out[d] = merged;
+    }
+    return out;
+  }
+  function mergeProgressMap(a, b) {
+    // Progress maps: vocab / composition / phrases. Per-id, pick the
+    // record with higher totalAttempts; OR-in mastery / known flags.
+    const out = {};
+    const ids = new Set([...(Object.keys(a || {})), ...(Object.keys(b || {}))]);
+    for (const id of ids) {
+      const x = a && a[id];
+      const y = b && b[id];
+      if (!x) { out[id] = y; continue; }
+      if (!y) { out[id] = x; continue; }
+      const xa = Number(x.totalAttempts) || 0;
+      const ya = Number(y.totalAttempts) || 0;
+      const base = (xa >= ya) ? x : y;
+      out[id] = Object.assign({}, base, {
+        totalAttempts: Math.max(xa, ya),
+        totalCorrect:  Math.max(Number(x.totalCorrect) || 0, Number(y.totalCorrect) || 0),
+        status: (x.status === 'mastered' || y.status === 'mastered') ? 'mastered' : base.status,
+        knownJa2En: !!(x.knownJa2En || y.knownJa2En),
+        knownEn2Ja: !!(x.knownEn2Ja || y.knownEn2Ja),
+      });
+    }
+    return out;
+  }
+  function mergeMistakesArrays(a, b) {
+    const out = [];
+    const seen = new Set();
+    for (const m of [...(a || []), ...(b || [])]) {
+      if (!m) continue;
+      // Support both legacy {id} and current {kind, id} shapes.
+      const kind = m.kind || 'vocab';
+      const id   = m.id || '';
+      const k = kind + ':' + id;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(m);
+    }
+    return out;
+  }
+  function mergeMemberStates(a, b) {
+    if (!a || isMemberStateEmptyish(a)) return b;
+    if (!b || isMemberStateEmptyish(b)) return a;
+    const out = {
+      vocab:       mergeProgressMap(a.vocab,       b.vocab),
+      composition: mergeProgressMap(a.composition, b.composition),
+      phrases:     mergeProgressMap(a.phrases,     b.phrases),
+      sentences:   mergeProgressMap(a.sentences,   b.sentences),
+      daily:       mergeDailyMaps(a.daily,         b.daily),
+      turns:       mergeTurnsMaps(a.turns,         b.turns),
+      events:      mergeEventsArrays(a.events,     b.events),
+      mistakes:    mergeMistakesArrays(a.mistakes, b.mistakes),
+      turnsBackfilled: !!(a.turnsBackfilled || b.turnsBackfilled),
+      _localUpdatedAt: new Date().toISOString(),
+    };
+    // Pass through any other top-level fields we don't model
+    // explicitly (forward-compat for fields added later).
+    for (const k of Object.keys(a)) {
+      if (!(k in out)) out[k] = a[k];
+    }
+    for (const k of Object.keys(b)) {
+      if (!(k in out)) out[k] = b[k];
+    }
+    return out;
+  }
+
   async function hydrateFromCloud(memberId) {
     // Cloud disabled — nothing to pull, but flag this member as
     // "hydrated" so subsequent saves are free to (no-op) push.
@@ -4896,36 +5019,46 @@
     const localRaw = localStorage.getItem(STORAGE_KEY(memberId));
     let local = null;
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
-    const localTs  = (local && local._localUpdatedAt) || '';
-    const remoteTs = remote.updated_at || '';
     const localEmptyish  = isMemberStateEmptyish(local);
     const remoteEmptyish = isMemberStateEmptyish(remote.data);
-    // SHIELD: cloud is empty/wiped but local has real progress.
-    // Never let an empty cloud overwrite a populated local store —
-    // keep local and push it back up to repair the cloud row.
+
+    // ---- MERGE-FIRST conflict resolution ----
+    // If both sides have data, we field-level merge instead of letting
+    // one side overwrite the other. This is what protects the "kid
+    // studied offline at the dorm, parent also studied online" case:
+    // both sets of events / turns / vocab progress survive.
+    let changed = false;
+    if (!localEmptyish && !remoteEmptyish) {
+      const merged = mergeMemberStates(local, remote.data || {});
+      try {
+        localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(merged));
+        changed = true;
+      } catch {}
+      memberHydrationDone[memberId] = true;
+      // Push the merged state up so cloud reflects the union and
+      // other devices see it on their next hydrate.
+      cloud.schedulePush(memberId, merged);
+      return changed;
+    }
+    // Only one side has real data — take it. This covers fresh
+    // installs (local empty → take cloud) and wiped-cloud recovery
+    // (cloud empty → keep local + repair cloud).
+    if (localEmptyish && !remoteEmptyish) {
+      try {
+        localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
+        changed = true;
+      } catch {}
+      memberHydrationDone[memberId] = true;
+      return changed;
+    }
     if (!localEmptyish && remoteEmptyish) {
       memberHydrationDone[memberId] = true;
       cloud.schedulePush(memberId, local);
       return false;
     }
-    let changed = false;
-    // Take cloud when (a) we have nothing locally, (b) local is just a
-    // stamp with no real learning data (fresh-install poke), or (c) cloud
-    // is strictly newer than what we've got.
-    if (!local || localEmptyish || (remoteTs && remoteTs > localTs)) {
-      try {
-        localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
-        changed = true;
-      } catch {}
-    }
-    // Mark the member hydrated AFTER applying cloud, so subsequent
-    // saves push the merged (cloud + new) state.
+    // Both sides empty — nothing to do, just open the gate.
     memberHydrationDone[memberId] = true;
-    if (!changed && local && (!remoteTs || localTs > remoteTs)) {
-      // Local is newer — push it up so cloud catches up.
-      cloud.schedulePush(memberId, local);
-    }
-    return changed;
+    return false;
   }
 
   // Pull EVERY family member's progress row so the ProfileSelect screen
@@ -5809,6 +5942,38 @@
     const key     = typeof d.apiKey === 'string' ? d.apiKey : '';
     return photos === 0 && names === 0 && avatars === 0 && !key;
   }
+  // ---------- Family-shared merge ----------
+  // names / avatars / photos / apiKey. Per-key merge so two devices
+  // editing different parts of the family-shared row never lose each
+  // other's edits.
+  //
+  //   photos  : union by id (additive — physical removal isn't really
+  //             expected from offline editing)
+  //   names   : per-profile-id, prefer the LOCAL value when both sides
+  //             have one for the same id (the active editor's intent
+  //             wins over a remote stale copy)
+  //   avatars : same convention as names
+  //   apiKey  : prefer non-empty; if both non-empty, take local (the
+  //             user just typed something on this device)
+  function mergePhotosArrays(a, b) {
+    const seen = new Set();
+    const out = [];
+    for (const p of [...(a || []), ...(b || [])]) {
+      if (!p || !p.id || seen.has(p.id)) continue;
+      seen.add(p.id);
+      out.push(p);
+    }
+    return out;
+  }
+  function mergeKeyValueLocalWins(local, remote) {
+    const out = Object.assign({}, remote || {});
+    for (const k of Object.keys(local || {})) {
+      const v = local[k];
+      if (v === '' || v === null || v === undefined) continue;
+      out[k] = v;
+    }
+    return out;
+  }
   async function hydrateFamilySharedFromCloud() {
     // Cloud disabled — nothing to pull, but flag as hydrated so
     // subsequent saves are free to (no-op) push.
@@ -5817,10 +5982,8 @@
       return false;
     }
     let remote = null;
-    let pullSucceeded = false;
     try {
       remote = await cloud.pull(FAMILY_SHARED_ID);
-      pullSucceeded = true;
     } catch {
       // Network error: leave the gate closed so any local edits made
       // during this offline window don't push and clobber a cloud row
@@ -5829,71 +5992,70 @@
     }
     if (!remote || !remote.data) {
       // No row yet in cloud (first-ever family boot). Mark hydrated so
-      // the next family edit (saving a name / adding the API key) can
-      // seed cloud.
+      // the next family edit can seed cloud.
       familySharedHydrationDone = true;
       pushFamilySharedState();
       return false;
     }
-    const d = remote.data;
-    // Decide which side is newer. Prefer the data._localUpdatedAt that the
-    // writing device stamped into the row; fall back to the row's
-    // updated_at if missing. We only let cloud overwrite local when cloud
-    // is STRICTLY newer than the last local edit on this device.
-    const cloudTs = String(d._localUpdatedAt || remote.updated_at || '');
-    const localTs = loadFamilySharedLocalTs();
-    const localEmpty = isFamilySharedLocalEmptyish();
-    if (!localEmpty && localTs && (!cloudTs || localTs >= cloudTs)) {
-      // Local has real data AND a fresh-or-equal stamp → it wins; bring
-      // cloud up to date so other devices catch up to whatever was
-      // changed on this one. Open the gate first so the push goes
-      // through (we've already pulled cloud, so it's safe).
+    const d = remote.data || {};
+    const localEmpty  = isFamilySharedLocalEmptyish();
+    const remoteEmpty = isFamilySharedRemoteEmpty(d);
+
+    // Both empty → nothing to do.
+    if (localEmpty && remoteEmpty) {
+      familySharedHydrationDone = true;
+      return false;
+    }
+    // Cloud empty, local has data → keep local and repair cloud.
+    if (!localEmpty && remoteEmpty) {
       familySharedHydrationDone = true;
       pushFamilySharedState();
       return false;
     }
-    // SHIELD: cloud row is essentially empty (wiped or never seeded)
-    // but local has real names / avatars / photos / apiKey. Never let
-    // an empty cloud wipe a populated local store — keep local and
-    // push it up to repair cloud, regardless of what timestamps say.
-    if (!localEmpty && isFamilySharedRemoteEmpty(d)) {
-      familySharedHydrationDone = true;
-      pushFamilySharedState();
-      return false;
-    }
+
+    // ---- MERGE-FIRST conflict resolution ----
+    // For the cloud-only or both-have-data paths, pull each field
+    // through the merge helpers. Local edits ALWAYS survive; remote
+    // adds are ALSO applied where local has nothing.
+    const localPhotos  = loadFamilyPhotos();
+    const localNames   = loadDisplayNames();
+    const localAvatars = loadAvatars();
+    const localApiKey  = loadApiKey();
+
+    const mergedPhotos  = mergePhotosArrays(localPhotos, Array.isArray(d.photos) ? d.photos : []);
+    const mergedNames   = mergeKeyValueLocalWins(localNames,   (d.names   && typeof d.names   === 'object') ? d.names   : {});
+    const mergedAvatars = mergeKeyValueLocalWins(localAvatars, (d.avatars && typeof d.avatars === 'object') ? d.avatars : {});
+    const mergedApiKey  = localApiKey || (typeof d.apiKey === 'string' ? d.apiKey : '');
+
     let changed = false;
-    function applyKey(key, value) {
-      const cur = localStorage.getItem(key);
-      const next = JSON.stringify(value);
+    function writeIfDifferent(key, jsonValue) {
+      const next = JSON.stringify(jsonValue);
+      const cur  = localStorage.getItem(key);
       if (cur !== next) {
         try { localStorage.setItem(key, next); changed = true; } catch {}
       }
     }
-    if (Array.isArray(d.photos))                            applyKey(FAMILY_PHOTOS_KEY, d.photos);
-    if (d.names   && typeof d.names   === 'object')         applyKey(NAMES_KEY,         d.names);
-    if (d.avatars && typeof d.avatars === 'object')         applyKey(AVATARS_KEY,       d.avatars);
-    // apiKey is a plain string (not JSON-encoded) so it can't go through
-    // applyKey() above. Set it directly; an empty string means the key
-    // was explicitly cleared elsewhere and should be removed here too.
-    if (typeof d.apiKey === 'string') {
-      const cur = localStorage.getItem(AI_KEY_STORAGE) || '';
-      if (cur !== d.apiKey) {
-        try {
-          if (d.apiKey) localStorage.setItem(AI_KEY_STORAGE, d.apiKey);
-          else          localStorage.removeItem(AI_KEY_STORAGE);
-          changed = true;
-        } catch {}
-      }
+    writeIfDifferent(FAMILY_PHOTOS_KEY, mergedPhotos);
+    writeIfDifferent(NAMES_KEY,         mergedNames);
+    writeIfDifferent(AVATARS_KEY,       mergedAvatars);
+    // apiKey is a plain string, not JSON-encoded.
+    const curKey = localStorage.getItem(AI_KEY_STORAGE) || '';
+    if (curKey !== mergedApiKey) {
+      try {
+        if (mergedApiKey) localStorage.setItem(AI_KEY_STORAGE, mergedApiKey);
+        else              localStorage.removeItem(AI_KEY_STORAGE);
+        changed = true;
+      } catch {}
     }
     if (changed) {
-      // Mark our local timestamp to mirror what we just pulled, so we
-      // don't immediately re-push the same data on the next event.
-      if (cloudTs) stampFamilySharedLocal(cloudTs);
       try { window.dispatchEvent(new CustomEvent('hfe:family-hydrated')); } catch {}
     }
-    // Open the gate AFTER applying cloud, so the next push reflects the
-    // merged state.
+    // Open the gate, then push the MERGED state up so other devices
+    // see the union on their next hydrate. This is what makes
+    // multi-device offline editing safe — every successful hydrate
+    // pushes the merged view forward.
     familySharedHydrationDone = true;
+    pushFamilySharedState();
     return changed;
   }
 
