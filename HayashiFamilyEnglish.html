@@ -11296,19 +11296,41 @@
   // Pure listen-and-repeat. No recording, no scoring. The app reads each
   // sentence, pauses briefly for the user to say it back, plays it again,
   // and after N reps auto-advances to the next sentence. 10 sentences ×
-  // 5 reps each = ~3 minutes of mouth-moving practice. Tempo and gap are
-  // tuned for native-feel: rate 1.1 (just above neutral), 1300ms pause
-  // between reps so you have to keep up, not loaf.
+  // 3 reps each = ~3 minutes of mouth-moving practice.
+  //
+  // Speed selector (① / ② / ③) — slow / native / quick. Each has its own
+  // TTS rate AND inter-rep pause so the rhythm stays right (slower
+  // speech naturally needs more breathing room).
   const SHADOW_SESSION_COUNT = 10;
-  const SHADOW_REPS          = 5;
-  const SHADOW_PAUSE_MS      = 1300;
-  const SHADOW_TTS_RATE      = 1.1;
-  const SHADOW_LEVELS        = [1, 2, 3, 4, 5];
+  const SHADOW_REPS          = 3;
+  const SHADOW_SPEEDS = {
+    1: { rate: 0.85, pauseMs: 2000 },  // ゆっくり
+    2: { rate: 1.00, pauseMs: 1500 },  // ふつう
+    3: { rate: 1.15, pauseMs: 1100 },  // 早口
+  };
+  const SHADOW_LEVELS = [1, 2, 3, 4, 5];
 
-  // How many shadowing sentences exist at a given level. 'auto' uses
-  // every available source (DAILY_PHRASES + SHADOWING_QA).
+  // Group SHADOWING_QA into adjacent Q+A pairs (or singletons). Returns
+  // [{ level, items: [...] }, ...]. Stable across renders since the
+  // SHADOWING_QA constant is.
+  const SHADOWING_GROUPS = (function () {
+    const out = [];
+    for (let i = 0; i < SHADOWING_QA.length; i++) {
+      const cur = SHADOWING_QA[i];
+      const nxt = SHADOWING_QA[i + 1];
+      if (cur.role === 'Q' && nxt && nxt.role === 'A' && cur.level === nxt.level) {
+        out.push({ level: cur.level, items: [cur, nxt] });
+        i++;
+      } else {
+        out.push({ level: cur.level, items: [cur] });
+      }
+    }
+    return out;
+  })();
+
+  // How many sentences live at a level (or total for 'auto').
   function shadowLevelSize(lv) {
-    if (lv === 'auto') return DAILY_PHRASES.length + SHADOWING_QA.length;
+    if (lv === 'auto') return SHADOWING_QA.length;
     return SHADOWING_QA.filter(s => s.level === lv).length;
   }
 
@@ -11322,15 +11344,13 @@
     const [replayKey, setReplayKey] = useState(0);          // bump to re-trigger current rep
     const sessionStartRef = useRef(null);
 
-    // Default level = the user's profile level if it has content,
-    // walking down then up to find the closest level with sentences.
-    // Falls back to 'auto' (mixed pool) when nothing matches.
-    const [selectedLevel, setSelectedLevel] = useState(() => {
-      const want = (profile && profile.level) || 1;
-      for (let lv = want; lv >= 1; lv--) if (shadowLevelSize(lv) > 0) return lv;
-      for (let lv = want + 1; lv <= 5; lv++) if (shadowLevelSize(lv) > 0) return lv;
-      return 'auto';
-    });
+    // Default to おまかせ — the same per-profile level distribution
+    // vocab and 瞬間英作文 use (pickLevelForProfile). Manual LV picks
+    // are still available via the picker.
+    const [selectedLevel, setSelectedLevel] = useState('auto');
+    // Speed: 1 (slow) / 2 (native) / 3 (quick). Default is 2.
+    const [speed, setSpeed] = useState(2);
+    const speedConfig = SHADOW_SPEEDS[speed] || SHADOW_SPEEDS[2];
 
     const current = queue[index] || null;
 
@@ -11346,7 +11366,7 @@
 
       const u = new SpeechSynthesisUtterance(current.en);
       u.lang = 'en-GB';
-      u.rate = SHADOW_TTS_RATE;
+      u.rate = speedConfig.rate;
       u.onstart = () => { if (!cancelled) setIsSpeaking(true); };
       const finish = () => {
         if (cancelled) return;
@@ -11376,7 +11396,7 @@
               setRepNumber(1);
             }
           }
-        }, SHADOW_PAUSE_MS);
+        }, speedConfig.pauseMs);
       };
       u.onend = finish;
       u.onerror = finish;
@@ -11394,41 +11414,56 @@
     }, [phase, index, repNumber, paused, replayKey]);
 
     function startSession() {
-      // Build candidate "groups" filtered by the picked level. A group
-      // is either a Q+A pair (must stay adjacent so the ear hears the
-      // question right before its answer) or a single phrase. 'auto'
-      // uses every Q&A pair plus DAILY_PHRASES singletons; a specific
-      // level uses only Q&A pairs at that level (DAILY_PHRASES doesn't
-      // carry levels).
-      const groups = [];
-      const qaPool = selectedLevel === 'auto'
-        ? SHADOWING_QA
-        : SHADOWING_QA.filter(s => s.level === selectedLevel);
-      for (let i = 0; i < qaPool.length; i++) {
-        const cur = qaPool[i];
-        const nxt = qaPool[i + 1];
-        if (cur.role === 'Q' && nxt && nxt.role === 'A' && cur.level === nxt.level) {
-          groups.push([cur, nxt]);
-          i++;
-        } else {
-          groups.push([cur]);
-        }
-      }
-      if (selectedLevel === 'auto') {
-        DAILY_PHRASES.forEach(p => groups.push([p]));
-      }
-      // Fisher-Yates on groups
-      for (let i = groups.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const t = groups[i]; groups[i] = groups[j]; groups[j] = t;
-      }
       const queueOut = [];
-      for (const g of groups) {
-        if (queueOut.length + g.length <= SHADOW_SESSION_COUNT) {
-          queueOut.push(...g);
+
+      if (selectedLevel === 'auto') {
+        // おまかせ: pick a level via pickLevelForProfile per slot, then
+        // pull a random unused group at that level. Same per-profile
+        // distribution that vocab and 瞬間英作文 use, so e.g. Yoshinari
+        // sees mostly L1+L2, Dad sees mostly L2+L3. Falls back to the
+        // nearest non-empty level when the picked one has no content.
+        const used = new Set();
+        let safety = 0;
+        while (queueOut.length < SHADOW_SESSION_COUNT && safety < 200) {
+          safety++;
+          let lv = pickLevelForProfile(profile);
+          // Find candidates at this level; if empty, walk down then up.
+          let candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+            .filter(x => x.g.level === lv && !used.has(x.idx));
+          if (candidates.length === 0) {
+            for (let dlv = lv - 1; dlv >= 1 && candidates.length === 0; dlv--) {
+              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+                .filter(x => x.g.level === dlv && !used.has(x.idx));
+            }
+          }
+          if (candidates.length === 0) {
+            for (let ulv = lv + 1; ulv <= 5 && candidates.length === 0; ulv++) {
+              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+                .filter(x => x.g.level === ulv && !used.has(x.idx));
+            }
+          }
+          if (candidates.length === 0) break; // pool exhausted
+          const pick = candidates[Math.floor(Math.random() * candidates.length)];
+          used.add(pick.idx);
+          if (queueOut.length + pick.g.items.length <= SHADOW_SESSION_COUNT) {
+            queueOut.push(...pick.g.items);
+          }
         }
-        if (queueOut.length >= SHADOW_SESSION_COUNT) break;
+      } else {
+        // Specific LV: shuffle that level's groups and take.
+        const filtered = SHADOWING_GROUPS.filter(g => g.level === selectedLevel).slice();
+        for (let i = filtered.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = filtered[i]; filtered[i] = filtered[j]; filtered[j] = t;
+        }
+        for (const g of filtered) {
+          if (queueOut.length + g.items.length <= SHADOW_SESSION_COUNT) {
+            queueOut.push(...g.items);
+          }
+          if (queueOut.length >= SHADOW_SESSION_COUNT) break;
+        }
       }
+
       setQueue(queueOut);
       setIndex(0);
       setRepNumber(1);
@@ -11546,6 +11581,41 @@
                 }
               }, '準備中'),
             );
+          }),
+        ),
+
+        // Speed picker — ① ゆっくり / ② ふつう / ③ 早口
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'SPEED'),
+        e('div', {
+          style: {
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 8, marginBottom: 18,
+          }
+        },
+          [
+            { id: 1, label: '① ゆっくり' },
+            { id: 2, label: '② ふつう' },
+            { id: 3, label: '③ 早口' },
+          ].map(opt => {
+            const isActive = speed === opt.id;
+            return e('button', {
+              key: 'sp_' + opt.id,
+              onClick: () => setSpeed(opt.id),
+              style: {
+                padding: '8px 0', borderRadius: 999,
+                background: isActive ? profile.color : C.card,
+                color:      isActive ? '#fff' : C.text,
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: 'pointer', letterSpacing: '0.04em',
+              }
+            }, opt.label);
           }),
         ),
 
