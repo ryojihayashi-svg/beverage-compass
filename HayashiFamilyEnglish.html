@@ -2693,6 +2693,64 @@
         },
       ],
     },
+    {
+      id: 'l1_am_is_are',
+      level: 1,
+      title: 'am / is / are',
+      subtitle: 'be動詞の使い分け',
+      icon: '🪞',
+      todayQ: '「I ___ happy.」のここに何を入れる？ am? is? are?',
+      imagery: '主語（だれ・なに）によって 3 つを使い分ける。「I」なら am、「You / We / They」なら are、「He / She / It」なら is。それだけ。',
+      rule: 'I → am / You・We・They → are / He・She・It → is',
+      examples: [
+        { en: 'I am happy.',    ja: '私はうれしいです。' },
+        { en: 'You are kind.',  ja: 'あなたはやさしいです。' },
+        { en: 'He is tall.',    ja: '彼は背が高いです。' },
+      ],
+      points: [
+        '主語が I のときだけ am。これは決まり。',
+        'You / We / They（あなた・私たち・彼ら）のような複数の人は are。',
+        'He / She / It（彼・彼女・それ）のような 1 人/1 つは is。',
+        '名前や物も「1 つだけ」なら is（My dog is cute / Tom is a student）。',
+      ],
+      quiz: [
+        {
+          q:   'I ___ a student.',
+          qJa: '私は学生です。',
+          choices: ['am', 'is', 'are'],
+          answer: 0,
+          explain: '主語が I のときは am。これは決まりだよ。',
+        },
+        {
+          q:   'He ___ my brother.',
+          qJa: '彼は私のお兄さんです。',
+          choices: ['am', 'is', 'are'],
+          answer: 1,
+          explain: 'He / She / It は is。「1 人」だから is。',
+        },
+        {
+          q:   'We ___ in the park.',
+          qJa: '私たちは公園にいます。',
+          choices: ['am', 'is', 'are'],
+          answer: 2,
+          explain: 'We / You / They は are。「複数」だから are。',
+        },
+        {
+          q:   'The cat ___ very small.',
+          qJa: 'そのねこはとても小さいです。',
+          choices: ['am', 'is', 'are'],
+          answer: 1,
+          explain: 'The cat は It と同じ「1 ぴき」のなかま。だから is。',
+        },
+        {
+          q:   'My parents ___ kind.',
+          qJa: '私の両親はやさしいです。',
+          choices: ['am', 'is', 'are'],
+          answer: 2,
+          explain: 'My parents は They と同じ「2 人 = 複数」のなかま。だから are。',
+        },
+      ],
+    },
   ];
   const LESSON_BY_ID    = Object.fromEntries(ENGLISH_LESSONS.map(l => [l.id, l]));
   const LESSONS_BY_LEVEL = ENGLISH_LESSONS.reduce((acc, l) => {
