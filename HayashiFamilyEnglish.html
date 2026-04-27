@@ -2603,7 +2603,6 @@
     { id:'p015', scene:'school', ja:'助けてくれてありがとう。',               en:'Thank you for your help.' },
     { id:'p016', scene:'school', ja:'辞書を使ってもいいですか？',             en:'May I use the dictionary?' },
     { id:'p017', scene:'school', ja:'私は転校生です。',                           en:"I'm a new student here." },
-    { id:'p018', scene:'school', ja:'スペルを教えてもらえますか？',           en:'Could you spell that?' },
 
     // ----- cafeteria / meals (15) -----
     { id:'p019', scene:'cafeteria', ja:'今日のランチは何ですか？',            en:"What's for lunch today?" },
@@ -4638,13 +4637,31 @@
   // Wrap db.save so every local write triggers a debounced cloud push.
   // We keep db.save synchronous for the UI; the network happens in the
   // background and never blocks the user.
+  // ---------- Hydration gate (CRITICAL for data safety) ----------
+  // Per-member flag: has hydrateFromCloud completed at least once during
+  // this app session? Until it has, db.save calls write to localStorage
+  // but DO NOT push to cloud — otherwise a fresh-install boot save (e.g.
+  // the backfillTurnsFromDaily migration that runs for every profile)
+  // would push an empty/near-empty state to the cloud row and overwrite
+  // the user's real progress before hydrate has had a chance to pull it
+  // back. Same idea for the family-shared row (names / avatars / photos
+  // / apiKey).
+  const memberHydrationDone       = {};
+  let   familySharedHydrationDone = false;
+
   (function wrapDbSave() {
     const originalSave = db.save.bind(db);
     db.save = function (memberId, state) {
       // Stamp the local state with a version so we can compare against cloud.
       try { state._localUpdatedAt = new Date().toISOString(); } catch {}
       originalSave(memberId, state);
-      cloud.schedulePush(memberId, state);
+      // Only push to cloud after this member has been hydrated. Pushes
+      // before that risk clobbering the cloud row with the local empty
+      // state. Once hydrate runs, the next save (with merged data) will
+      // push correctly.
+      if (cloud.status.enabled && memberHydrationDone[memberId]) {
+        cloud.schedulePush(memberId, state);
+      }
     };
   })();
 
@@ -4672,28 +4689,51 @@
         && mistakes === 0 && sentences === 0 && phrases === 0;
   }
   async function hydrateFromCloud(memberId) {
-    if (!cloud.status.enabled) return false;
-    const remote = await cloud.pull(memberId);
-    if (!remote) return false;
+    // Cloud disabled — nothing to pull, but flag this member as
+    // "hydrated" so subsequent saves are free to (no-op) push.
+    if (!cloud.status.enabled) {
+      memberHydrationDone[memberId] = true;
+      return false;
+    }
+    let remote = null;
+    try { remote = await cloud.pull(memberId); }
+    catch {
+      // Network failure — leave the gate closed so any local saves
+      // that happen post-failure don't clobber a cloud row we couldn't
+      // see. Caller (boot loop / online listener) will retry later.
+      return false;
+    }
+    if (!remote) {
+      // No row yet for this member in cloud (first ever boot for
+      // anyone). Mark hydrated so the FIRST real save can push and
+      // seed the cloud row. Local data, if any, stays as-is.
+      memberHydrationDone[memberId] = true;
+      return false;
+    }
     const localRaw = localStorage.getItem(STORAGE_KEY(memberId));
     let local = null;
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
     const localTs  = (local && local._localUpdatedAt) || '';
     const remoteTs = remote.updated_at || '';
     const localEmptyish = isMemberStateEmptyish(local);
+    let changed = false;
     // Take cloud when (a) we have nothing locally, (b) local is just a
     // stamp with no real learning data (fresh-install poke), or (c) cloud
     // is strictly newer than what we've got.
     if (!local || localEmptyish || (remoteTs && remoteTs > localTs)) {
       try {
         localStorage.setItem(STORAGE_KEY(memberId), JSON.stringify(remote.data || {}));
-        return true;
-      } catch { return false; }
-    } else if (local && (!remoteTs || localTs > remoteTs)) {
+        changed = true;
+      } catch {}
+    }
+    // Mark the member hydrated AFTER applying cloud, so subsequent
+    // saves push the merged (cloud + new) state.
+    memberHydrationDone[memberId] = true;
+    if (!changed && local && (!remoteTs || localTs > remoteTs)) {
       // Local is newer — push it up so cloud catches up.
       cloud.schedulePush(memberId, local);
     }
-    return false;
+    return changed;
   }
 
   // Pull EVERY family member's progress row so the ProfileSelect screen
@@ -5531,7 +5571,11 @@
   }
   function pushFamilySharedState() {
     try {
-      if (cloud && cloud.status && cloud.status.enabled) {
+      // Same gate as wrapDbSave: don't push to cloud until we've
+      // hydrated at least once. Otherwise a fresh-install boot could
+      // wipe the cloud row (containing names / avatars / photos /
+      // apiKey) before we've had a chance to read it.
+      if (cloud && cloud.status && cloud.status.enabled && familySharedHydrationDone) {
         // Immediate (non-debounced) — names / avatars / photos are one-off
         // edits and we don't want to lose them if the user closes the tab.
         cloud.pushNow(FAMILY_SHARED_ID, buildFamilySharedState());
@@ -5563,11 +5607,28 @@
     } catch { return true; }
   }
   async function hydrateFamilySharedFromCloud() {
-    if (!cloud.status.enabled) return false;
+    // Cloud disabled — nothing to pull, but flag as hydrated so
+    // subsequent saves are free to (no-op) push.
+    if (!cloud.status.enabled) {
+      familySharedHydrationDone = true;
+      return false;
+    }
     let remote = null;
-    try { remote = await cloud.pull(FAMILY_SHARED_ID); } catch {}
+    let pullSucceeded = false;
+    try {
+      remote = await cloud.pull(FAMILY_SHARED_ID);
+      pullSucceeded = true;
+    } catch {
+      // Network error: leave the gate closed so any local edits made
+      // during this offline window don't push and clobber a cloud row
+      // we haven't seen.
+      return false;
+    }
     if (!remote || !remote.data) {
-      // Nothing in cloud yet — make sure cloud has whatever we have locally.
+      // No row yet in cloud (first-ever family boot). Mark hydrated so
+      // the next family edit (saving a name / adding the API key) can
+      // seed cloud.
+      familySharedHydrationDone = true;
       pushFamilySharedState();
       return false;
     }
@@ -5582,7 +5643,9 @@
     if (!localEmpty && localTs && (!cloudTs || localTs >= cloudTs)) {
       // Local has real data AND a fresh-or-equal stamp → it wins; bring
       // cloud up to date so other devices catch up to whatever was
-      // changed on this one.
+      // changed on this one. Open the gate first so the push goes
+      // through (we've already pulled cloud, so it's safe).
+      familySharedHydrationDone = true;
       pushFamilySharedState();
       return false;
     }
@@ -5616,6 +5679,9 @@
       if (cloudTs) stampFamilySharedLocal(cloudTs);
       try { window.dispatchEvent(new CustomEvent('hfe:family-hydrated')); } catch {}
     }
+    // Open the gate AFTER applying cloud, so the next push reflects the
+    // merged state.
+    familySharedHydrationDone = true;
     return changed;
   }
 
@@ -6135,18 +6201,6 @@
           'プロファイルを切り替える'),
         e(OfflineBadge),
         e(ReloadBtn),
-      ),
-
-      // Daily encouragement (text-only, bilingual). EN is the focus → larger.
-      e('div', {
-        style: { padding: '4px 0 18px' }
-      },
-        e('div', {
-          style: { fontSize: 14, color: C.sub, lineHeight: 1.5, fontFamily: SANS_UI }
-        }, '今日もちょっとずつ、続けることがいちばん。'),
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, marginTop: 6, lineHeight: 1.4 }
-        }, 'A little every day is what matters most.'),
       ),
 
       // Today's phrase — EN larger (focus), JA smaller subline.
