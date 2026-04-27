@@ -13204,6 +13204,22 @@
     return SHADOWING_QA.filter(s => s.level === lv).length;
   }
 
+  // 「英会話」タブ専用の進捗カーソル。LV1-5 がランダムなのに対し、
+  // others は脚本のように上から順番に 10 句ずつ進めたい (lesson-prep
+  // 用なので流れごと身体に染み込ませるのが目的)。1 セッション終わる
+  // たびにカーソルを 10 進めて、次回は続きから出る。最後まで行ったら
+  // 折り返してまた最初の 10 句から。
+  const OTHERS_CURSOR_KEY = (memberId) => `hfe_others_cursor_${memberId}`;
+  function getOthersCursor(memberId) {
+    try {
+      const v = parseInt(localStorage.getItem(OTHERS_CURSOR_KEY(memberId)) || '0', 10);
+      return Number.isFinite(v) && v >= 0 ? v : 0;
+    } catch { return 0; }
+  }
+  function setOthersCursor(memberId, cursor) {
+    try { localStorage.setItem(OTHERS_CURSOR_KEY(memberId), String(cursor)); } catch {}
+  }
+
   // iOS Safari has a known quirk where window.speechSynthesis can stay
   // routed to the device speaker even when AirPods are connected,
   // because TTS uses a different audio session than HTMLAudioElement.
@@ -13359,6 +13375,17 @@
           if (queueOut.length + pick.g.items.length <= SHADOW_SESSION_COUNT) {
             queueOut.push(...pick.g.items);
           }
+        }
+      } else if (selectedLevel === 'others') {
+        // 英会話 (lesson-prep): play in DEFINED order, 10 at a time, then
+        // continue from where we left off next session. Wrap at the end.
+        const items = SHADOWING_QA.filter(s => s.level === 'others');
+        if (items.length > 0) {
+          let cursor = getOthersCursor(profile.id) % items.length;
+          for (let i = 0; i < SHADOW_SESSION_COUNT && i < items.length; i++) {
+            queueOut.push(items[(cursor + i) % items.length]);
+          }
+          setOthersCursor(profile.id, (cursor + queueOut.length) % items.length);
         }
       } else {
         // Specific LV: shuffle that level's groups and take.
