@@ -2792,6 +2792,53 @@
     { id:'qa41_a', role:'A', level:2, ja:'少しずつだけど、上達してる気がする。',   en:"Slowly improving, I think." },
     { id:'qa42_q', role:'Q', level:2, ja:'家が恋しくなる？',                       en:'Are you missing home?' },
     { id:'qa42_a', role:'A', level:2, ja:'ちょっとはね、でも大丈夫。',             en:"A bit, but I'm OK." },
+
+    // ---- Statements / singletons (no Q+A pairing) ----
+    // Self-introduction, daily routine, polite phrases, opinions,
+    // descriptions, encouragements. Mixed into the queue alongside
+    // the Q&A pairs so the kid hears variety, not just back-and-forth.
+
+    // L1 — basics, self, daily life (12)
+    { id:'sd01', level:1, ja:'私は日本から来ました。',               en:"I'm from Japan." },
+    { id:'sd02', level:1, ja:'私は林吉成です。',                     en:"I'm Yoshinari Hayashi." },
+    { id:'sd03', level:1, ja:'私は高校生です。',                     en:"I'm a high school student." },
+    { id:'sd04', level:1, ja:'私はサッカーをするのが大好きです。',   en:'I love playing football.' },
+    { id:'sd05', level:1, ja:'私は犬を1匹飼っています。',           en:'I have a small dog.' },
+    { id:'sd06', level:1, ja:'私は家族が恋しいです。',               en:'I miss my family.' },
+    { id:'sd07', level:1, ja:'ここの食事はおいしいよ。',             en:'The food here is good.' },
+    { id:'sd08', level:1, ja:'今日は月曜日です。',                   en:"Today is Monday." },
+    { id:'sd09', level:1, ja:'私は疲れたけど嬉しい。',               en:"I'm tired but happy." },
+    { id:'sd10', level:1, ja:'私は新しい友達が好きです。',           en:'I like my new friends.' },
+    { id:'sd11', level:1, ja:'今日は気持ちのいい一日。',             en:"It's a beautiful day." },
+    { id:'sd12', level:1, ja:'私はもう寝るね。',                     en:"I'm going to bed now." },
+
+    // L2 — daily routine, polite phrases, light reactions (12)
+    { id:'sd13', level:2, ja:'私は毎朝7時に起きます。',              en:'I wake up at seven every morning.' },
+    { id:'sd14', level:2, ja:'私はだいたい朝食にトーストを食べます。', en:'I usually have toast for breakfast.' },
+    { id:'sd15', level:2, ja:'私はバスで学校に行きます。',           en:'I go to school by bus.' },
+    { id:'sd16', level:2, ja:'私は夕食のあと宿題をします。',         en:'I do my homework after dinner.' },
+    { id:'sd17', level:2, ja:'もう一度言ってもらえますか？',         en:'Could you say that again, please?' },
+    { id:'sd18', level:2, ja:'すみません、聞き取れませんでした。',   en:"Sorry, I didn't catch that." },
+    { id:'sd19', level:2, ja:'もう少しゆっくり話してもらえますか？', en:'Could you speak a bit more slowly?' },
+    { id:'sd20', level:2, ja:'最近の天気はとてもいいです。',         en:'The weather has been amazing lately.' },
+    { id:'sd21', level:2, ja:'ここの人たちは本当にやさしいです。',   en:'Everyone here is really friendly.' },
+    { id:'sd22', level:2, ja:'私は英語が上達してきています。',       en:"I'm getting better at English." },
+    { id:'sd23', level:2, ja:'いいね、それでいこう。',               en:'That sounds great to me.' },
+    { id:'sd24', level:2, ja:'手伝ってくれて本当にありがとう。',     en:'Thanks a lot for your help.' },
+
+    // L3 — settled-in reflections, advice, hopes (12)
+    { id:'sd25', level:3, ja:'まずは1日ずつ進めればいい。',          en:'Just take it one day at a time.' },
+    { id:'sd26', level:3, ja:'そのうち慣れていくよ。',                en:"You'll get used to it eventually." },
+    { id:'sd27', level:3, ja:'間違えても気にしなくていい。',         en:"Don't worry about making mistakes." },
+    { id:'sd28', level:3, ja:'私はこっちの大学に行こうと思っている。', en:"I'm thinking of going to university here." },
+    { id:'sd29', level:3, ja:'私は2年間英語を勉強してきました。',    en:"I've been studying English for two years." },
+    { id:'sd30', level:3, ja:'継続は力なりってよく言うよね。',       en:'Practice makes perfect, they say.' },
+    { id:'sd31', level:3, ja:'時間はかかったけど、ようやく慣れた。', en:'It took me a while, but I finally settled in.' },
+    { id:'sd32', level:3, ja:'よく分からないけど、たぶんそうだと思う。', en:"I'm not sure, but I think so." },
+    { id:'sd33', level:3, ja:'一番つらいのは家族と離れていることです。', en:'The hardest part is being away from home.' },
+    { id:'sd34', level:3, ja:'正直、思っていたより良いです。',       en:"Honestly, it's better than I expected." },
+    { id:'sd35', level:3, ja:'いつかヨーロッパを旅してみたいです。', en:"I'd love to travel around Europe someday." },
+    { id:'sd36', level:3, ja:'振り返ると、いい決断だったと思う。',   en:'Looking back, it was a great decision.' },
   ];
 
   // ---------- 1分英語解説 (English Lessons) ----------
@@ -11976,6 +12023,20 @@
       sessionStartRef.current = Date.now();
       setPhase('practice');
     }
+    // Re-do the SAME 10 sentences (no reshuffle, no new pull). The
+    // user's request: shadowing benefits from rep, not from constant
+    // novelty. Cancels any in-flight TTS, resets position to 1/1,
+    // wakes the audio session, kicks practice phase again.
+    function repeatSession() {
+      if (!queue.length) { startSession(); return; }
+      try { window.speechSynthesis.cancel(); } catch {}
+      unlockAudioForBluetooth();
+      setIndex(0);
+      setRepNumber(1);
+      setPaused(false);
+      sessionStartRef.current = Date.now();
+      setPhase('practice');
+    }
     function togglePause() { setPaused(p => !p); }
     function skipSentence() {
       // Cancel anything playing, then jump.
@@ -12240,15 +12301,27 @@
           )),
         ),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          // Same 10 sentences again — primary action, since rep is
+          // what builds the muscle memory.
+          e('button', {
+            onClick: repeatSession,
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 14,
+              background: profile.color, color: '#fff',
+              border: '1px solid ' + profile.color,
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            }
+          }, '🔁 同じ ' + SHADOW_SESSION_COUNT + ' 文をもう一度'),
+          // New shuffle from the pool.
           e('button', {
             onClick: startSession,
             style: {
               width: '100%', padding: '14px 0', borderRadius: 14,
-              background: C.brand, color: '#fff',
-              border: '1px solid ' + C.brand,
+              background: C.softer, color: C.text,
+              border: '1px solid ' + C.line,
               fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
             }
-          }, 'もう ' + SHADOW_SESSION_COUNT + ' 文'),
+          }, '別の ' + SHADOW_SESSION_COUNT + ' 文をやる'),
           e('button', {
             onClick: backToHome,
             style: {
