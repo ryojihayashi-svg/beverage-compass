@@ -3159,6 +3159,65 @@
         },
       ],
     },
+    {
+      id: 'l1_in_on_at_into',
+      level: 1,
+      title: 'in / on / at / into',
+      subtitle: '場所と動きの前置詞',
+      icon: '🐱',
+      todayQ: 'ねこは箱の中？テーブルの上？駅にいる？それとも箱に飛びこむ？— 4 つの英単語で全部いえる。',
+      imagery: '4 つの絵で覚えよう。in（中にいる）/ on（上にのっている）/ at（一点にいる）/ into（外から中へ動く）。前 3 つは「いる場所」、into だけは「動き」。',
+      rule: 'in =「中」 / on =「上」 / at =「一点」 / into =「中へ動く」',
+      examples: [
+        { en: 'The cat is in the box.',     ja: 'ねこは箱の中にいます。' },
+        { en: 'The cat is on the table.',   ja: 'ねこはテーブルの上にいます。' },
+        { en: 'The cat is at the station.', ja: 'ねこは駅にいます。' },
+        { en: 'The cat goes into the box.', ja: 'ねこは箱の中に入ります。' },
+      ],
+      points: [
+        '🟢 in は「囲まれている中」。箱の中、部屋の中、車の中、水の中。',
+        '🔵 on は「面にくっついている上」。テーブルの上、壁にかかった絵も on。',
+        '🟡 at は「一点にいる」。駅、バス停、店、学校など、特定の場所。',
+        '🔴 into は「外から中へ動く」。go into / jump into / put into のように動詞といっしょ。',
+      ],
+      quiz: [
+        {
+          q:   'The cat is ___ the box.',
+          qJa: 'ねこは箱の中にいます。',
+          choices: ['in', 'on', 'at', 'into'],
+          answer: 0,
+          explain: '箱に囲まれていて「中」にいる。動かずいるから into ではなく in。',
+        },
+        {
+          q:   'The cup is ___ the table.',
+          qJa: 'カップはテーブルの上にあります。',
+          choices: ['in', 'on', 'at', 'into'],
+          answer: 1,
+          explain: 'テーブルにくっついていて「上」にある。だから on。',
+        },
+        {
+          q:   'I am waiting ___ the bus stop.',
+          qJa: '私はバス停で待っています。',
+          choices: ['in', 'on', 'at', 'into'],
+          answer: 2,
+          explain: 'バス停は「ある一点の場所」。動かずそこにいる。だから at。',
+        },
+        {
+          q:   'The dog jumps ___ the pool.',
+          qJa: '犬がプールに飛びこみます。',
+          choices: ['in', 'on', 'at', 'into'],
+          answer: 3,
+          explain: '外から中へ「動く」イメージ。jump（飛びこむ）と一緒だから into。',
+        },
+        {
+          q:   'My phone is ___ my bag.',
+          qJa: '私の電話はかばんの中にあります。',
+          choices: ['in', 'on', 'at', 'into'],
+          answer: 0,
+          explain: 'かばんに囲まれていて「中」にある。動かずあるので into ではなく in。',
+        },
+      ],
+    },
   ];
   const LESSON_BY_ID    = Object.fromEntries(ENGLISH_LESSONS.map(l => [l.id, l]));
   const LESSONS_BY_LEVEL = ENGLISH_LESSONS.reduce((acc, l) => {
