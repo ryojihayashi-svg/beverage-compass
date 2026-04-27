@@ -2899,6 +2899,118 @@
     { id:'qa48_a', role:'A', level:3, ja:'うん、フィッシュ・アンド・チップスは最高。', en:'Yeah, fish and chips is amazing.' },
     { id:'qa49_q', role:'Q', level:3, ja:'イギリスで一番びっくりしたことは？', en:'What surprised you the most about the UK?' },
     { id:'qa49_a', role:'A', level:3, ja:'みんな並ぶときすごく礼儀正しいこと。', en:'How polite everyone is when they queue.' },
+
+    // ---- L4 — for Naruchichi (英検2級 level), more nuanced grammar ----
+    { id:'sd71', level:4, ja:'プレッシャーへの対し方に、その人の人となりが表れる。', en:'The way you handle pressure says a lot about your character.' },
+    { id:'sd72', level:4, ja:'昨日あなたが言ったことについて、ずっと考えていた。',     en:"I've been thinking about what you said yesterday." },
+    { id:'sd73', level:4, ja:'起きたことより、それにどう応えるかが大事。',           en:"It's not what happens to you, but how you respond that matters." },
+    { id:'sd74', level:4, ja:'気持ちを言葉にするのは、時々難しい。',                 en:'I find it hard to put my feelings into words sometimes.' },
+    { id:'sd75', level:4, ja:'学べば学ぶほど、自分が何も知らないと気づく。',         en:'The more I learn, the more I realise how little I know.' },
+    { id:'sd76', level:4, ja:'努力は必ず報われるとは限らない、でも前に進む唯一の道だ。', en:"Effort doesn't always pay off, but it's the only way forward." },
+    { id:'sd77', level:4, ja:'コントロールできることに集中するべき、できないことではなく。', en:'We should focus on what we can control, not what we cannot.' },
+    { id:'sd78', level:4, ja:'広く読書することは、私の世界の見方を変えました。',     en:'Reading widely has changed how I see the world.' },
+    { id:'sd79', level:4, ja:'人気者になるより、正直でいたい。',                     en:"I'd rather be honest than popular." },
+    { id:'sd80', level:4, ja:'語学を流暢にする近道はありません。',                    en:"There's no shortcut to becoming fluent in a language." },
+
+    { id:'qa50_q', role:'Q', level:4, ja:'いいリーダーって何だと思う？',             en:'What do you think makes a good leader?' },
+    { id:'qa50_a', role:'A', level:4, ja:'話す前にしっかり聞く人、かな。',           en:"Someone who listens before they speak, I'd say." },
+    { id:'qa51_q', role:'Q', level:4, ja:'もし世界を一つ変えられるなら、何を変える？', en:'If you could change one thing about the world, what would it be?' },
+    { id:'qa51_a', role:'A', level:4, ja:'みんなが質の高い教育を受けられるようにしたい。', en:"I'd want everyone to have access to good education." },
+    { id:'qa52_q', role:'Q', level:4, ja:'今までもらった一番のアドバイスは？',       en:"What's the best advice you've ever received?" },
+    { id:'qa52_a', role:'A', level:4, ja:'「人の表面と自分の中身を比べるな」って。',   en:"\"Don't compare your inside to someone else's outside.\"" },
+  ];
+
+  // ---------- Famous long-form passages for shadowing ----------
+  // Played ONCE through, end to end, with a small inter-rep pause and
+  // 3 full passes total. Designed for the "read straight through 3
+  // times" mode the user asked for — no per-sentence chunking.
+  // Each entry has a title (for the picker), level, en (the passage),
+  // and ja (the translation, shown on the practice card and review).
+  const SHADOWING_PASSAGES = [
+    {
+      id: 'pas_jobs_stanford',
+      level: 3,
+      title: 'Steve Jobs · Stanford 2005',
+      icon: '🍎',
+      en:
+        "Your time is limited, so don't waste it living someone else's life. " +
+        "Don't be trapped by dogma — which is living with the results of other people's thinking. " +
+        "Don't let the noise of others' opinions drown out your own inner voice. " +
+        "And most important, have the courage to follow your heart and intuition.",
+      ja:
+        '時間には限りがある。だから他人の人生を生きて時間を無駄にしてはいけない。' +
+        'ドグマにとらわれてはいけない、それは他人の考えの結果を生きることだ。' +
+        '他人の意見の騒音に、自分の内なる声をかき消されてはいけない。' +
+        'そして何より、自分の心と直感に従う勇気を持ちなさい。',
+    },
+    {
+      id: 'pas_huang_caltech',
+      level: 4,
+      title: 'Jensen Huang · Caltech 2024',
+      icon: '🚀',
+      en:
+        "Pain and suffering build character. " +
+        "There is no significant greatness without character. " +
+        "Don't be afraid to do something hard. " +
+        "Run, don't walk. " +
+        "Either you're running for food, or you are running from being food. " +
+        "Either way — run.",
+      ja:
+        '痛みと苦しみは人格を作る。' +
+        '人格なしに、本当の偉大さはない。' +
+        '難しいことをするのを恐れるな。' +
+        '走れ、歩くな。' +
+        '食べるために走るか、食べられないために走るか。' +
+        'どちらにしろ、走れ。',
+    },
+    {
+      id: 'pas_jack_ma',
+      level: 4,
+      title: 'Jack Ma · Never Give Up',
+      icon: '💪',
+      en:
+        "Today is hard, tomorrow will be worse, but the day after tomorrow will be sunshine. " +
+        "However, most people will die tomorrow night. " +
+        "They cannot see the sunshine the day after tomorrow. " +
+        "Never give up today.",
+      ja:
+        '今日は厳しい、明日はもっと厳しい、しかし明後日は晴れる。' +
+        'しかし、ほとんどの人は明日の夜に死んでしまう。' +
+        '明後日の太陽を見ることができない。' +
+        '今日、決してあきらめるな。',
+    },
+    {
+      id: 'pas_family_meals',
+      level: 3,
+      title: 'Family Meals',
+      icon: '🍱',
+      en:
+        "There's something special about a meal shared with family. " +
+        "The food is more than nourishment — it's memory, comfort, and culture all on one plate. " +
+        "Whether it's a bowl of homemade ramen or a Sunday roast, " +
+        "the table is where we tell our stories.",
+      ja:
+        '家族と分け合う食事には、特別な何かがある。' +
+        '料理は栄養以上のものだ ― 思い出、安心、文化が、ひとつの皿の上にある。' +
+        '手作りのラーメンの丼でも、日曜のローストでも、' +
+        '食卓こそが、私たちが物語を語る場所だ。',
+    },
+    {
+      id: 'pas_ronaldo_work',
+      level: 4,
+      title: 'Cristiano Ronaldo · Hard Work',
+      icon: '⚽',
+      en:
+        "Talent without working hard is nothing. " +
+        "Your dedication, your love for the game, and the way you treat people — " +
+        "that's what defines a true champion. " +
+        "Every day you have to work harder than the day before.",
+      ja:
+        '努力をしない才能は、何ものでもない。' +
+        '献身、その競技への愛、人への接し方 ―' +
+        'それが本物のチャンピオンを決めるんだ。' +
+        '毎日、前の日よりもっと努力しなくてはいけない。',
+    },
   ];
 
   // ---------- 1分英語解説 (English Lessons) ----------
@@ -11951,6 +12063,9 @@
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [replayKey, setReplayKey] = useState(0);          // bump to re-trigger current rep
     const sessionStartRef = useRef(null);
+    // 'short' = 10 sentences × 3 reps each (the original mode)
+    // 'long'  = 1 famous passage played end-to-end × 3 full reads
+    const [mode, setMode] = useState('short');
 
     // Default to おまかせ — the same per-profile level distribution
     // vocab and 瞬間英作文 use (pickLevelForProfile). Manual LV picks
@@ -12083,6 +12198,25 @@
       sessionStartRef.current = Date.now();
       setPhase('practice');
     }
+    // Long-form mode entry point. The "queue" is a single passage; the
+    // 3 reps each speak the entire passage end to end. Title + ja are
+    // copied through so the practice card and review can render them.
+    function startPassage(passage) {
+      if (!passage) return;
+      unlockAudioForBluetooth();
+      setQueue([{
+        id: passage.id,
+        en: passage.en,
+        ja: passage.ja,
+        title: passage.title,
+        isPassage: true,
+      }]);
+      setIndex(0);
+      setRepNumber(1);
+      setPaused(false);
+      sessionStartRef.current = Date.now();
+      setPhase('practice');
+    }
     // Re-do the SAME 10 sentences (no reshuffle, no new pull). The
     // user's request: shadowing benefits from rep, not from constant
     // novelty. Cancels any in-flight TTS, resets position to 1/1,
@@ -12146,15 +12280,125 @@
         topBar,
         e('div', { style: { padding: '4px 4px 18px' } },
           e('div', {
-            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+            style: { fontFamily: SANS_UI, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, 'シャドーイング'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.7 } },
-            '英文が ' + SHADOW_REPS + ' 回くりかえし流れる → そのたびに声に出してマネをする。' +
-            SHADOW_SESSION_COUNT + ' 文ぶん終わったらゴール。録音はしない、口を動かすことに集中。'),
+            mode === 'long'
+              ? '有名なスピーチや記事の長文を、最初から最後まで一気に流す。3 周くりかえし読まれるので、そのたびに声に出してマネをする。'
+              : '英文が ' + SHADOW_REPS + ' 回くりかえし流れる → そのたびに声に出してマネをする。' +
+                SHADOW_SESSION_COUNT + ' 文ぶん終わったらゴール。録音はしない、口を動かすことに集中。'),
         ),
 
-        // Level picker — おまかせ + LV1〜5. Empty levels show 準備中
-        // and are not selectable.
+        // Mode toggle — short sentences vs long passages.
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'MODE'),
+        e('div', {
+          style: {
+            display: 'grid', gridTemplateColumns: '1fr 1fr',
+            gap: 8, marginBottom: 18,
+          }
+        },
+          [
+            { id: 'short', label: '短い文 · 10文 × 3回' },
+            { id: 'long',  label: '長文 · 1本 × 3周' },
+          ].map(opt => {
+            const isActive = mode === opt.id;
+            return e('button', {
+              key: 'mode_' + opt.id,
+              onClick: () => setMode(opt.id),
+              style: {
+                padding: '10px 0', borderRadius: 999,
+                background: isActive ? profile.color : C.card,
+                color:      isActive ? '#fff' : C.text,
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: 'pointer', letterSpacing: '0.04em',
+              }
+            }, opt.label);
+          }),
+        ),
+
+        // Long-mode passage list (replaces the level picker / start
+        // button; speed picker stays).
+        mode === 'long' ? e('div', null,
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 10, paddingLeft: 4,
+            }
+          }, '長文を選んでスタート'),
+          e('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }
+          },
+            SHADOWING_PASSAGES.map(p => e('button', {
+              key: p.id,
+              onClick: () => startPassage(p),
+              style: {
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px',
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, textAlign: 'left',
+                cursor: 'pointer',
+              }
+            },
+              e('span', { style: { fontSize: 22, flexShrink: 0 } }, p.icon || '📖'),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+                }, p.title),
+                e('div', {
+                  style: {
+                    fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                    color: profile.color, marginTop: 4, letterSpacing: '0.06em',
+                  }
+                }, 'LV' + p.level + ' · ' + (p.en.split(/\s+/).length) + ' words'),
+              ),
+              e('span', { style: { color: C.sub, fontSize: 18 } }, '›'),
+            )),
+          ),
+          // Speed picker still applies to long mode
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 10, paddingLeft: 4,
+            }
+          }, 'SPEED'),
+          e('div', {
+            style: {
+              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+              gap: 8, marginBottom: 18,
+            }
+          },
+            [
+              { id: 1, label: '① ゆっくり' },
+              { id: 2, label: '② ふつう' },
+              { id: 3, label: '③ 早口' },
+            ].map(opt => {
+              const isActive = speed === opt.id;
+              return e('button', {
+                key: 'sp_' + opt.id,
+                onClick: () => setSpeed(opt.id),
+                style: {
+                  padding: '8px 0', borderRadius: 999,
+                  background: isActive ? profile.color : C.card,
+                  color:      isActive ? '#fff' : C.text,
+                  border: '1px solid ' + (isActive ? profile.color : C.line),
+                  fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                  cursor: 'pointer', letterSpacing: '0.04em',
+                }
+              }, opt.label);
+            }),
+          ),
+        ) : e(React.Fragment, null,
+
+        // ---- short-mode below: level picker + speed picker + start ----
         e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
@@ -12289,6 +12533,7 @@
             cursor: 'pointer', letterSpacing: '0.04em',
           }
         }, '今は声を出せない（あとでやる）'),
+        )  // ← end of short-mode React.Fragment
       );
     }
 
@@ -12467,17 +12712,38 @@
             letterSpacing: '0.12em',
           }
         }, current.role === 'Q' ? '質問 · QUESTION' : '答え · ANSWER'),
-        e('div', {
+        // Passage title (long-form mode only)
+        current.isPassage && current.title && e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 26, fontWeight: 700,
-            color: C.text, lineHeight: 1.45,
+            fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+            letterSpacing: '0.16em', color: profile.color,
+            textAlign: 'center', textTransform: 'uppercase',
+            marginBottom: 4,
           }
+        }, current.title),
+        // English text. Long passages get a smaller font, left-
+        // aligned, and a max-height with scroll so the whole thing
+        // sits inside the card without blowing it up.
+        e('div', {
+          style: current.isPassage
+            ? {
+                fontFamily: SERIF, fontSize: 17, fontWeight: 600,
+                color: C.text, lineHeight: 1.7, textAlign: 'left',
+                maxHeight: 240, overflowY: 'auto', padding: '4px 4px',
+              }
+            : {
+                fontFamily: SERIF, fontSize: 26, fontWeight: 700,
+                color: C.text, lineHeight: 1.45,
+              },
         }, current.en),
         // Japanese hint — small and dim. Not meant to be read out loud,
         // just there for context so the kid knows what they're saying.
         e('div', {
           style: {
             fontSize: 12, color: C.sub, lineHeight: 1.6, marginTop: 4,
+            textAlign: current.isPassage ? 'left' : 'center',
+            maxHeight: current.isPassage ? 160 : 'none',
+            overflowY: current.isPassage ? 'auto' : 'visible',
           }
         }, current.ja),
         repDots,
