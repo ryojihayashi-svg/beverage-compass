@@ -11191,169 +11191,132 @@
   }
 
   // ---------- シャドーイング ----------
-  // Listen → repeat aloud immediately → compare what the speech-recog
-  // heard against the target. Bag-of-words match (case + punctuation
-  // insensitive); 75% words present = pass. Pulls from DAILY_PHRASES
-  // because they're already short, conversational, and TTS-friendly.
-  function normalizeForCompare(s) {
-    return (s || '')
-      .toLowerCase()
-      .replace(/[.,!?;:'"\-()]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-  function compareShadowing(target, heard) {
-    const tWords = normalizeForCompare(target).split(' ').filter(Boolean);
-    const hWords = normalizeForCompare(heard).split(' ').filter(Boolean);
-    const heardSet = new Set(hWords);
-    let matched = 0;
-    const targetMarks = tWords.map(w => {
-      const ok = heardSet.has(w);
-      if (ok) matched++;
-      return { word: w, ok };
-    });
-    const score = tWords.length > 0 ? Math.round((matched / tWords.length) * 100) : 0;
-    return { score, targetMarks, heardWords: hWords };
-  }
-  const SHADOW_PASS = 75;          // % needed to "pass" a sentence
-  const SHADOW_SESSION_COUNT = 5;  // sentences per session
+  // Pure listen-and-repeat. No recording, no scoring. The app reads each
+  // sentence, pauses for the user to say it back, plays it again, and
+  // after N reps auto-advances to the next sentence. 10 sentences per
+  // session × 3 reps each = ~3 minutes of mouth-moving practice.
+  const SHADOW_SESSION_COUNT = 10;
+  const SHADOW_REPS          = 3;
+  const SHADOW_PAUSE_MS      = 2200; // gap after TTS for the user to repeat
 
   function ShadowingPractice({ profile, onBack }) {
-    const [phase, setPhase]   = useState('intro');  // 'intro' | 'practice' | 'done'
-    const [queue, setQueue]   = useState([]);
-    const [index, setIndex]   = useState(0);
-    const [recording, setRecording] = useState(false);
-    const [heard, setHeard]   = useState('');       // raw transcript
-    const [error, setError]   = useState('');
-    const [results, setResults] = useState([]);     // [{phrase, heard, score}]
-    const recognitionRef = useRef(null);
+    const [phase, setPhase]         = useState('intro');    // 'intro' | 'practice' | 'done'
+    const [queue, setQueue]         = useState([]);
+    const [index, setIndex]         = useState(0);
+    const [repNumber, setRepNumber] = useState(1);          // 1..SHADOW_REPS
+    const [paused, setPaused]       = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [replayKey, setReplayKey] = useState(0);          // bump to re-trigger current rep
     const sessionStartRef = useRef(null);
 
     const current = queue[index] || null;
-    const comparison = (current && heard) ? compareShadowing(current.en, heard) : null;
-    const passed = comparison && comparison.score >= SHADOW_PASS;
+
+    // The auto-loop. Speak the sentence, wait for the TTS to finish,
+    // then a pause for the user to repeat, then advance (next rep or
+    // next sentence). Cleanup cancels speech + timer if the user
+    // pauses, navigates away, or skips.
+    useEffect(() => {
+      if (phase !== 'practice' || paused || !current) return;
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      let cancelled = false;
+      let timeoutId = null;
+
+      const u = new SpeechSynthesisUtterance(current.en);
+      u.lang = 'en-GB';
+      u.rate = 0.95;
+      u.onstart = () => { if (!cancelled) setIsSpeaking(true); };
+      const finish = () => {
+        if (cancelled) return;
+        setIsSpeaking(false);
+        // Pause so the user can say the sentence back, then advance.
+        timeoutId = setTimeout(() => {
+          if (cancelled) return;
+          if (repNumber < SHADOW_REPS) {
+            setRepNumber(r => r + 1);
+          } else {
+            // Next sentence — or finish if this was the last one.
+            if (index + 1 >= queue.length) {
+              const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+              try {
+                db.recordTurn(profile.id, 'shadowing');
+                db.pushEvent(profile.id, {
+                  kind: 'shadowing',
+                  total: queue.length,
+                  durationMs,
+                });
+                markPathStepDone(profile, 'shadowing');
+              } catch {}
+              sessionStartRef.current = null;
+              setPhase('done');
+            } else {
+              setIndex(i => i + 1);
+              setRepNumber(1);
+            }
+          }
+        }, SHADOW_PAUSE_MS);
+      };
+      u.onend = finish;
+      u.onerror = finish;
+
+      // Stop anything in flight, then play.
+      try { window.speechSynthesis.cancel(); } catch {}
+      try { window.speechSynthesis.speak(u);   } catch {}
+
+      return () => {
+        cancelled = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        try { window.speechSynthesis.cancel(); } catch {}
+        setIsSpeaking(false);
+      };
+    }, [phase, index, repNumber, paused, replayKey]);
 
     function startSession() {
-      // Pick from DAILY_PHRASES, shuffled. No level filtering for now —
-      // the phrasebook is mostly L1/L2 already and shadowing benefits
-      // from a mix.
       const pool = DAILY_PHRASES.slice();
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
       }
       setQueue(pool.slice(0, SHADOW_SESSION_COUNT));
-      setIndex(0); setHeard(''); setResults([]); setError('');
+      setIndex(0);
+      setRepNumber(1);
+      setPaused(false);
       sessionStartRef.current = Date.now();
       setPhase('practice');
-      // Auto-play the first sentence after a tiny delay so iOS Safari
-      // doesn't drop the speech because it fired during state update.
-      setTimeout(() => {
-        const first = pool[0];
-        if (first) speak(first.en);
-      }, 250);
     }
-
-    function startListening() {
-      if (recording) return;
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) {
-        setError('この端末は音声認識に対応していません（Safari / Chrome 推奨）。');
-        return;
-      }
-      try {
-        const r = new SR();
-        r.lang = 'en-GB';
-        r.continuous     = false;
-        r.interimResults = true;
-        let finalText = '';
-        r.onresult = (ev) => {
-          finalText = '';
-          for (let i = 0; i < ev.results.length; i++) finalText += ev.results[i][0].transcript;
-          setHeard(finalText);
-        };
-        r.onerror = (ev) => {
-          let m = 'マイクが使えませんでした。';
-          if (ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed')) {
-            m = 'マイクが許可されていません。設定で許可してください。';
-          } else if (ev && ev.error === 'no-speech') {
-            m = '声が聞こえませんでした。もう一度試してください。';
-          } else if (ev && ev.error === 'network') {
-            m = 'ネットワークエラーで音声認識に失敗しました。';
-          } else if (ev && ev.error) {
-            m = '音声入力エラー: ' + ev.error;
-          }
-          setError(m);
-          setRecording(false);
-        };
-        r.onend = () => {
-          setRecording(false);
-          recognitionRef.current = null;
-        };
-        r.start();
-        recognitionRef.current = r;
-        setRecording(true);
-        setError('');
-      } catch (err) {
-        setError('録音を開始できませんでした: ' + ((err && err.message) || String(err)));
-        setRecording(false);
-      }
-    }
-    function stopListening() {
-      const r = recognitionRef.current;
-      recognitionRef.current = null;
-      setRecording(false);
-      if (r) {
-        try { r.stop();  } catch {}
-        try { r.abort(); } catch {}
-      }
-    }
-    function toggleRecord() {
-      if (recording) stopListening();
-      else           startListening();
-    }
-    function retry() {
-      stopListening();
-      setHeard('');
-      setError('');
-    }
-    function nextSentence() {
-      stopListening();
-      const score = comparison ? comparison.score : 0;
-      const newResults = [...results, { phrase: current, heard, score }];
-      setResults(newResults);
-      setHeard(''); setError('');
+    function togglePause() { setPaused(p => !p); }
+    function skipSentence() {
+      // Cancel anything playing, then jump.
+      try { window.speechSynthesis.cancel(); } catch {}
       if (index + 1 >= queue.length) {
-        // Done
-        const correct = newResults.filter(r => r.score >= SHADOW_PASS).length;
         const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
         try {
           db.recordTurn(profile.id, 'shadowing');
           db.pushEvent(profile.id, {
-            kind: 'shadowing',
-            total: newResults.length,
-            correct,
-            durationMs,
+            kind: 'shadowing', total: queue.length, durationMs,
           });
           markPathStepDone(profile, 'shadowing');
         } catch {}
         sessionStartRef.current = null;
         setPhase('done');
       } else {
-        const nextIdx = index + 1;
-        setIndex(nextIdx);
-        setTimeout(() => { const nx = queue[nextIdx]; if (nx) speak(nx.en); }, 200);
+        setIndex(i => i + 1);
+        setRepNumber(1);
       }
     }
-    function restart() {
-      startSession();
+    function replayCurrent() {
+      try { window.speechSynthesis.cancel(); } catch {}
+      // Force the auto-loop effect to re-run for this same (index, rep).
+      setReplayKey(k => k + 1);
+    }
+    function backToHome() {
+      try { window.speechSynthesis.cancel(); } catch {}
+      onBack();
     }
 
-    // Top bar (shared across phases)
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
     },
-      e('button', { onClick: () => { stopListening(); onBack(); },
+      e('button', { onClick: backToHome,
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, 'シャドーイング'),
@@ -11371,8 +11334,8 @@
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, 'シャドーイング'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.7 } },
-            '🔊 を聞いて → 🎤 で同じように声に出す → 認識結果と比べて点数。' +
-            '発音を「直す」より「真似する」気持ちで。同じ文を 3〜5 回繰り返すと一番効くよ。'),
+            '英文が ' + SHADOW_REPS + ' 回くりかえし流れる → そのたびに声に出してマネをする。' +
+            SHADOW_SESSION_COUNT + ' 文ぶん終わったらゴール。録音はしない、口を動かすことに集中。'),
         ),
         e('div', {
           style: {
@@ -11382,10 +11345,10 @@
           }
         },
           e('div', { style: { fontWeight: 700, marginBottom: 6 } }, '進め方'),
-          e('div', null, '①  英文を聞く（自動再生 + 何度でも 🔊）'),
-          e('div', null, '②  🎤 を押してそのまま声に出す'),
-          e('div', null, '③  認識結果と比べて点数 (' + SHADOW_PASS + '点で OK)'),
-          e('div', null, '④  「次へ」or「もう一回」'),
+          e('div', null, '①  英文が自動で流れる'),
+          e('div', null, '②  すぐに声に出してそっくりマネする'),
+          e('div', null, '③  同じ文が ' + SHADOW_REPS + ' 回くりかえし → 自動で次へ'),
+          e('div', null, '④  ' + SHADOW_SESSION_COUNT + ' 文で 1 セット（約 3 分）'),
         ),
         e('button', {
           onClick: startSession,
@@ -11396,27 +11359,24 @@
             fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
             letterSpacing: '0.04em', cursor: 'pointer',
           }
-        }, '始める (' + SHADOW_SESSION_COUNT + ' 文)'),
+        }, 'スタート (' + SHADOW_SESSION_COUNT + ' 文)'),
       );
     }
 
     // ============ DONE ============
     if (phase === 'done') {
-      const total = results.length;
-      const passedCount = results.filter(r => r.score >= SHADOW_PASS).length;
-      const avg = total > 0 ? Math.round(results.reduce((s, r) => s + r.score, 0) / total) : 0;
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '4px 4px 22px', textAlign: 'center' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, avg >= 85 ? '🎉 すごい！' : avg >= 60 ? 'いい調子！' : 'もう一回トライ！'),
+          }, '🎉 おつかれさま！'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
-          }, avg + '点'),
+          }, queue.length + ' 文'),
           e('div', {
             style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
-          }, passedCount + ' / ' + total + ' 文クリア (' + SHADOW_PASS + '点以上)'),
+          }, SHADOW_REPS + ' 回ずつシャドーイング完了'),
         ),
         e('div', {
           style: {
@@ -11424,33 +11384,26 @@
             borderRadius: 14, padding: '6px 0', marginBottom: 18,
           }
         },
-          results.map((r, i) => e('div', {
-            key: i,
+          queue.map((p, i) => e('div', {
+            key: p.id || i,
             style: {
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '12px 16px',
-              borderBottom: i === results.length - 1 ? 'none' : '1px solid ' + C.line,
+              borderBottom: i === queue.length - 1 ? 'none' : '1px solid ' + C.line,
             }
           },
             e('span', {
-              style: {
-                width: 36, height: 22, flexShrink: 0,
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                background: (r.score >= SHADOW_PASS ? C.success : C.danger) + '1A',
-                color: r.score >= SHADOW_PASS ? C.success : C.danger,
-                borderRadius: 999, fontSize: 11, fontWeight: 800,
-                fontVariantNumeric: 'tabular-nums',
-              }
-            }, r.score + '%'),
+              style: { fontSize: 13, color: C.sub, fontFamily: SANS_UI, width: 18, textAlign: 'right' }
+            }, String(i + 1)),
             e('span', {
               style: { flex: 1, fontFamily: SERIF, fontSize: 14, color: C.text, lineHeight: 1.5 }
-            }, r.phrase.en),
-            e(SpeakerBtn, { onClick: () => speak(r.phrase.en), color: profile.color, size: 24 }),
+            }, p.en),
+            e(SpeakerBtn, { onClick: () => speak(p.en), color: profile.color, size: 24 }),
           )),
         ),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           e('button', {
-            onClick: restart,
+            onClick: startSession,
             style: {
               width: '100%', padding: '14px 0', borderRadius: 14,
               background: C.brand, color: '#fff',
@@ -11459,7 +11412,7 @@
             }
           }, 'もう ' + SHADOW_SESSION_COUNT + ' 文'),
           e('button', {
-            onClick: onBack,
+            onClick: backToHome,
             style: {
               width: '100%', padding: '14px 0', borderRadius: 14,
               background: 'none', color: C.sub, border: 'none',
@@ -11472,147 +11425,106 @@
 
     // ============ PRACTICE ============
     if (!current) return e('div', { style: pageStyle }, topBar);
+
+    // Rep dots: filled = done, half = current, hollow = upcoming.
+    const repDots = e('div', {
+      style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 6 }
+    },
+      Array.from({ length: SHADOW_REPS }).map((_, i) => {
+        const n = i + 1;
+        const isDone   = n < repNumber;
+        const isActive = n === repNumber;
+        return e('span', {
+          key: i,
+          style: {
+            width: 10, height: 10, borderRadius: 999,
+            background: isDone ? profile.color : (isActive ? profile.color + '66' : 'transparent'),
+            border: '1.5px solid ' + (isDone || isActive ? profile.color : C.line),
+          }
+        });
+      }),
+    );
+
     return e('div', { style: pageStyle },
       topBar,
-      // Progress bar
+      // Progress bar (sentence-level)
       e('div', {
-        style: {
-          height: 4, background: C.line, borderRadius: 999,
-          marginBottom: 18, overflow: 'hidden',
-        }
+        style: { height: 4, background: C.line, borderRadius: 999, marginBottom: 18, overflow: 'hidden' }
       },
         e('div', {
           style: {
-            width: ((index + 1) / queue.length * 100) + '%',
+            width: ((index + (repNumber / SHADOW_REPS)) / queue.length * 100) + '%',
             height: '100%', background: profile.color,
             transition: 'width .3s ease',
           }
         }),
       ),
 
-      // Target sentence card
+      // Big sentence card with the speaker indicator + rep dots
       e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 16, padding: '20px 18px', marginBottom: 14,
+          borderRadius: 16, padding: '24px 20px 20px', marginBottom: 18,
+          textAlign: 'center', minHeight: 200,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14,
         }
       },
-        e('div', {
-          style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-            letterSpacing: '0.16em', color: C.sub, marginBottom: 10,
-            display: 'flex', alignItems: 'center', gap: 8,
-          }
-        },
-          e('span', { style: { flex: 1 } }, 'これを真似してみよう'),
-          e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 36 }),
-        ),
-        // English sentence — words colour-coded by match status once
-        // we have a transcript; before that, just plain.
-        e('div', {
-          style: {
-            fontFamily: SERIF, fontSize: 22, fontWeight: 700,
-            color: C.text, lineHeight: 1.5,
-          }
-        },
-          comparison
-            ? comparison.targetMarks.map((m, i) => e('span', {
-                key: i,
-                style: {
-                  color: m.ok ? C.success : C.danger,
-                  fontWeight: m.ok ? 700 : 800,
-                  textDecoration: m.ok ? 'none' : 'underline',
-                  textDecorationStyle: 'wavy',
-                  marginRight: 6,
-                }
-              }, m.word))
-            : current.en,
-        ),
-        e('div', {
-          style: { fontSize: 12, color: C.sub, marginTop: 8, lineHeight: 1.6 }
-        }, current.ja),
-      ),
-
-      // Record button
-      e('button', {
-        onClick: toggleRecord,
-        style: {
-          width: '100%', padding: '16px 0', borderRadius: 14,
-          background: recording ? (C.danger + '14') : profile.color,
-          color: recording ? C.danger : '#fff',
-          border: '1px solid ' + (recording ? C.danger : profile.color),
-          fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
-          cursor: 'pointer', marginBottom: 14,
-        }
-      }, recording ? '● 録音中… (タップで停止)' : '🎤 録音して真似する'),
-
-      error && e('div', {
-        style: {
-          fontSize: 12, color: C.danger, marginBottom: 12,
-          padding: '10px 12px',
-          background: C.danger + '0F', borderRadius: 10,
-          border: '1px solid ' + C.danger + '33',
-          lineHeight: 1.5, wordBreak: 'break-word',
-        }
-      }, error),
-
-      // What we heard + score (after a recording finishes)
-      heard && !recording && e('div', {
-        style: {
-          background: (passed ? C.success : C.danger) + '12',
-          border: '1px solid ' + (passed ? C.success : C.danger) + '55',
-          borderRadius: 14, padding: '14px 16px', marginBottom: 14,
-        }
-      },
-        e('div', {
-          style: {
-            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8,
-          }
-        },
-          e('span', {
-            style: {
-              fontFamily: SERIF, fontSize: 22, fontWeight: 800,
-              color: passed ? C.success : C.danger,
-            }
-          }, comparison.score + '点'),
-          e('span', {
-            style: {
-              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
-              color: passed ? C.success : C.danger, letterSpacing: '0.06em',
-            }
-          }, passed ? 'OK！' : 'もう少し'),
-        ),
         e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.12em', color: C.sub, marginBottom: 4,
+            letterSpacing: '0.16em', color: isSpeaking ? profile.color : C.sub,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }
-        }, '聞こえた'),
+        },
+          e('span', {
+            className: isSpeaking ? 'hfe-update-dot' : '',
+            style: { fontSize: 18 }
+          }, '🔊'),
+          e('span', null, paused ? '一時停止中' : (isSpeaking ? '聞いて → 真似してみよう' : 'もう一度言ってみよう')),
+        ),
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 15, color: C.text, lineHeight: 1.5 }
-        }, heard),
+          style: {
+            fontFamily: SERIF, fontSize: 26, fontWeight: 700,
+            color: C.text, lineHeight: 1.45,
+          }
+        }, current.en),
+        e('div', {
+          style: { fontSize: 13, color: C.sub, lineHeight: 1.6 }
+        }, current.ja),
+        repDots,
       ),
 
-      // Action row (shown after recording)
-      heard && !recording && e('div', { style: { display: 'flex', gap: 10 } },
+      // Controls — pause/resume primary, skip + replay secondary.
+      e('button', {
+        onClick: togglePause,
+        style: {
+          width: '100%', padding: '16px 0', borderRadius: 14,
+          background: paused ? profile.color : C.softer,
+          color: paused ? '#fff' : C.text,
+          border: '1px solid ' + (paused ? profile.color : C.line),
+          fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
+          cursor: 'pointer', marginBottom: 10,
+        }
+      }, paused ? '▶ 再開' : '⏸ 一時停止'),
+      e('div', { style: { display: 'flex', gap: 10 } },
         e('button', {
-          onClick: retry,
+          onClick: replayCurrent,
           style: {
-            flex: 1, padding: '14px 0', borderRadius: 14,
+            flex: 1, padding: '13px 0', borderRadius: 14,
             background: C.softer, color: C.text,
             border: '1px solid ' + C.line,
-            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            fontSize: 13, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
           }
-        }, 'もう一回'),
+        }, 'もう一回 聞く'),
         e('button', {
-          onClick: nextSentence,
+          onClick: skipSentence,
           style: {
-            flex: 1, padding: '14px 0', borderRadius: 14,
-            background: C.brand, color: '#fff',
-            border: '1px solid ' + C.brand,
-            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            flex: 1, padding: '13px 0', borderRadius: 14,
+            background: C.softer, color: C.text,
+            border: '1px solid ' + C.line,
+            fontSize: 13, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
           }
-        }, index + 1 >= queue.length ? '結果を見る' : '次へ →'),
+        }, '次の文 →'),
       ),
     );
   }
