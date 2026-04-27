@@ -6203,7 +6203,15 @@
         e(ReloadBtn),
       ),
 
-      // Today's phrase — EN larger (focus), JA smaller subline.
+      // 今日の一言英語 — section label sits above the phrase card so
+      // the user can tell at a glance what this block is.
+      todayPhrase && e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 10, paddingLeft: 4,
+        }
+      }, '今日の一言英語'),
       todayPhrase && e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
@@ -6221,9 +6229,6 @@
           style: { fontSize: 12, color: C.sub, marginTop: 6, lineHeight: 1.5 }
         }, todayPhrase.ja),
       ),
-
-      // Progress chips (learners only)
-      !isViewer && e(ProgressChips, { profile, includeTotal: true, style: { marginBottom: 18 } }),
 
       // Today's guided path — a small banner above the feature tiles
       // showing how far the learner has progressed and what's up next.
@@ -6390,6 +6395,8 @@
       { key: 'mctest',      label: 'Daily English テスト' },
       { key: 'flip',        label: 'Daily English めくり' },
       { key: 'overcome',    label: '間違い克服' },
+      { key: 'shadowing',   label: 'シャドーイング' },
+      { key: 'lesson',      label: '1分英語解説' },
     ];
     const todayKey = db.todayKey(profile.id);
 
