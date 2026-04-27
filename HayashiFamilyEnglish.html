@@ -6197,8 +6197,7 @@
           onClick: onBackToProfiles,
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          'プロファイルを切り替える'),
+        e('div', { style: { flex: 1 } }),
         e(OfflineBadge),
         e(ReloadBtn),
       ),
@@ -6292,14 +6291,6 @@
               ),
             ),
       ),
-
-      // Section label
-      e('div', {
-        style: {
-          fontSize: 12, color: C.sub, letterSpacing: '0.12em',
-          fontWeight: 600, marginBottom: 10, paddingLeft: 4, fontFamily: SANS_UI,
-        }
-      }, 'ENGLISH LEARNING'),
 
       // Feature tiles
       e('div', {
@@ -6603,13 +6594,16 @@
         background: isCurrent ? (accent + '0F') : C.card,
         color: C.text,
         border: '1px solid ' + (isCurrent ? accent : C.line),
-        borderRadius: 14, padding: '16px 14px',
-        textAlign: 'left', minHeight: feature.fullWidth ? 64 : 86,
+        borderRadius: 14, padding: '12px 14px',
+        // Uniform height across normal + fullWidth tiles per the
+        // "全部キュッと小さく" request. Old normal-tile minHeight was
+        // 86; everything's 64 now.
+        textAlign: 'left', minHeight: 64,
         display: 'flex',
         flexDirection: feature.fullWidth ? 'row' : 'column',
         justifyContent: 'center',
         alignItems: feature.fullWidth ? 'center' : 'stretch',
-        gap: feature.fullWidth ? 12 : 4,
+        gap: feature.fullWidth ? 12 : 2,
         cursor: 'pointer',
         position: 'relative',
         opacity: isDone ? 0.55 : 1,
