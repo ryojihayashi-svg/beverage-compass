@@ -11393,6 +11393,40 @@
     return SHADOWING_QA.filter(s => s.level === lv).length;
   }
 
+  // iOS Safari has a known quirk where window.speechSynthesis can stay
+  // routed to the device speaker even when AirPods are connected,
+  // because TTS uses a different audio session than HTMLAudioElement.
+  // Playing a tiny silent buffer on a user gesture (the スタート tap)
+  // wakes up the audio session and convinces iOS to treat subsequent
+  // speech as media — at which point it follows the active Bluetooth
+  // output. Best-effort: not a guaranteed fix on every iOS version,
+  // but no downside when it doesn't help.
+  function unlockAudioForBluetooth() {
+    // 1) Silent <audio> play (tiny base64 WAV, 0.05s of silence).
+    try {
+      const SILENT_WAV = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQIAAAAAAA==';
+      const a = new Audio(SILENT_WAV);
+      a.volume = 0.01;
+      const p = a.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch {}
+    // 2) Tickle a 1-sample AudioContext for the same reason — some iOS
+    // versions only respect the AudioContext-based gesture.
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        if (typeof src.start === 'function') src.start(0);
+        // Resume in case this context was created suspended (Safari).
+        if (ctx.state === 'suspended' && ctx.resume) ctx.resume().catch(() => {});
+      }
+    } catch {}
+  }
+
   function ShadowingPractice({ profile, onBack }) {
     const [phase, setPhase]         = useState('intro');    // 'intro' | 'practice' | 'done'
     const [queue, setQueue]         = useState([]);
@@ -11473,6 +11507,10 @@
     }, [phase, index, repNumber, paused, replayKey]);
 
     function startSession() {
+      // Wake up the audio session on the user gesture so iOS routes
+      // the upcoming TTS to AirPods / Bluetooth headphones instead
+      // of falling back to the device speaker.
+      unlockAudioForBluetooth();
       const queueOut = [];
 
       if (selectedLevel === 'auto') {
@@ -11894,8 +11932,13 @@
             color: C.text, lineHeight: 1.45,
           }
         }, current.en),
-        // Japanese is intentionally hidden during shadowing — we don't
-        // want the kid reading it. Meaning gets revealed at the end.
+        // Japanese hint — small and dim. Not meant to be read out loud,
+        // just there for context so the kid knows what they're saying.
+        e('div', {
+          style: {
+            fontSize: 12, color: C.sub, lineHeight: 1.6, marginTop: 4,
+          }
+        }, current.ja),
         repDots,
       ),
 
