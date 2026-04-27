@@ -5854,12 +5854,52 @@
     // Sentences contribute to total time too — count their attempts on top.
     let sentenceAttempts = 0;
     for (const sid in composition) sentenceAttempts += composition[sid].attempts || 0;
-    // Rough study-time estimate: ~10s per vocab attempt, ~15s per sentence
-    // attempt. Honest enough for a profile-card summary; we'll switch to
-    // measured time if we ever start tracking elapsedMs per question.
-    const totalMinutes = Math.round(
-      ((totalAttempts * 10) + (sentenceAttempts * 15)) / 60
-    );
+
+    // Total study time: combine three sources so every kind of session
+    // gets credited.
+    //   1) Measured durationMs from session events (most accurate).
+    //   2) Per-kind turns × estimated seconds-per-turn for kinds that
+    //      don't carry durationMs (legacy vocab / composition events
+    //      and sessions older than the durationMs change).
+    //   3) Fallback: vocab + sentence attempt counts (ignored when (1)
+    //      / (2) already accounted for the same activity).
+    let measuredMs = 0;
+    const measuredKindsByDate = {};   // date → Set of kinds w/ measured ms
+    for (const ev of (state.events || [])) {
+      if (typeof ev.durationMs === 'number' && ev.durationMs > 0) {
+        measuredMs += ev.durationMs;
+        try {
+          const day = String(ev.at || '').slice(0, 10);
+          if (!measuredKindsByDate[day]) measuredKindsByDate[day] = new Set();
+          measuredKindsByDate[day].add(ev.kind);
+        } catch {}
+      }
+    }
+    // Per-kind seconds estimate, used when an event has no durationMs
+    // OR when we read raw turns counters (no event at all).
+    const KIND_SECS_PER_TURN = {
+      vocab:       12 * 10,   // ~10 questions per turn × 12s each
+      composition: 14 * 10,
+      random_test: 10 * 10,
+      mctest:      10 * 5,
+      overcome:    14 * 5,
+      lesson:      25 * 5,
+      shadowing:   18 * 30,   // ~30 reps per session × 18s pace
+      flip:        4,         // single flip
+    };
+    let estimatedMs = 0;
+    const turns = state.turns || {};
+    for (const day in turns) {
+      const measuredKinds = measuredKindsByDate[day] || new Set();
+      const dayBucket = turns[day] || {};
+      for (const kind in dayBucket) {
+        if (measuredKinds.has(kind)) continue;   // already covered by event
+        const cnt   = Number(dayBucket[kind]) || 0;
+        const perTurn = KIND_SECS_PER_TURN[kind] || 12 * 10;
+        estimatedMs += cnt * perTurn * 1000;
+      }
+    }
+    const totalMinutes = Math.max(0, Math.round((measuredMs + estimatedMs) / 60000));
     const accuracy = totalAttempts > 0 ? Math.round(totalCorrect * 100 / totalAttempts) : 0;
     return {
       totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount,
