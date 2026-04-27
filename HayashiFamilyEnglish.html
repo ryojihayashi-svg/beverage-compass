@@ -8176,12 +8176,20 @@
   }
 
   // ---------- Session log ----------
-  // Reverse-chronological list of practice events (each session, each
-  // mistake-overcome) with date / time / contents. Most recent on top.
-  // Times are formatted in the member's own timezone so Yoshinari's
+  // Reverse-chronological list of practice events grouped by day. Today's
+  // group is open by default; past days are collapsed to a 1-line summary
+  // (count + total minutes). Tap a header to toggle. Capped at 200 events
+  // (the localStorage limit) so the page stays light even after months of
+  // use. Times are formatted in the member's own timezone so Yoshinari's
   // London evenings don't show up as midday in Japan.
   function SessionLog({ profile }) {
     const [, setTick] = useState(0);
+    // Past dates the user has explicitly opened (set of dayKey strings).
+    const [openDays, setOpenDays] = useState(() => new Set());
+    // Today's group is open by default; this flag flips iff the user
+    // explicitly closes it. We don't store today in openDays because today
+    // rolls over at midnight and we'd lose the "today is open" default.
+    const [closedToday, setClosedToday] = useState(false);
     useEffect(() => {
       const id = setInterval(() => setTick(t => t + 1), 60_000);
       return () => clearInterval(id);
@@ -8212,11 +8220,46 @@
     const timeFmt = new Intl.DateTimeFormat('ja-JP', Object.assign({
       hour: '2-digit', minute: '2-digit', hour12: false,
     }, tz ? { timeZone: tz } : {}));
+    // Stable YYYY-MM-DD key for grouping (en-CA gives ISO order).
+    const dayKeyFmt = new Intl.DateTimeFormat('en-CA', Object.assign({
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }, tz ? { timeZone: tz } : {}));
     const KIND_LABEL = {
       vocab: '単語学習', composition: '瞬間英作文',
       random_test: 'ランダムテスト',  mctest: 'Daily English テスト',
       flip: 'Daily English めくり',   overcome: '間違い克服',
       lesson: '1分英語解説',          shadowing: 'シャドーイング',
+    };
+    // Group events by day (newest day first, since events are already
+    // in reverse-chronological order).
+    const groups = [];
+    const groupMap = new Map();
+    for (const ev of events) {
+      const at = new Date(ev.at || Date.now());
+      const dayKey = dayKeyFmt.format(at);
+      let g = groupMap.get(dayKey);
+      if (!g) {
+        g = { dayKey, dayLabel: dayFmt.format(at), events: [], totalMs: 0 };
+        groupMap.set(dayKey, g);
+        groups.push(g);
+      }
+      g.events.push(ev);
+      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30_000) {
+        g.totalMs += ev.durationMs;
+      }
+    }
+    const todayKey = dayKeyFmt.format(new Date());
+    const toggleDay = (dayKey) => {
+      if (dayKey === todayKey) {
+        setClosedToday(c => !c);
+      } else {
+        setOpenDays(s => {
+          const ns = new Set(s);
+          if (ns.has(dayKey)) ns.delete(dayKey);
+          else ns.add(dayKey);
+          return ns;
+        });
+      }
     };
     return e('div', { style: { marginTop: 26 } },
       e('div', {
@@ -8232,59 +8275,107 @@
           borderRadius: 14, overflow: 'hidden',
         }
       },
-        events.slice(0, 30).map((ev, i) => {
-          const at = new Date(ev.at || Date.now());
-          const day = dayFmt.format(at);
-          const tm  = timeFmt.format(at);
-          const kindLabel = KIND_LABEL[ev.kind] || ev.kind;
-          let detail = '';
-          // For lessons, the topic title (carried in ev.label) is the
-          // most useful detail — show it before the score.
-          if (ev.kind === 'lesson' && ev.label) {
-            detail = ev.label;
-          }
-          if (typeof ev.total === 'number') {
-            const scorePart = ev.total + '問'
-              + (typeof ev.correct === 'number' ? ' (' + ev.correct + '/' + ev.total + ' 正解)' : '');
-            detail = (detail ? detail + ' · ' : '') + scorePart;
-          }
-          if (ev.direction) {
-            const dirJa = ev.direction === 'ja2en' ? '日本語 → 英語'
-                        : ev.direction === 'en2ja' ? '英語 → 日本語' : ev.direction;
-            detail = (detail ? detail + ' · ' : '') + dirJa;
-          }
-          if (ev.level && ev.level !== 'auto') {
-            detail = (detail ? detail + ' · ' : '') + 'レベル ' + ev.level;
-          }
-          // Show measured session duration (when the firing component
-          // recorded one) as a small "(N分)" tail.
-          if (typeof ev.durationMs === 'number' && ev.durationMs >= 30_000) {
-            const mins = Math.round(ev.durationMs / 60000);
-            if (mins >= 1) detail = (detail ? detail + ' · ' : '') + mins + '分';
-          }
+        groups.map((g, gi) => {
+          const isToday = g.dayKey === todayKey;
+          const isOpen = isToday ? !closedToday : openDays.has(g.dayKey);
+          const totalMin = Math.round(g.totalMs / 60000);
+          const summary = g.events.length + '件'
+            + (totalMin >= 1 ? ' · ' + totalMin + '分' : '');
           return e('div', {
-            key: ev.at + '_' + i,
+            key: g.dayKey,
             style: {
-              display: 'flex', alignItems: 'flex-start', gap: 12,
-              padding: '12px 14px',
-              borderBottom: i < Math.min(30, events.length) - 1 ? '1px solid ' + C.line : 'none',
+              borderBottom: gi < groups.length - 1 ? '1px solid ' + C.line : 'none',
             }
           },
-            e('div', { style: { flex: '0 0 96px', minWidth: 0 } },
-              e('div', {
-                style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
-              }, day),
-              e('div', {
-                style: { fontSize: 14, color: C.text, fontWeight: 700, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
-              }, tm),
+            // Day header — always visible, tap to toggle.
+            e('button', {
+              onClick: () => toggleDay(g.dayKey),
+              style: {
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                gap: 12, width: '100%',
+                padding: '14px 14px',
+                background: isToday ? C.brand + '0F' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                fontFamily: 'inherit', textAlign: 'left',
+              }
+            },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 } },
+                e('span', {
+                  style: {
+                    display: 'inline-block', width: 12, fontSize: 10,
+                    color: C.sub, fontWeight: 700,
+                    transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.15s ease',
+                  }
+                }, '▶'),
+                e('div', { style: { minWidth: 0 } },
+                  e('div', {
+                    style: {
+                      fontSize: 13, color: C.text, fontWeight: 700,
+                      fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                    }
+                  }, isToday ? '今日 · ' + g.dayLabel : g.dayLabel),
+                  e('div', {
+                    style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, marginTop: 2 }
+                  }, summary),
+                ),
+              ),
             ),
-            e('div', { style: { flex: 1, minWidth: 0 } },
-              e('div', {
-                style: { fontSize: 13, color: C.text, fontWeight: 700 }
-              }, kindLabel),
-              detail && e('div', {
-                style: { fontSize: 11, color: C.sub, marginTop: 2 }
-              }, detail),
+            // Expanded events list.
+            isOpen && e('div', {
+              style: {
+                borderTop: '1px solid ' + C.line,
+                background: C.softer + '55',
+              }
+            },
+              g.events.map((ev, i) => {
+                const at = new Date(ev.at || Date.now());
+                const tm = timeFmt.format(at);
+                const kindLabel = KIND_LABEL[ev.kind] || ev.kind;
+                let detail = '';
+                if (ev.kind === 'lesson' && ev.label) {
+                  detail = ev.label;
+                }
+                if (typeof ev.total === 'number') {
+                  const scorePart = ev.total + '問'
+                    + (typeof ev.correct === 'number' ? ' (' + ev.correct + '/' + ev.total + ' 正解)' : '');
+                  detail = (detail ? detail + ' · ' : '') + scorePart;
+                }
+                if (ev.direction) {
+                  const dirJa = ev.direction === 'ja2en' ? '日本語 → 英語'
+                              : ev.direction === 'en2ja' ? '英語 → 日本語' : ev.direction;
+                  detail = (detail ? detail + ' · ' : '') + dirJa;
+                }
+                if (ev.level && ev.level !== 'auto') {
+                  detail = (detail ? detail + ' · ' : '') + 'レベル ' + ev.level;
+                }
+                if (typeof ev.durationMs === 'number' && ev.durationMs >= 30_000) {
+                  const mins = Math.round(ev.durationMs / 60000);
+                  if (mins >= 1) detail = (detail ? detail + ' · ' : '') + mins + '分';
+                }
+                return e('div', {
+                  key: ev.at + '_' + i,
+                  style: {
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '10px 14px 10px 38px',
+                    borderBottom: i < g.events.length - 1 ? '1px solid ' + C.line : 'none',
+                  }
+                },
+                  e('div', { style: { flex: '0 0 44px', minWidth: 0 } },
+                    e('div', {
+                      style: { fontSize: 13, color: C.text, fontWeight: 700, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+                    }, tm),
+                  ),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', {
+                      style: { fontSize: 13, color: C.text, fontWeight: 700 }
+                    }, kindLabel),
+                    detail && e('div', {
+                      style: { fontSize: 11, color: C.sub, marginTop: 2 }
+                    }, detail),
+                  ),
+                );
+              }),
             ),
           );
         }),
