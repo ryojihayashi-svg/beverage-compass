@@ -4027,6 +4027,180 @@
         },
       ],
     },
+    {
+      id: 'l2_will',
+      level: 2,
+      title: 'will',
+      subtitle: 'これからやること（未来）',
+      icon: '🔮',
+      todayQ: '「明日サッカーをするよ」を英語で？',
+      imagery: '「これからすること」「未来のこと」を表す。動詞の前に will を置くだけ。',
+      rule: 'will + 動詞の原形 / 否定: won\'t (= will not) / 疑問: Will you ~?',
+      examples: [
+        { en: 'I will play soccer tomorrow.',  ja: '私は明日サッカーをします。' },
+        { en: 'She will be a doctor.',          ja: '彼女は医者になります。' },
+        { en: "I won't be late.",                ja: '私は遅れません。' },
+      ],
+      points: [
+        'will の後はいつも動詞の原形（×wills、×willed）。',
+        '主語が he / she でも will は変わらない。',
+        '否定は won\'t（will not の短縮形）。',
+        '近い未来や約束には be going to も使える（同じ意味の場面が多い）。',
+      ],
+      quiz: [
+        {
+          q:   'I ___ call you later.',
+          qJa: '私は後で電話します。',
+          choices: ['will', 'wills', 'willed'],
+          answer: 0,
+          explain: '主語が何でも will は変わらない。',
+        },
+        {
+          q:   'She will ___ tennis tomorrow.',
+          qJa: '彼女は明日テニスをします。',
+          choices: ['plays', 'play', 'played'],
+          answer: 1,
+          explain: 'will の後は動詞の原形 → play。',
+        },
+        {
+          q:   "I ___ be late.",
+          qJa: '私は遅れません。',
+          choices: ["won't", "don't", "doesn't"],
+          answer: 0,
+          explain: 'will の否定は won\'t（= will not）。',
+        },
+        {
+          q:   '___ you help me?',
+          qJa: '手伝ってくれますか？',
+          choices: ['Will', 'Are', 'Do'],
+          answer: 0,
+          explain: '未来の依頼は Will you ~?。',
+        },
+        {
+          q:   'It ___ rain tonight.',
+          qJa: '今夜は雨が降るでしょう。',
+          choices: ['will', 'is', 'has'],
+          answer: 0,
+          explain: '天気の予測も will。It will rain.',
+        },
+      ],
+    },
+    {
+      id: 'l2_imperative',
+      level: 2,
+      title: '命令文',
+      subtitle: 'やってほしいことを伝える',
+      icon: '✋',
+      todayQ: '「ドアを開けて」を英語で？',
+      imagery: '相手に「〜して」と頼んだり指示したりするときは、主語をつけずに動詞の原形から始める。',
+      rule: '動詞の原形で始める / 否定は Don\'t + 原形 / 丁寧には please',
+      examples: [
+        { en: 'Open the door.',         ja: 'ドアを開けて。' },
+        { en: 'Please sit down.',       ja: '座ってください。' },
+        { en: "Don't run in the hall.", ja: '廊下を走ってはいけません。' },
+      ],
+      points: [
+        '主語（You）を省略する。動詞の原形から始める。',
+        'やわらかく言いたいときは please をつける（Please come in.）。',
+        '否定の命令（〜しないで）は Don\'t + 動詞の原形。',
+        '相手と一緒に「〜しよう」は Let\'s + 動詞の原形（Let\'s go.）。',
+      ],
+      quiz: [
+        {
+          q:   '___ the door.',
+          qJa: 'ドアを開けて。',
+          choices: ['Open', 'Opens', 'Opening'],
+          answer: 0,
+          explain: '命令文は動詞の原形から始める。Open。',
+        },
+        {
+          q:   '___ run in the hall.',
+          qJa: '廊下を走ってはいけません。',
+          choices: ["Don't", "Doesn't", 'Not'],
+          answer: 0,
+          explain: '禁止の命令は Don\'t + 動詞の原形。',
+        },
+        {
+          q:   '___ sit down.',
+          qJa: 'どうぞ座ってください。',
+          choices: ['Please', 'You', 'I'],
+          answer: 0,
+          explain: '丁寧にしたいときは Please をつける。',
+        },
+        {
+          q:   '___ go to the park.',
+          qJa: '一緒に公園に行こう。',
+          choices: ["Let's", 'You', 'Do'],
+          answer: 0,
+          explain: '「〜しよう」は Let\'s + 動詞の原形。',
+        },
+        {
+          q:   '___ quiet, please.',
+          qJa: '静かにしてください。',
+          choices: ['Be', 'Are', 'Is'],
+          answer: 0,
+          explain: 'be 動詞の命令は原形 Be。Be quiet. = 静かにしなさい。',
+        },
+      ],
+    },
+    {
+      id: 'l2_adj_position',
+      level: 2,
+      title: '形容詞の位置',
+      subtitle: 'a big dog の語順',
+      icon: '🔤',
+      todayQ: '「大きい犬」を英語で？ "dog big" それとも "big dog"？',
+      imagery: '英語では形容詞は名詞の「前」に置く。日本語と同じ順番（大きい→犬 = big → dog）。',
+      rule: 'a / an / the + 形容詞 + 名詞（a big dog）',
+      examples: [
+        { en: 'I have a big dog.',          ja: '私は大きな犬を飼っています。' },
+        { en: 'She wears a red hat.',       ja: '彼女は赤い帽子をかぶっています。' },
+        { en: 'It is an interesting book.', ja: 'それは面白い本です。' },
+      ],
+      points: [
+        '形容詞は名詞の「前」につける（big dog ○ / dog big ✕）。',
+        'a / an は形容詞より前。a big dog / an old man。',
+        'be 動詞の後では形容詞だけ置ける（The dog is big.）。',
+        '形容詞を 2 つ重ねるときは、感想 → サイズ → 色（a nice big red apple）。',
+      ],
+      quiz: [
+        {
+          q:   'I have a ___ .',
+          qJa: '私は大きい犬を飼っています。',
+          choices: ['big dog', 'dog big', 'big dogs'],
+          answer: 0,
+          explain: '形容詞は名詞の前。a big dog。',
+        },
+        {
+          q:   'She wears a ___ hat.',
+          qJa: '彼女は赤い帽子をかぶっています。',
+          choices: ['red', 'reds', 'redly'],
+          answer: 0,
+          explain: '形容詞 red をそのまま名詞 hat の前に。',
+        },
+        {
+          q:   'This is ___ book.',
+          qJa: 'これは面白い本です。',
+          choices: ['a interesting', 'an interesting', 'interesting a'],
+          answer: 1,
+          explain: 'interesting は母音 (i) で始まるから an。',
+        },
+        {
+          q:   'The dog ___ .',
+          qJa: 'その犬は大きい。',
+          choices: ['big is', 'is big', 'is bigs'],
+          answer: 1,
+          explain: 'be 動詞 (is) の後は形容詞だけ → is big。',
+        },
+        {
+          q:   'I ate a ___ apple.',
+          qJa: '私は大きい赤いりんごを食べた。',
+          choices: ['big red', 'red big', 'reds big'],
+          answer: 0,
+          explain: '形容詞を 2 つ並べるときは サイズ → 色 の順 → big red。',
+        },
+      ],
+    },
   ];
   const LESSON_BY_ID    = Object.fromEntries(ENGLISH_LESSONS.map(l => [l.id, l]));
   const LESSONS_BY_LEVEL = ENGLISH_LESSONS.reduce((acc, l) => {
@@ -4724,7 +4898,16 @@
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
     const localTs  = (local && local._localUpdatedAt) || '';
     const remoteTs = remote.updated_at || '';
-    const localEmptyish = isMemberStateEmptyish(local);
+    const localEmptyish  = isMemberStateEmptyish(local);
+    const remoteEmptyish = isMemberStateEmptyish(remote.data);
+    // SHIELD: cloud is empty/wiped but local has real progress.
+    // Never let an empty cloud overwrite a populated local store —
+    // keep local and push it back up to repair the cloud row.
+    if (!localEmptyish && remoteEmptyish) {
+      memberHydrationDone[memberId] = true;
+      cloud.schedulePush(memberId, local);
+      return false;
+    }
     let changed = false;
     // Take cloud when (a) we have nothing locally, (b) local is just a
     // stamp with no real learning data (fresh-install poke), or (c) cloud
@@ -5615,6 +5798,17 @@
           && !key;
     } catch { return true; }
   }
+  // Same idea as isMemberStateEmptyish — does the REMOTE row look
+  // wiped? Used as the "don't let an empty cloud row overwrite real
+  // local data" shield.
+  function isFamilySharedRemoteEmpty(d) {
+    if (!d || typeof d !== 'object') return true;
+    const photos  = Array.isArray(d.photos) ? d.photos.length : 0;
+    const names   = d.names   ? Object.keys(d.names).length   : 0;
+    const avatars = d.avatars ? Object.keys(d.avatars).length : 0;
+    const key     = typeof d.apiKey === 'string' ? d.apiKey : '';
+    return photos === 0 && names === 0 && avatars === 0 && !key;
+  }
   async function hydrateFamilySharedFromCloud() {
     // Cloud disabled — nothing to pull, but flag as hydrated so
     // subsequent saves are free to (no-op) push.
@@ -5654,6 +5848,15 @@
       // cloud up to date so other devices catch up to whatever was
       // changed on this one. Open the gate first so the push goes
       // through (we've already pulled cloud, so it's safe).
+      familySharedHydrationDone = true;
+      pushFamilySharedState();
+      return false;
+    }
+    // SHIELD: cloud row is essentially empty (wiped or never seeded)
+    // but local has real names / avatars / photos / apiKey. Never let
+    // an empty cloud wipe a populated local store — keep local and
+    // push it up to repair cloud, regardless of what timestamps say.
+    if (!localEmpty && isFamilySharedRemoteEmpty(d)) {
       familySharedHydrationDone = true;
       pushFamilySharedState();
       return false;
@@ -12146,8 +12349,10 @@
 
     return e('div', null,
       e('div', { style: { padding: '4px 4px 18px' } },
+        // SANS_UI here so the leading "1" doesn't render as a tall
+        // mincho hairline that reads like a lowercase 'i'.
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          style: { fontFamily: SANS_UI, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, '1分英語解説'),
         e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
           '短い解説と 5 問のクイズで、文法と単語の感覚を 1 テーマずつ。1 つ 3 分以内で終わります。'),
