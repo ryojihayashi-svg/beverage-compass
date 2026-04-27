@@ -1482,6 +1482,10 @@
     'strong':       ['powerful', 'tough', 'sturdy'],
     'enough':       ['sufficient', 'adequate'],
     'a lot':        ['many', 'lots', 'plenty'],
+    // L3 — verbs with usage-distinct neighbours
+    'allow':        ['permit', 'let'],
+    'accept':       ['receive', 'take', 'agree to'],
+    'receive':      ['get', 'accept', 'be given'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
@@ -1578,6 +1582,11 @@
     buy: '「買う」は buy（普通の語）。フォーマル・正式に「購入する」なら purchase。',
     // ---- Old / Young ----
     old: '人や物が「年をとっている・古い」のが old。年配の人を上品に言うなら elderly / aged、古代の・大昔のは ancient。',
+    // ---- Permission ----
+    allow: '「〜してもよい」と許可するのが allow。permit はほぼ同じ意味でフォーマル（公式・書面）。let はもっとカジュアルで「〜させてあげる」（Let me try.）。',
+    // ---- Receiving / Accepting ----
+    accept: '差し出されたものを「受け入れる・承諾する」のが accept（招待・謝罪・提案など中身を OK する）。物や郵便を物理的に「受け取る」だけなら receive。',
+    receive: 'メール・手紙・賞などを「受け取る」のが receive（中身を判断していない）。中身も含めて「受け入れる」なら accept。',
     // ---- Beautiful + lovely already in 'beautiful' / 'pretty' ----
   };
   function getVocabUsage(vocabId) {
@@ -2125,7 +2134,7 @@
     { id:'s181', level:2, grammar:'want to',          ja:'今からサッカーがしたいです。',              en:'I want to play soccer now.' },
     { id:'s182', level:2, grammar:'want to + at',     ja:'私はジムでエクササイズしたいです。',            en:'I want to exercise at the gym.' },
     { id:'s183', level:3, grammar:'want to be able to', ja:'私はもっと上手に英語を話せるようになりたい。',  en:'I want to be able to speak English better.' },
-    { id:'s184', level:2, grammar:'want to be better', ja:'サッカーがもっと上手くなりたいです。',      en:'I want to be better at soccer.' },
+    { id:'s184', level:2, grammar:'want to be better', ja:'私はサッカーがもっと上手くなりたいです。',      en:'I want to be better at soccer.' },
 
     // Schooling / goals
     { id:'s185', level:3, grammar:'過去形',           ja:'私は去年卒業しました。',                    en:'I graduated last year.' },
@@ -2273,9 +2282,9 @@
     { id:'s297', level:2, grammar:'have + 家族',           ja:'私は5人家族で、兄一人と弟一人がいます。',       en:'I have a family of five, one older brother and one younger brother.' },
     { id:'s298', level:2, grammar:'現在進行形 + 場所',     ja:'私は学校で英語を勉強しています。',              en:'I am studying English at school.' },
     { id:'s299', level:1, grammar:'be動詞 + favorite',     ja:'私の好きな食べ物は麻婆豆腐です。',          en:'My favorite food is mapo tofu.' },
-    { id:'s300', level:1, grammar:'三単現/like',           ja:'桃仙閣のフカヒレご飯が好きです。',          en:'I like the shark fin rice at Tousenkaku.' },
+    { id:'s300', level:1, grammar:'三単現/like',           ja:'私は桃仙閣のフカヒレご飯が好きです。',          en:'I like the shark fin rice at Tousenkaku.' },
     { id:'s301', level:2, grammar:'will + when',           ja:'日本に帰ったら桃仙閣に行きます。',          en:'I will go to Tousenkaku when I get back to Japan.' },
-    { id:'s302', level:2, grammar:'want to + good at',     ja:'サッカーが上手になりたいです。',            en:'I want to be good at soccer.' },
+    { id:'s302', level:2, grammar:'want to + good at',     ja:'私はサッカーが上手になりたいです。',            en:'I want to be good at soccer.' },
     { id:'s303', level:2, grammar:'動名詞 + with',         ja:'私は友達と遊ぶのが好きです。',                  en:'I like playing with my friends.' },
     { id:'s304', level:2, grammar:'be動詞 + 学年',         ja:'兄は高校生です。',                          en:'My older brother is a high school student.' },
     { id:'s305', level:2, grammar:'be動詞 + 学年',         ja:'弟は小学生です。',                          en:'My younger brother is an elementary school student.' },
@@ -2296,7 +2305,7 @@
     { id:'s318', level:2, grammar:'be + 形容詞 + very',    ja:'桃仙閣のスープはとても温かいです。',        en:'The soup at Tousenkaku is very warm.' },
     { id:'s319', level:2, grammar:'want to be + at',       ja:'私は学校で英語が上手になりたいです。',          en:'I want to be good at English at school.' },
     { id:'s320', level:2, grammar:'三単現 + on',           ja:'私は土曜日にトッシーと会います。',          en:'I see Tosshi on Saturdays.' },
-    { id:'s321', level:2, grammar:'want to + take to',     ja:'桃仙閣に友達を連れて行きたいです。',        en:'I want to take my friends to Tousenkaku.' },
+    { id:'s321', level:2, grammar:'want to + take to',     ja:'私は桃仙閣に友達を連れて行きたいです。',        en:'I want to take my friends to Tousenkaku.' },
     { id:'s322', level:1, grammar:'love',                  ja:'私は中華料理が大好きです。',                en:'I love Chinese food.' },
     { id:'s323', level:2, grammar:'三単現 + for us',       ja:'お母さんは私たちのために料理をします。',    en:'Mom cooks for us.' },
     { id:'s324', level:2, grammar:'be happy when',         ja:'私はサッカーをするとき幸せです。',          en:'I am happy when I play soccer.' },
@@ -2360,7 +2369,7 @@
     { id:'s368', level:3, grammar:'to不定詞 (目的)',         ja:'英語の勉強をするためです。',                          en:'To study English.' },
     { id:'s369', level:3, grammar:'過去形 + until',          ja:'僕は3年前まで松江市に住んでいました。',                en:'I lived in Matsue until three years ago.' },
     { id:'s370', level:3, grammar:'過去形 + 否定',           ja:'僕は御成門中学校の先生が嫌いでした。',                 en:"I didn't like the teachers at Onarimon Junior High." },
-    { id:'s371', level:3, grammar:'過去形',                  ja:'御成門中学校の英語の先生は好きでした。',               en:'I liked the English teacher at Onarimon Junior High.' },
+    { id:'s371', level:3, grammar:'過去形',                  ja:'私は御成門中学校の英語の先生は好きでした。',               en:'I liked the English teacher at Onarimon Junior High.' },
     { id:'s372', level:3, grammar:'過去形 + at',             ja:'この前、スタンフォード・ブリッジでマンチェスター・ユナイテッドとチェルシーの試合を見ました。', en:'The other day I watched a Manchester United vs Chelsea match at Stamford Bridge.' },
     { id:'s373', level:3, grammar:'現在形',                  ja:'うちの家族は東京に住んでいます。',                    en:'Our family lives in Tokyo.' },
     { id:'s374', level:3, grammar:'過去形',                  ja:'吉成は去年イギリスに引っ越しました。',                en:'Yoshinari moved to the UK last year.' },
