@@ -5525,7 +5525,10 @@
       }, isDone ? '✓' : String(pathStatus.stepNum || '')),
 
       e('div', { style: { flex: feature.fullWidth ? 1 : 'unset' } },
-        e('div', { style: { fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
+        // Tile label uses SANS_UI (DM Sans + Noto Sans JP) so digits
+        // like the "1" in "1分英語解説" render with a clean numeric
+        // glyph instead of Mincho's stylised "1".
+        e('div', { style: { fontFamily: SANS_UI, fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
         e('div', {
           style: {
             fontSize: 11, marginTop: 2, lineHeight: 1.4,
@@ -10367,17 +10370,44 @@
   };
   function LessonListView({ profile, onPick }) {
     const progress = loadLessonProgress(profile.id);
-    // Default to the lowest level that already has at least one lesson, so
-    // the empty "準備中" tabs aren't what greets the user on first open.
-    const defaultLevel = (function () {
-      for (const lv of [1, 2, 3, 4, 5]) {
+    // Recommended level = the user's profile level (Kippei→1, Yoshinari/
+    // Mom→2, Dad→3, Naruchichi→4). If that level is still 準備中 we
+    // walk DOWN first (closer to their comfort), then UP to find any
+    // available content.
+    const recommendedLevel = (function () {
+      const want = profile.level || 1;
+      for (let lv = want; lv >= 1; lv--) {
+        if ((LESSONS_BY_LEVEL[lv] || []).length > 0) return lv;
+      }
+      for (let lv = want + 1; lv <= 5; lv++) {
         if ((LESSONS_BY_LEVEL[lv] || []).length > 0) return lv;
       }
       return 1;
     })();
-    const [selectedLevel, setSelectedLevel] = useState(defaultLevel);
+    const [selectedLevel, setSelectedLevel] = useState(recommendedLevel);
 
     const lessons = LESSONS_BY_LEVEL[selectedLevel] || [];
+
+    // Recommended lesson within the selected level — first un-attempted
+    // one. Only flagged when the user is on the recommended-level tab,
+    // so switching to a different LV doesn't keep highlighting a lesson
+    // they're not currently looking at.
+    const recommendedLessonId = (function () {
+      if (selectedLevel !== recommendedLevel) return null;
+      const undone = lessons.find(l => !progress[l.id]);
+      if (undone) return undone.id;
+      // All lessons attempted — recommend the one with the lowest best
+      // score so the user circles back to weak spots.
+      let best = null;
+      for (const l of lessons) {
+        const p = progress[l.id];
+        if (!best || (p && p.bestScore < (progress[best.id]?.bestScore || 0))) best = l;
+      }
+      return best ? best.id : null;
+    })();
+    // If the user has navigated AWAY from the recommended level, the
+    // recommended-level tab itself glows so they know where to go back.
+    const tabNeedsGlow = selectedLevel !== recommendedLevel;
 
     return e('div', null,
       e('div', { style: { padding: '4px 4px 18px' } },
@@ -10401,15 +10431,19 @@
         [1, 2, 3, 4, 5].map((lv) => {
           const isActive = selectedLevel === lv;
           const count = (LESSONS_BY_LEVEL[lv] || []).length;
+          // Glow the recommended-level tab when the user has wandered
+          // off to a different LV, to nudge them back to their level.
+          const glow = tabNeedsGlow && lv === recommendedLevel;
           return e('button', {
             key: 'lv_tab_' + lv,
             onClick: () => setSelectedLevel(lv),
+            className: glow ? 'hfe-step-current' : '',
             style: {
               flexShrink: 0,
               padding: '8px 14px', borderRadius: 999,
               background: isActive ? profile.color : C.card,
               color:      isActive ? '#fff'         : C.text,
-              border: '1px solid ' + (isActive ? profile.color : C.line),
+              border: '1px solid ' + ((isActive || glow) ? profile.color : C.line),
               fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
               cursor: 'pointer', letterSpacing: '0.04em',
               display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -10455,13 +10489,16 @@
               const sub = p
                 ? '最高 ' + (p.bestScore || 0) + '/' + (p.lastTotal || 5) + ' · ' + (p.attempts || 1) + ' 回挑戦'
                 : '未挑戦';
+              const isRecommended = l.id === recommendedLessonId;
               return e('button', {
                 key: l.id,
                 onClick: () => onPick(l.id),
+                className: isRecommended ? 'hfe-step-current' : '',
                 style: {
                   display: 'flex', width: '100%', textAlign: 'left',
                   padding: '16px 16px', gap: 14, alignItems: 'center',
-                  background: C.card, border: '1px solid ' + C.line,
+                  background: isRecommended ? (profile.color + '0F') : C.card,
+                  border: '1px solid ' + (isRecommended ? profile.color : C.line),
                   borderRadius: 14, cursor: 'pointer',
                 }
               },
