@@ -8190,6 +8190,9 @@
     // explicitly closes it. We don't store today in openDays because today
     // rolls over at midnight and we'd lose the "today is open" default.
     const [closedToday, setClosedToday] = useState(false);
+    // 'day' = the per-event accordion (default), 'month' = monthly totals
+    // for a longer-term view of momentum.
+    const [view, setView] = useState('day');
     useEffect(() => {
       const id = setInterval(() => setTick(t => t + 1), 60_000);
       return () => clearInterval(id);
@@ -8224,6 +8227,20 @@
     const dayKeyFmt = new Intl.DateTimeFormat('en-CA', Object.assign({
       year: 'numeric', month: '2-digit', day: '2-digit',
     }, tz ? { timeZone: tz } : {}));
+    // Month grouping helpers (used by the 月別 view).
+    const monthFmt = new Intl.DateTimeFormat('ja-JP', Object.assign({
+      year: 'numeric', month: 'long',
+    }, tz ? { timeZone: tz } : {}));
+    const monthKeyFmt = new Intl.DateTimeFormat('en-CA', Object.assign({
+      year: 'numeric', month: '2-digit',
+    }, tz ? { timeZone: tz } : {}));
+    const formatHM = (totalMin) => {
+      if (totalMin < 1) return '0分';
+      if (totalMin < 60) return totalMin + '分';
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return h + '時間' + (m > 0 ? m + '分' : '');
+    };
     const KIND_LABEL = {
       vocab: '単語学習', composition: '瞬間英作文',
       random_test: 'ランダムテスト',  mctest: 'Daily English テスト',
@@ -8261,15 +8278,106 @@
         });
       }
     };
+    // Build month groups (always, but only rendered when view==='month').
+    const monthGroups = [];
+    const monthMap = new Map();
+    for (const ev of events) {
+      const at = new Date(ev.at || Date.now());
+      const monthKey = monthKeyFmt.format(at);
+      let g = monthMap.get(monthKey);
+      if (!g) {
+        g = { monthKey, monthLabel: monthFmt.format(at), count: 0, totalMs: 0, byKind: {} };
+        monthMap.set(monthKey, g);
+        monthGroups.push(g);
+      }
+      g.count++;
+      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30_000) {
+        g.totalMs += ev.durationMs;
+      }
+      g.byKind[ev.kind] = (g.byKind[ev.kind] || 0) + 1;
+    }
     return e('div', { style: { marginTop: 26 } },
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          color: C.sub, marginBottom: 12, paddingLeft: 4,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 12, paddingLeft: 4,
         }
-      }, '学習ログ'),
-      e('div', {
+      },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub,
+          }
+        }, '学習ログ'),
+        // Tab pills: 日別 / 月別
+        e('div', { style: { display: 'flex', gap: 6 } },
+          [{ id: 'day', label: '日別' }, { id: 'month', label: '月別' }].map(opt => {
+            const active = view === opt.id;
+            return e('button', {
+              key: opt.id,
+              onClick: () => setView(opt.id),
+              style: {
+                padding: '4px 12px', borderRadius: 999,
+                background: active ? profile.color : 'transparent',
+                color: active ? '#fff' : C.sub,
+                border: '1px solid ' + (active ? profile.color : C.line),
+                fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: 'pointer', letterSpacing: '0.04em',
+              }
+            }, opt.label);
+          }),
+        ),
+      ),
+      view === 'month' ? e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, overflow: 'hidden',
+        }
+      },
+        monthGroups.map((m, mi) => {
+          const totalMin = Math.round(m.totalMs / 60000);
+          // Top 3 kinds for the breakdown line.
+          const breakdown = Object.entries(m.byKind)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([k, n]) => (KIND_LABEL[k] || k) + ' ' + n)
+            .join(' · ');
+          return e('div', {
+            key: m.monthKey,
+            style: {
+              padding: '14px',
+              borderBottom: mi < monthGroups.length - 1 ? '1px solid ' + C.line : 'none',
+            }
+          },
+            e('div', {
+              style: {
+                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                gap: 12,
+              }
+            },
+              e('div', {
+                style: {
+                  fontSize: 14, color: C.text, fontWeight: 700,
+                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                }
+              }, m.monthLabel),
+              e('div', {
+                style: {
+                  fontSize: 13, color: C.text, fontWeight: 700,
+                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                }
+              }, m.count + '件 · ' + formatHM(totalMin)),
+            ),
+            breakdown && e('div', {
+              style: {
+                fontSize: 11, color: C.sub, marginTop: 6,
+                fontFamily: SANS_UI,
+              }
+            }, breakdown),
+          );
+        }),
+      ) : e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
           borderRadius: 14, overflow: 'hidden',
