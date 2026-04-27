@@ -9675,6 +9675,100 @@
         ),
       ),
 
+      // ----- Section: コンテンツ統計 -----
+      // What's actually inside the app, per content type, per level.
+      // Helps the user see at a glance "how much LV2 material is there
+      // for Yoshinari" / "is LV4 fleshed out yet for Naruchichi" etc.
+      (function () {
+        const LEVELS = [1, 2, 3, 4, 5];
+        const countByLevel = (arr) => {
+          const out = {};
+          (arr || []).forEach(it => {
+            const lv = it && it.level;
+            if (!lv) return;
+            out[lv] = (out[lv] || 0) + 1;
+          });
+          return out;
+        };
+        const rows = [
+          { label: '単語',                 byLv: countByLevel(VOCAB),               total: (VOCAB || []).length },
+          { label: '瞬間英作文',           byLv: countByLevel(SENTENCES),           total: (SENTENCES || []).length },
+          { label: '1分英語解説',          byLv: countByLevel(ENGLISH_LESSONS),     total: (ENGLISH_LESSONS || []).length },
+          { label: 'シャドーイング',       byLv: countByLevel(SHADOWING_QA),        total: (SHADOWING_QA || []).length },
+          { label: '長文（シャドーイング）', byLv: countByLevel(SHADOWING_PASSAGES),  total: (SHADOWING_PASSAGES || []).length },
+          // Daily English doesn't carry a level field, so render a plain
+          // total in the last column with dashes for LV columns.
+          { label: 'Daily English',        byLv: {},                                total: (DAILY_PHRASES || []).length, levelless: true },
+        ];
+
+        // Table cell styles, defined once for consistency.
+        const headCell  = (style) => Object.assign({
+          fontFamily: SANS_UI, fontSize: 10, fontWeight: 800,
+          letterSpacing: '0.08em', color: C.sub,
+          padding: '8px 4px', textAlign: 'center',
+          borderBottom: '1px solid ' + C.line,
+        }, style || {});
+        const bodyCell  = (style) => Object.assign({
+          fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+          color: C.text, padding: '10px 4px', textAlign: 'center',
+          fontVariantNumeric: 'tabular-nums',
+        }, style || {});
+        const labelCell = (style) => Object.assign({
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+          color: C.text, padding: '10px 8px', textAlign: 'left',
+        }, style || {});
+
+        return e('div', null,
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 12, paddingLeft: 4,
+            }
+          }, 'コンテンツ統計'),
+          e('div', {
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, padding: '4px 6px', marginBottom: 22,
+              overflowX: 'auto',
+            }
+          },
+            e('table', {
+              style: { width: '100%', borderCollapse: 'collapse' }
+            },
+              e('thead', null,
+                e('tr', null,
+                  e('th', { style: headCell({ textAlign: 'left', paddingLeft: 8 }) }, ''),
+                  ...LEVELS.map(lv => e('th', { key: 'lh' + lv, style: headCell() }, 'LV' + lv)),
+                  e('th', { style: headCell({ color: C.text }) }, '計'),
+                ),
+              ),
+              e('tbody', null,
+                rows.map((r, i) => e('tr', {
+                  key: r.label,
+                  style: { borderTop: i === 0 ? 'none' : '1px solid ' + C.line }
+                },
+                  e('td', { style: labelCell() }, r.label),
+                  ...LEVELS.map(lv => e('td', {
+                    key: 'c' + r.label + lv,
+                    style: bodyCell({
+                      color: r.levelless ? C.sub : (r.byLv[lv] ? C.text : C.sub),
+                      opacity: r.levelless ? 0.5 : 1,
+                    }),
+                  }, r.levelless ? '—' : (r.byLv[lv] || 0))),
+                  e('td', {
+                    style: bodyCell({
+                      fontWeight: 800,
+                      color: r.total > 0 ? C.brand : C.sub,
+                    }),
+                  }, r.total),
+                )),
+              ),
+            ),
+          ),
+        );
+      })(),
+
       // Save / clear
       e('div', { style: { display: 'flex', gap: 10 } },
         e('button', {
