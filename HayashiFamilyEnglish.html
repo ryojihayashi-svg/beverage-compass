@@ -1989,6 +1989,12 @@
       return r < 0.80 ? 1 : 2;
     }
     if (id === 'son2' || id === 'mother') {    // Yoshinari, Ayumi
+      // 瞬間英作文の方向で混ぜ方を変える:
+      //   JA→EN は産出が難しいので LV1 多め (80/20)
+      //   EN→JA は読めるレベル上で LV2 を半分 (50/50)
+      // それ以外 (vocab / shadowing) は従来通り (40/60) を維持。
+      if (direction === 'ja2en') return r < 0.80 ? 1 : 2;
+      if (direction === 'en2ja') return r < 0.50 ? 1 : 2;
       return r < 0.40 ? 1 : 2;
     }
     if (id === 'father') {                     // Ryoji
