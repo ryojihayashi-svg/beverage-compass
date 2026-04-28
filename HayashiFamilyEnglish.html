@@ -11237,17 +11237,31 @@
             setPhotoErr('一部の写真を読み込めませんでした。');
           }
         }
-        // saveFamilyPhotos returns false when the quota is hit. Surface
-        // that to the user instead of pretending it saved — they want
-        // to know they should delete a few old photos first.
-        const ok = saveFamilyPhotos(next);
-        if (!ok) {
-          setPhotos(loadFamilyPhotos());  // revert to last persisted state
-          setPhotoErr('保存できませんでした。容量がいっぱいの可能性があります。古い写真を何枚か削除してから、もう一度お試しください。');
-        } else {
+        // First attempt — straight save.
+        let ok = saveFamilyPhotos(next);
+        // If quota hit, drop OLDEST photos (front of array) one at a
+        // time and retry. We never drop the just-added ones — only
+        // existing photos that pre-date this add. Order matters: the
+        // newest entries at the back of `next` are the ones we just
+        // pushed.
+        let evicted = 0;
+        while (!ok && next.length > added) {
+          next.shift();
+          evicted++;
+          ok = saveFamilyPhotos(next);
+        }
+        if (ok) {
           setPhotos(next);
-          if (added > 0) setPhotoMsg(added + ' 枚追加して保存しました。');
-          if (oversized > 0) setPhotoErr(oversized + ' 枚はファイルが大きすぎたので追加できませんでした。');
+          let msg = '';
+          if (added > 0)    msg += added + ' 枚追加しました。';
+          if (oversized > 0) msg += (msg ? ' ' : '') + oversized + ' 枚はファイルが大きすぎたので追加できませんでした。';
+          if (evicted > 0)   msg += (msg ? ' ' : '') + '容量確保のため古い ' + evicted + ' 枚を削除しました。';
+          if (msg) setPhotoMsg(msg);
+        } else {
+          // Even after dropping every pre-existing photo, save still
+          // fails. The just-added batch is itself too big.
+          setPhotos(loadFamilyPhotos());
+          setPhotoErr('保存できませんでした。新しい写真のサイズが大きすぎる可能性があります。1〜2枚ずつ試してください。');
         }
       } finally {
         setPhotoBusy(false);
