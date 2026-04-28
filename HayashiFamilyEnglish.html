@@ -1978,10 +1978,14 @@
   // The ladder is one level apart per family member, so each kid sees
   // mostly content one notch above their comfort zone — easy enough not
   // to freeze, hard enough to stretch.
-  function pickLevelForProfile(profile) {
+  function pickLevelForProfile(profile, opts) {
     const r = Math.random();
     const id = (profile && profile.id) || '';
+    const direction = (opts && opts.direction) || null;  // 'ja2en' | 'en2ja' | null
     if (id === 'son3') {                       // Kippei
+      // EN→JA は読めるレベルが上だから LV2 を半分混ぜる。
+      // JA→EN は産出が難しいので LV1 中心 (80/20) のまま。
+      if (direction === 'en2ja') return r < 0.50 ? 1 : 2;
       return r < 0.80 ? 1 : 2;
     }
     if (id === 'son2' || id === 'mother') {    // Yoshinari, Ayumi
@@ -2003,7 +2007,7 @@
   // Each draw picks a level via pickLevelForProfile and grabs a random
   // unused item from that level. Falls back to the whole pool if a level
   // bucket is empty so the queue always fills.
-  function pickWeightedQueue(pool, profile, count) {
+  function pickWeightedQueue(pool, profile, count, opts) {
     if (!pool || pool.length === 0) return [];
     const byLevel = { 1: [], 2: [], 3: [], 4: [], 5: [] };
     for (const item of pool) {
@@ -2014,7 +2018,7 @@
     const out = [];
     let safety = count * 20;
     while (out.length < count && safety-- > 0) {
-      const lv = pickLevelForProfile(profile);
+      const lv = pickLevelForProfile(profile, opts);
       let bucket = byLevel[lv];
       if (!bucket || bucket.length === 0) bucket = pool;
       let picked = null;
@@ -10494,7 +10498,9 @@
     }
     // Profile-weighted: each draw picks a level matching the family
     // member's distribution and grabs a random unused item from it.
-    return pickWeightedQueue(pool, profile, count);
+    // direction is forwarded so per-direction tweaks (e.g. Kippei reads
+    // English easier than he writes it) can apply.
+    return pickWeightedQueue(pool, profile, count, { direction: opts.direction });
   }
 
   function SprintComposition({ profile, onBack, forcedDirection }) {
@@ -10508,6 +10514,9 @@
 
     function startSession() {
       const opts = selectedLevel === 'auto' ? {} : { level: selectedLevel };
+      // Forward direction so per-direction level distribution kicks in
+      // for おまかせ (e.g. Kippei: 80/20 for JA→EN, 50/50 for EN→JA).
+      opts.direction = direction;
       const q = pickComposition(profile, COMP_COUNT, opts);
       if (q.length === 0) { setPhase('empty'); return; }
       setQueue(q); setIndex(0); setRevealed(false); setResults([]);
