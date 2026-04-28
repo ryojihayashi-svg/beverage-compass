@@ -1420,7 +1420,8 @@
     { id:'new',            en:'new',            ja:'新しい',             pos:'adj',  level:1, cat:'general', exEn:'I have a new bag.',                          exJa:'新しいかばんがある。' },
     { id:'warm',           en:'warm',           ja:'暖かい',             pos:'adj',  level:1, cat:'general', exEn:'The soup is warm.',                          exJa:'スープは温かい。' },
     { id:'cool',           en:'cool',           ja:'涼しい',             pos:'adj',  level:1, cat:'general', exEn:'The wind feels cool.',                       exJa:'風が涼しく感じる。' },
-    { id:'sick',           en:'sick',           ja:'病気の',             pos:'adj',  level:1, cat:'general', exEn:'I feel sick today.',                         exJa:'今日は気分が悪い。' },
+    { id:'sick',           en:'sick',           ja:'病気の・気分が悪い', pos:'adj',  level:1, cat:'general', exEn:'I feel sick today.',                         exJa:'今日は気分が悪い。',     syn:['ill','unwell'] },
+    { id:'ill',            en:'ill',            ja:'病気の',             pos:'adj',  level:2, cat:'general', exEn:'My grandfather is ill.',                     exJa:'祖父は病気です。',       syn:['sick','unwell'] },
 
     // ----- L2 batch (英検4級) — school / health / clothing / house / jobs / transport / nature / money -----
     { id:'gym',            en:'gym',            ja:'体育館',             pos:'noun', level:2, cat:'school',  exEn:'We have PE in the gym.',                     exJa:'体育館で体育をする。' },
@@ -1487,7 +1488,7 @@
     { id:'university',     en:'university',     ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'She goes to university in London.',          exJa:'彼女はロンドンの大学に通う。' },
     { id:'college',        en:'college',        ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'I want to go to college.',                   exJa:'大学に行きたい。' },
     { id:'injury',         en:'injury',         ja:'けが',               pos:'noun', level:3, cat:'general', exEn:'He has a knee injury.',                      exJa:'彼は膝にけがをしている。' },
-    { id:'disease',        en:'disease',        ja:'病気',               pos:'noun', level:3, cat:'general', exEn:"It's a serious disease.",                    exJa:'それは深刻な病気だ。' },
+    { id:'disease',        en:'disease',        ja:'病気',               pos:'noun', level:3, cat:'general', exEn:"It's a serious disease.",                    exJa:'それは深刻な病気だ。',    syn:['illness','sickness'] },
     { id:'tourist',        en:'tourist',        ja:'観光客',             pos:'noun', level:3, cat:'general', exEn:'Many tourists visit Kyoto.',                 exJa:'多くの観光客が京都を訪れる。' },
     { id:'souvenir',       en:'souvenir',       ja:'お土産',             pos:'noun', level:3, cat:'general', exEn:'I bought a souvenir.',                       exJa:'お土産を買った。' },
     { id:'offer',          en:'offer',          ja:'申し出る',           pos:'verb', level:3, cat:'general', exEn:'They offered me a job.',                     exJa:'彼らは私に仕事を提供してくれた。' },
@@ -1706,6 +1707,10 @@
     'allow':        ['permit', 'let'],
     'accept':       ['receive', 'take', 'agree to'],
     'receive':      ['get', 'accept', 'be given'],
+    // ---- Health ----
+    'sick':         ['ill', 'unwell'],
+    'ill':          ['sick', 'unwell'],
+    'disease':      ['illness', 'sickness'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
@@ -1807,6 +1812,10 @@
     // ---- Receiving / Accepting ----
     accept: '差し出されたものを「受け入れる・承諾する」のが accept（招待・謝罪・提案など中身を OK する）。物や郵便を物理的に「受け取る」だけなら receive。',
     receive: 'メール・手紙・賞などを「受け取る」のが receive（中身を判断していない）。中身も含めて「受け入れる」なら accept。',
+    // ---- Health (sick / ill / disease) ----
+    sick: '日常で「病気の・気分が悪い」と言うときは sick（口語的、米英共通）。Yoshinari が学校で I feel sick. と言えば「気分が悪い」のニュアンス。フォーマルや英国寄りでは ill。深刻な「病気そのもの」を名詞で言うときは disease や illness。',
+    ill: '英国寄り・少しフォーマルな「病気の」が ill。「彼は病気です」は He is ill. が自然 (英国)。アメリカ寄り日常会話だと sick の方が普通。深刻な病気を名詞で言うときは disease / illness。',
+    disease: '名詞で「病気そのもの」を指すのが disease（医学的・深刻なもの: heart disease / a rare disease）。風邪や軽い体調不良には大げさ。日常で「病気の」と言うときは sick / ill を使う。',
     // ---- Beautiful + lovely already in 'beautiful' / 'pretty' ----
   };
   function getVocabUsage(vocabId) {
