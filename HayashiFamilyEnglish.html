@@ -7713,10 +7713,35 @@
   }
   function saveFamilyPhotos(arr) {
     const safe = arr || [];
+    let ok = true;
     try { localStorage.setItem(FAMILY_PHOTOS_KEY, JSON.stringify(safe)); }
-    catch (err) { console.warn('saveFamilyPhotos failed', err); }
+    catch (err) {
+      // Most likely cause: localStorage quota exceeded (iOS Safari ~5MB).
+      // Do NOT silently swallow — caller needs to know so it can surface
+      // the error to the user instead of pretending the save worked.
+      console.warn('saveFamilyPhotos failed', err);
+      ok = false;
+    }
     stampFamilySharedLocal();
-    pushFamilySharedState();
+    // Only push to cloud what actually persisted locally. If localStorage
+    // refused the write, pushing the post-write array to cloud would still
+    // succeed and create a phantom cloud row that disagrees with disk.
+    if (ok) pushFamilySharedState();
+    return ok;
+  }
+  // Rough localStorage usage in bytes (UTF-16 encoding → ~2 bytes/char).
+  // Used by the photo settings to warn before the user hits quota.
+  function approximateLocalStorageBytes() {
+    let total = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        const v = k ? localStorage.getItem(k) : null;
+        if (k) total += k.length;
+        if (v) total += v.length;
+      }
+    } catch {}
+    return total * 2;
   }
   // Picks a family photo at random while avoiding the most recently shown
   // ones. Without this, two sessions in a row would often show the same
@@ -11079,8 +11104,12 @@
       try {
         for (const file of Array.from(files)) {
           try {
-            const dataUrl = await compressImageToDataUrl(file, 1200, 0.78);
-            if (dataUrl.length > 1_400_000) {
+            // 800px / quality 0.6 → ~50–80KB per photo. Previously 1200/0.78
+            // could push 200–300KB per photo and quietly overflow iOS's
+            // ~5MB localStorage quota after ~20 shots, silently dropping
+            // them on next save.
+            const dataUrl = await compressImageToDataUrl(file, 800, 0.6);
+            if (dataUrl.length > 900_000) {
               oversized++;
               continue;
             }
@@ -11090,10 +11119,18 @@
             setPhotoErr('一部の写真を読み込めませんでした。');
           }
         }
-        setPhotos(next);
-        saveFamilyPhotos(next);   // writes localStorage + stamps + cloud-pushes
-        if (added > 0) setPhotoMsg(added + ' 枚追加して保存しました。');
-        if (oversized > 0) setPhotoErr(oversized + ' 枚はファイルが大きすぎたので追加できませんでした。');
+        // saveFamilyPhotos returns false when the quota is hit. Surface
+        // that to the user instead of pretending it saved — they want
+        // to know they should delete a few old photos first.
+        const ok = saveFamilyPhotos(next);
+        if (!ok) {
+          setPhotos(loadFamilyPhotos());  // revert to last persisted state
+          setPhotoErr('保存できませんでした。容量がいっぱいの可能性があります。古い写真を何枚か削除してから、もう一度お試しください。');
+        } else {
+          setPhotos(next);
+          if (added > 0) setPhotoMsg(added + ' 枚追加して保存しました。');
+          if (oversized > 0) setPhotoErr(oversized + ' 枚はファイルが大きすぎたので追加できませんでした。');
+        }
       } finally {
         setPhotoBusy(false);
         if (photoInputRef.current) photoInputRef.current.value = '';
@@ -11104,8 +11141,12 @@
     function removeFamilyPhoto(id) {
       if (!confirm('この写真を削除しますか？\n\n（20問終わったあとに表示される写真の中から外されます。元には戻せません。）')) return;
       const next = loadFamilyPhotos().filter(p => p.id !== id);
-      setPhotos(next);
-      saveFamilyPhotos(next);
+      const ok = saveFamilyPhotos(next);
+      if (ok) {
+        setPhotos(next);
+      } else {
+        setPhotoErr('削除を保存できませんでした。ページを再読み込みしてもう一度お試しください。');
+      }
     }
 
     function saveApiKeyNow() {
@@ -11592,6 +11633,46 @@
         e('div', {
           style: { fontSize: 12, color: C.sub, marginBottom: 12, paddingLeft: 4, lineHeight: 1.6 }
         }, '練習が終わるたびに、ここから1枚がランダムで表示されます。家族の写真でも、ブタの写真でも、何枚でも追加できます。'),
+        // Storage usage indicator. iOS Safari caps localStorage at ~5MB
+        // total across all keys; once you push past that, saves silently
+        // fail and photos appear to "disappear". Show usage so the user
+        // can spot the warning zone before quota hits.
+        (function () {
+          const bytes = approximateLocalStorageBytes();
+          const QUOTA = 5_000_000;  // iOS Safari practical ceiling
+          const pct   = Math.min(100, Math.round(bytes / QUOTA * 100));
+          const mb    = (bytes / 1_000_000).toFixed(1);
+          const warn  = pct >= 75;
+          const danger = pct >= 90;
+          return e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+              marginBottom: 10, paddingLeft: 4,
+              fontVariantNumeric: 'tabular-nums',
+            }
+          },
+            e('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4 } },
+              e('span', null, 'ストレージ使用量'),
+              e('span', {
+                style: { color: danger ? C.danger : (warn ? '#a86b3b' : C.sub), fontWeight: 700 }
+              }, mb + ' MB / 5.0 MB (' + pct + '%)'),
+            ),
+            e('div', { style: { height: 4, borderRadius: 999, background: C.softer, overflow: 'hidden' } },
+              e('div', {
+                style: {
+                  height: '100%', width: pct + '%',
+                  background: danger ? C.danger : (warn ? '#d4944c' : C.brand),
+                  transition: 'width 0.2s ease',
+                }
+              }),
+            ),
+            warn && e('div', {
+              style: { marginTop: 6, fontSize: 11, color: danger ? C.danger : '#a86b3b' }
+            }, danger
+              ? '容量がほぼ満杯です。古い写真を何枚か削除してください。'
+              : '容量に余裕が少なくなってきました。'),
+          );
+        })(),
 
         // Hidden input + big add button
         e('input', {
