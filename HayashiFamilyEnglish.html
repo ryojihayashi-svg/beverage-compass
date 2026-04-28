@@ -11088,6 +11088,57 @@
     const [photoMsg, setPhotoMsg] = useState('');   // transient success message
     const [photoBusy, setPhotoBusy] = useState(false);
     const photoInputRef = useRef(null);
+    // Cloud diagnostic: lets the user check whether photos are still
+    // in Supabase even when localStorage looks empty. Surfaces the gap
+    // so a "restore from cloud" tap can put them back.
+    const [cloudDiag, setCloudDiag] = useState(null);  // { localCount, cloudCount, ... }
+    const [diagBusy, setDiagBusy] = useState(false);
+    async function runCloudDiagnostic() {
+      setDiagBusy(true);
+      try {
+        const remote = await cloud.pull(FAMILY_SHARED_ID);
+        const d = (remote && remote.data) || {};
+        setCloudDiag({
+          ok: true,
+          localCount:  loadFamilyPhotos().length,
+          cloudCount:  Array.isArray(d.photos) ? d.photos.length : 0,
+          localNames:  Object.keys(loadDisplayNames() || {}).length,
+          cloudNames:  d.names ? Object.keys(d.names).length : 0,
+          updatedAt:   (remote && remote.updated_at) || null,
+        });
+      } catch (err) {
+        setCloudDiag({ ok: false, error: (err && err.message) || String(err) });
+      } finally {
+        setDiagBusy(false);
+      }
+    }
+    async function restoreFromCloud() {
+      setDiagBusy(true);
+      try {
+        const remote = await cloud.pull(FAMILY_SHARED_ID);
+        const d = (remote && remote.data) || {};
+        const cloudPhotos = Array.isArray(d.photos) ? d.photos : [];
+        if (cloudPhotos.length === 0) {
+          alert('クラウドにも写真は残っていませんでした。残念ながら復元できません。');
+          setDiagBusy(false);
+          return;
+        }
+        // Merge cloud INTO local (additive — don't lose any local-only).
+        const merged = mergePhotosArrays(loadFamilyPhotos(), cloudPhotos);
+        const ok = saveFamilyPhotos(merged);
+        if (ok) {
+          setPhotos(merged);
+          alert('クラウドから ' + cloudPhotos.length + ' 枚を取得しました。\n手元には ' + merged.length + ' 枚あります。');
+          setCloudDiag(null);
+        } else {
+          alert('保存できませんでした。容量がいっぱいの可能性があります。');
+        }
+      } catch (err) {
+        alert('クラウドから取得できませんでした。\n' + ((err && err.message) || err));
+      } finally {
+        setDiagBusy(false);
+      }
+    }
 
     async function addFamilyPhotos(files) {
       if (!files || files.length === 0) return;
@@ -11673,6 +11724,76 @@
               : '容量に余裕が少なくなってきました。'),
           );
         })(),
+
+        // Cloud diagnostic: user clicks to check if photos are still
+        // in cloud even when local looks empty. Useful when "写真が
+        // 消えた" — usually they're still in Supabase.
+        e('div', {
+          style: {
+            display: 'flex', gap: 6, marginBottom: 10,
+          }
+        },
+          e('button', {
+            onClick: runCloudDiagnostic,
+            disabled: diagBusy,
+            style: {
+              flex: 1, padding: '8px 0', borderRadius: 10,
+              background: 'transparent',
+              color: C.sub,
+              border: '1px solid ' + C.line,
+              fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+              cursor: diagBusy ? 'default' : 'pointer',
+              opacity: diagBusy ? 0.6 : 1,
+            }
+          }, diagBusy ? '確認中…' : '☁ クラウドの状態を確認'),
+        ),
+        cloudDiag && cloudDiag.ok && e('div', {
+          style: {
+            background: C.softer, border: '1px dashed ' + C.line,
+            borderRadius: 10, padding: 12, marginBottom: 10,
+            fontFamily: SANS_UI, fontSize: 11,
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1.7,
+          }
+        },
+          e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', { style: { color: C.sub } }, 'この端末'),
+            e('span', { style: { color: C.text, fontWeight: 700 } },
+              cloudDiag.localCount + ' 枚 / 名前 ' + cloudDiag.localNames + ' 件')),
+          e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', { style: { color: C.sub } }, 'クラウド'),
+            e('span', { style: { color: C.text, fontWeight: 700 } },
+              cloudDiag.cloudCount + ' 枚 / 名前 ' + cloudDiag.cloudNames + ' 件')),
+          cloudDiag.updatedAt && e('div', {
+            style: { color: C.sub, fontSize: 10, marginTop: 4 }
+          }, '最終クラウド更新: ' + new Date(cloudDiag.updatedAt).toLocaleString('ja-JP')),
+          cloudDiag.cloudCount > cloudDiag.localCount && e('button', {
+            onClick: restoreFromCloud,
+            disabled: diagBusy,
+            style: {
+              width: '100%', marginTop: 10, padding: '8px 0',
+              borderRadius: 10,
+              background: C.brand, color: '#fff',
+              border: '1px solid ' + C.brand,
+              fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+              cursor: diagBusy ? 'default' : 'pointer',
+              opacity: diagBusy ? 0.6 : 1,
+            }
+          }, '⬇ クラウドから ' + (cloudDiag.cloudCount - cloudDiag.localCount) + ' 枚を取得'),
+          cloudDiag.cloudCount === 0 && cloudDiag.localCount === 0 && e('div', {
+            style: { color: C.sub, fontSize: 11, marginTop: 8, lineHeight: 1.6 }
+          }, '残念ながらクラウドにも写真は残っていません。残念ですが、ここでの復元はできません。'),
+          cloudDiag.cloudCount > 0 && cloudDiag.cloudCount === cloudDiag.localCount && e('div', {
+            style: { color: C.sub, fontSize: 11, marginTop: 8 }
+          }, '同期は揃っています。'),
+        ),
+        cloudDiag && !cloudDiag.ok && e('div', {
+          style: {
+            background: C.softer, border: '1px dashed ' + C.danger,
+            borderRadius: 10, padding: 12, marginBottom: 10,
+            fontFamily: SANS_UI, fontSize: 11, color: C.danger,
+          }
+        }, 'クラウド確認に失敗: ' + cloudDiag.error),
 
         // Hidden input + big add button
         e('input', {
