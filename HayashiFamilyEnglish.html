@@ -4636,6 +4636,71 @@
     },
   ];
 
+  // ---------- Speaker grouping helpers for long-form shadowing ----------
+  // Each passage's id is "pas_<speaker>_<chapter>" (or just "pas_<speaker>"
+  // for the closing chapter — they were spliced in over time). Grouping
+  // by speaker lets the picker show "Steve Jobs ① ② ③ …" in one row, and
+  // lets the done-screen offer 「次のセクション」 to flow into the next
+  // chapter of the same speaker instead of dumping the kid back at a
+  // flat list.
+  const SPEAKER_LABELS = {
+    jobs_stanford:  { label: 'Steve Jobs · Stanford',     icon: '🍎' },
+    huang_caltech:  { label: 'Jensen Huang · Caltech',    icon: '🚀' },
+    jack_ma:        { label: 'Jack Ma',                   icon: '💪' },
+    family_meals:   { label: 'Family Meals',              icon: '🍱' },
+    ronaldo:        { label: 'Cristiano Ronaldo',         icon: '⚽' },
+    ronaldo_work:   { label: 'Cristiano Ronaldo',         icon: '⚽' }, // alias
+    musk:           { label: 'Elon Musk',                 icon: '🚗' },
+    son:            { label: 'Masayoshi Son',             icon: '🗻' },
+  };
+  // Pull the speaker key out of "pas_<key>_NN" or "pas_<key>".
+  // 'pas_jack_ma_03' → 'jack_ma'; 'pas_jack_ma' → 'jack_ma' (closing piece).
+  // The mapping uses the passage's title as a tie-breaker for irregular
+  // ids (e.g. ronaldo_work shares the Ronaldo group).
+  function getPassageSpeaker(p) {
+    if (!p || !p.id) return 'misc';
+    const stripped = String(p.id).replace(/^pas_/, '');
+    // If id ends with _NN, drop it.
+    const m = stripped.match(/^(.*)_(\d+)$/);
+    let key = m ? m[1] : stripped;
+    // Treat ronaldo_work as part of the ronaldo group.
+    if (key === 'ronaldo_work') key = 'ronaldo';
+    return key;
+  }
+  // Build [{ key, label, icon, chapters:[...] }] in the order each speaker
+  // first appears in SHADOWING_PASSAGES, with chapters in source order.
+  function buildSpeakerGroups() {
+    const groups = [];
+    const byKey = {};
+    for (const p of SHADOWING_PASSAGES) {
+      const key = getPassageSpeaker(p);
+      if (!byKey[key]) {
+        const meta = SPEAKER_LABELS[key] || { label: p.title || key, icon: p.icon || '📖' };
+        byKey[key] = { key, label: meta.label, icon: meta.icon, chapters: [] };
+        groups.push(byKey[key]);
+      }
+      byKey[key].chapters.push(p);
+    }
+    return groups;
+  }
+  // Pull the chapter label "① 開幕" out of "Steve Jobs · Stanford ① 開幕".
+  // Falls back to the full title if no leading speaker prefix is present.
+  function getPassageChapterLabel(p) {
+    if (!p || !p.title) return '';
+    const idx = p.title.lastIndexOf('·');
+    return (idx >= 0 ? p.title.slice(idx + 1) : p.title).trim();
+  }
+  // Find the next chapter of the same speaker, or null if this was the
+  // last one. Used by the done screen to offer "次のセクション".
+  function findNextChapterInSpeaker(passage) {
+    if (!passage) return null;
+    const key = getPassageSpeaker(passage);
+    const list = SHADOWING_PASSAGES.filter(p => getPassageSpeaker(p) === key);
+    const idx = list.findIndex(p => p.id === passage.id);
+    if (idx < 0 || idx + 1 >= list.length) return null;
+    return list[idx + 1];
+  }
+
   // ---------- 1分英語解説 (English Lessons) ----------
   // Tiny self-contained lessons for kids who freeze when they see grammar.
   // Each lesson has a short explanation block (today's question, imagery,
@@ -16074,8 +16139,11 @@
           }),
         ),
 
-        // Long-mode passage list (replaces the level picker / start
-        // button; speed picker stays).
+        // Long-mode passage list — grouped by speaker so you can pick
+        // a 偉人 and then jump straight into ① ② ③ … of their talk.
+        // Tap any chapter pill to start that one. The done-screen will
+        // then offer 「次のセクション」 to flow into ②, ③ … without
+        // bouncing back here.
         mode === 'long' ? e('div', null,
           e('div', {
             style: {
@@ -16083,34 +16151,65 @@
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 10, paddingLeft: 4,
             }
-          }, '長文を選んでスタート'),
+          }, '偉人を選んでセクションをタップ'),
           e('div', {
-            style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }
+            style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }
           },
-            SHADOWING_PASSAGES.map(p => e('button', {
-              key: p.id,
-              onClick: () => startPassage(p),
+            buildSpeakerGroups().map(g => e('div', {
+              key: 'spk_' + g.key,
               style: {
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px',
                 background: C.card, border: '1px solid ' + C.line,
-                borderRadius: 14, textAlign: 'left',
-                cursor: 'pointer',
+                borderRadius: 14, padding: '14px 14px 12px',
               }
             },
-              e('span', { style: { fontSize: 22, flexShrink: 0 } }, p.icon || '📖'),
-              e('div', { style: { flex: 1, minWidth: 0 } },
-                e('div', {
-                  style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.4 }
-                }, p.title),
-                e('div', {
-                  style: {
-                    fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-                    color: profile.color, marginTop: 4, letterSpacing: '0.06em',
-                  }
-                }, 'LV' + p.level + ' · ' + (p.en.split(/\s+/).length) + ' words'),
+              e('div', {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  marginBottom: 10,
+                }
+              },
+                e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
+                e('div', { style: { flex: 1, minWidth: 0 } },
+                  e('div', {
+                    style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+                  }, g.label),
+                  e('div', {
+                    style: {
+                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      color: C.sub, marginTop: 2, letterSpacing: '0.08em',
+                    }
+                  }, g.chapters.length + ' セクション'),
+                ),
               ),
-              e('span', { style: { color: C.sub, fontSize: 18 } }, '›'),
+              e('div', {
+                style: {
+                  display: 'flex', flexWrap: 'wrap', gap: 6,
+                }
+              },
+                g.chapters.map(p => e('button', {
+                  key: p.id,
+                  onClick: () => startPassage(p),
+                  style: {
+                    flex: '1 1 calc(50% - 3px)',
+                    padding: '10px 12px', borderRadius: 10,
+                    background: C.softer, border: '1px solid ' + C.line,
+                    fontFamily: SERIF, fontSize: 13, fontWeight: 600,
+                    color: C.text, textAlign: 'left',
+                    cursor: 'pointer', lineHeight: 1.3,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: 8,
+                  }
+                },
+                  e('span', { style: { flex: 1, minWidth: 0 } }, getPassageChapterLabel(p)),
+                  e('span', {
+                    style: {
+                      fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                      color: profile.color, letterSpacing: '0.06em',
+                      flexShrink: 0,
+                    }
+                  }, 'LV' + p.level),
+                )),
+              ),
             )),
           ),
           // Speed picker still applies to long mode
@@ -16297,15 +16396,27 @@
     // ear/tongue without thinking about meaning; the meaning check
     // happens here, after the mouth has done its job.
     if (phase === 'done') {
+      // Long mode = the queue is a single passage with isPassage flag.
+      // Look up the source passage so we can offer "next chapter of the
+      // same speaker" instead of a meaningless "別の 10 文".
+      const longPassageItem = queue.length === 1 && queue[0] && queue[0].isPassage ? queue[0] : null;
+      const sourcePassage = longPassageItem
+        ? SHADOWING_PASSAGES.find(p => p.id === longPassageItem.id)
+        : null;
+      const nextChapter = sourcePassage ? findNextChapterInSpeaker(sourcePassage) : null;
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '4px 4px 22px', textAlign: 'center' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, '🎉 おつかれさま！'),
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
-          }, queue.length + ' 文'),
+          longPassageItem
+            ? e('div', {
+                style: { fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: profile.color, lineHeight: 1.25, marginTop: 16, padding: '0 8px' }
+              }, longPassageItem.title || 'Long passage')
+            : e('div', {
+                style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
+              }, queue.length + ' 文'),
           e('div', {
             style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
           }, SHADOW_REPS + ' 回ずつシャドーイング完了'),
@@ -16360,8 +16471,8 @@
           )),
         ),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          // Same 10 sentences again — primary action, since rep is
-          // what builds the muscle memory.
+          // Primary: rep the same material, since that's where the
+          // muscle memory builds.
           e('button', {
             onClick: repeatSession,
             style: {
@@ -16370,17 +16481,48 @@
               border: '1px solid ' + profile.color,
               fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
             }
-          }, '🔁 同じ ' + SHADOW_SESSION_COUNT + ' 文をもう一度'),
-          // New shuffle from the pool.
-          e('button', {
-            onClick: startSession,
-            style: {
-              width: '100%', padding: '14px 0', borderRadius: 14,
-              background: C.softer, color: C.text,
-              border: '1px solid ' + C.line,
-              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
-            }
-          }, '別の ' + SHADOW_SESSION_COUNT + ' 文をやる'),
+          }, longPassageItem
+              ? '🔁 もう一度同じセクション'
+              : '🔁 同じ ' + SHADOW_SESSION_COUNT + ' 文をもう一度'),
+
+          // Secondary: in long mode, flow into the next chapter of the
+          // same speaker if there is one. Falls back to "select another
+          // passage" when this was the last chapter. In short mode this
+          // remains "pull a fresh batch from the level pool".
+          longPassageItem
+            ? (nextChapter
+                ? e('button', {
+                    onClick: () => startPassage(nextChapter),
+                    style: {
+                      width: '100%', padding: '14px 0', borderRadius: 14,
+                      background: C.softer, color: C.text,
+                      border: '1px solid ' + C.line,
+                      fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+                      lineHeight: 1.3,
+                    }
+                  },
+                    '→ 次のセクション「' + getPassageChapterLabel(nextChapter) + '」へ'
+                  )
+                : e('button', {
+                    onClick: () => setPhase('intro'),
+                    style: {
+                      width: '100%', padding: '14px 0', borderRadius: 14,
+                      background: C.softer, color: C.text,
+                      border: '1px solid ' + C.line,
+                      fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+                    }
+                  }, '別の偉人を選ぶ')
+              )
+            : e('button', {
+                onClick: startSession,
+                style: {
+                  width: '100%', padding: '14px 0', borderRadius: 14,
+                  background: C.softer, color: C.text,
+                  border: '1px solid ' + C.line,
+                  fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+                }
+              }, '別の ' + SHADOW_SESSION_COUNT + ' 文をやる'),
+
           e('button', {
             onClick: backToHome,
             style: {
