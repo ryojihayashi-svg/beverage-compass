@@ -95,9 +95,9 @@
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
   const PROFILES = [
-    { id: 'father', name: '林亮治',   subtitle: '英検準2級レベル',          emoji: '', color: C.brand, role: 'learner', level: 3 },
+    { id: 'father', name: '林亮治',   subtitle: '英検3級レベル',            emoji: '', color: C.brand, role: 'learner', level: 3 },
     { id: 'mother', name: '歩み',     subtitle: '英検4級・応援担当',        emoji: '', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
-    { id: 'son1',   name: 'なるみち', subtitle: '高2・英検準2級',           emoji: '', color: C.brand, role: 'learner', level: 3 },
+    { id: 'son1',   name: 'なるみち', subtitle: '高2・英検3級',             emoji: '', color: C.brand, role: 'learner', level: 3 },
     { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '', color: C.brand, role: 'learner', level: 2 },
     { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '', color: C.brand, role: 'learner', level: 1 },
   ];
@@ -3799,8 +3799,8 @@
     son3:   1.5,  // Kippei  — 英検5級
     son2:   2.5,  // Yoshinari — 英検4級
     mother: 2.5,  // Ayumi    — 英検4級
-    father: 4.0,  // Ryoji    — 英検準2級
-    son1:   4.0,  // Narumichi — 英検準2級
+    father: 3.0,  // Ryoji    — 英検3級
+    son1:   3.0,  // Narumichi — 英検3級
   };
   // ---------- 英検レベル mapping ----------
   // 1.0–1.99 → 英検5級 / 2.0–2.99 → 英検4級 / 3.0–3.99 → 英検3級 /
@@ -4062,13 +4062,16 @@
     // 各人の英検レベルに合わせて天井・床を変える:
     //   son3 (5級)         → ja2en≤1.2, en2ja≥1.5
     //   son2 / mother (4級) → ja2en≤2.2, en2ja≥2.5
-    //   father / son1 (準2級) は raw のまま
+    //   father / son1 (3級) → ja2en≤3.2, en2ja≥3.5
     if (id === 'son3') {
       if (direction === 'ja2en') comfort = Math.min(comfort, 1.2);
       else if (direction === 'en2ja') comfort = Math.max(comfort, 1.5);
     } else if (id === 'son2' || id === 'mother') {
       if (direction === 'ja2en') comfort = Math.min(comfort, 2.2);
       else if (direction === 'en2ja') comfort = Math.max(comfort, 2.5);
+    } else if (id === 'father' || id === 'son1') {
+      if (direction === 'ja2en') comfort = Math.min(comfort, 3.2);
+      else if (direction === 'en2ja') comfort = Math.max(comfort, 3.5);
     }
     comfort = Math.max(1.0, Math.min(5.0, comfort));
     const lower = Math.floor(comfort);
