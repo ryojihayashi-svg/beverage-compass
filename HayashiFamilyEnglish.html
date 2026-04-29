@@ -4060,6 +4060,42 @@
     { id:'qt50', level:3, tag:'quote', ja:'自分自身でいなさい。他の人はもう取られている。（オスカー・ワイルド）',       en:'Be yourself; everyone else is already taken.' },
   ];
 
+  // ---------- Pull every shadowing entry into 瞬間英作文 too ----------
+  // Pedagogically: drilling the structure as composition first
+  // ("自分で組み立てた") makes the same sentence land as instantly
+  // recognisable when shadowed. So every SHADOWING_QA entry — singletons,
+  // Q&A pairs, the 英会話 lesson script, the 50 famous quotes — gets a
+  // mirrored entry in SENTENCES (id-prefixed with 'sh_' to avoid
+  // collisions). One source of truth, two places to practise.
+  //
+  // Level mapping:
+  //   numeric level (1–5) → use as-is
+  //   'others' (英会話)    → LV2 (the script is mostly intermediate)
+  //   anything else        → LV2 fallback
+  //
+  // Grammar tag groups them on the picker so the kid (or parent reading
+  // the log) can tell at a glance "this one came from shadowing".
+  (function pullShadowingIntoSentences() {
+    for (const s of SHADOWING_QA) {
+      if (!s.en || !s.ja) continue;
+      const lvl = typeof s.level === 'number' ? s.level : 2;
+      const grammar = s.tag === 'quote'      ? '名言'
+                    : s.level === 'others'   ? '英会話'
+                    : s.role === 'Q'         ? 'シャドーイング (Q)'
+                    : s.role === 'A'         ? 'シャドーイング (A)'
+                    :                          'シャドーイング';
+      const entry = {
+        id: 'sh_' + s.id,
+        level: lvl,
+        grammar,
+        ja: s.ja,
+        en: s.en,
+      };
+      SENTENCES.push(entry);
+      SENTENCE_BY_ID[entry.id] = entry;
+    }
+  })();
+
   // ---------- Famous long-form passages for shadowing ----------
   // Played ONCE through, end to end, with a small inter-rep pause and
   // 3 full passes total. Designed for the "read straight through 3
