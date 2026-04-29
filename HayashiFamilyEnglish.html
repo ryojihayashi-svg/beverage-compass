@@ -2764,6 +2764,71 @@
     // ============ 約束・誓う ============
     vow: '神・人に対して「(重大な) 誓いを立てる」のが vow (vow to be loyal)。日常の「約束する」は promise。',
     promise: '日常で「約束する」のが promise (I promise to come)。重大な誓いなら vow / pledge。',
+
+    // ============ 影響・効果 ============
+    impact: '強い「衝撃・影響」が impact (have a great impact)。一般的な「影響」は effect、間接的に及ぼすのは influence。',
+    influence: '間接的・徐々に「影響を及ぼす」のが influence (parents influence children)。直接的な強い影響は impact。',
+
+    // ============ 必要・要求 ============
+    require: 'フォーマルに「(必要として) 求める」のが require (require attention)。日常の「必要とする」は need。',
+    demand: '強く「要求する」のが demand (demand a refund)。穏やかな依頼は request、必要は require。',
+    request: '丁寧に「要求する・申し出る」のが request (a polite request)。強い要求は demand、必要なら need / require。',
+
+    // ============ 主張・宣言 ============
+    declare: '公式に「宣言する」のが declare (declare independence)。一般的に「言う」は state、断言は assert。',
+    assert: '自信を持って「主張する」のが assert (assert one\'s rights)。フォーマルな宣言は declare、強く要求は demand。',
+    state: '正式な場で「述べる」のが state (state your name)。日常の「言う」は say、強い主張は assert / claim。',
+    claim: '(根拠なくても) 「主張する」のが claim (he claims to be innocent)。確信を持つなら assert、公式宣言なら declare。',
+
+    // ============ 達成・遂行 ============
+    accomplish: '計画通りに「(困難なことを) 成し遂げる」のが accomplish (accomplish a goal)。一般的な「達成」は achieve、完了は complete。',
+    fulfill: '義務・約束・夢を「果たす・実現する」のが fulfill (fulfill a promise)。困難をやり遂げるなら accomplish。',
+
+    // ============ 含む・包む ============
+    include: '一部として「含む」のが include (the price includes tax)。すべて含み込むのは contain (より物理的)。',
+    contain: '物理的に「中に含む」のが contain (the box contains books)。リストの一員として含むなら include。',
+
+    // ============ 増える・減る ============
+    increase: '量・程度が「増える」のが increase (sales increased)。サイズが「拡大」は expand、急速増加は surge。',
+    enhance: '質や価値を「高める」のが enhance (enhance flavor)。量が増えるは increase、改善するは improve。',
+    decrease: '量・程度が「減る」のが decrease (sales decreased)。徐々に減るは diminish、急減は plunge / plummet。',
+    diminish: '徐々に「減少する・弱まる」のが diminish (interest diminished)。明確に「減る」は decrease。',
+
+    // ============ 慣れる ============
+    adapt: '環境・状況に「適応する」のが adapt (adapt to a new culture)。徐々に体・心が「慣れる」は get used to。',
+
+    // ============ 諦める ============
+    surrender: '戦いで「降伏する」のが surrender (surrender to the enemy)。計画・希望を諦めるは give up / abandon。',
+    yield: '圧力に「屈する・譲る」のが yield (yield to pressure)。完全に降伏は surrender、放棄は abandon。',
+
+    // ============ 困難を耐える ============
+    bear: '苦痛・重荷を「耐える」のが bear (I can\'t bear it)。長く我慢するは endure、容認するは tolerate。',
+    tolerate: '不快なことを「(認めて) 我慢する」のが tolerate (I won\'t tolerate rudeness)。強く耐えるなら endure。',
+
+    // ============ 移動 ============
+    transit: '通過の「移動・輸送」が transit (in transit = 輸送中)。旅行行為は travel、特定の移動は trip。',
+
+    // ============ 性質・特徴 ============
+    quality: '物の「質・品質」が quality (high quality)。「特徴・性質」を強調するなら trait / characteristic。',
+    trait: '人の「性格上の特徴」が trait (a personality trait)。物の質は quality、特徴的な要素は characteristic。',
+
+    // ============ 意義・意味 ============
+    meaning: '「言葉・行動の意味」一般語が meaning (the meaning of life)。重要性は significance、目的は purpose。',
+    significance: '事の「重要性・有意性」が significance (the significance of this discovery)。単なる意味は meaning。',
+
+    // ============ 結果 ============
+    result: '行動の「結果」一般が result (the result of hard work)。望ましい結果は outcome、悪い結果は consequence。',
+    consequence: '(特に望ましくない) 「結果・影響」が consequence (suffer the consequences)。中立的な結果は result。',
+    outcome: '最終的な「結末・成果」が outcome (the outcome of the meeting)。日常的な結果は result。',
+
+    // ============ 説明する ============
+    explain: '一般的に「説明する」のが explain (explain how it works)。詳しく説明は elaborate、例で示すは illustrate。',
+    elaborate: '「もっと詳しく説明する」のが elaborate (could you elaborate?)。基本的な説明は explain。',
+    illustrate: '例・図で「分かりやすく示す」のが illustrate (illustrate with an example)。言葉だけの説明は explain。',
+
+    // ============ 困難・挑戦 ============
+    challenge: 'やりがいのある「挑戦・困難」が challenge (a great challenge)。単なる「問題」は problem、苦労は struggle。',
+    struggle: '困難に「もがく・苦闘する」のが struggle (struggle with English)。ポジティブな挑戦は challenge。',
   };
   function getVocabUsage(vocabId) {
     return VOCAB_USAGE[vocabId] || null;
@@ -8481,6 +8546,183 @@
           choices: ['in', 'by', 'while'],
           answer: 2,
           explain: 'while + ing で「〜している最中に」。while skiing は while she was skiing の省略形。',
+        },
+      ],
+    },
+    // ============ 数量表現 ============
+    {
+      id: 'l1_some_any',
+      level: 1,
+      title: 'some / any',
+      subtitle: 'いくつか・どれでも',
+      icon: '🍎',
+      todayQ: '「水が少しある」と「水はある？」、英語ではどう言う？',
+      imagery: 'some は「ある (はい寄り)」の場面。any は「ない・あるか分からない (疑問・否定)」の場面。覚え方: some は肯定文・依頼の問いかけ / any は否定文・本当の疑問文。',
+      rule: 'some = 肯定文「いくつか」/ any = 否定文・疑問文「どれも・いくらか」',
+      examples: [
+        { en: 'I have some apples.',                    ja: 'りんごがいくつかある。' },
+        { en: 'Do you have any apples?',                ja: 'りんごは(いくつか)ある？' },
+        { en: "I don't have any apples.",               ja: 'りんごは1つもない。' },
+      ],
+      points: [
+        '🟢 肯定文には some: I have some friends. (友達がいる)',
+        '🔵 疑問文・否定文には any: Do you have any time? / I don\'t have any time.',
+        '🟡 依頼・申し出の疑問文では some を使うのが自然: Would you like some coffee? (コーヒーはいかが？) — any にすると「コーヒーが本当にあるかどうか」を聞いてしまう。',
+        '⚠️ any は「どんな〜でも」の意味でも使う: Take any seat. (どの席でも座って) (肯定文だが「どれでも」の意味)。',
+      ],
+      quiz: [
+        {
+          q:   'I bought ___ bread.',
+          qJa: 'パンを少し買った。',
+          choices: ['some', 'any', 'no'],
+          answer: 0,
+          explain: '肯定文 + 「いくつか・少し」は some。',
+        },
+        {
+          q:   'Do you have ___ questions?',
+          qJa: '質問はありますか？',
+          choices: ['some', 'any', 'no'],
+          answer: 1,
+          explain: '疑問文「あるかどうか」は any。',
+        },
+        {
+          q:   "I don't want ___ help.",
+          qJa: '助けはいらない。',
+          choices: ['some', 'any', 'no'],
+          answer: 1,
+          explain: "否定文 + any で「全くない」。Don't ~ any。",
+        },
+        {
+          q:   'Would you like ___ tea?',
+          qJa: 'お茶はいかがですか？',
+          choices: ['some', 'any', 'a'],
+          answer: 0,
+          explain: '依頼・申し出の疑問文 (Would you like ~?) では some が自然。「実際にお茶があって、勧めている」場面だから。',
+        },
+        {
+          q:   'Take ___ seat.',
+          qJa: 'どの席でも座って。',
+          choices: ['some', 'any', 'one'],
+          answer: 1,
+          explain: '「どんな〜でも」と一般化するときは any (肯定文でも使える特殊用法)。',
+        },
+      ],
+    },
+    {
+      id: 'l2_much_many',
+      level: 2,
+      title: 'much / many / a lot of',
+      subtitle: '数えられる・られない',
+      icon: '🥛',
+      todayQ: '「水がたくさん」と「本がたくさん」、英語ではどう違う？',
+      imagery: 'water (水) は数えられない名詞 → much。book (本) は数えられる → many。a lot of はどちらでも使えて口語的。学校英語の重要ポイント！',
+      rule: 'many + 数えられる名詞 (本・人) / much + 数えられない名詞 (水・時間) / a lot of = 両方OK',
+      examples: [
+        { en: 'I have many books.',                     ja: '本をたくさん持っている。' },
+        { en: 'There is much water in the river.',      ja: '川には水がたくさんある。' },
+        { en: 'I have a lot of friends.',               ja: '友達がたくさんいる。' },
+      ],
+      points: [
+        '🟢 数えられる名詞 (countable): book/friend/student/apple → many / a lot of / a few',
+        '🔵 数えられない名詞 (uncountable): water/time/money/information → much / a lot of / a little',
+        '🟡 a lot of は会話で最も自然。much / many は否定文・疑問文で多く使う (Do you have much time? / I don\'t have many friends.)。肯定文で much / many は少しフォーマル。',
+        '⚠️ よくある間違い: ❌ many information / ❌ much books → ✅ much information / ✅ many books。information / advice / news / furniture は不可算！',
+        '💡 数の少なさ: a few books (少しある・肯定的) ↔ few books (ほとんどない・否定的)。a little water (少しある) ↔ little water (ほとんどない)。',
+      ],
+      quiz: [
+        {
+          q:   'How ___ time do you have?',
+          qJa: 'どのくらいの時間がありますか？',
+          choices: ['many', 'much', 'few'],
+          answer: 1,
+          explain: 'time は数えられない名詞 → much。',
+        },
+        {
+          q:   'There are ___ students in this class.',
+          qJa: 'このクラスには学生がたくさんいる。',
+          choices: ['many', 'much', 'a little'],
+          answer: 0,
+          explain: 'student は数えられる → many。',
+        },
+        {
+          q:   "I don't have ___ money.",
+          qJa: 'お金があまりない。',
+          choices: ['many', 'much', 'few'],
+          answer: 1,
+          explain: 'money は不可算 → much。否定文 + much で「あまり〜ない」。',
+        },
+        {
+          q:   'She gave me ___ advice.',
+          qJa: '彼女はたくさん助言をくれた。',
+          choices: ['many', 'a lot of', 'a few'],
+          answer: 1,
+          explain: 'advice は不可算 (× many advice)。a lot of は両方使えるので最も安全。',
+        },
+        {
+          q:   'I have ___ friends, but only one close one.',
+          qJa: '友達は何人かいるが、親しい友は一人だけ。',
+          choices: ['a few', 'few', 'a little'],
+          answer: 0,
+          explain: 'a few = 「少しはいる (肯定的)」。friend は数えられるので a little ではない。',
+        },
+      ],
+    },
+    {
+      id: 'l3_so_such',
+      level: 3,
+      title: 'so / such',
+      subtitle: 'こんなに〜',
+      icon: '✨',
+      todayQ: '「とても良い映画」と「こんなに良い映画」、英語ではどう違う？',
+      imagery: 'so + 形容詞 / 副詞 (大きさを直接強調) / such + (a/an) + 形容詞 + 名詞 (名詞ごと強調)。"so good a movie" は古風。"such a good movie" が現代的。',
+      rule: 'so + 形容詞/副詞 / such + (a/an) + 形容詞 + 名詞',
+      examples: [
+        { en: 'It was so good.',                        ja: 'とても良かった。' },
+        { en: 'It was such a good movie.',              ja: 'とても良い映画だった。' },
+        { en: 'I am so tired that I can\'t move.',      ja: 'とても疲れていて動けない。' },
+      ],
+      points: [
+        '🟢 so + 形容詞 / 副詞: It was so beautiful. / She runs so fast.',
+        '🔵 such + (a/an) + 形容詞 + 名詞: It was such a beautiful day. / She is such a kind person.',
+        '🟡 so ... that 構文 = 「とても〜なので…」: I was so tired that I fell asleep. (とても疲れたので眠ってしまった)',
+        '🟡 such ... that 構文 = 同じ意味で名詞が中心: It was such a good film that I watched it twice.',
+        '⚠️ 不可算名詞や複数名詞には a/an を付けない: such good news (○) / such bad weather (○) / such interesting books (○)。',
+      ],
+      quiz: [
+        {
+          q:   'It was ___ a beautiful day.',
+          qJa: 'とても美しい日だった。',
+          choices: ['so', 'such', 'very'],
+          answer: 1,
+          explain: 'a + 形容詞 + 名詞 が続いているので such。',
+        },
+        {
+          q:   'She sings ___ well.',
+          qJa: '彼女はとても上手に歌う。',
+          choices: ['so', 'such', 'such a'],
+          answer: 0,
+          explain: '副詞 well を直接修飾するので so。',
+        },
+        {
+          q:   "It was ___ good food that I ate too much.",
+          qJa: 'とても美味しかったので食べすぎた。',
+          choices: ['so', 'such', 'such a'],
+          answer: 1,
+          explain: 'food は不可算なので a/an を付けず such。such food that ~。',
+        },
+        {
+          q:   "I'm ___ hungry that I could eat anything.",
+          qJa: 'とてもお腹が空いていて何でも食べられる。',
+          choices: ['so', 'such', 'too'],
+          answer: 0,
+          explain: 'hungry (形容詞) を直接修飾なので so + that 構文。',
+        },
+        {
+          q:   'They are ___ kind people.',
+          qJa: '彼らはとても親切な人たちだ。',
+          choices: ['so', 'such', 'such a'],
+          answer: 1,
+          explain: 'people (複数) は a/an を付けないので such kind people。',
         },
       ],
     },
