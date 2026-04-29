@@ -12822,38 +12822,40 @@
     }, []);
     return e('div', {
       style: {
-        maxWidth: 480, margin: '0 auto', padding: '64px 22px 64px',
+        maxWidth: 480, margin: '0 auto', padding: '20px 22px 24px',
         position: 'relative',
       }
     },
       // Header — quiet, elegant Cormorant Garamond. Smaller than before so
       // the type feels refined rather than billboard-loud. Both lines in
       // English with restrained letter-spacing.
-      e('div', { style: { textAlign: 'center', marginBottom: 40, paddingTop: 36 } },
+      // 1 画面に 5 人全員 (亮治 / 歩み / なるみち / 吉成 / きっぺい) が
+      // 収まるよう、上下の余白とフォントを少し詰めてある。
+      e('div', { style: { textAlign: 'center', marginBottom: 14, paddingTop: 0 } },
         e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 26, fontWeight: 500,
+            fontFamily: SERIF, fontSize: 22, fontWeight: 500,
             letterSpacing: '0.04em', color: C.text, lineHeight: 1.2,
           }
         }, 'Hayashi Family'),
         e('div', {
           style: {
             fontFamily: SERIF, fontStyle: 'italic',
-            fontSize: 26, fontWeight: 500,
+            fontSize: 22, fontWeight: 500,
             letterSpacing: '0.02em', color: C.text, lineHeight: 1.2, marginTop: 2,
           }
         }, 'English'),
       ),
 
       // Cards
-      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
         PROFILES.map(p => e(ProfileCard, { key: p.id, profile: p, onClick: () => onPick(p.id) })),
       ),
 
       // Reload + Setting (below the cards, centered)
       e('div', {
         style: {
-          marginTop: 28, display: 'flex', justifyContent: 'center', gap: 12,
+          marginTop: 16, display: 'flex', justifyContent: 'center', gap: 12,
         }
       },
         e(ReloadBtn),
@@ -12872,7 +12874,7 @@
       // Footer note
       e('div', {
         style: {
-          marginTop: 20, textAlign: 'center', fontSize: 11,
+          marginTop: 10, textAlign: 'center', fontSize: 11,
           color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
         }
       }, 'v0.1 — プロトタイプ'),
@@ -12904,9 +12906,9 @@
       onPointerUp:   () => setPressed(false),
       onPointerLeave:() => setPressed(false),
       style: {
-        display: 'flex', alignItems: 'center', gap: 14,
-        background: C.card, padding: '14px 16px',
-        borderRadius: 18, textAlign: 'left', width: '100%',
+        display: 'flex', alignItems: 'center', gap: 12,
+        background: C.card, padding: '10px 14px',
+        borderRadius: 16, textAlign: 'left', width: '100%',
         border: '1px solid ' + C.line,
         boxShadow: pressed
           ? '0 1px 2px rgba(42,37,32,0.05)'
@@ -12915,14 +12917,14 @@
         transition: 'transform .15s ease, box-shadow .25s ease',
       }
     },
-      // Avatar (custom photo if set, else emoji)
+      // Avatar (custom photo if set, else first character of name)
       e('div', {
         style: {
-          width: 52, height: 52, borderRadius: 16,
+          width: 44, height: 44, borderRadius: 14,
           background: profile.color + '1F',
           color: profile.color,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 26, flexShrink: 0,
+          fontSize: 22, flexShrink: 0,
           border: '1px solid ' + profile.color + '33',
           overflow: 'hidden',
         }
@@ -12952,7 +12954,7 @@
         // Stat strip: 覚えた / 連続 / 学習時間
         e('div', {
           style: {
-            display: 'flex', gap: 14, marginTop: 6,
+            display: 'flex', gap: 14, marginTop: 4,
             fontFamily: SANS_UI, fontSize: 11, color: C.sub,
             fontVariantNumeric: 'tabular-nums',
           }
@@ -12974,7 +12976,7 @@
         // session events yet.
         latestEvent && e('div', {
           style: {
-            marginTop: 5,
+            marginTop: 3,
             fontFamily: SANS_UI, fontSize: 10.5, color: C.sub,
             fontVariantNumeric: 'tabular-nums',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -13032,7 +13034,7 @@
           // so it doesn't overwhelm the bars themselves.
           const eikenLabel = profileEikenLabel(profile.id);
           return e('div', {
-            style: { marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }
+            style: { marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }
           },
             e('div', {
               style: {
