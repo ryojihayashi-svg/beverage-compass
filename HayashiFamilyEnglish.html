@@ -8156,6 +8156,51 @@
     return text || '(空の応答)';
   }
 
+  // ---------- Alternative-expressions fetcher (used by 瞬間英作文 cards) ----------
+  // Given the source sentence and the known "standard" answer, asks Claude
+  // for 2–3 different ways to say the same thing in the target language.
+  // Returns an array of clean strings (no numbering / no leading bullets).
+  async function fetchAlternativeExpressions(targetLang, sourceText, knownAnswer) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const prompt = targetLang === 'en'
+      ? '次の日本語: 「' + sourceText + '」\n' +
+        '標準的な英訳: 「' + knownAnswer + '」\n\n' +
+        'この英訳とは別の自然な英語表現を 2 〜 3 個挙げてください。\n' +
+        '形式: 各表現を 1 行ずつ。番号・記号・説明は不要。' +
+        '意味と難易度はほぼ同じに保ち、構文・語彙・丁寧度のいずれかを変えてください。'
+      : '次の英語: 「' + sourceText + '」\n' +
+        '標準的な日本語訳: 「' + knownAnswer + '」\n\n' +
+        'この訳とは別の自然な日本語表現を 2 〜 3 個挙げてください。\n' +
+        '形式: 各表現を 1 行ずつ。番号・記号・説明は不要。意味はほぼ同じに保つこと。';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 250,
+        system: '英語学習者の家族向けアプリのアシスタント。同じ意味の別の自然な表現を提示します。',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    return text.split('\n')
+      .map(s => s.replace(/^[\s\d\.\)\-・*•「『]+/, '').replace(/[」』]+$/, '').trim())
+      .filter(s => s.length > 0);
+  }
+
   // ---------- PWA install detection ----------
   // Lightweight detector for whether the app is already running standalone
   // (iOS or Android), and a flag persistence helper so the install prompt is
@@ -10706,6 +10751,11 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);
+    // AI: per-question alternative-expressions cache so re-tapping the
+    // same card doesn't burn another API call. Keyed by sentence id.
+    const [altMap, setAltMap]   = useState({});  // { id: string[] }
+    const [altBusy, setAltBusy] = useState(false);
+    const [altError, setAltError] = useState('');
 
     function startSession() {
       const opts = selectedLevel === 'auto' ? {} : { level: selectedLevel };
@@ -10721,6 +10771,33 @@
     const total   = queue.length;
     const current = queue[index] || null;
     const correct = results.filter(r => r.isCorrect).length;
+
+    // Reset transient alt-error when the question changes — but keep the
+    // altMap cache so re-revisits in the same session don't re-fetch.
+    useEffect(() => { setAltError(''); }, [index]);
+
+    async function loadAlternativesForCurrent() {
+      if (!current) return;
+      const id = current.id;
+      if (altMap[id] && altMap[id].length) return;  // already cached
+      setAltBusy(true);
+      setAltError('');
+      try {
+        const targetLang  = direction === 'ja2en' ? 'en' : 'ja';
+        const sourceText  = direction === 'ja2en' ? current.ja : current.en;
+        const knownAnswer = direction === 'ja2en' ? current.en : current.ja;
+        const alts = await fetchAlternativeExpressions(targetLang, sourceText, knownAnswer);
+        if (alts.length === 0) {
+          setAltError('別の言い方が取得できませんでした。');
+        } else {
+          setAltMap(prev => Object.assign({}, prev, { [id]: alts }));
+        }
+      } catch (err) {
+        setAltError((err && err.message) || String(err));
+      } finally {
+        setAltBusy(false);
+      }
+    }
 
     function record(isCorrect) {
       const cur = queue[index];
@@ -11015,6 +11092,7 @@
               const answerStyle = isEn2Ja
                 ? { fontSize: 20, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.5 }
                 : { fontFamily: SERIF, fontStyle: 'italic', fontSize: 24, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.4 };
+              const altsForCurrent = (current && altMap[current.id]) || null;
               return e('div', { style: { marginTop: 'auto' } },
                 e('div', {
                   style: {
@@ -11025,6 +11103,63 @@
                   e('div', { style: answerStyle }, answerText),
                   !isEn2Ja && e(SpeakerBtn, { onClick: () => speak(current.en), color: profile.color, size: 44 }),
                 ),
+                // Alternative-expressions panel: tap to ask AI for 2–3
+                // other natural ways to say the same thing in the target
+                // language. Caches per question so re-tapping during the
+                // same session is free.
+                altsForCurrent
+                  ? e('div', {
+                      style: {
+                        marginTop: 10, padding: '10px 12px',
+                        background: profile.color + '0E',
+                        border: '1px solid ' + profile.color + '33',
+                        borderRadius: 10,
+                      }
+                    },
+                      e('div', {
+                        style: {
+                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.12em', textTransform: 'uppercase',
+                          color: profile.color, marginBottom: 6,
+                          display: 'flex', alignItems: 'center', gap: 6,
+                        }
+                      },
+                        e('span', null, '🤖'),
+                        e('span', null, '別の言い方'),
+                      ),
+                      ...altsForCurrent.map((s, i) => e('div', {
+                        key: i,
+                        style: {
+                          fontSize: 14, color: C.text, lineHeight: 1.6,
+                          padding: '4px 0',
+                          borderTop: i > 0 ? '1px dashed ' + C.line : 'none',
+                          display: 'flex', alignItems: 'center', gap: 10,
+                        }
+                      },
+                        e('span', { style: { flex: 1 } }, s),
+                        // Speak the alt only when the alt is in English.
+                        !isEn2Ja && e(SpeakerBtn, { onClick: () => speak(s), color: profile.color, size: 28 }),
+                      )),
+                    )
+                  : e('button', {
+                      onClick: loadAlternativesForCurrent,
+                      disabled: altBusy,
+                      style: {
+                        marginTop: 10, padding: '8px 12px', borderRadius: 10,
+                        background: 'transparent', color: profile.color,
+                        border: '1px dashed ' + profile.color + '66',
+                        fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                        cursor: altBusy ? 'default' : 'pointer',
+                        opacity: altBusy ? 0.6 : 1,
+                        width: '100%',
+                      }
+                    }, altBusy ? 'AI に聞いています…' : '🤖 別の言い方を AI に聞く'),
+                altError && e('div', {
+                  style: {
+                    marginTop: 6, fontSize: 11, color: C.danger,
+                    fontFamily: SANS_UI,
+                  }
+                }, altError),
               );
             })(),
       ),
