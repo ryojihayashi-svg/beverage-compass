@@ -9230,21 +9230,30 @@
 
   // ---------- Alternative-expressions fetcher (used by 瞬間英作文 cards) ----------
   // Given the source sentence and the known "standard" answer, asks Claude
-  // for 2–3 different ways to say the same thing in the target language.
+  // for 2–3 different natural ENGLISH ways to say the same thing.
+  // (Japanese paraphrases aren't useful — the learner can rephrase 日本語
+  // freely on their own — so en2ja mode also returns English variants.)
   // Returns an array of clean strings (no numbering / no leading bullets).
   async function fetchAlternativeExpressions(targetLang, sourceText, knownAnswer) {
     const apiKey = loadApiKey();
     if (!apiKey) throw new Error('API キーが設定されていません');
+    // We always return alternative ENGLISH expressions — Japanese
+    // paraphrases aren't pedagogically useful (the learner can rephrase
+    // 日本語 freely themselves). In en2ja mode the English sentence is
+    // `sourceText` (what was shown on the card) and `knownAnswer` is the
+    // 標準訳 in 日本語; we pivot the prompt to give variations of the
+    // English sentence regardless.
     const prompt = targetLang === 'en'
       ? '次の日本語: 「' + sourceText + '」\n' +
         '標準的な英訳: 「' + knownAnswer + '」\n\n' +
         'この英訳とは別の自然な英語表現を 2 〜 3 個挙げてください。\n' +
         '形式: 各表現を 1 行ずつ。番号・記号・説明は不要。' +
         '意味と難易度はほぼ同じに保ち、構文・語彙・丁寧度のいずれかを変えてください。'
-      : '次の英語: 「' + sourceText + '」\n' +
-        '標準的な日本語訳: 「' + knownAnswer + '」\n\n' +
-        'この訳とは別の自然な日本語表現を 2 〜 3 個挙げてください。\n' +
-        '形式: 各表現を 1 行ずつ。番号・記号・説明は不要。意味はほぼ同じに保つこと。';
+      : '次の英文: 「' + sourceText + '」\n' +
+        '日本語訳の参考: 「' + knownAnswer + '」\n\n' +
+        'この英文と同じ意味の自然な別の英語表現を 2 〜 3 個挙げてください。\n' +
+        '形式: 各英文を 1 行ずつ。番号・記号・説明は不要。' +
+        '意味と難易度はほぼ同じに保ち、構文・語彙・丁寧度のいずれかを変えてください。';
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -12652,9 +12661,10 @@
                           display: 'flex', alignItems: 'center', gap: 10,
                         }
                       },
-                        e('span', { style: { flex: 1 } }, s),
-                        // Speak the alt only when the alt is in English.
-                        !isEn2Ja && e(SpeakerBtn, { onClick: () => speak(s), color: profile.color, size: 28 }),
+                        e('span', { style: { fontFamily: SERIF_READ, flex: 1 } }, s),
+                        // Alts are ALWAYS English (Japanese paraphrases
+                        // aren't useful), so speaker button always shows.
+                        e(SpeakerBtn, { onClick: () => speak(s), color: profile.color, size: 28 }),
                       )),
                     )
                   : e('button', {
