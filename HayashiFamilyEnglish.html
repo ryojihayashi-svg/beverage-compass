@@ -18174,6 +18174,8 @@
     const items = useMemo(() => getMasteredVocab(profile.id), [profile.id]);
     const count = items.length;
     const pct = Math.min(100, count * 100 / VOCAB_GOAL);
+    // タップで詳細プレビュー (英語・例文・別の言い方・使い分け など)
+    const [previewItem, setPreviewItem] = useState(null);
 
     return e('div', { style: embedded ? null : pageStyle },
       // Top bar — hidden when embedded inside CombinedMastered
@@ -18258,27 +18260,47 @@
               key: v.id,
               style: {
                 display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px',
                 borderBottom: i < items.length - 1 ? '1px solid ' + C.line : 'none',
               }
             },
-              e('div', {
+              // タップで詳細プレビュー。スピーカーボタンは別領域 (タップで
+              // 親のプレビューが開かないよう stopPropagation)。
+              e('button', {
+                type: 'button',
+                onClick: () => {
+                  hapticTap(); soundTap();
+                  setPreviewItem({ kind: 'vocab', id: v.id, en: v.en, ja: v.ja,
+                    exEn: v.exEn, exJa: v.exJa, exEn2: v.exEn2, exJa2: v.exJa2,
+                    level: v.level, pos: v.pos, syn: v.syn, usage: v.usage });
+                },
                 style: {
-                  fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.text,
-                  flex: 1, minWidth: 0,
+                  flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '14px 8px 14px 16px',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  textAlign: 'left',
                 }
-              }, v.en),
-              e('div', { style: { fontSize: 13, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
-              e('span', {
-                style: {
-                  fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                  background: C.softer, color: C.gold, fontFamily: SANS_UI,
-                  letterSpacing: '0.06em', flexShrink: 0,
-                }
-              }, 'レベル ' + v.level),
-              e(SpeakerBtn, { onClick: () => speak(v.en), color: profile.color, size: 30 }),
+              },
+                e('div', {
+                  style: {
+                    fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.text,
+                    flex: 1, minWidth: 0,
+                  }
+                }, v.en),
+                e('div', { style: { fontSize: 13, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
+                e('span', {
+                  style: {
+                    fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    background: C.softer, color: C.gold, fontFamily: SANS_UI,
+                    letterSpacing: '0.06em', flexShrink: 0,
+                  }
+                }, 'レベル ' + v.level),
+              ),
+              e('div', { style: { paddingRight: 12, flexShrink: 0 } },
+                e(SpeakerBtn, { onClick: (ev) => { ev.stopPropagation(); speak(v.en); }, color: profile.color, size: 30 }),
+              ),
             )),
           ),
+      previewItem && renderMistakePreview(previewItem, profile, () => setPreviewItem(null)),
     );
   }
 
@@ -18288,6 +18310,7 @@
     const total = SENTENCES.length;
     const count = items.length;
     const pct   = total > 0 ? Math.min(100, count * 100 / total) : 0;
+    const [previewItem, setPreviewItem] = useState(null);
 
     return e('div', { style: embedded ? null : pageStyle },
       !embedded && e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
@@ -18365,27 +18388,40 @@
               key: s.id,
               style: {
                 display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '14px 16px',
                 borderBottom: i < items.length - 1 ? '1px solid ' + C.line : 'none',
               }
             },
-              e('div', { style: { flex: 1, minWidth: 0 } },
+              // タップで詳細プレビュー (英作文・日本語・文法)
+              e('button', {
+                type: 'button',
+                onClick: () => {
+                  hapticTap(); soundTap();
+                  setPreviewItem({ kind: 'sentence', id: s.id, en: s.en, ja: s.ja,
+                    level: s.level, grammar: s.grammar });
+                },
+                style: {
+                  flex: 1, minWidth: 0, padding: '14px 8px 14px 16px',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  textAlign: 'left',
+                }
+              },
                 e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 4 } }, s.ja),
                 e('div', {
                   style: { fontFamily: SERIF, fontSize: 16, fontWeight: 500, color: C.text, lineHeight: 1.4 }
                 }, s.en),
               ),
-              e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 } },
+              e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, padding: '14px 12px' } },
                 e('span', {
                   style: {
                     fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
                   }
                 }, 'レベル ' + s.level),
-                e(SpeakerBtn, { onClick: () => speak(s.en), color: profile.color, size: 30 }),
+                e(SpeakerBtn, { onClick: (ev) => { ev.stopPropagation(); speak(s.en); }, color: profile.color, size: 30 }),
               ),
             )),
           ),
+      previewItem && renderMistakePreview(previewItem, profile, () => setPreviewItem(null)),
     );
   }
 
