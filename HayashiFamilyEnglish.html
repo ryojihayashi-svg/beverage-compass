@@ -10284,6 +10284,12 @@
     const undoneLessons = ENGLISH_LESSONS.filter(
       l => !(loadLessonProgress(memberId)[l.id])
     ).length;
+    // 学習レベル — 上の人ほど listening/reading/comp_test の比重を上げる。
+    let comfort = 2.0;
+    try { comfort = loadComfort(memberId, 'vocab'); } catch {}
+    const isAdvanced = comfort >= 3.0;     // 英検3級〜
+    const dayOfWeek  = new Date().getDay();  // 0=日 .. 6=土
+
     // 1. Shadowing warm-up (70% of the time). Mouth + ear before
     // anything visual. Yoshinari can skip with 'あとでやる' on the
     // intro screen when the dorm is asleep.
@@ -10299,10 +10305,23 @@
     out.push({ id: 'mistakes' });
     out.push({ id: main[1] });
     out.push({ id: 'mistakes' });
-    // 7. 1分英語解説 (50% if there's an unfinished lesson)
+    // 6. リスニング理解 — どのレベルでも触れる (内容は自動でレベル調整)
+    out.push({ id: 'listening' });
+    // 7. リーディング理解 — 同上
+    out.push({ id: 'reading' });
+    // 8. AI 英作文テスト — 上のレベルは 週2 (火/金)、下のレベルは 週1 (水)
+    const compTestDays = isAdvanced ? [2, 5] : [3];
+    if (compTestDays.includes(dayOfWeek)) out.push({ id: 'comp_test' });
+    // 9. 1分英語解説 (50% if there's an unfinished lesson)
     if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
-    // 8. Random test as the closer
+    // 10. ランダムテストで締め
     out.push({ id: 'random_test' });
+    // 11. ボーナスラウンド (反対方向) — チカチカが長く続くように
+    const reverseOf = (id) => id === 'vocab_ja2en' ? 'vocab_en2ja'
+                            : id === 'composition_ja2en' ? 'composition_en2ja'
+                            : id;
+    out.push({ id: reverseOf(main[0]) });
+    if (rand() < 0.5) out.push({ id: reverseOf(main[1]) });
     return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
   }
   function loadTodaysPath(profile) {
@@ -10372,6 +10391,9 @@
     english_lessons:   '1分英語解説',
     shadowing:         'シャドーイング',
     random_test:       'ランダムテスト',
+    listening:         'リスニング理解',
+    reading:           'リーディング理解',
+    comp_test:         'AI英作文テスト',
   };
 
 
@@ -12875,6 +12897,24 @@
     const totalSteps = path ? path.steps.length : 0;
     const doneSteps  = path ? path.steps.filter(s => s.doneAt).length : 0;
     const allDone    = path && totalSteps > 0 && currentIdx === -1;
+
+    // 完走後の「もう一回」ターゲット — 全ステップ完了でも、ここで指定した
+    // タイルにチカチカを移して「次にやるといいこと」を示し続ける。
+    // 優先度: 間違いがあれば mistakes、なければ日替わりで主要タイルを巡回。
+    let perpetualCurrentId = null;
+    if (allDone) {
+      const mistakeCount = (db.getMistakesNormalized
+        ? db.getMistakesNormalized(profile.id).length : 0);
+      if (mistakeCount > 0) {
+        perpetualCurrentId = 'mistakes';
+      } else {
+        // 日付に応じて巡回 (vocab → composition → listening → reading → shadowing)
+        const rotation = ['vocab_ja2en', 'composition_ja2en',
+                          'listening',   'reading',          'shadowing'];
+        const dayNum = new Date().getDate();
+        perpetualCurrentId = rotation[dayNum % rotation.length];
+      }
+    }
     const currentStepId = currentIdx >= 0 ? path.steps[currentIdx].id : null;
     // Map a tile feature id to its status on today's path.
     //   isCurrent: highlight + pulse (next thing to do)
@@ -12893,6 +12933,11 @@
             (stepId === 'composition_ja2en' || stepId === 'composition_en2ja')) return true;
         return false;
       };
+      // 完走後の「もう一回」ターゲット — 完走しても止めずにここを光らせる。
+      if (allDone && perpetualCurrentId &&
+          matchesGeneric(featureId, perpetualCurrentId)) {
+        return { isCurrent: true, isPerpetual: true };
+      }
       // Scan the path for a step that matches this feature.
       for (let i = 0; i < path.steps.length; i++) {
         const s = path.steps[i];
