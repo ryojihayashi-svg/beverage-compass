@@ -4085,16 +4085,38 @@
     } catch { return []; }
   }
 
+  // ---------- 復習デュー (SRS) ----------
+  // Returns IDs whose nextAt has passed → 復習タイミングが来ている。
+  // 「覚えた (mastered)」状態の単語も含む — そこで間違えれば該当方向の
+  // knownXxx がリセットされ、覚えていない側に戻る (deriveStatus 経由)。
+  function getDueReviewIds(memberId, tableKey) {
+    try {
+      const s = db.load(memberId);
+      const table = s[tableKey] || {};
+      const now = Date.now();
+      const ids = [];
+      for (const id in table) {
+        const p = table[id];
+        if (!p || p.status === 'new') continue;
+        // Items without nextAt (legacy) are treated as immediately due.
+        const nextAtMs = p.nextAt ? new Date(p.nextAt).getTime() : 0;
+        if (nextAtMs <= now) ids.push(id);
+      }
+      return ids;
+    } catch { return []; }
+  }
+
   // Build a profile-weighted queue of `count` unique items from `pool`.
   // Each draw picks a level via pickLevelForProfile and grabs a random
   // unused item from that level. Falls back to the whole pool if a level
   // bucket is empty so the queue always fills.
   //
-  // opts.yesterdayIds (optional): if provided, ~30% of slots (max
-  // yesterdayIds.length) are filled first with random items from the
-  // intersection of pool and yesterdayIds. The remainder is filled by the
-  // normal weighted draw. Final order is shuffled so review items don't
-  // all appear up front.
+  // opts.yesterdayIds (optional): if provided, ~30% of slots filled with
+  // yesterday-practiced items (short-term retention loop).
+  // opts.dueIds (optional): if provided, ~40% of slots filled with
+  // SRS-due review items (覚えた → 1日 → 2日 → 4日… の長期記憶ループ).
+  // due > yesterday > weighted draw priority order. Final order is
+  // shuffled so review items don't all appear up front.
   function pickWeightedQueue(pool, profile, count, opts) {
     if (!pool || pool.length === 0) return [];
     const byLevel = { 1: [], 2: [], 3: [], 4: [], 5: [] };
@@ -4105,9 +4127,26 @@
     const used = new Set();
     const out = [];
 
-    // Seed with yesterday's items (≈ 30% of count, but bounded by what's
-    // actually available). Using floor + min so a 10-question session
-    // gets up to 3 review items, a 3-question test gets up to 1.
+    // Seed with SRS-due items first (≈ 40% of count, bounded by available).
+    // These are items whose nextAt has passed — long-term retention check.
+    const dueIds = (opts && Array.isArray(opts.dueIds)) ? opts.dueIds : null;
+    if (dueIds && dueIds.length > 0) {
+      const dSet = new Set(dueIds);
+      const dPool = pool.filter(p => dSet.has(p.id));
+      for (let i = dPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = dPool[i]; dPool[i] = dPool[j]; dPool[j] = t;
+      }
+      const dueTarget = Math.min(Math.floor(count * 0.4), dPool.length);
+      for (let i = 0; i < dueTarget && i < dPool.length; i++) {
+        const p = dPool[i];
+        if (!used.has(p.id)) { used.add(p.id); out.push(p); }
+      }
+    }
+
+    // Then seed with yesterday's items (≈ 30% of count, bounded by available).
+    // Using floor + min so a 10-question session gets up to 3 review items,
+    // a 3-question test gets up to 1.
     const yesterdayIds = (opts && Array.isArray(opts.yesterdayIds)) ? opts.yesterdayIds : null;
     if (yesterdayIds && yesterdayIds.length > 0) {
       const ySet = new Set(yesterdayIds);
@@ -10005,6 +10044,13 @@
   }
 
   // ---------- SRS engine (Anki-like, simplified) ----------
+  // 設計方針 (2026-04-29 更新):
+  // - 「覚えた (mastered)」のハードルを片方向で達成可能に下げて、
+  //   家族の達成感を保つ
+  // - 両方向そろったら「完全マスター (fullyMastered=true)」の上位バッジ
+  // - 一度覚えた後も nextAt で再出題スケジュール (1日→2日→4日→10日→25日…)
+  // - 復習で間違えたら、その方向の knownXxx をリセットして「学習中」に戻す
+  //   → 忘れた状態は正直に表示されるので、達成感が水増しにならない
   const srs = {
     initial() {
       return {
@@ -10016,42 +10062,50 @@
         nextAt: null,
         intervalDays: 0,
         ease: 2.5,
-        // Per-direction success — once the learner has marked '覚えた' in
-        // both directions the word is considered mastered.
+        // Per-direction success flags. Either side alone unlocks 「覚えた」.
+        // Both flags simultaneously raise to fullyMastered=true (上位).
         knownJa2En: false,
         knownEn2Ja: false,
       };
+    },
+    // Helper: status / fullyMastered are derived from direction flags +
+    // consecutive-correct momentum. Centralized so apply() can call it
+    // after both correct and wrong answers consistently.
+    deriveStatus(s) {
+      const both = s.knownJa2En && s.knownEn2Ja;
+      const eitherKnown = s.knownJa2En || s.knownEn2Ja;
+      s.fullyMastered = both;
+      if (eitherKnown)                      s.status = 'mastered';
+      else if (s.consecutiveCorrect >= 2)   s.status = 'review';
+      else if (s.totalAttempts > 0)         s.status = 'learning';
+      else                                   s.status = 'new';
+      return s;
     },
     apply(state, isCorrect, direction) {
       const s = state ? Object.assign({}, state) : this.initial();
       s.totalAttempts++;
       s.lastAt = new Date().toISOString();
+      const dir = direction === 'en2ja' ? 'en2ja' : 'ja2en';
       if (isCorrect) {
         s.totalCorrect++;
         s.consecutiveCorrect++;
+        // SRS interval ladder: 1 → 2 → 4 → 10 (4*2.5) → 25 → 62 → ...
         if (s.intervalDays === 0)         { s.intervalDays = 1; }
         else if (s.intervalDays < 4)      { s.intervalDays = Math.round(s.intervalDays * 2); }
         else                              { s.intervalDays = Math.round(s.intervalDays * s.ease); }
-        // Stamp the direction the learner just nailed. Default to 'ja2en'
-        // for legacy callers that don't pass direction.
-        const dir = direction === 'en2ja' ? 'en2ja' : 'ja2en';
+        // Mark the direction the learner just nailed.
         if (dir === 'ja2en') s.knownJa2En = true;
         else                 s.knownEn2Ja = true;
-        // Mastered when both directions have been marked correct at least
-        // once. Otherwise it's still learning (consecutiveCorrect tracks
-        // momentum but no longer promotes to mastered on its own).
-        if (s.knownJa2En && s.knownEn2Ja)        s.status = 'mastered';
-        else if (s.consecutiveCorrect >= 2)      s.status = 'review';
-        else                                      s.status = 'learning';
       } else {
         s.consecutiveCorrect = 0;
         s.intervalDays = 0;
-        // A wrong answer steps the word back down to 'learning' but does
-        // NOT clear a direction flag the learner had previously earned —
-        // mastery is sticky once both sides are confirmed.
-        if (s.status !== 'mastered') s.status = 'learning';
+        // 重要: 間違えた方向の knownXxx をリセット → 状態が真実を反映する。
+        // 覚えていたはずの方向で詰まったら、それを正直に「学習中」に戻す。
+        if (dir === 'ja2en') s.knownJa2En = false;
+        else                 s.knownEn2Ja = false;
         s.ease = Math.max(1.3, s.ease - 0.2);
       }
+      this.deriveStatus(s);
       s.nextAt = new Date(Date.now() + s.intervalDays * 86400000).toISOString();
       return s;
     },
@@ -10440,12 +10494,19 @@
     const composition = state.composition || {};
     const daily = state.daily || {};
     let totalAttempts = 0, totalCorrect = 0, learnedCount = 0, masteredCount = 0;
+    let fullyMasteredCount = 0, dueReviewCount = 0;
+    const nowMs = Date.now();
     for (const vid in vocab) {
       const p = vocab[vid];
       totalAttempts += p.totalAttempts || 0;
       totalCorrect  += p.totalCorrect  || 0;
       if ((p.totalAttempts || 0) > 0) learnedCount++;
       if (p.status === 'mastered') masteredCount++;
+      if (p.fullyMastered)         fullyMasteredCount++;
+      if (p.status && p.status !== 'new') {
+        const nextAtMs = p.nextAt ? new Date(p.nextAt).getTime() : 0;
+        if (nextAtMs <= nowMs) dueReviewCount++;
+      }
     }
     // Sentences contribute to total time too — count their attempts on top.
     let sentenceAttempts = 0;
@@ -10499,6 +10560,7 @@
     const accuracy = totalAttempts > 0 ? Math.round(totalCorrect * 100 / totalAttempts) : 0;
     return {
       totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount,
+      fullyMasteredCount, dueReviewCount,
       sentenceAttempts, totalMinutes,
       weeklyCorrect: computeWeeklyCorrect(daily, memberId),
       streakDays:    computeStreak(daily, memberId),
@@ -11582,6 +11644,8 @@
           e('span', null,
             e('span', { style: { color: C.text, fontWeight: 700 } }, stats.masteredCount),
             ' 覚えた'),
+          stats.dueReviewCount > 0 && e('span', { style: { color: profile.color, fontWeight: 700 } },
+            '🔁 復習 ', stats.dueReviewCount),
           e('span', null,
             e('span', { style: { color: C.text, fontWeight: 700 } }, stats.streakDays),
             ' 日連続'),
@@ -12665,21 +12729,24 @@
     const sessionStartRef = useRef(null);
 
     function buildQueue() {
-      // Mix in ≈ 30% of yesterday's vocab so yesterday's words come back
-      // for one more pass — short-term retention loop.
+      // Two retention loops:
+      //   - yesterdayIds: 短期 (前日学習の即時定着)
+      //   - dueIds:       長期 (SRS の復習デュー = 覚えた語の忘却防止)
+      // 配分: due 40% + yesterday 30% + 新規/弱点 30%
       const yesterdayIds = getYesterdayPracticedIds(profile.id, 'vocab');
+      const dueIds       = getDueReviewIds(profile.id, 'vocab');
       if (selectedLevel === 'auto') {
         return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, {
           track: 'vocab',
           yesterdayIds,
+          dueIds,
         });
       }
-      // For a manually-picked level, we still want yesterday's review,
-      // but only items at that level qualify.
       const pool = VOCAB.filter(v => v.level === selectedLevel);
       return pickWeightedQueue(pool, profile, VOCAB_SESSION_COUNT, {
         track: 'vocab',
         yesterdayIds,
+        dueIds,
       });
     }
     function startSession() {
