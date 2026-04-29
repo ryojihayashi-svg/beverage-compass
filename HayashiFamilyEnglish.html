@@ -16306,6 +16306,42 @@
         // then offer 「次のセクション」 to flow into ②, ③ … without
         // bouncing back here.
         mode === 'long' ? e('div', null,
+          // Speed picker — placed BEFORE the chapter pills so the user
+          // sets it first; tapping a chapter immediately starts playback
+          // at the chosen speed, so the order matters for UX.
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 10, paddingLeft: 4,
+            }
+          }, 'SPEED'),
+          e('div', {
+            style: {
+              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+              gap: 8, marginBottom: 18,
+            }
+          },
+            [
+              { id: 1, label: '① ゆっくり' },
+              { id: 2, label: '② ふつう' },
+              { id: 3, label: '③ 早口' },
+            ].map(opt => {
+              const isActive = speed === opt.id;
+              return e('button', {
+                key: 'sp_' + opt.id,
+                onClick: () => setSpeed(opt.id),
+                style: {
+                  padding: '8px 0', borderRadius: 999,
+                  background: isActive ? profile.color : C.card,
+                  color:      isActive ? '#fff' : C.text,
+                  border: '1px solid ' + (isActive ? profile.color : C.line),
+                  fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                  cursor: 'pointer', letterSpacing: '0.04em',
+                }
+              }, opt.label);
+            }),
+          ),
           e('div', {
             style: {
               fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
@@ -16372,40 +16408,6 @@
                 )),
               ),
             )),
-          ),
-          // Speed picker still applies to long mode
-          e('div', {
-            style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-              letterSpacing: '0.18em', textTransform: 'uppercase',
-              color: C.sub, marginBottom: 10, paddingLeft: 4,
-            }
-          }, 'SPEED'),
-          e('div', {
-            style: {
-              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-              gap: 8, marginBottom: 18,
-            }
-          },
-            [
-              { id: 1, label: '① ゆっくり' },
-              { id: 2, label: '② ふつう' },
-              { id: 3, label: '③ 早口' },
-            ].map(opt => {
-              const isActive = speed === opt.id;
-              return e('button', {
-                key: 'sp_' + opt.id,
-                onClick: () => setSpeed(opt.id),
-                style: {
-                  padding: '8px 0', borderRadius: 999,
-                  background: isActive ? profile.color : C.card,
-                  color:      isActive ? '#fff' : C.text,
-                  border: '1px solid ' + (isActive ? profile.color : C.line),
-                  fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
-                  cursor: 'pointer', letterSpacing: '0.04em',
-                }
-              }, opt.label);
-            }),
           ),
         ) : e(React.Fragment, null,
 
