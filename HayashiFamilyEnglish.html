@@ -9282,6 +9282,51 @@
       .filter(s => s.length > 0);
   }
 
+  // ---------- 文法解説 fetcher (瞬間英作文 + 間違い復習) ----------
+  // Asks Claude to explain WHY the English sentence is built the way
+  // it is — tense, modal, conjugation, the kind of "なぜ had なのか /
+  // なぜ would なのか" question a learner has when they see a sentence
+  // like "If you had time, what would you do?". Output is short plain
+  // Japanese (≤ ~250 chars). Cached per-sentence-id at the call site.
+  async function fetchGrammarExplanation(sourceJa, modelEn) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const prompt =
+      '英文: 「' + (modelEn || '') + '」\n' +
+      '日本語: 「' + (sourceJa || '') + '」\n\n' +
+      'この英文の文法ポイントを、中学生〜高校生にもわかるように日本語で ' +
+      '短く説明してください (250文字以内)。\n' +
+      '次の観点があれば優先: 時制 (なぜ過去形か / 現在完了か)、' +
+      '助動詞 (なぜ would / could / should か)、仮定法・関係詞・分詞・' +
+      '前置詞・冠詞・語順。見出しや箇条書きは使わず、平文 1〜3 文で。' +
+      '中学レベルで自明なら「中学レベルの基本文です」と一言で OK。';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 350,
+        system: '英語学習者の家族向けアプリのアシスタント。文法ポイントを ' +
+                'やさしい日本語で簡潔に解説します。',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    return text;
+  }
+
   // ---------- AI 採点: 学習者の英作文を ◎/○/△ で評価 ----------
   // 学習者がタイプした英文 + 元の日本語 + 模範訳 を Claude に渡し、
   // 「文法・自然さ」を 0/1/2 で採点。返答は厳密に JSON。失敗時は
@@ -11280,8 +11325,35 @@
     const [index, setIndex]     = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
+    // AI: per-question grammar explanation cache (sentence/phrase only).
+    const [expMap, setExpMap]   = useState({});  // { id: string }
+    const [expBusy, setExpBusy] = useState(false);
+    const [expError, setExpError] = useState('');
     // Wall-clock session timer — see VocabBrowse for rationale.
     const sessionStartRef = useRef(null);
+
+    async function loadExplanationForCurrent() {
+      const cur = queue[index];
+      if (!cur) return;
+      const id = cur.id;
+      if (expMap[id]) return;  // already cached
+      setExpBusy(true);
+      setExpError('');
+      try {
+        const exp = await fetchGrammarExplanation(cur.ja, cur.en);
+        if (!exp) {
+          setExpError('解説が取得できませんでした。');
+        } else {
+          setExpMap(prev => Object.assign({}, prev, { [id]: exp }));
+        }
+      } catch (err) {
+        setExpError((err && err.message) || String(err));
+      } finally {
+        setExpBusy(false);
+      }
+    }
+    // Reset transient error when the question changes.
+    useEffect(() => { setExpError(''); }, [index]);
 
     function startBatch() {
       const list = computeList();
@@ -11697,6 +11769,52 @@
                       e('span', null, '過去分詞: '),
                       e('span', { style: samePp ? { color: C.sub, fontStyle: 'italic' } : null }, conj.pp),
                     ),
+                  );
+                })(),
+                // AI 文法解説 — sentence / phrase only. Vocab already has
+                // 使い分け and word family panels for the equivalent role.
+                (current.kind === 'sentence' || current.kind === 'phrase') && (function () {
+                  const expForCurrent = expMap[current.id] || null;
+                  return e('div', null,
+                    expForCurrent
+                      ? e('div', {
+                          style: {
+                            padding: '12px 14px',
+                            background: C.ocean + '0E',
+                            border: '1px solid ' + C.ocean + '33',
+                            borderRadius: 10,
+                          }
+                        },
+                          e('div', {
+                            style: {
+                              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                              letterSpacing: '0.12em', textTransform: 'uppercase',
+                              color: C.ocean, marginBottom: 6,
+                            }
+                          }, '解説'),
+                          e('div', {
+                            style: { fontSize: 13, color: C.text, lineHeight: 1.7, whiteSpace: 'pre-wrap' }
+                          }, expForCurrent),
+                        )
+                      : e('button', {
+                          onClick: loadExplanationForCurrent,
+                          disabled: expBusy,
+                          style: {
+                            padding: '8px 12px', borderRadius: 10,
+                            background: 'transparent', color: C.ocean,
+                            border: '1px dashed ' + C.ocean + '66',
+                            fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                            cursor: expBusy ? 'default' : 'pointer',
+                            opacity: expBusy ? 0.6 : 1,
+                            width: '100%',
+                          }
+                        }, expBusy ? '解説を取得中…' : '解説を見る'),
+                    expError && e('div', {
+                      style: {
+                        marginTop: 6, fontSize: 11, color: C.danger,
+                        fontFamily: SANS_UI,
+                      }
+                    }, expError),
                   );
                 })(),
               ),
@@ -12280,6 +12398,10 @@
     const [altMap, setAltMap]   = useState({});  // { id: string[] }
     const [altBusy, setAltBusy] = useState(false);
     const [altError, setAltError] = useState('');
+    // AI: per-question grammar explanation cache.
+    const [expMap, setExpMap]   = useState({});  // { id: string }
+    const [expBusy, setExpBusy] = useState(false);
+    const [expError, setExpError] = useState('');
     // Wall-clock session timer — see VocabBrowse for rationale.
     const sessionStartRef = useRef(null);
 
@@ -12301,7 +12423,7 @@
 
     // Reset transient alt-error when the question changes — but keep the
     // altMap cache so re-revisits in the same session don't re-fetch.
-    useEffect(() => { setAltError(''); }, [index]);
+    useEffect(() => { setAltError(''); setExpError(''); }, [index]);
 
     async function loadAlternativesForCurrent() {
       if (!current) return;
@@ -12323,6 +12445,25 @@
         setAltError((err && err.message) || String(err));
       } finally {
         setAltBusy(false);
+      }
+    }
+    async function loadExplanationForCurrent() {
+      if (!current) return;
+      const id = current.id;
+      if (expMap[id]) return;  // already cached
+      setExpBusy(true);
+      setExpError('');
+      try {
+        const exp = await fetchGrammarExplanation(current.ja, current.en);
+        if (!exp) {
+          setExpError('解説が取得できませんでした。');
+        } else {
+          setExpMap(prev => Object.assign({}, prev, { [id]: exp }));
+        }
+      } catch (err) {
+        setExpError((err && err.message) || String(err));
+      } finally {
+        setExpBusy(false);
       }
     }
 
@@ -12622,6 +12763,7 @@
                 ? { fontSize: 20, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.5 }
                 : { fontFamily: SERIF_READ, fontSize: 24, fontWeight: 600, color: C.text, flex: 1, lineHeight: 1.5 };
               const altsForCurrent = (current && altMap[current.id]) || null;
+              const expForCurrent  = (current && expMap[current.id]) || null;
               return e('div', { style: { marginTop: 'auto' } },
                 e('div', {
                   style: {
@@ -12686,6 +12828,48 @@
                     fontFamily: SANS_UI,
                   }
                 }, altError),
+                // 文法解説 — separate AI fetch so the user can pick whether
+                // they want "別の言い方" / "解説" / both. Shown only after
+                // reveal so it doesn't bias the answering attempt.
+                expForCurrent
+                  ? e('div', {
+                      style: {
+                        marginTop: 10, padding: '12px 14px',
+                        background: C.ocean + '0E',
+                        border: '1px solid ' + C.ocean + '33',
+                        borderRadius: 10,
+                      }
+                    },
+                      e('div', {
+                        style: {
+                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          letterSpacing: '0.12em', textTransform: 'uppercase',
+                          color: C.ocean, marginBottom: 6,
+                        }
+                      }, '解説'),
+                      e('div', {
+                        style: { fontSize: 13, color: C.text, lineHeight: 1.7, whiteSpace: 'pre-wrap' }
+                      }, expForCurrent),
+                    )
+                  : e('button', {
+                      onClick: loadExplanationForCurrent,
+                      disabled: expBusy,
+                      style: {
+                        marginTop: 10, padding: '8px 12px', borderRadius: 10,
+                        background: 'transparent', color: C.ocean,
+                        border: '1px dashed ' + C.ocean + '66',
+                        fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                        cursor: expBusy ? 'default' : 'pointer',
+                        opacity: expBusy ? 0.6 : 1,
+                        width: '100%',
+                      }
+                    }, expBusy ? '解説を取得中…' : '解説を見る'),
+                expError && e('div', {
+                  style: {
+                    marginTop: 6, fontSize: 11, color: C.danger,
+                    fontFamily: SANS_UI,
+                  }
+                }, expError),
               );
             })(),
       ),
