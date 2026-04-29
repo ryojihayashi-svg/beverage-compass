@@ -2985,12 +2985,45 @@
     'rob':        ['robbed',   'robbed'],
     'rub':        ['rubbed',   'rubbed'],
     'hop':        ['hopped',   'hopped'],
+    'clap':       ['clapped',  'clapped'],
+    'drop':       ['dropped',  'dropped'],
+    'admit':      ['admitted', 'admitted'],
+    'occur':      ['occurred', 'occurred'],
+    'refer':      ['referred', 'referred'],
+    'transmit':   ['transmitted','transmitted'],
+    'concur':     ['concurred','concurred'],
+    'prefer':     ['preferred','preferred'],
+    'permit':     ['permitted','permitted'],
+    'submit':     ['submitted','submitted'],
+    'transfer':   ['transferred','transferred'],
+    'emit':       ['emitted',  'emitted'],
+    'stem':       ['stemmed',  'stemmed'],
+    'span':       ['spanned',  'spanned'],
+    'commit':     ['committed','committed'],
+    'omit':       ['omitted',  'omitted'],
+    'regret':     ['regretted','regretted'],
+    'compel':     ['compelled','compelled'],
+    'control':    ['controlled','controlled'],
+    'equip':      ['equipped', 'equipped'],
+    // Truly irregular forms missed earlier
+    'seek':       ['sought',   'sought'],
+    'shed':       ['shed',     'shed'],
+    'strive':     ['strove',   'striven'],
+    // -ic verbs: add 'k' before -ed/-ing to keep hard /k/ sound
+    'panic':      ['panicked', 'panicked'],
+    'mimic':      ['mimicked', 'mimicked'],
+    'picnic':     ['picnicked','picnicked'],
+    'traffic':    ['trafficked','trafficked'],
   };
   function regularPast(verb) {
     if (!verb) return verb;
     if (verb.endsWith('e')) return verb + 'd';
     // consonant + y → ied (try → tried)
     if (/[^aeiou]y$/.test(verb)) return verb.slice(0, -1) + 'ied';
+    // -ic verbs add 'k' before -ed to keep the hard /k/ sound:
+    // mimic → mimicked, panic → panicked. Catches any -ic verb not
+    // listed in IRREGULAR_VERBS so newly added ones still conjugate.
+    if (verb.endsWith('ic')) return verb + 'ked';
     return verb + 'ed';
   }
   // Returns { past, pp } strings or null if the entry isn't a verb / idiom.
