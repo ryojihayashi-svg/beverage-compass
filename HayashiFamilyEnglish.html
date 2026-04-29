@@ -2478,20 +2478,22 @@
   // Each member sets a weekly study-time target (minutes/week). The home
   // screen shows a progress bar toward this target so daily practice
   // accumulates toward a visible goal — the strongest motivation loop.
-  // Stored as state.weeklyGoal = { minutes }; default 60.
-  const DEFAULT_WEEKLY_GOAL_MIN = 60;
+  // Stored as state.weeklyGoal = { minutes }; default 315 (= 45 分/日 × 7).
+  // The user thinks in daily terms ("1日45分やる"), so the settings UI
+  // exposes per-day presets and we just multiply by 7 internally.
+  const DEFAULT_WEEKLY_GOAL_MIN = 315;
   function loadWeeklyGoal(memberId) {
     try {
       const s = db.load(memberId);
       const m = s.weeklyGoal && s.weeklyGoal.minutes;
-      if (typeof m === 'number' && m > 0 && m <= 600) return m;
+      if (typeof m === 'number' && m > 0 && m <= 900) return m;
     } catch {}
     return DEFAULT_WEEKLY_GOAL_MIN;
   }
   function saveWeeklyGoal(memberId, minutes) {
     try {
       const s = db.load(memberId);
-      const safe = Math.max(15, Math.min(600, Math.round(minutes || 0)));
+      const safe = Math.max(15, Math.min(900, Math.round(minutes || 0)));
       s.weeklyGoal = { minutes: safe };
       db.save(memberId, s);
     } catch {}
@@ -9636,6 +9638,11 @@
       // events this week and shows progress toward the user-set goal.
       // When the goal is met, the bar fills and the status line
       // celebrates instead of urging more.
+      //
+      // The pace indicator answers "am I on track for 1日 X 分?" — it
+      // compares actual minutes vs. (per-day target × days elapsed
+      // including today) and prints a small ペース badge so today's
+      // session feels like it lands toward something concrete.
       (function () {
         const goal = loadWeeklyGoal(profile.id);
         const done = getThisWeekMinutes(profile.id);
@@ -9645,6 +9652,19 @@
         const weekStartMs = getCurrentWeekStartMs(profile.id);
         const elapsed = Math.max(0, Math.floor((Date.now() - weekStartMs) / dayMs));
         const daysLeft = Math.max(0, 6 - elapsed);  // Mon=0 ... Sun=6
+        const dayIndex = elapsed + 1; // 1..7  — "今日は週の何日目か"
+        const perDay = Math.round(goal / 7);
+        const expectedToday = perDay * dayIndex; // ideal minutes by end of today
+        const onPace = done >= expectedToday;
+        const aheadMin = done - expectedToday;
+        // Pace badge text — ahead / on track / behind by N minutes.
+        const paceText = reached
+          ? '達成済み'
+          : onPace
+            ? (aheadMin >= 5 ? '+ ' + aheadMin + ' 分 先行' : 'ペース達成 ✓')
+            : 'あと ' + (expectedToday - done) + ' 分で今日のペース';
+        const paceColor = reached || onPace ? profile.color : C.sub;
+        const paceBg    = reached || onPace ? (profile.color + '14') : C.softer;
         return e('div', { style: { marginBottom: 18 } },
           e('div', {
             style: {
@@ -9676,7 +9696,7 @@
               }, done + '分'),
               e('span', {
                 style: { fontSize: 12, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
-              }, '/ ' + goal + '分'),
+              }, '/ ' + goal + '分 (1日 ' + perDay + '分)'),
               e('div', { style: { flex: 1 } }),
               reached && e('span', {
                 style: {
@@ -9687,15 +9707,23 @@
                 }
               }, '🎉 達成'),
             ),
-            // Progress bar
+            // Progress bar — with a faint "今日までの理想" tick on top so
+            // the user can see whether they're ahead of pace at a glance.
             e('div', {
-              style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden', marginBottom: 8 }
+              style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden', marginBottom: 8, position: 'relative' }
             },
               e('div', {
                 style: {
                   height: '100%', width: pct + '%',
-                  background: reached ? profile.color : profile.color,
+                  background: profile.color,
                   transition: 'width 0.4s ease',
+                }
+              }),
+              !reached && e('div', {
+                style: {
+                  position: 'absolute', top: -2, bottom: -2,
+                  left: Math.max(0, Math.min(100, expectedToday / Math.max(1, goal) * 100)) + '%',
+                  width: 2, background: C.sub, opacity: 0.45,
                 }
               }),
             ),
@@ -9705,6 +9733,7 @@
                 display: 'flex', justifyContent: 'space-between',
                 fontFamily: SANS_UI, fontSize: 11, color: C.sub,
                 fontVariantNumeric: 'tabular-nums',
+                marginBottom: 8,
               }
             },
               e('span', null,
@@ -9716,6 +9745,17 @@
                 : daysLeft === 1 ? '残り 1 日'
                 : '残り ' + daysLeft + ' 日'),
             ),
+            // Pace badge — answers "am I keeping up with 1日 X 分?"
+            e('div', {
+              style: {
+                display: 'inline-block',
+                fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                color: paceColor, background: paceBg,
+                padding: '4px 10px', borderRadius: 999,
+                letterSpacing: '0.04em',
+                fontVariantNumeric: 'tabular-nums',
+              }
+            }, paceText),
           ),
         );
       })(),
@@ -12973,24 +13013,27 @@
       }, avatarErr),
 
       // ----- Section: 週間目標 -----
-      // Each member's weekly study-time target. Drives the "今週の進捗"
-      // gauge on the home screen. Preset chips (30/60/90/120 min) keep
-      // the choice frictionless — set once and the home gauge tells
-      // you how close you are to it every day.
+      // Each member's weekly study-time target. The user thinks in daily
+      // terms ("1日45分やる"), so the chips are per-day and we store
+      // ×7 internally. Drives the "今週の進捗" gauge on the home
+      // screen — set once and the home gauge tells you how close you
+      // are to it every day.
       e('div', {
         style: {
           fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
-      }, '週間目標'),
+      }, '1日の目安'),
       e('div', {
         style: { fontSize: 12, color: C.sub, marginBottom: 12, paddingLeft: 4, lineHeight: 1.6 }
-      }, '1週間に何分を目標にするか、メンバーごとに決めます。ホーム上部の「今週の進捗」ゲージはこの目標を基準に進みます。'),
+      }, '1日あたり何分やるかをメンバーごとに決めます。ホーム上部の「今週の進捗」ゲージは、選んだ分数 × 7日 を週の目標として進みます。'),
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 } },
         PROFILES.map(p => {
           const cur = loadWeeklyGoal(p.id);
-          const presets = [30, 60, 90, 120, 180];
+          const curDay = Math.round(cur / 7);
+          // Daily presets (minutes/day). 45/日 is the recommended default.
+          const dailyPresets = [15, 30, 45, 60, 90];
           return e('div', {
             key: 'wg_' + p.id,
             style: {
@@ -13009,20 +13052,29 @@
                   style: { fontSize: 13, fontWeight: 700, color: C.text }
                 }, getDisplayName(p)),
               ),
-              e('span', {
-                style: {
-                  fontSize: 13, fontWeight: 700, color: p.color,
-                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
-                }
-              }, cur + ' 分 / 週'),
+              e('div', { style: { textAlign: 'right' } },
+                e('div', {
+                  style: {
+                    fontSize: 13, fontWeight: 700, color: p.color,
+                    fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                  }
+                }, '1日 ' + curDay + ' 分'),
+                e('div', {
+                  style: {
+                    fontSize: 10, fontWeight: 600, color: C.sub,
+                    fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums', marginTop: 1,
+                  }
+                }, '週 ' + cur + ' 分'),
+              ),
             ),
             e('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              presets.map(min => {
-                const active = cur === min;
+              dailyPresets.map(perDay => {
+                const week = perDay * 7;
+                const active = cur === week;
                 return e('button', {
-                  key: 'wg_' + p.id + '_' + min,
+                  key: 'wg_' + p.id + '_' + perDay,
                   onClick: () => {
-                    saveWeeklyGoal(p.id, min);
+                    saveWeeklyGoal(p.id, week);
                     // Force re-render — re-read goal in next loop.
                     setNames(n => Object.assign({}, n));  // cheap nudge
                   },
@@ -13034,7 +13086,7 @@
                     fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
                     cursor: 'pointer',
                   }
-                }, min + '分');
+                }, perDay + '分/日');
               }),
             ),
           );
