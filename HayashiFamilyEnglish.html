@@ -2549,6 +2549,47 @@
     }
     return Math.round(totalMs / 60000);
   }
+  // Local-midnight (member's timezone) of "today" → ms. Mirrors the
+  // logic of getCurrentWeekStartMs but for a single-day boundary, so
+  // a Sunday-evening session in Tokyo doesn't bleed into "yesterday".
+  function getTodayStartMs(memberId) {
+    const tz = MEMBER_TIMEZONE[memberId];
+    const now = new Date();
+    let y, m, d;
+    try {
+      const fmt = new Intl.DateTimeFormat('en-CA', Object.assign({
+        year: 'numeric', month: '2-digit', day: '2-digit',
+      }, tz ? { timeZone: tz } : {}));
+      const parts = fmt.formatToParts(now);
+      const o = {};
+      for (const p of parts) o[p.type] = p.value;
+      y = parseInt(o.year, 10);
+      m = parseInt(o.month, 10);
+      d = parseInt(o.day, 10);
+    } catch {
+      const local = new Date();
+      y = local.getFullYear();
+      m = local.getMonth() + 1;
+      d = local.getDate();
+    }
+    return Date.UTC(y, m - 1, d, 0, 0, 0);
+  }
+  // Sum of session-minutes for events that fall in "today" (member's tz).
+  // Used to surface a "今日 X 分やった" indicator on the home gauge so
+  // each day's session lands as visible daily progress.
+  function getTodayMinutes(memberId) {
+    const events = db.getEvents(memberId);
+    const dayStart = getTodayStartMs(memberId);
+    let totalMs = 0;
+    for (const ev of events) {
+      const t = new Date(ev.at || 0).getTime();
+      if (t < dayStart) break;  // events are reverse-chrono — stop early
+      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30000) {
+        totalMs += ev.durationMs;
+      }
+    }
+    return Math.round(totalMs / 60000);
+  }
 
   // ---------- Level graduation ----------
   // When comfort crosses an integer threshold (e.g. 1.99 → 2.00), the
@@ -9684,6 +9725,7 @@
       (function () {
         const goal = loadWeeklyGoal(profile.id);
         const done = getThisWeekMinutes(profile.id);
+        const today = getTodayMinutes(profile.id);
         const pct  = Math.max(0, Math.min(100, Math.round(done / Math.max(1, goal) * 100)));
         const reached = done >= goal;
         const dayMs = 24 * 3600 * 1000;
@@ -9699,6 +9741,9 @@
         const expectedToday = Math.min(goal, perDay * dayIndex); // ideal minutes by end of today
         const onPace = done >= expectedToday;
         const aheadMin = done - expectedToday;
+        // Today vs. perDay → small "今日 X分" chip lets the user feel
+        // daily completion separately from the weekly bar.
+        const dailyHit = today >= perDay;
         // Pace badge text — ahead / on track / behind by N minutes.
         const paceText = reached
           ? '達成済み'
@@ -9787,17 +9832,36 @@
                 : daysLeft === 1 ? '残り 1 日'
                 : '残り ' + daysLeft + ' 日'),
             ),
-            // Pace badge — answers "am I keeping up with 1日 X 分?"
+            // Pace badge + 今日 X 分 chip — pace answers "am I keeping
+            // up with 1日 X 分?", today's chip gives an explicit daily
+            // 達成感 so each session lands as visible daily progress.
             e('div', {
               style: {
-                display: 'inline-block',
-                fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
-                color: paceColor, background: paceBg,
-                padding: '4px 10px', borderRadius: 999,
-                letterSpacing: '0.04em',
-                fontVariantNumeric: 'tabular-nums',
+                display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center',
               }
-            }, paceText),
+            },
+              e('span', {
+                style: {
+                  display: 'inline-block',
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                  color: paceColor, background: paceBg,
+                  padding: '4px 10px', borderRadius: 999,
+                  letterSpacing: '0.04em',
+                  fontVariantNumeric: 'tabular-nums',
+                }
+              }, paceText),
+              e('span', {
+                style: {
+                  display: 'inline-block',
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                  color: dailyHit ? profile.color : C.sub,
+                  background: dailyHit ? (profile.color + '14') : C.softer,
+                  padding: '4px 10px', borderRadius: 999,
+                  letterSpacing: '0.04em',
+                  fontVariantNumeric: 'tabular-nums',
+                }
+              }, '今日 ' + today + '分' + (dailyHit ? ' ✓' : '')),
+            ),
           ),
         );
       })(),
