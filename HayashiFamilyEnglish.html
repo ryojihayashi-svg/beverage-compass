@@ -113,7 +113,7 @@
   //   row 7: AI翻訳                 | 翻訳ノート
   // 末尾: ランダムテスト (full-width)
   const FEATURES = [
-    { id: 'diagnostic',         label: '📊 レベル診断テスト', desc: '英検 5 級〜2 級・段階式',
+    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',
                                                                                           fullWidth: true, forLearner: true, forViewer: false },
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
@@ -11553,7 +11553,6 @@
         textAlign: 'left', cursor: 'pointer',
       }
     },
-      e('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '✨'),
       e('div', { style: { flex: 1, minWidth: 0 } },
         e('div', {
           style: { fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }
@@ -12496,7 +12495,6 @@
       }
     },
       e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
-        e('div', { style: { fontSize: 28, lineHeight: 1, marginTop: 2 } }, '📱'),
         e('div', { style: { flex: 1 } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }
@@ -12761,7 +12759,7 @@
             e('span', { style: { color: C.text, fontWeight: 700 } }, stats.masteredCount),
             ' 覚えた'),
           stats.dueReviewCount > 0 && e('span', { style: { color: profile.color, fontWeight: 700 } },
-            '🔁 復習 ', stats.dueReviewCount),
+            '復習 ', stats.dueReviewCount),
           e('span', null,
             e('span', { style: { color: C.text, fontWeight: 700 } }, stats.streakDays),
             ' 日連続'),
@@ -12788,7 +12786,7 @@
             if (ago) parts.push(ago);
             if (kindShort) parts.push(kindShort);
             if (mins >= 1) parts.push(mins + '分');
-            return '✏️ ' + parts.join(' · ');
+            return parts.join(' · ');
           })(),
         ),
         // Growth meters — comfort value per track (vocab + composition).
@@ -12824,7 +12822,7 @@
                 }),
               ),
               e('span', { style: { letterSpacing: '0.04em', color: lower < 5 ? C.sub : C.text, width: 22, textAlign: 'right' } },
-                lower < 5 ? ('LV' + upper) : '🏔'),
+                lower < 5 ? ('LV' + upper) : 'MAX'),
             );
           };
           // Eiken band — the higher of the two tracks decides the
@@ -12960,7 +12958,7 @@
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: profile.color, marginBottom: 6,
             }
-          }, '🎓 LEVEL UP'),
+          }, 'LEVEL UP'),
           e('div', {
             style: {
               fontFamily: SERIF, fontSize: 24, fontWeight: 700,
@@ -13069,7 +13067,7 @@
                   background: profile.color + '14',
                   padding: '3px 10px', borderRadius: 999,
                 }
-              }, '🎉 達成'),
+              }, '達成'),
             ),
             // Progress bar — with a faint "今日までの理想" tick that
             // extends slightly above/below the bar so it reads as a
@@ -13210,11 +13208,11 @@
                   ? db.getMistakesNormalized(profile.id).length : 0);
                 const buttons = [];
                 if (mistakeCount > 0) {
-                  buttons.push({ id: 'mistakes', label: '🎯 間違い復習 ' + mistakeCount + '問', primary: true });
+                  buttons.push({ id: 'mistakes', label: '間違い復習 ' + mistakeCount + '問', primary: true });
                 }
-                buttons.push({ id: 'shadowing',         label: '🎤 シャドーイングもう 1 セット' });
-                buttons.push({ id: 'vocab_ja2en',       label: '📚 単語をもう 10 問' });
-                buttons.push({ id: 'composition_ja2en', label: '✏️ 瞬間英作文をもう 10 問' });
+                buttons.push({ id: 'shadowing',         label: 'シャドーイングもう 1 セット' });
+                buttons.push({ id: 'vocab_ja2en',       label: '単語をもう 10 問' });
+                buttons.push({ id: 'composition_ja2en', label: '瞬間英作文をもう 10 問' });
                 return e('div', {
                   style: { display: 'flex', flexDirection: 'column', gap: 6 }
                 },
@@ -14958,7 +14956,6 @@
             paddingTop: 28, paddingBottom: 20, textAlign: 'center',
           }
         },
-          e('div', { style: { fontSize: 56, marginBottom: 8 } }, '🎉'),
           e('div', {
             style: {
               fontFamily: SERIF, fontSize: 28, fontWeight: 700,
@@ -15123,9 +15120,9 @@
     ];
     const UNLOCKS = [
       { id: 'open_now',         label: 'すぐに開ける' },
-      { id: 'session_complete', label: '🎯 今日の20問クリアで開く' },
-      { id: 'streak_3',         label: '🔥 3日連続クリアで開く' },
-      { id: 'streak_7',         label: '⭐ 7日連続クリアで開く' },
+      { id: 'session_complete', label: '今日の20問クリアで開く' },
+      { id: 'streak_3',         label: '3日連続クリアで開く' },
+      { id: 'streak_7',         label: '7日連続クリアで開く' },
     ];
 
     const canSubmit = body.trim().length > 0;
@@ -15160,7 +15157,6 @@
 
       // Header
       e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', { style: { fontSize: 32, marginBottom: 8 } }, '✏️'),
         e('div', {
           style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, '応援を作る'),
@@ -15177,7 +15173,7 @@
           e('button', {
             onClick: () => setToId(''),
             style: chipButtonStyle(toId === '', sender.color),
-          }, '👨‍👩‍👧‍👦 家族みんな'),
+          }, '家族みんな'),
           recipients.map(r => e('button', {
             key: r.id, onClick: () => setToId(r.id),
             style: chipButtonStyle(toId === r.id, r.color),
@@ -15255,7 +15251,6 @@
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
               }
             },
-              e('div', { style: { fontSize: 28 } }, '🖼️'),
               e('div', null, '写真を選ぶ'),
               e('div', { style: { fontSize: 11, opacity: 0.7 } },
                 '豚・ご飯・弟・なんでも'),
@@ -15325,7 +15320,6 @@
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                 }
               },
-                e('div', { style: { fontSize: 28 } }, '🎤'),
                 e('div', null, '音声を録音'),
                 e('div', { style: { fontSize: 11, opacity: 0.7 } },
                   '15秒まで・声で温度が伝わる'),
@@ -15426,10 +15420,10 @@
 
   function unlockLabel(cond) {
     switch (cond) {
-      case 'session_complete': return '🎯 今日の20問をクリアで開く';
-      case 'streak_3':         return '🔥 3日連続でクリアで開く';
-      case 'streak_7':         return '⭐ 7日連続でクリアで開く';
-      default:                 return '🔒 開封条件あり';
+      case 'session_complete': return '今日の20問をクリアで開く';
+      case 'streak_3':         return '3日連続でクリアで開く';
+      case 'streak_7':         return '7日連続でクリアで開く';
+      default:                 return '開封条件あり';
     }
   }
 
@@ -15733,7 +15727,6 @@
             marginTop: 12,
           }
         },
-          e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
           e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
             'まだ出題がありません'),
           e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
@@ -15853,8 +15846,8 @@
           ? e('div', { style: { marginTop: 'auto', textAlign: 'center', padding: '14px 0' } },
               e('div', { style: { fontSize: 13, color: C.sub, marginBottom: 12, lineHeight: 1.6 } },
                 direction === 'en2ja'
-                  ? '頭の中で日本語に直してから\n👇 を押してね'
-                  : '頭の中で英語に直してから\n👇 を押してね'),
+                  ? '頭の中で日本語に直してから\n下のボタンを押してね'
+                  : '頭の中で英語に直してから\n下のボタンを押してね'),
               e('button', {
                 onClick: () => setRevealed(true),
                 style: {
@@ -16412,7 +16405,7 @@
         e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, '🎉 おつかれさま！'),
+          }, 'おつかれさま！'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
           }, correct + ' / ' + results.length),
@@ -17030,16 +17023,16 @@
               av
                 ? e('img', { src: av, style: { width: '100%', height: '100%', objectFit: 'cover' } })
                 : p.emoji,
-              // Tiny camera badge in the corner so it's clear the avatar is tappable
+              // Tiny "+" badge in the corner so it's clear the avatar is tappable.
               e('span', {
                 style: {
                   position: 'absolute', right: -2, bottom: -2,
                   width: 22, height: 22, borderRadius: 999,
                   background: '#fff', border: '1px solid ' + C.line,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 11,
+                  fontSize: 14, color: C.sub, fontWeight: 600,
                 }
-              }, '📷'),
+              }, '+'),
             ),
             e('input', {
               ref: el => { if (el) fileInputRefs.current[p.id] = el; },
@@ -17201,7 +17194,7 @@
               background: C.softer, border: '1px solid ' + C.line,
               color: C.sub, cursor: 'pointer', flexShrink: 0,
             }
-          }, apiKeyVisible ? '🙈' : '👁'),
+          }, apiKeyVisible ? '隠す' : '表示'),
         ),
         e('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           e('button', {
@@ -17256,7 +17249,7 @@
           e('br'),
           '貼り付けたら「接続テスト」を押すと、ちゃんとつながるか確認できます（成功時は自動で保存されます）。',
           e('br'),
-          '🔒 キーはこの端末の中だけに保存されます。',
+          'キーはこの端末の中だけに保存されます。',
         ),
       ),
 
@@ -17474,7 +17467,7 @@
               cursor: (diagBusy || recompressBusy) ? 'default' : 'pointer',
               opacity: (diagBusy || recompressBusy) ? 0.6 : 1,
             }
-          }, diagBusy ? '確認中…' : '☁ クラウドの状態を確認'),
+          }, diagBusy ? '確認中…' : 'クラウドの状態を確認'),
           e('button', {
             onClick: recompressAllPhotos,
             disabled: diagBusy || recompressBusy || photos.length === 0,
@@ -17489,7 +17482,7 @@
             }
           }, recompressBusy
               ? ('圧縮中… ' + recompressProgress.done + '/' + recompressProgress.total)
-              : '🗜 圧縮して空きを作る'),
+              : '圧縮して空きを作る'),
         ),
         cloudDiag && cloudDiag.ok && e('div', {
           style: {
@@ -17836,7 +17829,6 @@
               borderRadius: 14, padding: '40px 22px', textAlign: 'center', color: C.sub,
             }
           },
-            e('div', { style: { fontSize: 36, marginBottom: 10 } }, '🌱'),
             e('div', { style: { fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 } },
               'まだ覚えた単語はありません'),
             e('div', { style: { fontSize: 12, lineHeight: 1.7 } },
@@ -18424,7 +18416,7 @@
         !revealed
           ? e('div', { style: { marginTop: 'auto', textAlign: 'center', padding: '14px 0' } },
               e('div', { style: { fontSize: 13, color: C.sub, marginBottom: 12, lineHeight: 1.6 } },
-                '頭の中で英語に直してから\n👇 を押してね'),
+                '頭の中で英語に直してから\n下のボタンを押してね'),
               e('button', {
                 onClick: () => setRevealed(true),
                 style: {
@@ -19602,7 +19594,7 @@
                   fontFamily: SERIF, fontSize: 14, fontWeight: 600,
                   color: C.text, marginBottom: 10, lineHeight: 1.5,
                 }
-              }, '📖 これを辞書に保存しますか？'),
+              }, 'これを辞書に保存しますか？'),
               e('button', {
                 onClick: onToggleSave,
                 style: {
@@ -20549,7 +20541,7 @@
         e('div', { style: { padding: '4px 4px 22px', textAlign: 'center' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, '🎉 おつかれさま！'),
+          }, 'おつかれさま！'),
           longPassageItem
             ? e('div', {
                 style: { fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: profile.color, lineHeight: 1.25, marginTop: 16, padding: '0 8px' }
@@ -20622,8 +20614,8 @@
               fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
             }
           }, longPassageItem
-              ? '🔁 もう一度同じセクション'
-              : '🔁 同じ ' + SHADOW_SESSION_COUNT + ' 文をもう一度'),
+              ? 'もう一度同じセクション'
+              : '同じ ' + SHADOW_SESSION_COUNT + ' 文をもう一度'),
 
           // Secondary: in long mode, flow into the next chapter of the
           // same speaker if there is one. Falls back to "select another
@@ -20728,10 +20720,6 @@
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }
         },
-          e('span', {
-            className: isSpeaking ? 'hfe-update-dot' : '',
-            style: { fontSize: 18 }
-          }, '🔊'),
           e('span', null, paused ? '一時停止中' : (isSpeaking ? '聞いて → 真似してみよう' : 'もう一度言ってみよう')),
         ),
         // Q/A role pill — only for entries from the SHADOWING_QA pool.
@@ -21049,7 +21037,6 @@
               fontSize: 13, color: C.sub, textAlign: 'center', lineHeight: 1.7,
             }
           },
-            e('div', { style: { fontSize: 20, marginBottom: 6 } }, '🛠'),
             e('div', null, 'このレベルは準備中です。'),
             e('div', null, '別のレベルのタブを押してみてください。'),
           )
@@ -21148,7 +21135,7 @@
             fontFamily: SERIF_READ, fontSize: 19, fontWeight: 600,
             color: C.text, lineHeight: 1.6,
           }
-        }, '🤔  ' + lesson.todayQ),
+        }, lesson.todayQ),
       ),
 
       // Imagery / one-line rule
@@ -21376,7 +21363,7 @@
               color: isCorrect ? C.success : C.danger,
               lineHeight: 1,
             }
-          }, isCorrect ? '⭕' : '✕'),
+          }, isCorrect ? '○' : '✕'),
           e('span', {
             style: {
               fontFamily: SERIF, fontSize: 20, fontWeight: 700,
@@ -21653,7 +21640,7 @@
         e('div', { style: { padding: '4px 4px 18px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-          }, '🎧 リスニング理解'),
+          }, 'リスニング理解'),
           e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
           }, '英語の会話・短文を聞いて 4 択で答える。LV1-2 は日本語の選択肢、LV3 以上は英語の選択肢になります。1 セット ' + LISTENING_SESSION_COUNT + ' 問。'),
@@ -21718,7 +21705,7 @@
             textAlign: 'center',
           }
         },
-          e('div', { style: { fontSize: 64, marginBottom: 16 } }, isPlaying ? '🎧' : '⏸️'),
+          e('div', { style: { fontSize: 18, color: C.sub, marginBottom: 16, letterSpacing: '0.18em' } }, isPlaying ? '再生中' : '停止中'),
           e('div', {
             style: { fontFamily: SANS_UI, fontSize: 13, fontWeight: 700, color: profile.color, letterSpacing: '0.12em' }
           }, isPlaying ? '再生中…' : '再生終了'),
@@ -21736,7 +21723,7 @@
             cursor: isPlaying ? 'default' : 'pointer',
             opacity: isPlaying ? 0.6 : 1,
           }
-        }, '🔁 もう一度聞く'),
+        }, 'もう一度聞く'),
       );
     }
 
@@ -21754,7 +21741,7 @@
             fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
             cursor: 'pointer', marginBottom: 14,
           }
-        }, '🔁 もう一度聞く'),
+        }, 'もう一度聞く'),
         e('div', {
           style: {
             fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text,
@@ -21851,7 +21838,7 @@
         e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, '🎉 おつかれさま！'),
+          }, 'おつかれさま！'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
           }, correct + ' / ' + results.length),
@@ -21967,7 +21954,7 @@
         e('div', { style: { padding: '4px 4px 18px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-          }, '📖 リーディング理解'),
+          }, 'リーディング理解'),
           e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
           }, '長文を読んで 4 択 3 問。LV3 まで日本語の選択肢、LV4 以上は英語。各章の理解度を即チェックできます。'),
@@ -22173,7 +22160,7 @@
         e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-          }, '🎉 おつかれさま！'),
+          }, 'おつかれさま！'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: profile.color, lineHeight: 1.2, marginTop: 16 }
           }, passage ? passage.title : ''),
@@ -22260,7 +22247,7 @@
         e('div', { style: { padding: '4px 4px 18px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-          }, '📊 レベル診断テスト'),
+          }, 'レベル診断テスト'),
           e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
           }, '段階式テストであなたの英語レベル (英検 5 級〜2 級) を判定します。各ステージで合格率を超えると次に進めます。やめた / 不合格になった時点で「ひとつ下」のレベルが判定です。'),
@@ -22307,15 +22294,11 @@
           style: {
             background: C.card, borderRadius: 14,
             padding: '12px 16px', marginBottom: 18,
-            display: 'flex', alignItems: 'center', gap: 10,
           }
         },
-          e('div', { style: { fontSize: 18 } }, '✅'),
-          e('div', { style: { flex: 1 } },
-            e('div', { style: { fontSize: 11, color: C.sub } }, '前回の診断'),
-            e('div', { style: { fontSize: 15, color: C.text, fontWeight: 700, marginTop: 2 } },
-              prevDiag.eiken + (prevDiag.at ? ' (' + formatDate(prevDiag.at) + ')' : '')),
-          ),
+          e('div', { style: { fontSize: 11, color: C.sub } }, '前回の診断'),
+          e('div', { style: { fontSize: 15, color: C.text, fontWeight: 700, marginTop: 2 } },
+            prevDiag.eiken + (prevDiag.at ? ' (' + formatDate(prevDiag.at) + ')' : '')),
         ),
 
         // 開始ボタン
@@ -22370,10 +22353,9 @@
             color: C.sub, fontSize: 13, lineHeight: 1.7,
           }
         },
-          e('div', { style: { fontSize: 28, marginBottom: 8 } }, '🚧'),
           'テスト本体は次のアップデートで',
           e('br'),
-          '実装します。お楽しみに！',
+          '実装します。お楽しみに。',
         ),
         e('button', {
           onClick: () => setPhase('intro'),
@@ -22428,7 +22410,6 @@
           borderRadius: 20, padding: '36px 24px', textAlign: 'center', color: C.sub,
         }
       },
-        e('div', { style: { fontSize: 32, marginBottom: 10 } }, '🛠️'),
         e('div', {
           style: { fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }
         }, '次のステップで実装します'),
