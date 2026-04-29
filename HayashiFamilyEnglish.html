@@ -2480,10 +2480,10 @@
   // Each member sets a weekly study-time target (minutes/week). The home
   // screen shows a progress bar toward this target so daily practice
   // accumulates toward a visible goal — the strongest motivation loop.
-  // Stored as state.weeklyGoal = { minutes }; default 315 (= 45 分/日 × 7).
-  // The user thinks in daily terms ("1日45分やる"), so the settings UI
+  // Stored as state.weeklyGoal = { minutes }; default 420 (= 60 分/日 × 7).
+  // The user thinks in daily terms ("1日60分やる"), so the settings UI
   // exposes per-day presets and we just multiply by 7 internally.
-  const DEFAULT_WEEKLY_GOAL_MIN = 315;
+  const DEFAULT_WEEKLY_GOAL_MIN = 420;
   function loadWeeklyGoal(memberId) {
     try {
       const s = db.load(memberId);
@@ -2533,12 +2533,21 @@
     vocab: 12, composition: 14, random_test: 10, mctest: 10,
     overcome: 14, lesson: 25, shadowing: 18,
   };
+  // Sanity cap per session. If a learner started a session and then walked
+  // away (locked the phone, took a call, etc.), durationMs can be wildly
+  // inflated — easily reaching 30+ minutes for what was actually 2 minutes
+  // of practice. Without this cap, 1 idle session could falsely declare
+  // the weekly goal achieved. 25 minutes is generous for any single
+  // session in this app (the longest planned session ≈ 5–8 min).
+  const SESSION_GAUGE_CAP_MS = 25 * 60 * 1000;
   function eventGaugeMs(ev) {
-    if (typeof ev.durationMs === 'number' && ev.durationMs > 0) return ev.durationMs;
+    if (typeof ev.durationMs === 'number' && ev.durationMs > 0) {
+      return Math.min(ev.durationMs, SESSION_GAUGE_CAP_MS);
+    }
     const total = typeof ev.total === 'number' ? ev.total : 0;
     if (total <= 0) return 0;
     const perQ = EST_SECS_PER_Q_GAUGE[ev.kind] || 12;
-    return total * perQ * 1000;
+    return Math.min(total * perQ * 1000, SESSION_GAUGE_CAP_MS);
   }
   // Sum of session-minutes for events that fall in the current week.
   function getThisWeekMinutes(memberId) {
@@ -13990,7 +13999,7 @@
       }, '1日の目安'),
       e('div', {
         style: { fontSize: 12, color: C.sub, marginBottom: 12, paddingLeft: 4, lineHeight: 1.6 }
-      }, '1日あたり何分やるかをメンバーごとに決めます。ホーム上部の「今週の進捗」ゲージは、選んだ分数 × 7日 を週の目標として進みます。'),
+      }, '1日あたり何分やるかをメンバーごとに決めます。デフォルトは 1 日 60 分 (週 420 分)。ホーム上部の「今週の進捗」ゲージは、選んだ分数 × 7 日 を週の目標として進みます。'),
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 } },
         PROFILES.map(p => {
           const cur = loadWeeklyGoal(p.id);
