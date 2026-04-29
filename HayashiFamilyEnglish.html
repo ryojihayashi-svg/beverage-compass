@@ -103,7 +103,7 @@
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
-  // 7 rows × 2 columns of half-width tiles.
+  // 8 行 × 2 列 のハーフ幅タイル。
   //   row 1: シャドーイング         | Daily English
   //   row 2: 単語学習(日→英)        | 単語学習(英→日)
   //   row 3: 瞬間英作文(日→英)      | 瞬間英作文(英→日)
@@ -111,10 +111,8 @@
   //   row 5: 1分英語解説            | AI英作文テスト
   //   row 6: リスニング理解         | リーディング理解
   //   row 7: AI翻訳                 | 翻訳ノート
-  // 末尾: ランダムテスト (full-width)
+  //   row 8: ランダムテスト         | レベル診断テスト
   const FEATURES = [
-    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false },
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
@@ -129,8 +127,8 @@
     { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true },
-    { id: 'random_test',        label: 'ランダムテスト',  desc: '',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false },
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
+    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
