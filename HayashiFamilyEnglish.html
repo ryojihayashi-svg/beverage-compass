@@ -825,7 +825,7 @@
     { id:'equal',       en:'equal',       ja:'平等な',                   pos:'adj',  level:3, cat:'general', exEn:'All people are equal.',                     exJa:'すべての人は平等です。' },
     { id:'final',       en:'final',       ja:'最終的な',                 pos:'adj',  level:3, cat:'general', exEn:'This is the final exam.',                   exJa:'これは最終試験です。' },
     { id:'foreign',     en:'foreign',     ja:'外国の',                   pos:'adj',  level:3, cat:'general', exEn:'I love foreign movies.',                    exJa:'私は外国映画が大好きです。' },
-    { id:'general',     en:'general',     ja:'一般的な',                 pos:'adj',  level:3, cat:'general', exEn:"It's a general rule.",                      exJa:'一般的なルールです。' },
+    { id:'general',     en:'general',     ja:'一般的な',                 pos:'adj',  level:3, cat:'general', exEn:"It's a general rule.",                      exJa:'一般的なルールです。', syn:['common','usual','ordinary','normal','typical','standard'] },
     { id:'global',      en:'global',      ja:'世界の',                   pos:'adj',  level:3, cat:'general', exEn:'Climate change is a global issue.',         exJa:'気候変動は世界的な問題です。' },
     { id:'individual',  en:'individual',  ja:'個人の',                   pos:'adj',  level:3, cat:'general', exEn:'Each individual is special.',               exJa:'各個人は特別です。' },
     { id:'local',       en:'local',       ja:'地元の',                   pos:'adj',  level:3, cat:'general', exEn:'We ate at a local restaurant.',             exJa:'私たちは地元のレストランで食事しました。' },
@@ -1711,6 +1711,16 @@
     'sick':         ['ill', 'unwell'],
     'ill':          ['sick', 'unwell'],
     'disease':      ['illness', 'sickness'],
+    // ---- General / common / typical 系 ----
+    'general':      ['common', 'usual', 'ordinary', 'normal', 'typical', 'standard'],
+    'common':       ['general', 'usual', 'ordinary', 'frequent'],
+    'usual':        ['normal', 'common', 'typical', 'regular'],
+    'normal':       ['usual', 'ordinary', 'standard', 'typical'],
+    'ordinary':     ['normal', 'common', 'usual', 'plain'],
+    'typical':      ['usual', 'common', 'standard', 'normal'],
+    'standard':     ['normal', 'usual', 'regular', 'typical'],
+    'specific':     ['particular', 'certain', 'definite', 'specific'],
+    'particular':   ['specific', 'certain', 'individual'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
@@ -1816,6 +1826,15 @@
     sick: '日常で「病気の・気分が悪い」と言うときは sick（口語的、米英共通）。Yoshinari が学校で I feel sick. と言えば「気分が悪い」のニュアンス。フォーマルや英国寄りでは ill。深刻な「病気そのもの」を名詞で言うときは disease や illness。',
     ill: '英国寄り・少しフォーマルな「病気の」が ill。「彼は病気です」は He is ill. が自然 (英国)。アメリカ寄り日常会話だと sick の方が普通。深刻な病気を名詞で言うときは disease / illness。',
     disease: '名詞で「病気そのもの」を指すのが disease（医学的・深刻なもの: heart disease / a rare disease）。風邪や軽い体調不良には大げさ。日常で「病気の」と言うときは sick / ill を使う。',
+    // ---- General / common / typical 系 ----
+    general: '広く「全般的・一般的」なら general (a general rule / general knowledge)。多くに当てはまるなら common、普段からの「いつもの」なら usual、特別でなく「普通の」なら normal / ordinary。',
+    common: '多くの場所・人にあてはまる「ありふれた・よくある」のが common (a common name / common sense)。学術的・全般的な意味なら general。',
+    usual: '日常的に「いつもの・普段の」が usual (the usual time)。一般則として「普通」なら normal、「ありふれた」なら common。',
+    normal: '基準どおりで「普通・正常」が normal (normal temperature)。日常の「いつもの」は usual、「ありふれた」は common。',
+    ordinary: '特別ではない「ふつうの・並みの」が ordinary (an ordinary day)。基準どおりは normal、よくあるは common。',
+    typical: 'その種類の代表的な特徴を持つ「典型的な」が typical (a typical Japanese breakfast)。普通という意味では normal / usual。',
+    specific: '範囲を絞った「具体的な・個別の」が specific (a specific example)。1つに限定せず「特定の」なら particular。一般・全般は general。',
+    particular: 'その中の「特定の・1つ際立った」が particular (a particular reason)。例として絞り込みたいときは specific が近い。',
     // ---- Beautiful + lovely already in 'beautiful' / 'pretty' ----
   };
   function getVocabUsage(vocabId) {
