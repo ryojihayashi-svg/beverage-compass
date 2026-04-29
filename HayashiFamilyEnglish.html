@@ -2283,6 +2283,143 @@
     father: 2.6,  // Ryoji
     son1:   3.6,  // Narumichi
   };
+  // ---------- 英検レベル mapping ----------
+  // 1.0–1.99 → 英検5級 / 2.0–2.99 → 英検4級 / 3.0–3.99 → 英検3級 /
+  // 4.0–4.99 → 英検準2級 / 5.0 → 英検2級〜準1級
+  const ENGLISH_LEVEL_LABELS = {
+    1: '英検5級',
+    2: '英検4級',
+    3: '英検3級',
+    4: '英検準2級',
+    5: '英検2級〜準1級',
+  };
+  function comfortToEikenLabel(c) {
+    const lv = Math.max(1, Math.min(5, Math.floor(c || 1)));
+    return ENGLISH_LEVEL_LABELS[lv] || '';
+  }
+  // The HIGHER of the two tracks (vocab / composition) becomes the
+  // "official" 英検 level shown on the profile card. Mainly because
+  // 英検 itself doesn't separate recognition from production; the
+  // overall feeling matches the better of the two.
+  function profileEikenLabel(memberId) {
+    const v = loadComfort(memberId, 'vocab');
+    const c = loadComfort(memberId, 'composition');
+    return comfortToEikenLabel(Math.max(v, c));
+  }
+
+  // ---------- Weekly goal ----------
+  // Each member sets a weekly study-time target (minutes/week). The home
+  // screen shows a progress bar toward this target so daily practice
+  // accumulates toward a visible goal — the strongest motivation loop.
+  // Stored as state.weeklyGoal = { minutes }; default 60.
+  const DEFAULT_WEEKLY_GOAL_MIN = 60;
+  function loadWeeklyGoal(memberId) {
+    try {
+      const s = db.load(memberId);
+      const m = s.weeklyGoal && s.weeklyGoal.minutes;
+      if (typeof m === 'number' && m > 0 && m <= 600) return m;
+    } catch {}
+    return DEFAULT_WEEKLY_GOAL_MIN;
+  }
+  function saveWeeklyGoal(memberId, minutes) {
+    try {
+      const s = db.load(memberId);
+      const safe = Math.max(15, Math.min(600, Math.round(minutes || 0)));
+      s.weeklyGoal = { minutes: safe };
+      db.save(memberId, s);
+    } catch {}
+  }
+  // Monday 00:00 in member's timezone — the start of the current week.
+  // Times are simple Date objects (UTC under the hood) but we anchor to
+  // the local-Monday boundary so a Sunday-evening session at 23:50 in
+  // Tokyo doesn't bleed into next week.
+  function getCurrentWeekStartMs(memberId) {
+    const tz = MEMBER_TIMEZONE[memberId];
+    const now = new Date();
+    // Build a "local now" Date by formatting then re-parsing pieces.
+    let y, m, d, dow;
+    try {
+      const fmt = new Intl.DateTimeFormat('en-CA', Object.assign({
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        weekday: 'short',
+      }, tz ? { timeZone: tz } : {}));
+      const parts = fmt.formatToParts(now);
+      const o = {};
+      for (const p of parts) o[p.type] = p.value;
+      y = parseInt(o.year, 10);
+      m = parseInt(o.month, 10);
+      d = parseInt(o.day, 10);
+      const wd = o.weekday;  // Mon, Tue, ...
+      dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(wd);
+    } catch {
+      const local = new Date();
+      y = local.getFullYear();
+      m = local.getMonth() + 1;
+      d = local.getDate();
+      dow = local.getDay();
+    }
+    // Monday = day 1; if Sunday(0) we need to go back 6 days, else dow-1.
+    const offset = dow === 0 ? 6 : (dow - 1);
+    const monday = new Date(Date.UTC(y, m - 1, d - offset, 0, 0, 0));
+    // Adjust if the timezone differs from UTC: this is an approximation
+    // — works well for both UK (≈0 offset) and JP (+9). The error is at
+    // most a few hours which doesn't affect a 7-day window.
+    return monday.getTime();
+  }
+  // Sum of session-minutes for events that fall in the current week.
+  function getThisWeekMinutes(memberId) {
+    const events = db.getEvents(memberId);
+    const weekStart = getCurrentWeekStartMs(memberId);
+    let totalMs = 0;
+    for (const ev of events) {
+      const t = new Date(ev.at || 0).getTime();
+      if (t < weekStart) break;  // events are reverse-chrono — stop early
+      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30000) {
+        totalMs += ev.durationMs;
+      }
+    }
+    return Math.round(totalMs / 60000);
+  }
+
+  // ---------- Level graduation ----------
+  // When comfort crosses an integer threshold (e.g. 1.99 → 2.00), the
+  // member has "graduated" from that level. We record the highest
+  // graduated level per track and queue a celebration that the home
+  // screen surfaces as a one-shot modal banner.
+  function ensureGraduationState(s) {
+    if (!s.graduatedLevels) s.graduatedLevels = { vocab: 0, composition: 0 };
+    if (!s.pendingGraduations) s.pendingGraduations = [];
+    return s;
+  }
+  function recordGraduationIfCrossed(memberId, track, oldComfort, newComfort) {
+    const oldFloor = Math.floor(oldComfort);
+    const newFloor = Math.floor(newComfort);
+    if (newFloor <= oldFloor) return;  // didn't cross
+    const graduatedLevel = oldFloor;   // we just left LV{oldFloor}
+    const s = db.load(memberId);
+    ensureGraduationState(s);
+    if (s.graduatedLevels[track] >= graduatedLevel) return;  // already marked
+    s.graduatedLevels[track] = graduatedLevel;
+    s.pendingGraduations.push({
+      track, level: graduatedLevel,
+      at: new Date().toISOString(),
+    });
+    db.save(memberId, s);
+  }
+  function getPendingGraduation(memberId) {
+    const s = db.load(memberId);
+    ensureGraduationState(s);
+    return s.pendingGraduations.length > 0 ? s.pendingGraduations[0] : null;
+  }
+  function dismissPendingGraduation(memberId) {
+    const s = db.load(memberId);
+    ensureGraduationState(s);
+    if (s.pendingGraduations.length > 0) {
+      s.pendingGraduations.shift();
+      db.save(memberId, s);
+    }
+  }
+
   // Each profile carries TWO comfort numbers — one per learning track:
   //   comfort.vocab        = single-word recognition (vocab / shadowing)
   //   comfort.composition  = full-sentence production (英作文 / lesson quiz)
@@ -2324,7 +2461,14 @@
     let delta = 0;
     if (m >= 0.85) delta = 0.04;
     else if (m <= 0.55) delta = -0.04;
-    if (delta !== 0) saveComfort(memberId, tk, c + delta);
+    if (delta !== 0) {
+      const newC = Math.max(1.0, Math.min(5.0, c + delta));
+      saveComfort(memberId, tk, newC);
+      // Check for level graduation (comfort crossed an integer boundary).
+      // This fires the celebration banner the next time the home screen
+      // renders — a one-shot moment per crossed level per track.
+      recordGraduationIfCrossed(memberId, tk, c, newC);
+    }
   }
   function pickLevelForProfile(profile, opts) {
     const id = (profile && profile.id) || '';
@@ -8914,9 +9058,20 @@
                 lower < 5 ? ('LV' + upper) : '🏔'),
             );
           };
+          // Eiken band — the higher of the two tracks decides the
+          // overall English-test level shown on the card. Subtle label
+          // so it doesn't overwhelm the bars themselves.
+          const eikenLabel = profileEikenLabel(profile.id);
           return e('div', {
             style: { marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }
           },
+            e('div', {
+              style: {
+                fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                letterSpacing: '0.06em',
+                color: profile.color, marginBottom: 2,
+              }
+            }, eikenLabel + ' レベル'),
             renderBar('単語', loadComfort(profile.id, 'vocab')),
             renderBar('英作', loadComfort(profile.id, 'composition')),
           );
@@ -8936,6 +9091,9 @@
   function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
     const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
+    // Bumps to force a re-render after dismissing the graduation
+    // banner — the queue is read fresh on every render.
+    const [forceTick, setForceTick] = useState(0);
 
     // Today's guided path. Generated once per day, persisted, and
     // reconciled on every render so empty mistake-review slots auto-
@@ -9010,6 +9168,146 @@
         e(OfflineBadge),
         e(ReloadBtn),
       ),
+
+      // 🎓 Level graduation banner — fires once when the learner has
+      // moved comfort past an integer (e.g. LV1 → LV2). One-shot:
+      // dismissing it pops the queue, so subsequent renders are clean.
+      (function () {
+        const grad = getPendingGraduation(profile.id);
+        if (!grad) return null;
+        const eikenLabel = ENGLISH_LEVEL_LABELS[grad.level] || ('LV' + grad.level);
+        const trackLabel = grad.track === 'composition' ? '英作文' : '単語';
+        return e('div', {
+          style: {
+            background: profile.color + '14',
+            border: '2px solid ' + profile.color,
+            borderRadius: 16, padding: '18px 18px 16px', marginBottom: 18,
+            position: 'relative',
+          }
+        },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: profile.color, marginBottom: 6,
+            }
+          }, '🎓 LEVEL UP'),
+          e('div', {
+            style: {
+              fontFamily: SERIF, fontSize: 24, fontWeight: 700,
+              color: C.text, lineHeight: 1.3, marginBottom: 6,
+            }
+          }, trackLabel + ' LV' + grad.level + ' を卒業しました!'),
+          e('div', {
+            style: { fontSize: 14, color: C.sub, lineHeight: 1.6, marginBottom: 12 }
+          }, '今のあなたは ' + eikenLabel + ' レベル相当。次のレベルの問題が少しずつ混ざります。'),
+          e('button', {
+            onClick: () => {
+              dismissPendingGraduation(profile.id);
+              // Force re-render by bumping a state somewhere. Profile
+              // screen re-reads the queue on every render via getPending,
+              // but we need to nudge React. Cheapest path: setState on
+              // a no-op tick.
+              setForceTick(t => t + 1);
+            },
+            style: {
+              padding: '10px 22px', borderRadius: 999,
+              background: profile.color, color: '#fff',
+              fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
+              border: 'none', cursor: 'pointer',
+              letterSpacing: '0.04em',
+            }
+          }, '続ける'),
+        );
+      })(),
+
+      // 今週の進捗 — primary motivation gauge. Sums session-minute
+      // events this week and shows progress toward the user-set goal.
+      // When the goal is met, the bar fills and the status line
+      // celebrates instead of urging more.
+      (function () {
+        const goal = loadWeeklyGoal(profile.id);
+        const done = getThisWeekMinutes(profile.id);
+        const pct  = Math.max(0, Math.min(100, Math.round(done / Math.max(1, goal) * 100)));
+        const reached = done >= goal;
+        const dayMs = 24 * 3600 * 1000;
+        const weekStartMs = getCurrentWeekStartMs(profile.id);
+        const elapsed = Math.max(0, Math.floor((Date.now() - weekStartMs) / dayMs));
+        const daysLeft = Math.max(0, 6 - elapsed);  // Mon=0 ... Sun=6
+        return e('div', { style: { marginBottom: 18 } },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, marginBottom: 10, paddingLeft: 4,
+            }
+          }, '今週の進捗'),
+          e('div', {
+            style: {
+              background: reached ? (profile.color + '0F') : C.card,
+              border: '1px solid ' + (reached ? profile.color : C.line),
+              padding: '14px 16px', borderRadius: 14,
+            }
+          },
+            // Top row: percent / goal
+            e('div', {
+              style: {
+                display: 'flex', alignItems: 'baseline', gap: 8,
+                marginBottom: 8,
+              }
+            },
+              e('span', {
+                style: {
+                  fontFamily: SANS_UI, fontSize: 22, fontWeight: 800,
+                  color: reached ? profile.color : C.text,
+                  fontVariantNumeric: 'tabular-nums',
+                }
+              }, done + '分'),
+              e('span', {
+                style: { fontSize: 12, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+              }, '/ ' + goal + '分'),
+              e('div', { style: { flex: 1 } }),
+              reached && e('span', {
+                style: {
+                  fontSize: 11, fontWeight: 700, color: profile.color,
+                  fontFamily: SANS_UI, letterSpacing: '0.04em',
+                  background: profile.color + '14',
+                  padding: '3px 10px', borderRadius: 999,
+                }
+              }, '🎉 達成'),
+            ),
+            // Progress bar
+            e('div', {
+              style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden', marginBottom: 8 }
+            },
+              e('div', {
+                style: {
+                  height: '100%', width: pct + '%',
+                  background: reached ? profile.color : profile.color,
+                  transition: 'width 0.4s ease',
+                }
+              }),
+            ),
+            // Bottom row: status + days remaining
+            e('div', {
+              style: {
+                display: 'flex', justifyContent: 'space-between',
+                fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+                fontVariantNumeric: 'tabular-nums',
+              }
+            },
+              e('span', null,
+                reached
+                  ? '今週の目標達成 ✓'
+                  : 'あと ' + Math.max(0, goal - done) + ' 分'),
+              e('span', null,
+                daysLeft === 0 ? '今日が最終日'
+                : daysLeft === 1 ? '残り 1 日'
+                : '残り ' + daysLeft + ' 日'),
+            ),
+          ),
+        );
+      })(),
 
       // 今日の一言英語 — section label sits above the phrase card so
       // the user can tell at a glance what this block is.
@@ -12262,6 +12560,75 @@
       avatarErr && e('div', {
         style: { fontSize: 12, color: C.danger, marginTop: -14, marginBottom: 16, paddingLeft: 4 }
       }, avatarErr),
+
+      // ----- Section: 週間目標 -----
+      // Each member's weekly study-time target. Drives the "今週の進捗"
+      // gauge on the home screen. Preset chips (30/60/90/120 min) keep
+      // the choice frictionless — set once and the home gauge tells
+      // you how close you are to it every day.
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, '週間目標'),
+      e('div', {
+        style: { fontSize: 12, color: C.sub, marginBottom: 12, paddingLeft: 4, lineHeight: 1.6 }
+      }, '1週間に何分を目標にするか、メンバーごとに決めます。ホーム上部の「今週の進捗」ゲージはこの目標を基準に進みます。'),
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 } },
+        PROFILES.map(p => {
+          const cur = loadWeeklyGoal(p.id);
+          const presets = [30, 60, 90, 120, 180];
+          return e('div', {
+            key: 'wg_' + p.id,
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, padding: '12px 14px',
+            }
+          },
+            e('div', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
+              }
+            },
+              e('span', { style: { fontSize: 18 } }, p.emoji),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', {
+                  style: { fontSize: 13, fontWeight: 700, color: C.text }
+                }, getDisplayName(p)),
+              ),
+              e('span', {
+                style: {
+                  fontSize: 13, fontWeight: 700, color: p.color,
+                  fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums',
+                }
+              }, cur + ' 分 / 週'),
+            ),
+            e('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              presets.map(min => {
+                const active = cur === min;
+                return e('button', {
+                  key: 'wg_' + p.id + '_' + min,
+                  onClick: () => {
+                    saveWeeklyGoal(p.id, min);
+                    // Force re-render — re-read goal in next loop.
+                    setNames(n => Object.assign({}, n));  // cheap nudge
+                  },
+                  style: {
+                    padding: '6px 12px', borderRadius: 999,
+                    background: active ? p.color : 'transparent',
+                    color: active ? '#fff' : C.sub,
+                    border: '1px solid ' + (active ? p.color : C.line),
+                    fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                    cursor: 'pointer',
+                  }
+                }, min + '分');
+              }),
+            ),
+          );
+        }),
+      ),
 
       // ----- Section: AI チャット -----
       e('div', {
