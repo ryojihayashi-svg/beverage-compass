@@ -1977,45 +1977,88 @@
   // The "おまかせ" (auto) picker for vocab + sprint composition uses these
   // weights so each family member sees a level mix that fits their stage.
   //
-  // Distributions per family request:
-  //   Kippei (son3, 小6 はじめての英語):  L1 80% / L2 20%
-  //   Yoshinari (son2, 中学復習):        L1 40% / L2 60%
-  //   Ayumi (mother, 中学基礎):          L1 40% / L2 60%
-  //   Ryoji (father, 英検準2級):         L2 40% / L3 60%
-  //   Narumichi (son1, 英検2級):         L3 40% / L4 60%
-  //
-  // The ladder is one level apart per family member, so each kid sees
-  // mostly content one notch above their comfort zone — easy enough not
-  // to freeze, hard enough to stretch.
+  // ---------- Comfort-based level distribution ----------
+  // Each profile carries a single "comfort" number on the 1.0–5.0 scale.
+  // The integer floor is the main level, the fractional part is the
+  // probability of drawing the NEXT level instead. So:
+  //   comfort = 1.0 → 100% LV1
+  //   comfort = 1.2 → 80% LV1, 20% LV2 (Kippei's start)
+  //   comfort = 1.6 → 40% LV1, 60% LV2 (Yoshinari/Ayumi start)
+  //   comfort = 2.6 → 40% LV2, 60% LV3 (Ryoji start)
+  //   comfort = 3.6 → 40% LV3, 60% LV4 (Narumichi start)
+  // adjustComfortFromMastery() floats this number up/down based on the
+  // recent rolling accuracy, so each member's mix shifts toward harder
+  // content as they actually get better — and pulls back if they
+  // struggle. No manual level-up button required.
+  const COMFORT_DEFAULTS = {
+    son3:   1.2,  // Kippei  — はじめて
+    son2:   1.6,  // Yoshinari
+    mother: 1.6,  // Ayumi
+    father: 2.6,  // Ryoji
+    son1:   3.6,  // Narumichi
+  };
+  // Each profile carries TWO comfort numbers — one per learning track:
+  //   comfort.vocab        = single-word recognition (vocab / shadowing)
+  //   comfort.composition  = full-sentence production (英作文 / lesson quiz)
+  // They're tracked separately because recognition and production grow
+  // at different paces. A kid can be confident at LV2 vocab while still
+  // needing LV1 composition — the picker honours that.
+  function loadComfort(memberId, track) {
+    const tk = track || 'vocab';
+    try {
+      const s = db.load(memberId);
+      const v = (s.comfortByTrack || {})[tk];
+      if (typeof v === 'number' && v >= 1.0 && v <= 5.0) return v;
+      // Back-compat: old single-value comfort (pre-track split).
+      if (typeof s.comfort === 'number' && s.comfort >= 1.0 && s.comfort <= 5.0) {
+        return s.comfort;
+      }
+    } catch {}
+    return COMFORT_DEFAULTS[memberId] || 2.0;
+  }
+  function saveComfort(memberId, track, value) {
+    const tk = track || 'vocab';
+    try {
+      const s = db.load(memberId);
+      if (!s.comfortByTrack) s.comfortByTrack = {};
+      s.comfortByTrack[tk] = Math.max(1.0, Math.min(5.0, value));
+      db.save(memberId, s);
+    } catch {}
+  }
+  // Once-per-session adjustment. Samples mastery at floor(comfort) for
+  // the given track and floats comfort up/down by 0.04 (about 25 sessions
+  // to traverse a full level). High mastery = +0.04; low mastery = -0.04;
+  // in between = no change (avoid jitter).
+  function adjustComfortFromMastery(memberId, track) {
+    const tk = track || 'vocab';
+    const c = loadComfort(memberId, tk);
+    const lower = Math.floor(c);
+    const m = db.getLevelMastery(memberId, tk, lower);
+    if (m === null) return;  // not enough data yet
+    let delta = 0;
+    if (m >= 0.85) delta = 0.04;
+    else if (m <= 0.55) delta = -0.04;
+    if (delta !== 0) saveComfort(memberId, tk, c + delta);
+  }
   function pickLevelForProfile(profile, opts) {
-    const r = Math.random();
     const id = (profile && profile.id) || '';
     const direction = (opts && opts.direction) || null;  // 'ja2en' | 'en2ja' | null
-    if (id === 'son3') {                       // Kippei
-      // EN→JA は読めるレベルが上だから LV2 を半分混ぜる。
-      // JA→EN は産出が難しいので LV1 中心 (80/20) のまま。
-      if (direction === 'en2ja') return r < 0.50 ? 1 : 2;
-      return r < 0.80 ? 1 : 2;
+    const track     = (opts && opts.track)     || 'vocab';
+    let comfort = loadComfort(id, track);
+    // Direction-aware adjustment for the active learners.
+    //   ja2en (production) is the hardest direction — pin comfort low.
+    //   en2ja (recognition) is easier — slight boost above default.
+    //   anything else (vocab / shadowing) — use raw comfort.
+    if (id === 'son3' || id === 'son2' || id === 'mother') {
+      if (direction === 'ja2en') comfort = Math.min(comfort, 1.2);
+      else if (direction === 'en2ja') comfort = Math.max(comfort, 1.5);
     }
-    if (id === 'son2' || id === 'mother') {    // Yoshinari, Ayumi
-      // 瞬間英作文の方向で混ぜ方を変える:
-      //   JA→EN は産出が難しいので LV1 多め (80/20)
-      //   EN→JA は読めるレベル上で LV2 を半分 (50/50)
-      // それ以外 (vocab / shadowing) は従来通り (40/60) を維持。
-      if (direction === 'ja2en') return r < 0.80 ? 1 : 2;
-      if (direction === 'en2ja') return r < 0.50 ? 1 : 2;
-      return r < 0.40 ? 1 : 2;
-    }
-    if (id === 'father') {                     // Ryoji
-      return r < 0.40 ? 2 : 3;
-    }
-    if (id === 'son1') {                       // Narumichi
-      return r < 0.40 ? 3 : 4;
-    }
-    // Generic fallback — moderate mix.
-    if (r < 0.40) return 1;
-    if (r < 0.85) return 2;
-    return 3;
+    comfort = Math.max(1.0, Math.min(5.0, comfort));
+    const lower = Math.floor(comfort);
+    const upper = Math.ceil(comfort);
+    if (lower === upper || lower >= 5) return Math.min(5, lower);
+    const fracUpper = comfort - lower;       // 0..1 = chance of drawing the next level
+    return Math.random() < fracUpper ? upper : lower;
   }
 
   // Build a profile-weighted queue of `count` unique items from `pool`.
@@ -6309,6 +6352,42 @@
       return this.load(memberId).events || [];
     },
 
+    // Per-track-per-level rolling answer buffer (last 30 results per
+    // level per track; 1=correct, 0=wrong). Drives the mastery-based
+    // level progression — when the user is consistently correct at
+    // their current main level, comfort floats upward.
+    //
+    //   track ∈ { 'vocab', 'composition' }
+    //     vocab        — single-word recognition (also reused for
+    //                     shadowing as a proxy)
+    //     composition  — full-sentence production / grammar quizzes
+    //
+    // The two tracks measure DIFFERENT skills (recognition vs
+    // production), so growing on one shouldn't pull the other along.
+    recordLevelAnswer(memberId, track, level, isCorrect) {
+      if (typeof level !== 'number' || level < 1 || level > 5) return;
+      const tk = track || 'vocab';
+      const s = this.load(memberId);
+      if (!s.levelStats) s.levelStats = {};
+      if (!s.levelStats[tk]) s.levelStats[tk] = {};
+      const lk = String(level);
+      if (!Array.isArray(s.levelStats[tk][lk])) s.levelStats[tk][lk] = [];
+      s.levelStats[tk][lk].push(isCorrect ? 1 : 0);
+      if (s.levelStats[tk][lk].length > 30) s.levelStats[tk][lk] = s.levelStats[tk][lk].slice(-30);
+      this.save(memberId, s);
+    },
+    // Mastery = mean of last-30 buffer for that track+level. Returns
+    // null when the buffer doesn't yet have enough samples.
+    getLevelMastery(memberId, track, level) {
+      const tk = track || 'vocab';
+      const s = this.load(memberId);
+      const arr = ((s.levelStats || {})[tk] || {})[String(level)] || [];
+      if (arr.length < 10) return null;
+      let sum = 0;
+      for (const x of arr) sum += x;
+      return sum / arr.length;
+    },
+
     // One-time migration: if this member has historical `daily.attempts`
     // but no `turns` data yet (because turn-tracking was added later),
     // seed an approximate turn count so the activity panel reflects what
@@ -8401,6 +8480,49 @@
             return '✏️ ' + parts.join(' · ');
           })(),
         ),
+        // Growth meters — comfort value per track (vocab + composition).
+        // Each bar slides from the current main level to the next as
+        // recent answers come in correct. Two thin lines so the kid sees
+        // BOTH skills moving independently.
+        (function () {
+          const renderBar = (label, c) => {
+            const lower = Math.max(1, Math.min(5, Math.floor(c)));
+            const upper = Math.min(5, lower + 1);
+            const pct   = Math.max(0, Math.min(100, Math.round((c - lower) * 100)));
+            return e('div', {
+              style: {
+                fontFamily: SANS_UI, fontSize: 10, color: C.sub,
+                fontVariantNumeric: 'tabular-nums',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }
+            },
+              e('span', { style: { width: 32, color: C.sub } }, label),
+              e('span', { style: { letterSpacing: '0.04em', width: 22 } }, 'LV' + lower),
+              e('div', {
+                style: {
+                  flex: 1, height: 3, borderRadius: 999,
+                  background: C.softer, overflow: 'hidden', minWidth: 30,
+                }
+              },
+                e('div', {
+                  style: {
+                    height: '100%', width: pct + '%',
+                    background: profile.color,
+                    transition: 'width 0.4s ease',
+                  }
+                }),
+              ),
+              e('span', { style: { letterSpacing: '0.04em', color: lower < 5 ? C.sub : C.text, width: 22, textAlign: 'right' } },
+                lower < 5 ? ('LV' + upper) : '🏔'),
+            );
+          };
+          return e('div', {
+            style: { marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }
+          },
+            renderBar('単語', loadComfort(profile.id, 'vocab')),
+            renderBar('英作', loadComfort(profile.id, 'composition')),
+          );
+        })(),
       ),
 
       e('div', {
@@ -9181,7 +9303,7 @@
 
     function buildQueue() {
       if (selectedLevel === 'auto') {
-        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT);
+        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, { track: 'vocab' });
       }
       const pool = VOCAB.filter(v => v.level === selectedLevel);
       for (let i = pool.length - 1; i > 0; i--) {
@@ -9209,6 +9331,9 @@
     function mark(isKnown) {
       if (!current || phase !== 'study') return;
       db.recordAnswer(profile.id, current.id, isKnown, { direction });
+      if (typeof current.level === 'number') {
+        db.recordLevelAnswer(profile.id, 'vocab', current.level, isKnown);
+      }
       if (isKnown) { soundCorrect(); hapticTap(); }
       else         { soundWrong();   hapticBuzz(); }
       const nextCorrect = correctCount + (isKnown ? 1 : 0);
@@ -9223,6 +9348,8 @@
             level: selectedLevel === 'auto' ? 'auto' : selectedLevel,
             direction,
           });
+          // Float vocab-comfort once per session based on rolling mastery.
+          adjustComfortFromMastery(profile.id, 'vocab');
           // Mark the matching step on today's guided path so the home
           // screen advances the glow to the next recommended activity.
           markPathStepDone(profile, direction === 'ja2en' ? 'vocab_ja2en' : 'vocab_en2ja');
@@ -10562,9 +10689,13 @@
     }
     // Profile-weighted: each draw picks a level matching the family
     // member's distribution and grabs a random unused item from it.
-    // direction is forwarded so per-direction tweaks (e.g. Kippei reads
-    // English easier than he writes it) can apply.
-    return pickWeightedQueue(pool, profile, count, { direction: opts.direction });
+    // direction + track are forwarded so per-direction tweaks (e.g.
+    // Kippei reads English easier than he writes it) and per-track
+    // comfort (composition has its own comfort vs vocab) can apply.
+    return pickWeightedQueue(pool, profile, count, {
+      direction: opts.direction,
+      track: 'composition',
+    });
   }
 
   function SprintComposition({ profile, onBack, forcedDirection }) {
@@ -10597,6 +10728,12 @@
       // mistake log) rather than being recorded as sentences.
       if (cur.kind === 'phrase') db.recordPhrase(profile.id, cur.id, isCorrect);
       else                       db.recordSentence(profile.id, cur.id, isCorrect);
+      // Feed the per-level rolling buffer so adjustComfortFromMastery has
+      // signal to float the user's composition-comfort up or down at
+      // session end.
+      if (typeof cur.level === 'number') {
+        db.recordLevelAnswer(profile.id, 'composition', cur.level, isCorrect);
+      }
       if (isCorrect) { soundCorrect(); hapticTap(); }
       else           { soundWrong();   hapticBuzz(); }
       const newResults = results.concat([{ sentenceId: cur.id, isCorrect, kind: cur.kind }]);
@@ -10609,6 +10746,8 @@
         db.pushEvent(profile.id, {
           kind: 'composition', total, correct: correctCount, direction,
         });
+        // Float composition-comfort once per session based on rolling mastery.
+        adjustComfortFromMastery(profile.id, 'composition');
         markPathStepDone(profile, direction === 'ja2en' ? 'composition_ja2en' : 'composition_en2ja');
         setPhase('done');
         return;
@@ -14415,7 +14554,9 @@
         let safety = 0;
         while (queueOut.length < SHADOW_SESSION_COUNT && safety < 200) {
           safety++;
-          let lv = pickLevelForProfile(profile);
+          // Shadowing reuses the vocab comfort track since both measure
+          // recognition / passive understanding.
+          let lv = pickLevelForProfile(profile, { track: 'vocab' });
           // Find candidates at this level; if empty, walk down then up.
           let candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
             .filter(x => x.g.level === lv && !used.has(x.idx));
