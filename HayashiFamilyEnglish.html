@@ -95,11 +95,11 @@
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
   const PROFILES = [
-    { id: 'father', name: '林亮治',   subtitle: '英検準2級レベル',          emoji: '🌲', color: C.brand, role: 'learner', level: 3 },
-    { id: 'mother', name: '歩み',     subtitle: '英検4級・応援担当',        emoji: '💐', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
-    { id: 'son1',   name: 'なるみち', subtitle: '高2・英検準2級',           emoji: '🎯', color: C.brand, role: 'learner', level: 3 },
-    { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '⚽', color: C.brand, role: 'learner', level: 2 },
-    { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '🌟', color: C.brand, role: 'learner', level: 1 },
+    { id: 'father', name: '林亮治',   subtitle: '英検準2級レベル',          emoji: '', color: C.brand, role: 'learner', level: 3 },
+    { id: 'mother', name: '歩み',     subtitle: '英検4級・応援担当',        emoji: '', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
+    { id: 'son1',   name: 'なるみち', subtitle: '高2・英検準2級',           emoji: '', color: C.brand, role: 'learner', level: 3 },
+    { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '', color: C.brand, role: 'learner', level: 2 },
+    { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '', color: C.brand, role: 'learner', level: 1 },
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
@@ -2775,7 +2775,7 @@
     continue: '物事を「続ける」のが continue（少し改まった語）。日常では keep ~ing が自然。',
     // ---- Adjectives — emotion ----
     happy: '広い意味で「幸せ・うれしい」のは happy。「(知らせを聞いて) うれしい」は glad、「とても喜んでいる」は delighted、フォーマルな「光栄に思う」は pleased。',
-    glad: '「〜してうれしい (I\'m glad to ~ / glad that ~)」と相性◎。持続的な幸せは happy。',
+    glad: '「〜してうれしい (I\'m glad to ~ / glad that ~)」と相性。持続的な幸せは happy。',
     sad: '一般的な「悲しい」は sad。落ち込んでいるなら down、深い悲しみは unhappy / sorrowful。',
     angry: '「怒っている」は angry（標準）。口語では mad、激怒は furious。少し気分を害しただけなら upset。',
     // ---- Adjectives — quality ----
@@ -3189,7 +3189,7 @@
       adj:  { en: 'educational',   ja: '教育の' },
       noun: { en: 'education',     ja: '教育' },
       verb: { en: 'educate',       ja: '教育する' },
-      note: '副詞は educationally だが日常では稀。educated 形容詞「教養のある」も覚えると◎。',
+      note: '副詞は educationally だが日常では稀。educated 形容詞「教養のある」も覚えると。',
     },
     {
       adj:  { en: 'thoughtful',    ja: '思いやりのある' },
@@ -5970,7 +5970,7 @@
       id: 'pas_jobs_stanford_01',
       level: 3,
       title: 'Steve Jobs · Stanford ① 開幕',
-      icon: '🍎',
+      icon: '',
       en:
         "I am honored to be with you today at your commencement from one of the finest universities in the world. " +
         "Truth be told, I never graduated from college, and this is the closest I've ever gotten to a college graduation. " +
@@ -5986,7 +5986,7 @@
       id: 'pas_jobs_stanford_02',
       level: 3,
       title: 'Steve Jobs · Stanford ② 点と点',
-      icon: '🍎',
+      icon: '',
       en:
         "You can't connect the dots looking forward; you can only connect them looking backwards. " +
         "So you have to trust that the dots will somehow connect in your future. " +
@@ -6002,7 +6002,7 @@
       id: 'pas_jobs_stanford_03',
       level: 3,
       title: 'Steve Jobs · Stanford ③ 愛と喪失',
-      icon: '🍎',
+      icon: '',
       en:
         "I'm convinced that the only thing that kept me going was that I loved what I did. " +
         "You've got to find what you love. " +
@@ -6020,7 +6020,7 @@
       id: 'pas_jobs_stanford_04',
       level: 3,
       title: 'Steve Jobs · Stanford ④ 死の話',
-      icon: '🍎',
+      icon: '',
       en:
         "Remembering that I'll be dead soon is the most important tool I've ever encountered " +
         "to help me make the big choices in life. " +
@@ -6036,7 +6036,7 @@
       id: 'pas_jobs_stanford',
       level: 3,
       title: 'Steve Jobs · Stanford ⑤ 締めくくり',
-      icon: '🍎',
+      icon: '',
       en:
         "Your time is limited, so don't waste it living someone else's life. " +
         "Don't be trapped by dogma — which is living with the results of other people's thinking. " +
@@ -6052,7 +6052,7 @@
       id: 'pas_huang_caltech_01',
       level: 4,
       title: 'Jensen Huang · Caltech ① 開幕',
-      icon: '🚀',
+      icon: '',
       en:
         "Today, you've earned the right to be here. " +
         "You've chosen the harder path. " +
@@ -6074,7 +6074,7 @@
       id: 'pas_huang_caltech',
       level: 4,
       title: 'Jensen Huang · Caltech ② 走れ、歩くな',
-      icon: '🚀',
+      icon: '',
       en:
         "Pain and suffering build character. " +
         "There is no significant greatness without character. " +
@@ -6094,7 +6094,7 @@
       id: 'pas_huang_caltech_03',
       level: 4,
       title: 'Jensen Huang · Caltech ③ 痛みを願う',
-      icon: '🚀',
+      icon: '',
       en:
         "I wish upon you ample doses of pain and suffering. " +
         "The greatest people I know experienced ample doses of both. " +
@@ -6112,7 +6112,7 @@
       id: 'pas_jack_ma_01',
       level: 4,
       title: 'Jack Ma · ① 失敗の連続',
-      icon: '💪',
+      icon: '',
       en:
         "When I was young, I failed many times. " +
         "I applied for thirty different jobs and got rejected. " +
@@ -6130,7 +6130,7 @@
       id: 'pas_jack_ma',
       level: 4,
       title: 'Jack Ma · ② 諦めるな',
-      icon: '💪',
+      icon: '',
       en:
         "Today is hard, tomorrow will be worse, but the day after tomorrow will be sunshine. " +
         "However, most people will die tomorrow night. " +
@@ -6146,7 +6146,7 @@
       id: 'pas_jack_ma_03',
       level: 4,
       title: 'Jack Ma · ③ まず行動',
-      icon: '💪',
+      icon: '',
       en:
         "If you don't try, nothing is possible. " +
         "If you try, at least you have a chance. " +
@@ -6166,7 +6166,7 @@
       id: 'pas_jack_ma_04',
       level: 4,
       title: 'Jack Ma · ④ 顧客が一番',
-      icon: '💪',
+      icon: '',
       en:
         "Customers come first. Employees come second. Shareholders come third. " +
         "This is the only way to build a long-lasting business. " +
@@ -6184,7 +6184,7 @@
       id: 'pas_family_meals',
       level: 3,
       title: 'Family Meals',
-      icon: '🍱',
+      icon: '',
       en:
         "There's something special about a meal shared with family. " +
         "The food is more than nourishment — it's memory, comfort, and culture all on one plate. " +
@@ -6200,7 +6200,7 @@
       id: 'pas_ronaldo_01',
       level: 4,
       title: 'Cristiano Ronaldo · ① 自分のために',
-      icon: '⚽',
+      icon: '',
       en:
         "I'm always working hard. " +
         "I'm always trying to improve. " +
@@ -6222,7 +6222,7 @@
       id: 'pas_ronaldo_work',
       level: 4,
       title: 'Cristiano Ronaldo · ② 努力こそ才能',
-      icon: '⚽',
+      icon: '',
       en:
         "Talent without working hard is nothing. " +
         "Your dedication, your love for the game, and the way you treat people — " +
@@ -6238,7 +6238,7 @@
       id: 'pas_ronaldo_03',
       level: 4,
       title: 'Cristiano Ronaldo · ③ 家族',
-      icon: '⚽',
+      icon: '',
       en:
         "Without my family, I am nothing. " +
         "They keep me grounded. " +
@@ -6256,7 +6256,7 @@
       id: 'pas_musk_01',
       level: 4,
       title: 'Elon Musk · ① 重要なら、やる',
-      icon: '🚗',
+      icon: '',
       en:
         "When something is important enough, you do it even if the odds are not in your favour. " +
         "People will tell you it can't be done. " +
@@ -6276,7 +6276,7 @@
       id: 'pas_musk_02',
       level: 4,
       title: 'Elon Musk · ② 第一原理',
-      icon: '🚗',
+      icon: '',
       en:
         "It's important to reason from first principles rather than by analogy. " +
         "We usually reason by analogy — we do something because others do it that way. " +
@@ -6294,7 +6294,7 @@
       id: 'pas_musk_03',
       level: 4,
       title: 'Elon Musk · ③ 失敗してもいい',
-      icon: '🚗',
+      icon: '',
       en:
         "Failure is an option here. " +
         "If things are not failing, you are not innovating enough. " +
@@ -6312,7 +6312,7 @@
       id: 'pas_son_01',
       level: 4,
       title: 'Masayoshi Son · ① 登る山を決める',
-      icon: '🗻',
+      icon: '',
       en:
         "The most important thing is to decide which mountain you want to climb. " +
         "Once you decide, the rest is just walking. " +
@@ -6330,7 +6330,7 @@
       id: 'pas_son_02',
       level: 4,
       title: 'Masayoshi Son · ② 300年ビジョン',
-      icon: '🗻',
+      icon: '',
       en:
         "I have a 300-year vision for SoftBank. " +
         "Information technology will change everything in the next century. " +
@@ -6349,7 +6349,7 @@
       id: 'pas_son_03',
       level: 4,
       title: 'Masayoshi Son · ③ 七割の確信',
-      icon: '🗻',
+      icon: '',
       en:
         "I never start a venture if I am only 50 percent sure of success. " +
         "That is gambling. " +
@@ -7544,14 +7544,14 @@
   // chapter of the same speaker instead of dumping the kid back at a
   // flat list.
   const SPEAKER_LABELS = {
-    jobs_stanford:  { label: 'Steve Jobs · Stanford',     icon: '🍎' },
-    huang_caltech:  { label: 'Jensen Huang · Caltech',    icon: '🚀' },
-    jack_ma:        { label: 'Jack Ma',                   icon: '💪' },
-    family_meals:   { label: 'Family Meals',              icon: '🍱' },
-    ronaldo:        { label: 'Cristiano Ronaldo',         icon: '⚽' },
-    ronaldo_work:   { label: 'Cristiano Ronaldo',         icon: '⚽' }, // alias
-    musk:           { label: 'Elon Musk',                 icon: '🚗' },
-    son:            { label: 'Masayoshi Son',             icon: '🗻' },
+    jobs_stanford:  { label: 'Steve Jobs · Stanford',     icon: '' },
+    huang_caltech:  { label: 'Jensen Huang · Caltech',    icon: '' },
+    jack_ma:        { label: 'Jack Ma',                   icon: '' },
+    family_meals:   { label: 'Family Meals',              icon: '' },
+    ronaldo:        { label: 'Cristiano Ronaldo',         icon: '' },
+    ronaldo_work:   { label: 'Cristiano Ronaldo',         icon: '' }, // alias
+    musk:           { label: 'Elon Musk',                 icon: '' },
+    son:            { label: 'Masayoshi Son',             icon: '' },
   };
   // Pull the speaker key out of "pas_<key>_NN" or "pas_<key>".
   // 'pas_jack_ma_03' → 'jack_ma'; 'pas_jack_ma' → 'jack_ma' (closing piece).
@@ -7575,7 +7575,7 @@
     for (const p of SHADOWING_PASSAGES) {
       const key = getPassageSpeaker(p);
       if (!byKey[key]) {
-        const meta = SPEAKER_LABELS[key] || { label: p.title || key, icon: p.icon || '📖' };
+        const meta = SPEAKER_LABELS[key] || { label: p.title || key, icon: p.icon || '' };
         byKey[key] = { key, label: meta.label, icon: meta.icon, chapters: [] };
         groups.push(byKey[key]);
       }
@@ -7621,7 +7621,7 @@
       level: 1,
       title: 'in / on / under',
       subtitle: '中・上・下',
-      icon: '📦',
+      icon: '',
       todayQ: 'ボールは箱の「中」？「上」？「下」？ 英語では？',
       imagery: '「ボール」と「箱」はずっと同じ。in / on / under の 3 つだけ入れ替わって、ボールが箱のどこにあるかを表します。',
       rule: 'in =「中」 / on =「上にのっている」 / under =「真下」',
@@ -7677,7 +7677,7 @@
       level: 1,
       title: 'am / is / are',
       subtitle: 'be動詞の使い分け',
-      icon: '🪞',
+      icon: '',
       todayQ: '「I ___ happy.」のここに何を入れる？ am? is? are?',
       imagery: '主語（だれ・なに）によって 3 つを使い分ける。「I」なら am、「You / We / They」なら are、「He / She / It」なら is。それだけ。',
       rule: 'I → am / You・We・They → are / He・She・It → is',
@@ -7735,7 +7735,7 @@
       level: 1,
       title: 'this / that',
       subtitle: 'これ・あれ',
-      icon: '👉',
+      icon: '',
       todayQ: '近いものは this、遠いものは that。指でさしてみよう。',
       imagery: '手で触れる近さなら this。指をのばして遠くを指すなら that。複数なら these（近い）/ those（遠い）。',
       rule: 'this = これ・近い / that = あれ・遠い',
@@ -7793,7 +7793,7 @@
       level: 1,
       title: 'a / an',
       subtitle: '不定冠詞の使い分け',
-      icon: '🅰',
+      icon: '',
       todayQ: '「a」と「an」、どっちを使う？決め方は単純。',
       imagery: '次にくる単語の最初の音で決まる。母音（a, e, i, o, u）で始まる単語の前は an、それ以外は a。',
       rule: 'a + 子音で始まる語 / an + 母音 (a, e, i, o, u) で始まる語',
@@ -7851,7 +7851,7 @@
       level: 2,
       title: 'was / were',
       subtitle: '過去の be動詞',
-      icon: '🕰',
+      icon: '',
       todayQ: '「私は昨日うれしかった」を英語で言うと？',
       imagery: 'am / is の過去形は was。are の過去形は were。「だった」「いた」を言うときの 2 つだけ。',
       rule: 'I / He / She / It → was / You / We / They → were',
@@ -7909,7 +7909,7 @@
       level: 2,
       title: '過去形 -ed と不規則動詞',
       subtitle: '昨日のことを言う',
-      icon: '⏪',
+      icon: '',
       todayQ: '「私は昨日サッカーをした」「夕食に寿司を食べた」— 動詞はどう変える？',
       imagery: '過去のことは動詞の形を変える。たいていは -ed をつけるだけ、でも一部は形がガラッと変わる「不規則動詞」。',
       rule: '規則動詞 → -ed (played) / 不規則動詞 → 別の形 (ate, went, saw)',
@@ -7967,7 +7967,7 @@
       level: 1,
       title: 'family words',
       subtitle: '家族の呼び方',
-      icon: '👨‍👩‍👧',
+      icon: '',
       todayQ: '「お母さん」を英語で呼ぶとき、mother と mum、どっちを使う？',
       imagery: 'フォーマルなときは mother / father、家族や友達の前ではカジュアルな mum / dad（イギリスは mum、アメリカは mom）。中身は同じ人。',
       rule: 'フォーマル: mother / father / grandmother / grandfather  ／  カジュアル: mum / dad / granny / grandad (BrE)',
@@ -8025,7 +8025,7 @@
       level: 1,
       title: 'older / younger',
       subtitle: '年上・年下',
-      icon: '👶',
+      icon: '',
       todayQ: '「お兄さん」と「弟」、英語ではどう区別する？',
       imagery: '英語には日本語の「兄」と「弟」を区別する 1 単語の言葉がない。代わりに older brother（年上の兄弟）/ younger brother（年下の兄弟）と説明する。',
       rule: 'older = 年上 / younger = 年下 / older brother = 兄 / younger brother = 弟 / older sister = 姉 / younger sister = 妹',
@@ -8083,7 +8083,7 @@
       level: 1,
       title: 'in / on / at / into',
       subtitle: '場所と動きの前置詞',
-      icon: '🐱',
+      icon: '',
       todayQ: 'ねこは箱の中？テーブルの上？駅にいる？それとも箱に飛びこむ？— 4 つの英単語で全部いえる。',
       imagery: '4 つの絵で覚えよう。in（中にいる）/ on（上にのっている）/ at（一点にいる）/ into（外から中へ動く）。前 3 つは「いる場所」、into だけは「動き」。',
       rule: 'in =「中」 / on =「上」 / at =「一点」 / into =「中へ動く」',
@@ -8094,10 +8094,10 @@
         { en: 'The cat goes into the box.', ja: 'ねこは箱の中に入ります。' },
       ],
       points: [
-        '🟢 in は「囲まれている中」。箱の中、部屋の中、車の中、水の中。',
-        '🔵 on は「面にくっついている上」。テーブルの上、壁にかかった絵も on。',
-        '🟡 at は「一点にいる」。駅、バス停、店、学校など、特定の場所。',
-        '🔴 into は「外から中へ動く」。go into / jump into / put into のように動詞といっしょ。',
+        'in は「囲まれている中」。箱の中、部屋の中、車の中、水の中。',
+        'on は「面にくっついている上」。テーブルの上、壁にかかった絵も on。',
+        'at は「一点にいる」。駅、バス停、店、学校など、特定の場所。',
+        'into は「外から中へ動く」。go into / jump into / put into のように動詞といっしょ。',
       ],
       quiz: [
         {
@@ -8142,7 +8142,7 @@
       level: 1,
       title: 'What / Where / Who / When',
       subtitle: '疑問詞ファミリー',
-      icon: '❓',
+      icon: '',
       todayQ: '「何？」「どこ？」「だれ？」「いつ？」— 4 つの単語で質問の入り口がわかる。',
       imagery: '5W1H の入り口。What（何）/ Where（どこ）/ Who（だれ）/ When（いつ）を覚えれば、たいていの質問ができる。聞く言葉が違うだけで文の形は似ている。',
       rule: 'What = 何 / Where = どこ / Who = だれ / When = いつ',
@@ -8153,10 +8153,10 @@
         { en: 'When is your birthday?', ja: 'あなたの誕生日はいつですか？' },
       ],
       points: [
-        '🟢 What = 物・事・名前を聞く（What is this? / What is your name?）',
-        '🔵 Where = 場所を聞く（Where is the toilet? / Where do you live?）',
-        '🟡 Who = 人を聞く（Who is your teacher? / Who made this?）',
-        '🟣 When = 時を聞く（When is your birthday? / When do you go?）',
+        'What = 物・事・名前を聞く（What is this? / What is your name?）',
+        'Where = 場所を聞く（Where is the toilet? / Where do you live?）',
+        'Who = 人を聞く（Who is your teacher? / Who made this?）',
+        'When = 時を聞く（When is your birthday? / When do you go?）',
       ],
       quiz: [
         {
@@ -8201,7 +8201,7 @@
       level: 1,
       title: 'numbers 1–100',
       subtitle: '数字の言い方',
-      icon: '🔢',
+      icon: '',
       todayQ: '1, 2, 3 ... 英語で 100 まで言えるかな？',
       imagery: '1〜10 を覚えたら、20 / 30 / ... / 90 とつなげるだけ。21 = twenty-one、35 = thirty-five のようにハイフンで結ぶ。',
       rule: '1–10 → one … ten / 11–19 → eleven … nineteen (-teen) / 20, 30 … 90 → twenty, thirty … ninety (-ty) / 21 = twenty-one',
@@ -8259,7 +8259,7 @@
       level: 1,
       title: 'What time is it?',
       subtitle: '時間を聞く・答える',
-      icon: '🕐',
+      icon: '',
       todayQ: '「今、何時？」を英語で何て言う？',
       imagery: '質問は「What time is it?」。答えは「It\'s ~ o\'clock」（ぴったり）or「It\'s ~ thirty」（30分）。',
       rule: 'What time is it? → It\'s ~ o\'clock. / It\'s ~ thirty.',
@@ -8317,7 +8317,7 @@
       level: 1,
       title: 'colours',
       subtitle: '色の言い方',
-      icon: '🎨',
+      icon: '',
       todayQ: '何色が好き？ 英語で何て言う？',
       imagery: '基本の 6 色を覚えれば日常会話は十分。質問は「What colour ~?」、答えは「It is ~」 or「I like ~」。',
       rule: 'What colour ~? → It is ~ / I like ~',
@@ -8327,9 +8327,9 @@
         { en: 'The grass is green.',   ja: '草は緑色です。' },
       ],
       points: [
-        '🔴 red 赤 / 🔵 blue 青 / 🟢 green 緑',
-        '🟡 yellow 黄 / ⚫ black 黒 / ⚪ white 白',
-        '🟠 orange だいだい / 🟣 purple むらさき / 🌸 pink ピンク / 🟤 brown 茶',
+        'red 赤 / blue 青 / green 緑',
+        'yellow 黄 / black 黒 / white 白',
+        'orange だいだい / purple むらさき / pink ピンク / brown 茶',
         '「何色？」は What colour ~?（BrE は colour、AmE は color。スペル違うだけ）',
       ],
       quiz: [
@@ -8375,7 +8375,7 @@
       level: 1,
       title: 'big / small',
       subtitle: '大きさの言い方',
-      icon: '🐘',
+      icon: '',
       todayQ: 'ゾウは big、アリは small。じゃ、ふつうより「ものすごく」大きいときは？',
       imagery: 'ふだんは big / small。もっと強調するときは huge（とても大きい）/ tiny（とても小さい）。very をつけても OK。',
       rule: 'tiny < small / big < huge < enormous',
@@ -8385,8 +8385,8 @@
         { en: 'The mountain is huge.',        ja: 'その山はとても大きいです。' },
       ],
       points: [
-        '🟢 big = 大きい（標準） / 🔴 small = 小さい（標準）',
-        '🟢 huge / enormous = ものすごく大きい / 🔴 tiny = ものすごく小さい',
+        'big = 大きい（標準） / small = 小さい（標準）',
+        'huge / enormous = ものすごく大きい / tiny = ものすごく小さい',
         '「とても大きい」は very big でも huge でも OK。',
         '反対の意味の言葉セット: big ⇔ small / huge ⇔ tiny。',
       ],
@@ -8433,7 +8433,7 @@
       level: 1,
       title: "like / don't like",
       subtitle: '好き・嫌い',
-      icon: '💗',
+      icon: '',
       todayQ: '「ねこが好き」「たまねぎは好きじゃない」を英語で。',
       imagery: '好きの強さで 4 段階。love（大好き）→ like（好き）→ don\'t like（好きじゃない）→ hate（きらい）。',
       rule: 'love > like > don\'t like > hate',
@@ -8443,10 +8443,10 @@
         { en: "I don't like onions.",   ja: '私はたまねぎが好きじゃないです。' },
       ],
       points: [
-        '💗 love = 大好き（家族・とても好きな物）',
-        '❤️ like = 好き（ふつうの「好き」）',
-        '🚫 don\'t like = 好きじゃない（やわらかい否定）',
-        '❌ hate = きらい（強い否定。きつめなので使いすぎ注意）',
+        'love = 大好き（家族・とても好きな物）',
+        'like = 好き（ふつうの「好き」）',
+        'don\'t like = 好きじゃない（やわらかい否定）',
+        'hate = きらい（強い否定。きつめなので使いすぎ注意）',
       ],
       quiz: [
         {
@@ -8491,7 +8491,7 @@
       level: 1,
       title: 'have / has',
       subtitle: '持っている・飼っている',
-      icon: '🎒',
+      icon: '',
       todayQ: '「私はえんぴつを持ってる」「彼女は犬を飼ってる」— have の使い分け。',
       imagery: 'have は「持つ / 飼う / 食べる」など色々。He / She / It のときだけ has に変わる（三単現の s）。否定は don\'t have / doesn\'t have。',
       rule: 'I / You / We / They → have / He / She / It → has',
@@ -8549,7 +8549,7 @@
       level: 1,
       title: 'there is / there are',
       subtitle: '〜がある・いる',
-      icon: '📍',
+      icon: '',
       todayQ: '「テーブルの上にカップがある」「公園に犬たちがいる」を英語で？',
       imagery: '「〜がある」「〜がいる」は there is / there are。1 つなら is、複数なら are。',
       rule: 'there is + 単数（1 つ）/ there are + 複数（2 つ以上）',
@@ -8607,7 +8607,7 @@
       level: 1,
       title: "can / can't",
       subtitle: 'できる・できない',
-      icon: '⚡',
+      icon: '',
       todayQ: '「私はおよげる」「彼はピアノを弾ける」を英語で。',
       imagery: '「できる」は can、「できない」は can\'t（= cannot）。can の後はいつも動詞の原形（s をつけない）。',
       rule: 'can + 動詞の原形（できる） / can\'t + 動詞の原形（できない）',
@@ -8665,7 +8665,7 @@
       level: 1,
       title: 'eat / go / run',
       subtitle: '基本の動作動詞',
-      icon: '🏃',
+      icon: '',
       todayQ: '「食べる」「行く」「走る」— 毎日使う 3 つの動詞。',
       imagery: '中学英語で最初に出てくる動作動詞。eat = 食べる、go = 行く、run = 走る。He / She のときは語尾に -s をつける。',
       rule: 'I/You/We/They → eat, go, run / He/She/It → eats, goes, runs',
@@ -8675,9 +8675,9 @@
         { en: 'We run in the park.',          ja: '私たちは公園で走ります。' },
       ],
       points: [
-        '🍱 eat = 食べる（食事 / おやつ）',
-        '🚶 go = 行く（移動 / 出かける）',
-        '🏃 run = 走る（速く動く）',
+        'eat = 食べる（食事 / おやつ）',
+        'go = 行く（移動 / 出かける）',
+        'run = 走る（速く動く）',
         '三単現（He/She/It）のときは語尾に s。go → goes（o の後は -es）、eat → eats、run → runs。',
       ],
       quiz: [
@@ -8723,7 +8723,7 @@
       level: 2,
       title: 'in / on / at (場所)',
       subtitle: '範囲の大きさで使い分け',
-      icon: '📌',
+      icon: '',
       todayQ: '「東京で」「テーブルの上で」「7時に」— in / on / at どれを使う？',
       imagery: 'at（点）→ on（面）→ in（中・空間）と「広さ」が広がるイメージ。場所だけでなく時間にも同じパターン。',
       rule: 'at = 点・特定の場所 / on = 面・曜日 / in = 空間・月・年',
@@ -8733,9 +8733,9 @@
         { en: 'I live in Tokyo.',           ja: '私は東京に住んでいます。' },
       ],
       points: [
-        '🟡 at = ピンポイント（at school, at the park, at 7 o\'clock）',
-        '🔵 on = 面に接する（on the wall, on Monday, on the floor）',
-        '🟢 in = 囲まれた中・広い場所（in Tokyo, in March, in the room）',
+        'at = ピンポイント（at school, at the park, at 7 o\'clock）',
+        'on = 面に接する（on the wall, on Monday, on the floor）',
+        'in = 囲まれた中・広い場所（in Tokyo, in March, in the room）',
         '時間も同じパターン: 時刻 → at、曜日 → on、月/年 → in。',
       ],
       quiz: [
@@ -8781,7 +8781,7 @@
       level: 2,
       title: 'in / into',
       subtitle: '状態と動きの使い分け',
-      icon: '➡️',
+      icon: '',
       todayQ: '「ねこは箱の中にいる」と「ねこは箱の中に入る」、英語ではどう違う？',
       imagery: 'in = すでに「中にいる」状態。into = 外から「中へ動く」動き。動詞が「いる系」か「動く系」かで決まる。',
       rule: 'in =「中にいる」状態 / into =「中へ動く」動き',
@@ -8791,8 +8791,8 @@
         { en: 'She walked into the room.',      ja: '彼女は部屋に入りました。' },
       ],
       points: [
-        '🟢 in = いる / ある（状態）。be 動詞や stay などとセット。',
-        '🔴 into = 入る / 飛びこむ / 注ぐ（動き）。go / run / jump / put / pour とセット。',
+        'in = いる / ある（状態）。be 動詞や stay などとセット。',
+        'into = 入る / 飛びこむ / 注ぐ（動き）。go / run / jump / put / pour とセット。',
         'The water is in the cup.（中にある）vs Pour water into the cup.（注ぎ入れる）。',
         '「車に乗る」は get into the car（動き）。「車の中にいる」は be in the car（状態）。',
       ],
@@ -8839,7 +8839,7 @@
       level: 2,
       title: 'will',
       subtitle: 'これからやること（未来）',
-      icon: '🔮',
+      icon: '',
       todayQ: '「明日サッカーをするよ」を英語で？',
       imagery: '「これからすること」「未来のこと」を表す。動詞の前に will を置くだけ。',
       rule: 'will + 動詞の原形 / 否定: won\'t (= will not) / 疑問: Will you ~?',
@@ -8897,7 +8897,7 @@
       level: 2,
       title: '命令文',
       subtitle: 'やってほしいことを伝える',
-      icon: '✋',
+      icon: '',
       todayQ: '「ドアを開けて」を英語で？',
       imagery: '相手に「〜して」と頼んだり指示したりするときは、主語をつけずに動詞の原形から始める。',
       rule: '動詞の原形で始める / 否定は Don\'t + 原形 / 丁寧には please',
@@ -8955,7 +8955,7 @@
       level: 2,
       title: '形容詞の位置',
       subtitle: 'a big dog の語順',
-      icon: '🔤',
+      icon: '',
       todayQ: '「大きい犬」を英語で？ "dog big" それとも "big dog"？',
       imagery: '英語では形容詞は名詞の「前」に置く。日本語と同じ順番（大きい→犬 = big → dog）。',
       rule: 'a / an / the + 形容詞 + 名詞（a big dog）',
@@ -9013,7 +9013,7 @@
       level: 3,
       title: '現在完了',
       subtitle: 'have / has + 過去分詞',
-      icon: '⏳',
+      icon: '',
       todayQ: '「もう食べた」「3年ここに住んでいる」を英語で？',
       imagery: '今までと今をつなぐ時制。完了（もう〜した）/ 経験（〜したことがある）/ 継続（ずっと〜してきた）の 3 つの使い方がある。',
       rule: 'have / has + 過去分詞',
@@ -9024,8 +9024,8 @@
       ],
       points: [
         '⏳ 完了 — 「もう／ちょうど」(already, just, yet) を一緒に使う。',
-        '🌐 経験 — 「〜したことがある」(ever, never, ~ times)。',
-        '🧱 継続 — 「ずっと〜してきた」(for, since)。',
+        '経験 — 「〜したことがある」(ever, never, ~ times)。',
+        '継続 — 「ずっと〜してきた」(for, since)。',
         '主語が he / she / it のときは has。それ以外は have。',
       ],
       quiz: [
@@ -9071,7 +9071,7 @@
       level: 3,
       title: '受け身',
       subtitle: '〜される',
-      icon: '🔄',
+      icon: '',
       todayQ: '「これは日本で作られた」を英語で？',
       imagery: '「誰かが何かをした」を「何かが〜された」とひっくり返す形。be 動詞 + 過去分詞でできる。',
       rule: 'be 動詞 + 過去分詞 (+ by + 行為者)',
@@ -9129,7 +9129,7 @@
       level: 3,
       title: '関係代名詞',
       subtitle: 'who / which / that',
-      icon: '🔗',
+      icon: '',
       todayQ: '「東京に住んでいる友達」を 1 文で言える？',
       imagery: '名詞のすぐ後ろに「どんな名詞か」を説明する文をくっつける糊（のり）。人なら who、物なら which。どちらでも that が使える。',
       rule: '人 → who(/that) / 物 → which(/that)',
@@ -9139,8 +9139,8 @@
         { en: 'The man who is talking is my teacher.', ja: '話している男性は私の先生です。' },
       ],
       points: [
-        '🧑 人を説明 → who（または that）。',
-        '🪑 物・動物を説明 → which（または that）。',
+        '人を説明 → who（または that）。',
+        '物・動物を説明 → which（または that）。',
         '関係代名詞の後ろに「動詞」または「主語＋動詞」が続く。',
         '目的格のときは省略できる（the book (that) I read）。',
       ],
@@ -9187,7 +9187,7 @@
       level: 3,
       title: 'to 不定詞',
       subtitle: '〜すること / 〜するために',
-      icon: '➡️',
+      icon: '',
       todayQ: '「サッカーがしたい」「サッカーをするために公園へ行く」— "to + 動詞" の使い方。',
       imagery: '「to + 動詞の原形」は 3 つの役割をこなす万能ツール。① 〜すること（名詞）、② 〜するために（副詞）、③ 〜する／すべき（形容詞）。',
       rule: 'to + 動詞の原形',
@@ -9197,9 +9197,9 @@
         { en: 'I have a lot of work to do.',     ja: '私にはやるべき仕事がたくさんある。' },
       ],
       points: [
-        '📛 名詞用法 — 「〜すること」(I like to read = 読むのが好き)',
-        '🎯 副詞用法 — 「〜するために」(I came to study = 勉強するために来た)',
-        '✍️ 形容詞用法 — 「〜する／すべき」(something to eat = 食べるもの)',
+        '名詞用法 — 「〜すること」(I like to read = 読むのが好き)',
+        '副詞用法 — 「〜するために」(I came to study = 勉強するために来た)',
+        '形容詞用法 — 「〜する／すべき」(something to eat = 食べるもの)',
         'to の後ろはいつも動詞の原形（× to went, × to going）。',
       ],
       quiz: [
@@ -9245,7 +9245,7 @@
       level: 3,
       title: '比較級と最上級',
       subtitle: 'more / most',
-      icon: '📊',
+      icon: '',
       todayQ: '「私は弟より背が高い」「彼が一番速い」を英語で？',
       imagery: '2 つを比べる → 比較級（-er / more）。3 つ以上の中で「一番」→ 最上級（-est / most）。',
       rule: '短い形容詞 → -er / -est ／ 長い形容詞 → more / most',
@@ -9255,9 +9255,9 @@
         { en: 'This is more interesting than that.', ja: 'これはあれよりも面白い。' },
       ],
       points: [
-        '📐 短い (1〜2 音節) → 語尾に -er / -est: tall → taller / tallest, big → bigger / biggest。',
-        '📜 長い (3 音節以上) → 前に more / most: interesting → more interesting / most interesting。',
-        '⚠️ 不規則: good → better / best、bad → worse / worst、many → more / most。',
+        '短い (1〜2 音節) → 語尾に -er / -est: tall → taller / tallest, big → bigger / biggest。',
+        '長い (3 音節以上) → 前に more / most: interesting → more interesting / most interesting。',
+        '不規則: good → better / best、bad → worse / worst、many → more / most。',
         '「〜より」は than、「〜の中で一番」は in (場所) / of (グループ)。',
       ],
       quiz: [
@@ -9303,7 +9303,7 @@
       level: 4,
       title: '仮定法過去',
       subtitle: 'もし〜だったら',
-      icon: '🎭',
+      icon: '',
       todayQ: '「もし私が鳥だったら、空を飛べるのに」を英語で？',
       imagery: '現実とちがうこと、または起こりそうにないことを「もし〜なら」と言う型。If 節は過去形、主節は would / could / might + 動詞の原形。be動詞は I/he/she でも were を使うのが伝統。',
       rule: 'If + 主語 + 過去形 (were), 主語 + would / could / might + 動詞の原形',
@@ -9314,9 +9314,9 @@
       ],
       points: [
         '⏰ 「現在の事実とちがうこと」を仮想して言う。If 節も主節も「過去形」になるが、意味は「今」のこと。',
-        '🅱️ be動詞は I / he / she / it でも were を使うのが正式 (口語では was も可)。',
-        '🎁 主節は would (〜だろう) / could (〜できるのに) / might (〜かもしれない)。',
-        '📝 直説法 (現実) との違い: If it rains tomorrow, I will stay home. (現実) ↔ If I were rich, I would buy a house. (仮想)',
+        '🅱 be動詞は I / he / she / it でも were を使うのが正式 (口語では was も可)。',
+        '主節は would (〜だろう) / could (〜できるのに) / might (〜かもしれない)。',
+        '直説法 (現実) との違い: If it rains tomorrow, I will stay home. (現実) ↔ If I were rich, I would buy a house. (仮想)',
       ],
       quiz: [
         {
@@ -9361,7 +9361,7 @@
       level: 4,
       title: '分詞構文',
       subtitle: '〜しながら / 〜なので',
-      icon: '🌀',
+      icon: '',
       todayQ: '「音楽を聞きながら、彼は宿題をした」を英語で 1 文に？',
       imagery: '接続詞 + 主語をまるごと省いて、動詞を -ing にすると「同時に / 理由 / 時間」を表す副詞節になる。短くスマートに言える上級ワザ。',
       rule: '-ing (現在分詞) で「同時 / 理由 / 時間」を表す副詞節を作る',
@@ -9371,10 +9371,10 @@
         { en: 'Walking down the street, I saw an old friend.', ja: '通りを歩いていたら、昔の友達に会った。' },
       ],
       points: [
-        '🟢 「同時に〜しながら」のとき: -ing で開始する。Sitting on the bench, he read a book.',
-        '🔵 「〜なので」(理由)のとき: Being + 形容詞 / 過去分詞 で開始することが多い。Being sick, he stayed home.',
-        '🟡 受け身 (〜されて) のときは Being + 過去分詞。Surprised by the noise, the cat ran away.',
-        '⚠️ 主節と分詞節の主語が同じであることが必須。違うと懸垂分詞 (dangling participle) で誤りになる。',
+        '「同時に〜しながら」のとき: -ing で開始する。Sitting on the bench, he read a book.',
+        '「〜なので」(理由)のとき: Being + 形容詞 / 過去分詞 で開始することが多い。Being sick, he stayed home.',
+        '受け身 (〜されて) のときは Being + 過去分詞。Surprised by the noise, the cat ran away.',
+        '主節と分詞節の主語が同じであることが必須。違うと懸垂分詞 (dangling participle) で誤りになる。',
       ],
       quiz: [
         {
@@ -9419,7 +9419,7 @@
       level: 4,
       title: '関係副詞',
       subtitle: 'where / when / why',
-      icon: '🧭',
+      icon: '',
       todayQ: '「彼が住んでいる町」「私が生まれた日」を 1 文で言える？',
       imagery: '名詞のあとに「どんな名詞か」を説明する糊。場所には where、時には when、理由には why。関係代名詞 (who/which) との違いは、後ろが「完全な文」になること。',
       rule: '場所 → where / 時 → when / 理由 → why',
@@ -9429,9 +9429,9 @@
         { en: 'Tell me the reason why you left.',         ja: 'あなたが去った理由を教えてください。' },
       ],
       points: [
-        '📍 where = at / in / on which。場所を表す名詞 (the place / the town / the country) のあとに。',
+        'where = at / in / on which。場所を表す名詞 (the place / the town / the country) のあとに。',
         '⏰ when = at / on / in which。時を表す名詞 (the day / the year / the time) のあとに。',
-        '❓ why = for which。理由を表す名詞 (the reason) のあとにのみ使える。',
+        'why = for which。理由を表す名詞 (the reason) のあとにのみ使える。',
         '🆚 関係代名詞 (who/which) との違い: 関係副詞のあとは「主語 + 動詞」が完全に揃った文 (主語が抜けない)。',
       ],
       quiz: [
@@ -9477,7 +9477,7 @@
       level: 4,
       title: '完了不定詞',
       subtitle: 'to have + 過去分詞',
-      icon: '⏳',
+      icon: '',
       todayQ: '「彼は若いころ俳優だったらしい」を 1 文で？',
       imagery: '主節より「前」のことを言うときに使う特別な不定詞。to + have + 過去分詞 で「〜したらしい / 〜したことを残念に思う」など、過去のことについて推測や感情を述べる。',
       rule: 'to have + 過去分詞 (主節より前のこと)',
@@ -9488,9 +9488,9 @@
       ],
       points: [
         '⏳ to have + 過去分詞 = 主節の動詞より前の出来事。He seems to be tired. (今疲れている) ↔ He seems to have been tired. (前は疲れていた)',
-        '😢 sorry / glad / lucky など感情語 + to have + 過去分詞: 「〜したことを残念に思う / うれしく思う」',
-        '🗣️ said / believed / thought + to have + 過去分詞: 「〜したと言われている / 信じられている」',
-        '🤝 動名詞でも同じ構造あり: having + 過去分詞 (= 完了動名詞)。He admits having lied.',
+        'sorry / glad / lucky など感情語 + to have + 過去分詞: 「〜したことを残念に思う / うれしく思う」',
+        'said / believed / thought + to have + 過去分詞: 「〜したと言われている / 信じられている」',
+        '動名詞でも同じ構造あり: having + 過去分詞 (= 完了動名詞)。He admits having lied.',
       ],
       quiz: [
         {
@@ -9535,7 +9535,7 @@
       level: 4,
       title: '強調',
       subtitle: 'do + 動詞 / It is X that ~',
-      icon: '✨',
+      icon: '',
       todayQ: '「私は本当にあなたを愛している」を強く言うには？',
       imagery: '同じ意味でも「強調」したいとき、英語には 2 つのワザがある。① 動詞の前に do / does / did を入れる。② It is X that ~ で文中の語を取り出して目立たせる (強調構文)。',
       rule: 'do/does/did + 動詞の原形 / It is X that ~',
@@ -9545,10 +9545,10 @@
         { en: 'It was John who broke the window.',         ja: '窓を割ったのは(他でもない)ジョンだった。' },
       ],
       points: [
-        '💪 do/does/did + 動詞の原形: 動詞の意味を強める。三単現は does、過去は did、それ以外は do。',
-        '🎯 It is + 強調したい語 + that ~: 主語・目的語・場所・時間 を抜き出して強調。',
-        '👤 強調が「人」のときは that の代わりに who も使える: It is John who broke the window.',
-        '⚠️ 強調構文の it は形だけで意味なし。「それは」と訳さない。',
+        'do/does/did + 動詞の原形: 動詞の意味を強める。三単現は does、過去は did、それ以外は do。',
+        'It is + 強調したい語 + that ~: 主語・目的語・場所・時間 を抜き出して強調。',
+        '強調が「人」のときは that の代わりに who も使える: It is John who broke the window.',
+        '強調構文の it は形だけで意味なし。「それは」と訳さない。',
       ],
       quiz: [
         {
@@ -9593,7 +9593,7 @@
       level: 5,
       title: '仮定法過去完了',
       subtitle: 'もしあのとき〜していたら',
-      icon: '🕰',
+      icon: '',
       todayQ: '「もっと勉強していたら、合格していたのに」を英語で？',
       imagery: '過去の事実とちがうことを「もし〜していたら、〜していただろう」と振り返る型。If 節は had + 過去分詞、主節は would / could / might + have + 過去分詞。',
       rule: 'If + 主語 + had + 過去分詞, 主語 + would / could / might + have + 過去分詞',
@@ -9603,10 +9603,10 @@
         { en: "If she hadn't come, the meeting would have been cancelled.", ja: '彼女が来なかったら、会議は中止になっていただろう。' },
       ],
       points: [
-        '🕰 「過去の事実とちがう」想定。If 節も主節も「過去完了」が骨格。',
+        '「過去の事実とちがう」想定。If 節も主節も「過去完了」が骨格。',
         '🅸 If 節: had + 過去分詞 / 主節: would (could / might) + have + 過去分詞。',
-        '🔀 仮定法過去 (If I had time, I would help) との違い: 過去完了は「あのとき」、仮定法過去は「いま」。',
-        '✍️ 倒置で if を省略可: Had I known, I would have come. (= If I had known, I would have come.)',
+        '仮定法過去 (If I had time, I would help) との違い: 過去完了は「あのとき」、仮定法過去は「いま」。',
+        '倒置で if を省略可: Had I known, I would have come. (= If I had known, I would have come.)',
       ],
       quiz: [
         {
@@ -9651,7 +9651,7 @@
       level: 5,
       title: '倒置',
       subtitle: 'Never / Hardly / No sooner',
-      icon: '🔄',
+      icon: '',
       todayQ: '「私はこんな美しい景色を見たことがない」を Never で始めると？',
       imagery: '否定や限定の副詞 (Never / Hardly / No sooner / Only) を文頭に出すと、後ろの主語と (助)動詞の語順が疑問文のように入れ替わる。文学的・感情的な響きになる。',
       rule: 'Never / Hardly / No sooner / Only + 助動詞 + 主語 + 動詞',
@@ -9661,10 +9661,10 @@
         { en: 'No sooner had he sat down than the phone rang.',   ja: '彼が座るや否や電話が鳴った。' },
       ],
       points: [
-        "❌ 否定の副詞 (Never / Rarely / Seldom / Little) を文頭 → 助動詞 + 主語 + 動詞。",
-        '⚡ Hardly / Scarcely had + 主語 + 過去分詞 + when ~ : 「〜するや否や」',
-        '🚀 No sooner had + 主語 + 過去分詞 + than ~ : 「〜するや否や」(than に注意。when ではない)',
-        '🎯 Only + 副詞句 を文頭にした場合も倒置: Only then did I realise the truth.',
+        "否定の副詞 (Never / Rarely / Seldom / Little) を文頭 → 助動詞 + 主語 + 動詞。",
+        'Hardly / Scarcely had + 主語 + 過去分詞 + when ~ : 「〜するや否や」',
+        'No sooner had + 主語 + 過去分詞 + than ~ : 「〜するや否や」(than に注意。when ではない)',
+        'Only + 副詞句 を文頭にした場合も倒置: Only then did I realise the truth.',
       ],
       quiz: [
         {
@@ -9709,7 +9709,7 @@
       level: 5,
       title: '付帯状況の with',
       subtitle: 'with + O + 補語',
-      icon: '🤝',
+      icon: '',
       todayQ: '「腕を組んで」「目を閉じて」を 1 語で？',
       imagery: 'with + 名詞 + 形容詞 / -ing / -ed で「〜の状態で / 〜しながら」を表す。「同時にこうなっている」サブ情景を 1 つの句で言える、上級表現。',
       rule: 'with + O + adj / V-ing (能動) / V-ed (受動)',
@@ -9719,10 +9719,10 @@
         { en: 'With night coming on, we hurried home.',           ja: '夜が迫っていたので、私たちは急いで家に帰った。' },
       ],
       points: [
-        '🟢 with + O + 形容詞: 静的な状態。with the door open (ドアを開けたまま)。',
-        '🔵 with + O + V-ing: O が能動的に「〜している」。with tears running down (涙を流しながら)。',
-        '🟣 with + O + V-ed: O が受動的に「〜されている」。with arms crossed (腕を組んで = 組まれて)。',
-        '🌙 文頭に出すと「〜の状況で」と背景を描く副詞節になる。With everyone watching, he started his speech.',
+        'with + O + 形容詞: 静的な状態。with the door open (ドアを開けたまま)。',
+        'with + O + V-ing: O が能動的に「〜している」。with tears running down (涙を流しながら)。',
+        'with + O + V-ed: O が受動的に「〜されている」。with arms crossed (腕を組んで = 組まれて)。',
+        '文頭に出すと「〜の状況で」と背景を描く副詞節になる。With everyone watching, he started his speech.',
       ],
       quiz: [
         {
@@ -9767,7 +9767,7 @@
       level: 5,
       title: '譲歩',
       subtitle: 'No matter / Even though / However',
-      icon: '🛡',
+      icon: '',
       todayQ: '「どんなに難しくてもあきらめない」を英語で？',
       imagery: '「〜であっても」と一歩譲って前置きする型。although / even though / no matter / however を使い分ける。文の意味を強める職人技。',
       rule: 'Although + 文 / No matter what (how / who) + 文 / However + 形容詞 + 主語 + 動詞',
@@ -9777,10 +9777,10 @@
         { en: "No matter what happens, I'll be here.",                   ja: '何があっても、私はここにいます。' },
       ],
       points: [
-        '🌧 although / though + 文: 「〜だけれども」(事実を譲る)。',
-        '🌪 even though / even if + 文: 「たとえ〜でも」(より強い譲歩)。though は事実、if は仮定。',
-        "🌀 no matter what / how / who / when / where + 文: 「何が / どんなに 〜でも」。= whatever / however / whoever ~ ",
-        '⛰ However + 形容詞 + 主語 + 動詞: 「どんなに〜でも」。However hard you try, ~ (どんなに頑張っても〜)',
+        'although / though + 文: 「〜だけれども」(事実を譲る)。',
+        'even though / even if + 文: 「たとえ〜でも」(より強い譲歩)。though は事実、if は仮定。',
+        "no matter what / how / who / when / where + 文: 「何が / どんなに 〜でも」。= whatever / however / whoever ~ ",
+        'However + 形容詞 + 主語 + 動詞: 「どんなに〜でも」。However hard you try, ~ (どんなに頑張っても〜)',
       ],
       quiz: [
         {
@@ -9825,7 +9825,7 @@
       level: 5,
       title: '高度な接続副詞',
       subtitle: 'however / therefore / nevertheless',
-      icon: '🪢',
+      icon: '',
       todayQ: '「彼は努力した。しかし合格しなかった」を however を使って?',
       imagery: '文と文をつなぐ「副詞」たち。形は副詞だけど、論理を運ぶ重要な道具。;(セミコロン) や . (ピリオド) のあとに置く。',
       rule: '~ ; however, ~ / ~ ; therefore, ~ / ~ ; nevertheless, ~',
@@ -9835,10 +9835,10 @@
         { en: 'She was tired; nevertheless, she kept working.',     ja: '彼女は疲れていたが、それでも働き続けた。' },
       ],
       points: [
-        '🤔 however = しかし (but よりフォーマル)。文頭 / 文中で使えるが、必ずカンマで区切る。',
-        '➡️ therefore / hence / thus = それゆえに (結果)。because (理由) との対をなす。',
-        '🛡 nevertheless / nonetheless = それにもかかわらず。although の結論版。',
-        '➕ moreover / furthermore / in addition = さらに (情報追加)。and よりフォーマル。',
+        'however = しかし (but よりフォーマル)。文頭 / 文中で使えるが、必ずカンマで区切る。',
+        'therefore / hence / thus = それゆえに (結果)。because (理由) との対をなす。',
+        'nevertheless / nonetheless = それにもかかわらず。although の結論版。',
+        'moreover / furthermore / in addition = さらに (情報追加)。and よりフォーマル。',
       ],
       quiz: [
         {
@@ -9884,7 +9884,7 @@
       level: 2,
       title: 'ago / before / after',
       subtitle: '時間の「前・後」を言う',
-      icon: '⏳',
+      icon: '',
       todayQ: '「3日前に」「昼食の前に」「学校の後で」— ago / before / after をどう使い分ける？',
       imagery: '今を「点」として、ago は「今からどれだけ前」、before / after は「ある出来事の前 / 後」と覚える。ago は数字とセット、before/after は出来事や時刻とセット。',
       rule: 'ago = 今から〜前 (数字+期間) / before = 〜の前に / after = 〜の後に',
@@ -9894,10 +9894,10 @@
         { en: 'We play soccer after school.',     ja: '私たちは放課後サッカーをします。' },
       ],
       points: [
-        '🟡 ago = 今から数えて〜前。必ず「数字 + 期間 + ago」(two days ago / a week ago)。動詞は過去形。',
-        '🔵 before = 「〜より前に」。出来事・時刻の前。before lunch / before 7 / before you came。',
-        '🟢 after = 「〜の後に」。before の反対。after school / after dinner / after he left。',
-        '⚠️ ago と before は混同しやすい。「3 days ago = 今から3日前」、「3 days before = (基準点から)3日前」。日記に書くときは ago。',
+        'ago = 今から数えて〜前。必ず「数字 + 期間 + ago」(two days ago / a week ago)。動詞は過去形。',
+        'before = 「〜より前に」。出来事・時刻の前。before lunch / before 7 / before you came。',
+        'after = 「〜の後に」。before の反対。after school / after dinner / after he left。',
+        'ago と before は混同しやすい。「3 days ago = 今から3日前」、「3 days before = (基準点から)3日前」。日記に書くときは ago。',
       ],
       quiz: [
         {
@@ -9942,7 +9942,7 @@
       level: 3,
       title: 'in / by / while',
       subtitle: '期限・期間・〜の間',
-      icon: '⏰',
+      icon: '',
       todayQ: '「2時間で」「5時までに」「〜している間に」— in / by / while をどう使い分ける？',
       imagery: 'in = 「〜以内に・〜後に」(これから経過する時間)。by = 「〜までに」(期限・締め切り)。while = 「〜している間に」(他のことが起きている期間)。「期間で」「期限まで」「最中に」と覚える。',
       rule: 'in = 〜したら(後)に / by = 〜までに(期限) / while = 〜している間に',
@@ -9952,11 +9952,11 @@
         { en: 'He read while I cooked.',             ja: '私が料理する間、彼は読書をしました。' },
       ],
       points: [
-        '🟡 in + 期間 = 「(今から) その時間が経ったら」(in 5 minutes = 5分後に)。未来形と相性◎。',
-        '🔵 by + 時刻 / 日付 = 「その時までに」(締め切り)。by Friday / by 5 p.m. / by tomorrow。',
-        '🟢 while + 主語+動詞 = 「〜している間に」。同時に起きる2つの動作をつなぐ。',
-        '⚠️ until は「〜まで(ずっと)」。by は「〜までに(締め切り)」。Stay until 5 (5時までいる) ≠ Come by 5 (5時までに来る)。',
-        '⚠️ in と after は混同注意。「in 2 hours = 2時間後 (今から)」/「after 2 hours = 2時間経った後 (基準点から)」。会話では in が普通。',
+        'in + 期間 = 「(今から) その時間が経ったら」(in 5 minutes = 5分後に)。未来形と相性。',
+        'by + 時刻 / 日付 = 「その時までに」(締め切り)。by Friday / by 5 p.m. / by tomorrow。',
+        'while + 主語+動詞 = 「〜している間に」。同時に起きる2つの動作をつなぐ。',
+        'until は「〜まで(ずっと)」。by は「〜までに(締め切り)」。Stay until 5 (5時までいる) ≠ Come by 5 (5時までに来る)。',
+        'in と after は混同注意。「in 2 hours = 2時間後 (今から)」/「after 2 hours = 2時間経った後 (基準点から)」。会話では in が普通。',
       ],
       quiz: [
         {
@@ -10002,7 +10002,7 @@
       level: 1,
       title: 'some / any',
       subtitle: 'いくつか・どれでも',
-      icon: '🍎',
+      icon: '',
       todayQ: '「水が少しある」と「水はある？」、英語ではどう言う？',
       imagery: 'some は「ある (はい寄り)」の場面。any は「ない・あるか分からない (疑問・否定)」の場面。覚え方: some は肯定文・依頼の問いかけ / any は否定文・本当の疑問文。',
       rule: 'some = 肯定文「いくつか」/ any = 否定文・疑問文「どれも・いくらか」',
@@ -10012,10 +10012,10 @@
         { en: "I don't have any apples.",               ja: 'りんごは1つもない。' },
       ],
       points: [
-        '🟢 肯定文には some: I have some friends. (友達がいる)',
-        '🔵 疑問文・否定文には any: Do you have any time? / I don\'t have any time.',
-        '🟡 依頼・申し出の疑問文では some を使うのが自然: Would you like some coffee? (コーヒーはいかが？) — any にすると「コーヒーが本当にあるかどうか」を聞いてしまう。',
-        '⚠️ any は「どんな〜でも」の意味でも使う: Take any seat. (どの席でも座って) (肯定文だが「どれでも」の意味)。',
+        '肯定文には some: I have some friends. (友達がいる)',
+        '疑問文・否定文には any: Do you have any time? / I don\'t have any time.',
+        '依頼・申し出の疑問文では some を使うのが自然: Would you like some coffee? (コーヒーはいかが？) — any にすると「コーヒーが本当にあるかどうか」を聞いてしまう。',
+        'any は「どんな〜でも」の意味でも使う: Take any seat. (どの席でも座って) (肯定文だが「どれでも」の意味)。',
       ],
       quiz: [
         {
@@ -10060,7 +10060,7 @@
       level: 2,
       title: 'much / many / a lot of',
       subtitle: '数えられる・られない',
-      icon: '🥛',
+      icon: '',
       todayQ: '「水がたくさん」と「本がたくさん」、英語ではどう違う？',
       imagery: 'water (水) は数えられない名詞 → much。book (本) は数えられる → many。a lot of はどちらでも使えて口語的。学校英語の重要ポイント！',
       rule: 'many + 数えられる名詞 (本・人) / much + 数えられない名詞 (水・時間) / a lot of = 両方OK',
@@ -10070,11 +10070,11 @@
         { en: 'I have a lot of friends.',               ja: '友達がたくさんいる。' },
       ],
       points: [
-        '🟢 数えられる名詞 (countable): book/friend/student/apple → many / a lot of / a few',
-        '🔵 数えられない名詞 (uncountable): water/time/money/information → much / a lot of / a little',
-        '🟡 a lot of は会話で最も自然。much / many は否定文・疑問文で多く使う (Do you have much time? / I don\'t have many friends.)。肯定文で much / many は少しフォーマル。',
-        '⚠️ よくある間違い: ❌ many information / ❌ much books → ✅ much information / ✅ many books。information / advice / news / furniture は不可算！',
-        '💡 数の少なさ: a few books (少しある・肯定的) ↔ few books (ほとんどない・否定的)。a little water (少しある) ↔ little water (ほとんどない)。',
+        '数えられる名詞 (countable): book/friend/student/apple → many / a lot of / a few',
+        '数えられない名詞 (uncountable): water/time/money/information → much / a lot of / a little',
+        'a lot of は会話で最も自然。much / many は否定文・疑問文で多く使う (Do you have much time? / I don\'t have many friends.)。肯定文で much / many は少しフォーマル。',
+        'よくある間違い: many information / much books → much information / many books。information / advice / news / furniture は不可算！',
+        '数の少なさ: a few books (少しある・肯定的) ↔ few books (ほとんどない・否定的)。a little water (少しある) ↔ little water (ほとんどない)。',
       ],
       quiz: [
         {
@@ -10119,7 +10119,7 @@
       level: 3,
       title: 'so / such',
       subtitle: 'こんなに〜',
-      icon: '✨',
+      icon: '',
       todayQ: '「とても良い映画」と「こんなに良い映画」、英語ではどう違う？',
       imagery: 'so + 形容詞 / 副詞 (大きさを直接強調) / such + (a/an) + 形容詞 + 名詞 (名詞ごと強調)。"so good a movie" は古風。"such a good movie" が現代的。',
       rule: 'so + 形容詞/副詞 / such + (a/an) + 形容詞 + 名詞',
@@ -10129,11 +10129,11 @@
         { en: 'I am so tired that I can\'t move.',      ja: 'とても疲れていて動けない。' },
       ],
       points: [
-        '🟢 so + 形容詞 / 副詞: It was so beautiful. / She runs so fast.',
-        '🔵 such + (a/an) + 形容詞 + 名詞: It was such a beautiful day. / She is such a kind person.',
-        '🟡 so ... that 構文 = 「とても〜なので…」: I was so tired that I fell asleep. (とても疲れたので眠ってしまった)',
-        '🟡 such ... that 構文 = 同じ意味で名詞が中心: It was such a good film that I watched it twice.',
-        '⚠️ 不可算名詞や複数名詞には a/an を付けない: such good news (○) / such bad weather (○) / such interesting books (○)。',
+        'so + 形容詞 / 副詞: It was so beautiful. / She runs so fast.',
+        'such + (a/an) + 形容詞 + 名詞: It was such a beautiful day. / She is such a kind person.',
+        'so ... that 構文 = 「とても〜なので…」: I was so tired that I fell asleep. (とても疲れたので眠ってしまった)',
+        'such ... that 構文 = 同じ意味で名詞が中心: It was such a good film that I watched it twice.',
+        '不可算名詞や複数名詞には a/an を付けない: such good news (○) / such bad weather (○) / such interesting books (○)。',
       ],
       quiz: [
         {
@@ -11592,10 +11592,10 @@
   // Supabase is wired up, sync across devices in real time).
   // ---------- Streak visual tiers ----------
   function streakVisuals(days) {
-    if (days >= 30) return { icon: '👑', color: '#D4AF37' };
-    if (days >= 7)  return { icon: '🔥', color: '#B85420' };
-    if (days >= 3)  return { icon: '🔥', color: '#C97D3B' };
-    return { icon: '🔥', color: '#C97D3B' };
+    if (days >= 30) return { icon: '', color: '#D4AF37' };
+    if (days >= 7)  return { icon: '', color: '#B85420' };
+    if (days >= 3)  return { icon: '', color: '#C97D3B' };
+    return { icon: '', color: '#C97D3B' };
   }
 
   // Aggregate the current user's real stats from localStorage.
@@ -12727,7 +12727,7 @@
       },
         avatar
           ? e('img', { src: avatar, style: { width: '100%', height: '100%', objectFit: 'cover' } })
-          : profile.emoji),
+          : (profile.name || '').charAt(0)),
 
       // Name + 3-stat strip
       e('div', { style: { flex: 1, minWidth: 0 } },
@@ -13681,7 +13681,7 @@
                     transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
                     transition: 'transform 0.15s ease',
                   }
-                }, '▶'),
+                }, ''),
                 e('div', { style: { minWidth: 0 } },
                   e('div', {
                     style: {
@@ -15177,7 +15177,7 @@
           recipients.map(r => e('button', {
             key: r.id, onClick: () => setToId(r.id),
             style: chipButtonStyle(toId === r.id, r.color),
-          }, r.emoji + ' ' + getDisplayName(r))),
+          }, getDisplayName(r))),
         ),
       ),
 
@@ -16176,7 +16176,7 @@
           e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
           }, '日本語を見て、英語にタイプしてみよう。' +
-             'AI が ◎ ○ △ で採点して、別の言い方も教えてくれます。' +
+             'AI が ○ で採点して、別の言い方も教えてくれます。' +
              '1 セットは ' + COMP_TEST_BATCH + ' 問だけ。週に 1 回くらいでも OK。'),
         ),
         // Level picker
@@ -16312,7 +16312,7 @@
 
     // ============ FEEDBACK ============
     if (phase === 'feedback' && cur && grading) {
-      const scoreIcon  = grading.score === 2 ? '◎' : grading.score === 1 ? '○' : '△';
+      const scoreIcon  = grading.score === 2 ? '' : grading.score === 1 ? '○' : '';
       const scoreColor = grading.score === 2 ? C.success : grading.score === 1 ? C.ocean : C.accent;
       const scoreLabel = grading.score === 2 ? 'バッチリ！' : grading.score === 1 ? '通じるよ' : 'もう少し';
       const last = index + 1 >= queue.length;
@@ -16411,7 +16411,7 @@
           }, correct + ' / ' + results.length),
           e('div', {
             style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
-          }, perfect > 0 ? ('◎ ' + perfect + ' 問 完璧!') : 'よくがんばった!'),
+          }, perfect > 0 ? ('' + perfect + ' 問 完璧!') : 'よくがんばった!'),
         ),
         // Results recap
         e('div', {
@@ -16421,7 +16421,7 @@
           }
         },
           results.map((r, i) => {
-            const icon  = r.score === 2 ? '◎' : r.score === 1 ? '○' : '△';
+            const icon  = r.score === 2 ? '' : r.score === 1 ? '○' : '';
             const color = r.score === 2 ? C.success : r.score === 1 ? C.ocean : C.accent;
             return e('div', {
               key: 'r_' + i,
@@ -17022,7 +17022,7 @@
             },
               av
                 ? e('img', { src: av, style: { width: '100%', height: '100%', objectFit: 'cover' } })
-                : p.emoji,
+                : (p.name || '').charAt(0),
               // Tiny "+" badge in the corner so it's clear the avatar is tappable.
               e('span', {
                 style: {
@@ -17110,7 +17110,6 @@
                 display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
               }
             },
-              e('span', { style: { fontSize: 18 } }, p.emoji),
               e('div', { style: { flex: 1, minWidth: 0 } },
                 e('div', {
                   style: { fontSize: 13, fontWeight: 700, color: C.text }
@@ -19443,7 +19442,7 @@
             color: profile.color, fontFamily: SANS_UI,
             background: 'none', border: 'none', cursor: 'pointer',
           }
-        }, showMore ? '言い換えを閉じる ▲' : '別の言い方を見る ▼'),
+        }, showMore ? '言い換えを閉じる ' : '別の言い方を見る '),
 
       // Casual / formal alternatives (collapsible)
       showMore && (result.casual || result.formal) && e('div', {
@@ -19714,7 +19713,7 @@
                       flex: 1, fontSize: 11, color: profile.color,
                       fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em',
                     }
-                  }, expanded ? '閉じる ▲' : 'もっと見る ▼'),
+                  }, expanded ? '閉じる ' : 'もっと見る '),
                   e(SpeakerBtn, { onClick: () => speak(item.main || ''), color: profile.color, size: 26 }),
                   e('button', {
                     onClick: (ev) => { ev.stopPropagation(); unsave(item.id); },
@@ -20333,7 +20332,7 @@
                   marginBottom: 10,
                 }
               },
-                e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
+                g.icon && e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
                 e('div', { style: { flex: 1, minWidth: 0 } },
                   e('div', {
                     style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.3 }
@@ -20784,7 +20783,7 @@
           fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
           cursor: 'pointer', marginBottom: 10,
         }
-      }, paused ? '▶ 再開' : '⏸ 一時停止'),
+      }, paused ? '再開' : '⏸ 一時停止'),
       e('div', { style: { display: 'flex', gap: 10 } },
         e('button', {
           onClick: replayCurrent,
@@ -21059,14 +21058,14 @@
                   borderRadius: 14, cursor: 'pointer',
                 }
               },
-                e('div', {
+                l.icon && e('div', {
                   style: {
                     width: 44, height: 44, flexShrink: 0,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     background: C.softer, border: '1px solid ' + C.line,
                     borderRadius: 12, fontSize: 22,
                   }
-                }, l.icon || '✦'),
+                }, l.icon),
                 e('div', { style: { flex: 1, minWidth: 0 } },
                   e('div', {
                     style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.3 }
@@ -21122,7 +21121,7 @@
         e('div', {
           style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }
         },
-          e('span', { style: { fontSize: 32, lineHeight: 1 } }, lesson.icon || '✦'),
+          lesson.icon && e('span', { style: { fontSize: 32, lineHeight: 1 } }, lesson.icon),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, lesson.title),
@@ -21948,7 +21947,7 @@
       // Group passages by speaker (reuse buildSpeakerGroups)
       const groups = (typeof buildSpeakerGroups === 'function')
         ? buildSpeakerGroups()
-        : [{ key: 'all', label: 'All', icon: '📖', chapters: SHADOWING_PASSAGES.slice() }];
+        : [{ key: 'all', label: 'All', icon: '', chapters: SHADOWING_PASSAGES.slice() }];
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '4px 4px 18px' } },
@@ -21977,7 +21976,7 @@
             e('div', {
               style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }
             },
-              e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
+              g.icon && e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
               e('div', { style: { flex: 1, minWidth: 0 } },
                 e('div', {
                   style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.3 }
@@ -22396,7 +22395,6 @@
 
       // Header
       e('div', { style: { marginBottom: 28, paddingLeft: 4 } },
-        e('div', { style: { fontSize: 36, marginBottom: 8 } }, feature.emoji),
         e('div', {
           style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
         }, feature.label),
