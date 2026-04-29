@@ -2520,6 +2520,24 @@
     const daysFromMonday = dow === 0 ? 6 : (dow - 1);
     return getTodayStartMs(memberId) - daysFromMonday * 86400000;
   }
+  // Per-kind duration estimate when an event lacks measured durationMs.
+  // Mirrors the rates used by eventDurationMinutes() so the activity
+  // strip and the weekly gauge agree on how long a session "felt".
+  // Only `shadowing` and `lesson` currently record durationMs directly;
+  // everything else (vocab/composition/mctest/random_test/overcome)
+  // would otherwise contribute zero to "今週" / "今日" — defeating the
+  // purpose of the goal gauge.
+  const EST_SECS_PER_Q_GAUGE = {
+    vocab: 12, composition: 14, random_test: 10, mctest: 10,
+    overcome: 14, lesson: 25, shadowing: 18,
+  };
+  function eventGaugeMs(ev) {
+    if (typeof ev.durationMs === 'number' && ev.durationMs > 0) return ev.durationMs;
+    const total = typeof ev.total === 'number' ? ev.total : 0;
+    if (total <= 0) return 0;
+    const perQ = EST_SECS_PER_Q_GAUGE[ev.kind] || 12;
+    return total * perQ * 1000;
+  }
   // Sum of session-minutes for events that fall in the current week.
   function getThisWeekMinutes(memberId) {
     const events = db.getEvents(memberId);
@@ -2528,9 +2546,8 @@
     for (const ev of events) {
       const t = new Date(ev.at || 0).getTime();
       if (t < weekStart) break;  // events are reverse-chrono — stop early
-      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30000) {
-        totalMs += ev.durationMs;
-      }
+      const ms = eventGaugeMs(ev);
+      if (ms >= 30000) totalMs += ms;
     }
     return Math.round(totalMs / 60000);
   }
@@ -2575,9 +2592,8 @@
     for (const ev of events) {
       const t = new Date(ev.at || 0).getTime();
       if (t < dayStart) break;  // events are reverse-chrono — stop early
-      if (typeof ev.durationMs === 'number' && ev.durationMs >= 30000) {
-        totalMs += ev.durationMs;
-      }
+      const ms = eventGaugeMs(ev);
+      if (ms >= 30000) totalMs += ms;
     }
     return Math.round(totalMs / 60000);
   }
