@@ -7357,6 +7357,11 @@
     { id:'dq2_03', level:2, type:'grammar', q:'My sister is ___ than me.',                      choices:['tall','taller','tallest','more tall'], answer:1, explain:'2 つを比較 → 比較級 taller。' },
     { id:'dq2_04', level:2, type:'grammar', q:'There ___ two cats on the sofa.',                choices:['is','am','are','be'],         answer:2, explain:'two cats と複数なので there are。' },
     { id:'dq2_05', level:2, type:'vocab',   q:'"because" の意味は？',                             choices:['しかし','〜なので','〜のとき','もし〜なら'], answer:1, explain:'because = なぜなら/〜なので。理由を表す接続詞。' },
+    { id:'dq2_06', level:2, type:'grammar', q:'My brother is ___ TV in the living room now.',   choices:['watch','watches','watching','watched'], answer:2, explain:'now があるので現在進行形。be + -ing。is watching が正解。' },
+    { id:'dq2_07', level:2, type:'grammar', q:'You ___ run in the library.',                    choices:['must not','don\'t','aren\'t','isn\'t'], answer:0, explain:'禁止は must not (= mustn\'t)。must not + 動詞の原形。' },
+    { id:'dq2_08', level:2, type:'grammar', q:'There ___ a lot of snow last winter.',           choices:['is','was','were','are'],      answer:1, explain:'last winter は過去 + snow は不可算なので was。' },
+    { id:'dq2_09', level:2, type:'grammar', q:'What is the ___ mountain in Japan?',             choices:['high','higher','highest','more high'], answer:2, explain:'3 つ以上で最も高い → 最上級 the highest。' },
+    { id:'dq2_10', level:2, type:'vocab',   q:'"breakfast" の意味は？',                            choices:['朝食','昼食','夕食','間食'], answer:0, explain:'breakfast = 朝食。lunch (昼食) / dinner (夕食) と区別。' },
 
     // ========== 英検3級 (中3) ==========
     { id:'dq3_01', level:3, type:'grammar', q:'I have ___ to Kyoto three times.',               choices:['go','went','been','going'],   answer:2, explain:'have been to = 〜に行ったことがある (現在完了の経験)。' },
@@ -7364,6 +7369,11 @@
     { id:'dq3_03', level:3, type:'grammar', q:'The boy ___ is playing the piano is my brother.', choices:['who','which','what','whose'], answer:0, explain:'人を修飾する関係代名詞 → who。' },
     { id:'dq3_04', level:3, type:'grammar', q:"I'm too tired ___ go out tonight.",              choices:['to','for','of','in'],         answer:0, explain:'too 〜 to V = 〜すぎて V できない。' },
     { id:'dq3_05', level:3, type:'vocab',   q:'"experience" の意味は？',                          choices:['実験','経験','期待','専門家'], answer:1, explain:'experience = 経験。動詞でも「経験する」と使う。' },
+    { id:'dq3_06', level:3, type:'grammar', q:"I have lived in this town ___ ten years.",       choices:['since','for','during','from'], answer:1, explain:'for + 期間 = 〜の間ずっと (継続)。since + 過去の時点と区別。' },
+    { id:'dq3_07', level:3, type:'grammar', q:'The cake ___ my mother baked was delicious.',    choices:['who','which','what','whose'], answer:1, explain:'物を修飾する関係代名詞 → which。または that も可。' },
+    { id:'dq3_08', level:3, type:'grammar', q:'I enjoy ___ music after dinner.',                choices:['listen','to listen','listening','listened'], answer:2, explain:'enjoy + -ing 形。enjoy to listen は不可。動名詞をとる動詞。' },
+    { id:'dq3_09', level:3, type:'grammar', q:'My father told me ___ honest.',                  choices:['be','to be','being','been'], answer:1, explain:'tell 人 to V = 人に V するように言う。to 不定詞をとる。' },
+    { id:'dq3_10', level:3, type:'vocab',   q:'"available" の意味は？',                            choices:['利用可能な','失敗した','深刻な','一般的な'], answer:0, explain:'available = 利用可能な、入手できる。お店や予約で頻出。' },
 
     // ========== 英検準2級 (高校基礎) ==========
     { id:'dq4_01', level:4, type:'grammar', q:'If I ___ you, I would accept the offer.',        choices:['am','was','were','be'],       answer:2, explain:'仮定法過去 If I were you = もし私があなたなら。were を使うのが正式。' },
@@ -7382,8 +7392,41 @@
 
   // リスニング診断プール。conversation の text を TTS で読み上げる。
   const LISTENING_DIAG_POOL = [
+    // ========== 英検5級 (Lv1) ==========
     {
-      id:'dl_diag_01', level:2,
+      id:'dl_diag_lv1_01', level:1,
+      conversation:[
+        { speaker:'A', text:'Hi. What is your name?' },
+        { speaker:'B', text:'My name is Yoshi. Nice to meet you.' },
+      ],
+      q:'Bの名前は何ですか？',
+      choices:['Yoshi','Yumi','Yui','Yoko'], answer:0,
+      explain:'"My name is Yoshi" → 名前は Yoshi。自己紹介の基本。',
+    },
+    {
+      id:'dl_diag_lv1_02', level:1,
+      conversation:[
+        { speaker:'A', text:'How old are you?' },
+        { speaker:'B', text:'I am twelve years old.' },
+      ],
+      q:'Bは何歳ですか？',
+      choices:['10歳','11歳','12歳','13歳'], answer:2,
+      explain:'twelve = 12。年齢の聞き取り。',
+    },
+    {
+      id:'dl_diag_lv1_03', level:1,
+      conversation:[
+        { speaker:'A', text:'Do you like sports?' },
+        { speaker:'B', text:'Yes, I love soccer. I play every Saturday.' },
+      ],
+      q:'Bが好きなスポーツは何ですか？',
+      choices:['野球','サッカー','テニス','水泳'], answer:1,
+      explain:'"I love soccer" = サッカーが大好き。',
+    },
+
+    // ========== 英検4級 (Lv2) ==========
+    {
+      id:'dl_diag_lv2_01', level:2,
       conversation:[
         { speaker:'A', text:'Good morning. How can I help you?' },
         { speaker:'B', text:'I have a reservation for three at seven. The name is Smith.' },
@@ -7393,7 +7436,29 @@
       explain:'"for three" = 3名分。数字の聞き取りがポイント。',
     },
     {
-      id:'dl_diag_02', level:3,
+      id:'dl_diag_lv2_02', level:2,
+      conversation:[
+        { speaker:'A', text:'Excuse me, how much is this T-shirt?' },
+        { speaker:'B', text:'It is fifteen pounds. Would you like to try it on?' },
+      ],
+      q:'Tシャツの値段はいくらですか？',
+      choices:['5ポンド','15ポンド','50ポンド','割引あり'], answer:1,
+      explain:'"fifteen pounds" = 15 ポンド。fifty (50) と聞き間違えやすい。',
+    },
+    {
+      id:'dl_diag_lv2_03', level:2,
+      conversation:[
+        { speaker:'A', text:'What did you do last weekend?' },
+        { speaker:'B', text:'I went to the beach with my family on Sunday.' },
+      ],
+      q:'Bは日曜日に何をしましたか？',
+      choices:['公園に行った','家族と海に行った','友達と買い物した','家にいた'], answer:1,
+      explain:'"went to the beach with my family on Sunday" = 日曜に家族と海へ。',
+    },
+
+    // ========== 英検3級 (Lv3) ==========
+    {
+      id:'dl_diag_lv3_01', level:3,
       conversation:[
         { speaker:'A', text:'Excuse me, where can I find the post office?' },
         { speaker:'B', text:'Go straight for two blocks, then turn right. It\'s next to the bank.' },
@@ -7403,7 +7468,30 @@
       explain:'"next to the bank" = 銀行の隣。next to は道案内の頻出表現。',
     },
     {
-      id:'dl_diag_03', level:4,
+      id:'dl_diag_lv3_02', level:3,
+      conversation:[
+        { speaker:'A', text:'How long have you been studying English?' },
+        { speaker:'B', text:'I have been studying for about five years.' },
+      ],
+      q:'Bは英語を何年間勉強していますか？',
+      choices:['約2年','約3年','約5年','約10年'], answer:2,
+      explain:'"for about five years" = 約 5 年間。現在完了進行形。',
+    },
+    {
+      id:'dl_diag_lv3_03', level:3,
+      conversation:[
+        { speaker:'A', text:'Do you have any allergies?' },
+        { speaker:'B', text:'Yes, I am allergic to peanuts. Does this contain nuts?' },
+        { speaker:'A', text:'Let me check with the kitchen for you.' },
+      ],
+      q:'Bは何にアレルギーがありますか？',
+      choices:['卵','小麦','ピーナッツ','乳製品'], answer:2,
+      explain:'"allergic to peanuts" = ピーナッツアレルギー。海外で頻出の重要表現。',
+    },
+
+    // ========== 英検準2級 (Lv4) ==========
+    {
+      id:'dl_diag_lv4_01', level:4,
       conversation:[
         { speaker:'A', text:'The seminar starts at four, but I think we should arrive by three thirty.' },
         { speaker:'B', text:'Sounds good. Shall we meet at the cafe across from the campus at three?' },
@@ -7412,30 +7500,103 @@
       choices:['3:00','3:30','4:00','5:00'], answer:0,
       explain:'最後に "at three" = 3時にカフェで会う。複数の時刻が出るので注意。',
     },
+    {
+      id:'dl_diag_lv4_02', level:4,
+      conversation:[
+        { speaker:'A', text:'I\'m thinking of taking a year off after graduation to travel.' },
+        { speaker:'B', text:'That sounds exciting, but have you thought about how you\'ll fund it?' },
+      ],
+      q:'Bは何を心配していますか？',
+      choices:['旅行先','資金面','家族の反対','時間の使い方'], answer:1,
+      explain:'"how you\'ll fund it" = どうやって資金を出すか。fund = 資金を出す。',
+    },
+
+    // ========== 英検2級 (Lv5) ==========
+    {
+      id:'dl_diag_lv5_01', level:5,
+      conversation:[
+        { speaker:'A', text:'The committee has unanimously agreed to postpone the launch until further research has been conducted.' },
+        { speaker:'B', text:'I see. So we should expect a delay of at least two months?' },
+      ],
+      q:'委員会は何を決定しましたか？',
+      choices:['ローンチを早める','ローンチを延期する','ローンチを中止する','研究を打ち切る'], answer:1,
+      explain:'"agreed to postpone the launch" = ローンチを延期することに合意。unanimously = 全会一致で。',
+    },
   ];
 
   // リーディング診断プール。passage の長さは level に応じて伸ばす。
   const READING_DIAG_POOL = [
+    // ========== 英検5級 (Lv1) ==========
     {
-      id:'dr_diag_01', level:2,
+      id:'dr_diag_lv1_01', level:1,
+      passage:'Open: Monday to Friday, 9:00 - 17:00. Closed on Saturday and Sunday.',
+      q:'この店は土曜日に開いていますか？',
+      choices:['開いている','閉まっている','午前のみ開店','午後のみ開店'], answer:1,
+      explain:'"Closed on Saturday and Sunday" = 土日は閉店。',
+    },
+    {
+      id:'dr_diag_lv1_02', level:1,
+      passage:'Hi Mom! I am at the park with Tom. I will come home at 5 o\'clock. Yoshi.',
+      q:'Yoshi は何時に帰りますか？',
+      choices:['3時','4時','5時','6時'], answer:2,
+      explain:'"come home at 5 o\'clock" = 5 時に帰る。',
+    },
+
+    // ========== 英検4級 (Lv2) ==========
+    {
+      id:'dr_diag_lv2_01', level:2,
       passage:'The library is open from 9 a.m. to 6 p.m. on weekdays. On weekends, it closes at 4 p.m. It is closed on national holidays.',
       q:'土曜日は何時に閉まりますか？',
       choices:['14:00','16:00','18:00','休館'], answer:1,
       explain:'"On weekends, it closes at 4 p.m." = 週末は16時閉館。weekends には土日が含まれる。',
     },
     {
-      id:'dr_diag_02', level:3,
+      id:'dr_diag_lv2_02', level:2,
+      passage:'Welcome to the school festival! There are food stalls in the playground, music events in the hall, and an art show in classroom B. The festival ends at 4 p.m.',
+      q:'音楽イベントはどこで行われますか？',
+      choices:['校庭','教室B','ホール','体育館'], answer:2,
+      explain:'"music events in the hall" = ホールで音楽イベント。',
+    },
+
+    // ========== 英検3級 (Lv3) ==========
+    {
+      id:'dr_diag_lv3_01', level:3,
       passage:'Yoshinari moved to London last September to study English. He lives in a small dormitory near the campus and has classes from Monday to Thursday. On weekends, he often visits museums and tries different foods with his friends.',
       q:'吉成は週に何日授業がありますか？',
       choices:['3日','4日','5日','7日'], answer:1,
       explain:'"from Monday to Thursday" = 月曜日から木曜日まで → 4 日間。',
     },
     {
-      id:'dr_diag_03', level:4,
+      id:'dr_diag_lv3_02', level:3,
+      passage:'Hi Sarah, I won\'t be able to make it to the meeting tomorrow because I have a doctor\'s appointment in the morning. Could you take notes for me? I\'ll buy you a coffee on Friday as a thank you. Thanks, Mike',
+      q:'Mike は Sarah に何を頼んでいますか？',
+      choices:['会議に出席する','医者の予約を取る','メモを取る','コーヒーを買う'], answer:2,
+      explain:'"Could you take notes for me?" = メモを取ってもらえる？ Could you 〜 = 丁寧な依頼。',
+    },
+
+    // ========== 英検準2級 (Lv4) ==========
+    {
+      id:'dr_diag_lv4_01', level:4,
       passage:'We are pleased to announce our new seasonal menu, available from January through March. The 8-course menu features winter ingredients sourced from local farms. Wine pairing is available for an additional 5,000 yen. Reservations are required at least 3 days in advance.',
       q:'ワインペアリングについて正しいのは？',
       choices:['コースに含まれている','追加5,000円で利用可能','利用不可','予約不要'], answer:1,
       explain:'"available for an additional 5,000 yen" = 追加5,000円で利用可能。additional = 追加の。',
+    },
+    {
+      id:'dr_diag_lv4_02', level:4,
+      passage:'Many young people in the UK take a "gap year" between high school and university. They use this time to travel, work, or volunteer abroad. Some say it helps them grow up and find their direction in life. However, others worry that it may delay their studies and career.',
+      q:'gap year の懸念点は何ですか？',
+      choices:['お金がかかる','勉強やキャリアが遅れる','海外で危険','親が反対する'], answer:1,
+      explain:'"may delay their studies and career" = 勉強やキャリアを遅らせる可能性がある。',
+    },
+
+    // ========== 英検2級 (Lv5) ==========
+    {
+      id:'dr_diag_lv5_01', level:5,
+      passage:'Despite growing concerns about the environmental impact of fast fashion, consumer demand for inexpensive clothing continues to rise. Critics argue that the true cost — including pollution, water usage, and labor exploitation — is far greater than the price tag suggests. Some brands have begun to embrace sustainability, but progress remains slow and uneven.',
+      q:'この文章の趣旨として最も適切なのは？',
+      choices:['ファストファッションは環境に良い','安価な服の需要は減っている','ファストファッションには見えにくい代償がある','すべてのブランドが持続可能になった'], answer:2,
+      explain:'"the true cost ... is far greater than the price tag suggests" = 値札以上の代償がある。汚染・水・労働問題などが「見えにくい代償」。',
     },
   ];
 
@@ -7448,22 +7609,31 @@
 
   // ステージの問題を組み立てる: リスニング 3 + リーディング 2 + 文法 8
   // 同じセッション内では出題は固定 (ステージ開始時に一度だけ抽選)。
-  function buildStageQuestions(stage) {
+  //
+  // excludeIds: そのセッションで既に出題済みの ID の Set。重複を避けるため
+  // 優先的に未出題のものから引く。プールが足りなくなったら出題済みも許可。
+  function buildStageQuestions(stage, excludeIds) {
+    const exclude = excludeIds || new Set();
     const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
     const maxLv   = Math.max(...stage.levels);
 
+    // 未出題を優先、足りなければ出題済みからも補充。
+    const pickFresh = (pool, count) => {
+      const fresh = pool.filter(q => !exclude.has(q.id));
+      if (fresh.length >= count) return shuffle(fresh).slice(0, count);
+      const seen = pool.filter(q => exclude.has(q.id));
+      return [...shuffle(fresh), ...shuffle(seen).slice(0, count - fresh.length)];
+    };
+
     // リスニング/リーディングはステージ最高レベル以下から幅広く抽選
-    const lqs = LISTENING_DIAG_POOL.filter(q => q.level <= maxLv);
-    const rqs = READING_DIAG_POOL.filter(q => q.level <= maxLv);
-    const listening = shuffle(lqs).slice(0, 3);
-    const reading   = shuffle(rqs).slice(0, 2);
+    const listening = pickFresh(LISTENING_DIAG_POOL.filter(q => q.level <= maxLv), 3);
+    const reading   = pickFresh(READING_DIAG_POOL.filter(q => q.level <= maxLv),   2);
 
     // 文法はステージ対象レベルから均等に抽選 (各 level 4 問ずつ → 計 8〜12 問)
     const gPerLevel = Math.ceil(8 / stage.levels.length);
     const grammar   = [];
     for (const lv of stage.levels) {
-      const pool = DIAGNOSTIC_POOL.filter(q => q.level === lv);
-      grammar.push(...shuffle(pool).slice(0, gPerLevel));
+      grammar.push(...pickFresh(DIAGNOSTIC_POOL.filter(q => q.level === lv), gPerLevel));
     }
     // リスニング → リーディング → 文法 の順で出題
     return [...listening, ...reading, ...shuffle(grammar)];
@@ -22274,6 +22444,8 @@
     const [played, setPlayed]             = useState(false);
     const [speaking, setSpeaking]         = useState(false);
     const sessionStartRef = useRef(null);
+    // セッション中に既に出題した問題 ID — ステージをまたいで重複させないため。
+    const usedIdsRef = useRef(new Set());
 
     // 前回の診断結果 (あれば)
     const prevDiag = (() => {
@@ -22291,8 +22463,12 @@
     })();
 
     function startFromStage(num) {
+      // Stage 1 から始めるときだけ usedIds をリセット。続きから始めるときや
+      // 「次のステージ」遷移ではリセットしない (既出題は引かない)。
+      if (num === 0) usedIdsRef.current = new Set();
       const stage = DIAG_STAGES[num];
-      const qs    = buildStageQuestions(stage);
+      const qs    = buildStageQuestions(stage, usedIdsRef.current);
+      for (const q of qs) usedIdsRef.current.add(q.id);
       setStageIdx(num);
       setQuestions(qs);
       setIdx(0);
@@ -22363,7 +22539,8 @@
       stopSpeech();
 
       if (passed && stageIdx + 1 < DIAG_STAGES.length) {
-        // 合格 & 次のステージあり
+        // 合格 & 次のステージあり — まずレベルを保存して、続きを案内
+        savePartialProgress(newStageResults);
         setPhase('stage_clear');
       } else {
         // 不合格 or 最終ステージクリア
@@ -22372,15 +22549,20 @@
       }
     }
 
-    // 結果を profile に保存 + 学習レベルを反映
-    function saveResult(lastPassed, allStageResults) {
-      // detectedLevel = クリアしたステージ数 (0〜3)
-      let detectedLevel;
-      if (lastPassed) {
-        detectedLevel = stageIdx + 1;
-      } else {
-        detectedLevel = stageIdx;  // 不合格 → 1 つ下のステージが達成済み
+    // クリア済みステージから判定レベルを計算 (連続して passed === true な数)
+    function detectClearedLevel(allStageResults) {
+      let cleared = 0;
+      for (const r of allStageResults) {
+        if (r.passed) cleared = r.stageIdx + 1;
+        else break;
       }
+      return cleared;
+    }
+
+    // ステージ単位の途中保存。アクティビティログには書かない (= 完走時のみ)。
+    // 離脱しても直前までクリアしたレベルが profile に残るようにする。
+    function savePartialProgress(allStageResults) {
+      const detectedLevel = detectClearedLevel(allStageResults);
       const eiken   = DIAG_EIKEN_MAP[detectedLevel]   || '英検5級';
       const comfort = DIAG_COMFORT_MAP[detectedLevel] || 1.0;
       try {
@@ -22389,22 +22571,33 @@
         s.diagnosedEiken = eiken;
         s.diagnosedAt    = new Date().toISOString();
         db.save(profile.id, s);
-        // 学習レベル (vocab / composition) を更新
         saveComfort(profile.id, 'vocab',       comfort);
         saveComfort(profile.id, 'composition', comfort);
-        // 活動ログにも記録 (診断テスト 1 回 = 1 セッション扱い)
-        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+      } catch (err) {
+        console.warn('Failed to save diagnostic partial', err);
+      }
+    }
+
+    // 完走時の最終保存。途中保存に加えて、ログ (recordTurn + pushEvent) も書く。
+    function saveResult(lastPassed, allStageResults) {
+      // 直前の途中保存と同じロジックでレベルを保存。
+      savePartialProgress(allStageResults);
+      try {
+        const detectedLevel = detectClearedLevel(allStageResults);
+        const eiken         = DIAG_EIKEN_MAP[detectedLevel] || '英検5級';
+        const durationMs    = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
         sessionStartRef.current = null;
         try { db.recordTurn(profile.id, 'diagnostic'); } catch {}
         try {
           db.pushEvent(profile.id, {
-            kind: 'diagnostic', total: allStageResults.reduce((n, r) => n + r.total, 0),
+            kind: 'diagnostic',
+            total:   allStageResults.reduce((n, r) => n + r.total, 0),
             correct: allStageResults.reduce((n, r) => n + r.correct, 0),
             durationMs, label: eiken,
           });
         } catch {}
       } catch (err) {
-        console.warn('Failed to save diagnostic result', err);
+        console.warn('Failed to log diagnostic event', err);
       }
     }
 
@@ -22412,7 +22605,8 @@
     function continueToNextStage() {
       const next = stageIdx + 1;
       const stage = DIAG_STAGES[next];
-      const qs = buildStageQuestions(stage);
+      const qs = buildStageQuestions(stage, usedIdsRef.current);
+      for (const q of qs) usedIdsRef.current.add(q.id);
       setStageIdx(next);
       setQuestions(qs);
       setIdx(0);
@@ -22507,27 +22701,46 @@
             prevDiag.eiken + (prevDiag.at ? ' (' + formatDate(prevDiag.at) + ')' : '')),
         ),
 
-        // 開始ボタン
-        e('button', {
-          onClick: () => startFromStage(Math.min(prevDiag?.level || 0, DIAG_STAGES.length - 1)),
-          style: {
-            width: '100%', padding: '14px 16px', borderRadius: 14,
-            background: profile.color, color: '#fff',
-            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
-            border: 'none', cursor: 'pointer', marginBottom: 10,
+        // 開始ボタン — 続きのステージから / 最初から
+        // prevDiag.level が DIAG_STAGES.length (= 全クリア) のときは
+        // 「続ける」が無効なので「Stage 1 からやり直す」だけ前面に出す。
+        (() => {
+          const cleared = prevDiag?.level || 0;
+          const fullyCleared = cleared >= DIAG_STAGES.length;
+          if (fullyCleared) {
+            return e('button', {
+              onClick: () => startFromStage(0),
+              style: {
+                width: '100%', padding: '14px 16px', borderRadius: 14,
+                background: profile.color, color: '#fff',
+                fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+                border: 'none', cursor: 'pointer', marginBottom: 10,
+              }
+            }, 'もう一度受ける (Stage 1 から)');
           }
-        }, prevDiag && prevDiag.level > 0 ? ('Stage ' + (prevDiag.level + 1) + ' から続ける') : 'テストを始める'),
-
-        // 最初からやり直すボタン (前回診断ありの場合のみ)
-        prevDiag && prevDiag.level > 0 && e('button', {
-          onClick: () => startFromStage(0),
-          style: {
-            width: '100%', padding: '12px 16px', borderRadius: 14,
-            background: 'transparent', color: C.sub,
-            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
-            border: '1px solid ' + C.border, cursor: 'pointer',
-          }
-        }, 'Stage 1 からやり直す'),
+          return [
+            e('button', {
+              key: 'start',
+              onClick: () => startFromStage(cleared),
+              style: {
+                width: '100%', padding: '14px 16px', borderRadius: 14,
+                background: profile.color, color: '#fff',
+                fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+                border: 'none', cursor: 'pointer', marginBottom: 10,
+              }
+            }, cleared > 0 ? ('Stage ' + (cleared + 1) + ' から続ける') : 'テストを始める'),
+            cleared > 0 && e('button', {
+              key: 'restart',
+              onClick: () => startFromStage(0),
+              style: {
+                width: '100%', padding: '12px 16px', borderRadius: 14,
+                background: 'transparent', color: C.sub,
+                fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+                border: '1px solid ' + C.border, cursor: 'pointer',
+              }
+            }, 'Stage 1 からやり直す'),
+          ];
+        })(),
 
         // 注意書き
         e('div', {
