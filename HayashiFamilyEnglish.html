@@ -1841,6 +1841,265 @@
     return VOCAB_USAGE[vocabId] || null;
   }
 
+  // ---------- Word families (品詞変化) ----------
+  // Same root → adjective / adverb / noun / verb. Showing all four forms
+  // side by side helps the learner see the pattern (soft → softness,
+  // strong → strength) instead of memorising each form as an island.
+  // Each family also carries:
+  //   note: usage caveats and traps (e.g. 'highly' ≠ 'high'-adverb)
+  //   syn:  sibling families with overlapping meaning
+  // Indexed by ANY form (adj / adv / noun / verb) so the panel surfaces
+  // even when the kid lands on a derived form first.
+  const WORD_FAMILIES = [
+    {
+      adj:  { en: 'soft',     ja: '柔らかい・優しい' },
+      adv:  { en: 'softly',   ja: '静かに・そっと' },
+      noun: { en: 'softness', ja: '柔らかさ' },
+      verb: { en: 'soften',   ja: '柔らかくする' },
+      note: 'soft が形容詞のベース。副詞 softly は「動作が柔らかい (静かに・そっと)」、名詞 softness は「柔らかさという性質」、動詞 soften は「〜を柔らかくする」。',
+      syn:  ['gentle', 'tender'],
+    },
+    {
+      adj:  { en: 'high',     ja: '高い' },
+      adv:  { en: 'highly',   ja: '非常に' },
+      noun: { en: 'height',   ja: '高さ' },
+      verb: { en: 'heighten', ja: '高める' },
+      note: '注意: 副詞 highly は「高く」ではなく「非常に (very)」の意味 (highly recommended)。物理的に「高く飛ぶ」は fly high。名詞 height は綴り注意 (heigh ではない)。',
+      syn:  ['tall', 'lofty'],
+    },
+    {
+      adj:  { en: 'deep',     ja: '深い' },
+      adv:  { en: 'deeply',   ja: '深く' },
+      noun: { en: 'depth',    ja: '深さ' },
+      verb: { en: 'deepen',   ja: '深める' },
+      note: '物理的にも比喩的にも使える語族。deeply は「深く」感謝・愛する・悲しむ など感情にもよく合う。深さ (length × width × depth) の 1 つ。',
+    },
+    {
+      adj:  { en: 'wide',     ja: '広い・幅広い' },
+      adv:  { en: 'widely',   ja: '広く' },
+      noun: { en: 'width',    ja: '幅' },
+      verb: { en: 'widen',    ja: '広げる' },
+      note: '「幅が広い」のが wide。同じ「広い」でも面積が広いなら large、開けて広いなら spacious。widely used =「広く使われている」。',
+      syn:  ['broad'],
+    },
+    {
+      adj:  { en: 'long',     ja: '長い' },
+      noun: { en: 'length',   ja: '長さ' },
+      verb: { en: 'lengthen', ja: '長くする' },
+      note: 'long の副詞は同形 long のまま (例: stay long)。形容詞→副詞→名詞→動詞のパターンの中では副詞だけ -ly が付かない例外。',
+    },
+    {
+      adj:  { en: 'strong',     ja: '強い' },
+      adv:  { en: 'strongly',   ja: '強く' },
+      noun: { en: 'strength',   ja: '強さ・力' },
+      verb: { en: 'strengthen', ja: '強くする' },
+      note: '名詞は strength。長母音が短くなる綴りに注意 (strong → strength)。動詞 strengthen は -en で「強める」。',
+      syn:  ['powerful', 'tough'],
+    },
+    {
+      adj:  { en: 'weak',     ja: '弱い' },
+      adv:  { en: 'weakly',   ja: '弱く' },
+      noun: { en: 'weakness', ja: '弱さ・弱点' },
+      verb: { en: 'weaken',   ja: '弱める' },
+      note: 'strong / strength と対をなす語族。名詞 weakness は「弱点 (個人の苦手分野)」の意味でもよく使う (a weakness for chocolate)。',
+    },
+    {
+      adj:  { en: 'short',     ja: '短い・低い' },
+      adv:  { en: 'shortly',   ja: 'まもなく' },
+      noun: { en: 'shortness', ja: '短さ' },
+      verb: { en: 'shorten',   ja: '短くする' },
+      note: '注意: 副詞 shortly は「短く」ではなく「まもなく (soon)」の意味 (shortly after)。物理的に短くは cut short / make short。',
+    },
+    {
+      adj:  { en: 'happy',     ja: '幸せな' },
+      adv:  { en: 'happily',   ja: '幸せに' },
+      noun: { en: 'happiness', ja: '幸せ' },
+      note: '動詞形は使われない。-y → -ily の副詞化、-y → -iness の名詞化。同じパターン: easy → easily / easiness、busy → busily / business (※ business は意味が変化)。',
+      syn:  ['glad', 'pleased', 'cheerful'],
+    },
+    {
+      adj:  { en: 'sad',     ja: '悲しい' },
+      adv:  { en: 'sadly',   ja: '悲しく' },
+      noun: { en: 'sadness', ja: '悲しさ' },
+      verb: { en: 'sadden',  ja: '悲しませる' },
+      note: '動詞 sadden は「人を悲しませる」(他動詞)。be saddened by ~ で「〜に悲しくなる」。',
+    },
+    {
+      adj:  { en: 'kind',     ja: '親切な' },
+      adv:  { en: 'kindly',   ja: '親切に・どうか' },
+      noun: { en: 'kindness', ja: '親切' },
+      note: '副詞 kindly は依頼で「どうか〜してください」の意味でも (Kindly wait here)。動詞形はなし。',
+      syn:  ['gentle', 'thoughtful', 'considerate'],
+    },
+    {
+      adj:  { en: 'quick',     ja: '素早い' },
+      adv:  { en: 'quickly',   ja: '素早く' },
+      noun: { en: 'quickness', ja: '素早さ' },
+      verb: { en: 'quicken',   ja: '速める' },
+      note: 'quick は瞬発的「素早い・即座の」(a quick reply)。継続的に速いなら fast。',
+      syn:  ['fast', 'rapid', 'swift'],
+    },
+    {
+      adj:  { en: 'slow',     ja: '遅い' },
+      adv:  { en: 'slowly',   ja: 'ゆっくり' },
+      noun: { en: 'slowness', ja: '遅さ' },
+      note: '動詞は slow / slow down (自動詞・他動詞兼用)。-en の派生形は使われない。',
+    },
+    {
+      adj:  { en: 'bright',     ja: '明るい・賢い' },
+      adv:  { en: 'brightly',   ja: '明るく' },
+      noun: { en: 'brightness', ja: '明るさ' },
+      verb: { en: 'brighten',   ja: '明るくする' },
+      note: 'bright は光だけでなく「賢い (a bright student)」の意味でも使う。',
+    },
+    {
+      adj:  { en: 'dark',     ja: '暗い' },
+      adv:  { en: 'darkly',   ja: '暗く' },
+      noun: { en: 'darkness', ja: '暗さ・闇' },
+      verb: { en: 'darken',   ja: '暗くする' },
+      note: '対になるのは bright / brightness の語族。in the dark で「暗闇で・知らされずに」。',
+    },
+    {
+      adj:  { en: 'safe',     ja: '安全な' },
+      adv:  { en: 'safely',   ja: '安全に' },
+      noun: { en: 'safety',   ja: '安全' },
+      note: '動詞形はなし (代わりに make ~ safe)。名詞は -ty で safety (× safeness)。',
+      syn:  ['secure'],
+    },
+    {
+      adj:  { en: 'successful',  ja: '成功した' },
+      adv:  { en: 'successfully', ja: '成功裏に' },
+      noun: { en: 'success',     ja: '成功' },
+      verb: { en: 'succeed',     ja: '成功する' },
+      note: '名詞 → 動詞 → 形容詞 → 副詞 の派生順。形容詞 success にしないこと (× a success person → ○ a successful person)。',
+    },
+    {
+      adj:  { en: 'beautiful',   ja: '美しい' },
+      adv:  { en: 'beautifully', ja: '美しく' },
+      noun: { en: 'beauty',      ja: '美しさ・美人' },
+      verb: { en: 'beautify',    ja: '美しくする' },
+      note: 'beauty が名詞のベース、形容詞は -ful で beautiful。日常会話の「キレイ」には pretty / lovely も。',
+    },
+    {
+      adj:  { en: 'dangerous',    ja: '危険な' },
+      adv:  { en: 'dangerously',  ja: '危険なほど' },
+      noun: { en: 'danger',       ja: '危険' },
+      verb: { en: 'endanger',     ja: '危険にさらす' },
+      note: '動詞 endanger は en- 接頭辞。endangered species で「絶滅危惧種」。',
+    },
+    {
+      adj:  { en: 'important',    ja: '重要な' },
+      adv:  { en: 'importantly',  ja: '重要なことに' },
+      noun: { en: 'importance',   ja: '重要さ' },
+      note: '動詞形なし。importantly は文頭で「重要なのは」と話題提示にも (More importantly, ~)。',
+    },
+    {
+      adj:  { en: 'different',    ja: '異なる' },
+      adv:  { en: 'differently',  ja: '違ったように' },
+      noun: { en: 'difference',   ja: '違い' },
+      verb: { en: 'differ',       ja: '異なる' },
+      note: '動詞 differ は自動詞 (Tom differs from John)。混同しがち: differ ≠ different。',
+    },
+    {
+      adj:  { en: 'exciting',     ja: 'わくわくさせる' },
+      adv:  { en: 'excitedly',    ja: '興奮して' },
+      noun: { en: 'excitement',   ja: '興奮' },
+      verb: { en: 'excite',       ja: 'わくわくさせる' },
+      note: '形容詞は使い分け注意: exciting は「物事がわくわくさせる」、excited は「人がわくわくしている」。',
+    },
+    {
+      adj:  { en: 'comfortable',   ja: '快適な' },
+      adv:  { en: 'comfortably',   ja: '快適に' },
+      noun: { en: 'comfort',       ja: '快適さ・慰め' },
+      verb: { en: 'comfort',       ja: '慰める' },
+      note: '名詞と動詞が同形 comfort。動詞は「人を慰める」 (She comforted me)。',
+    },
+    {
+      adj:  { en: 'educational',   ja: '教育の' },
+      noun: { en: 'education',     ja: '教育' },
+      verb: { en: 'educate',       ja: '教育する' },
+      note: '副詞は educationally だが日常では稀。educated 形容詞「教養のある」も覚えると◎。',
+    },
+    {
+      adj:  { en: 'thoughtful',    ja: '思いやりのある' },
+      adv:  { en: 'thoughtfully',  ja: '思いやり深く' },
+      noun: { en: 'thought',       ja: '考え・思考' },
+      verb: { en: 'think',         ja: '考える' },
+      note: 'think → thought (過去形) ≠ thought (名詞) と同綴り注意。形容詞 thoughtful は「思いやりのある」、副詞は「思いやって」。',
+    },
+  ];
+  // Lookup by ANY form (adj/adv/noun/verb) so the family panel surfaces
+  // for vocab cards landed on derived forms (e.g. softness → soft family).
+  function getWordFamily(en) {
+    if (!en) return null;
+    const lower = String(en).toLowerCase().trim();
+    for (const fam of WORD_FAMILIES) {
+      if (fam.adj  && fam.adj.en  === lower) return fam;
+      if (fam.adv  && fam.adv.en  === lower) return fam;
+      if (fam.noun && fam.noun.en === lower) return fam;
+      if (fam.verb && fam.verb.en === lower) return fam;
+    }
+    return null;
+  }
+  // Render the word-family panel (品詞変化) for a vocab card. Returns
+  // null when the headword isn't part of any recorded family. Highlights
+  // the form the learner is currently studying so they can place it in
+  // the family at a glance.
+  function renderWordFamilyPanel(currentEn, profileColor, speakFn) {
+    const fam = getWordFamily(currentEn);
+    if (!fam) return null;
+    const lower = String(currentEn || '').toLowerCase().trim();
+    const rows = [
+      { tag: '形容詞', form: fam.adj  },
+      { tag: '副詞',   form: fam.adv  },
+      { tag: '名詞',   form: fam.noun },
+      { tag: '動詞',   form: fam.verb },
+    ].filter(r => r.form && r.form.en);
+    return e('div', null,
+      e('div', {
+        style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                 textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+      }, '語族 (Word Family)'),
+      e('div', {
+        style: {
+          background: C.softer, border: '1px solid ' + C.line,
+          borderRadius: 12, padding: '10px 12px',
+          fontFamily: SANS_UI, fontSize: 13, color: C.text, lineHeight: 1.6,
+        }
+      },
+        ...rows.map((r, i) => {
+          const isCurrent = r.form.en.toLowerCase() === lower;
+          return e('div', {
+            key: 'wf_' + i,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '4px 0',
+              borderTop: i > 0 ? '1px dashed ' + C.line : 'none',
+            }
+          },
+            e('span', { style: { width: 36, color: C.sub, fontSize: 11, flexShrink: 0 } }, r.tag),
+            e('span', {
+              style: {
+                fontFamily: SERIF, fontWeight: 700, fontSize: 14,
+                color: isCurrent ? profileColor : C.text,
+                minWidth: 0, flexShrink: 0,
+              }
+            }, r.form.en),
+            e('span', { style: { color: C.sub, fontSize: 12, flex: 1, minWidth: 0 } }, r.form.ja),
+            speakFn && e(SpeakerBtn, { onClick: () => speakFn(r.form.en), color: profileColor, size: 24 }),
+          );
+        }),
+        fam.note && e('div', {
+          style: {
+            marginTop: 10, paddingTop: 10,
+            borderTop: '1px dashed ' + C.line,
+            fontSize: 12, color: C.sub, lineHeight: 1.7,
+          }
+        }, fam.note),
+      ),
+    );
+  }
+
   // ---------- Verb conjugations (past + past participle) ----------
   // Shown as a small annotation under the example on the answer side of
   // every verb / idiom card so the learner can pick up irregular forms
@@ -9709,6 +9968,10 @@
                   ),
                 );
               })(),
+              // Word family — same root, different POS (soft / softly /
+              // softness / soften). Helps the learner see the pattern
+              // instead of memorising each form as an island.
+              renderWordFamilyPanel(current.en, profile.color, speak),
               // Usage / disambiguation note — shown when the headword has
               // close synonyms whose usage differs (see vs look at vs watch,
               // equal vs fair, etc.). Idioms can carry an inline `usage`;
@@ -10262,6 +10525,9 @@
                     ),
                   );
                 })(),
+
+                // Word family panel — same root, different POS.
+                current.kind === 'vocab' && renderWordFamilyPanel(current.en, profile.color, speak),
 
                 // Vocab-only: 使い分け (usage / disambiguation) — explains
                 // when to pick this word over its synonyms. Same panel
