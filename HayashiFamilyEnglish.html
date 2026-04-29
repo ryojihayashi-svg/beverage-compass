@@ -12939,9 +12939,20 @@
           style: {
             fontSize: 16, fontWeight: 700, color: C.text,
             display: 'flex', alignItems: 'center', gap: 8,
+            flexWrap: 'wrap',
           }
         },
           getDisplayName(profile),
+          // 英検レベルを名前の横に小さく表示 (縦幅を詰めるため成長メーター
+          // セクションからこちらへ移動)
+          e('span', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              padding: '2px 8px', borderRadius: 999,
+              background: profile.color + '14', color: profile.color,
+              letterSpacing: '0.04em',
+            }
+          }, profileEikenLabel(profile.id) + ' レベル'),
           isViewer && e('span', {
             style: {
               fontSize: 10, fontWeight: 600,
@@ -13029,20 +13040,10 @@
                 lower < 5 ? ('LV' + upper) : 'MAX'),
             );
           };
-          // Eiken band — the higher of the two tracks decides the
-          // overall English-test level shown on the card. Subtle label
-          // so it doesn't overwhelm the bars themselves.
-          const eikenLabel = profileEikenLabel(profile.id);
+          // 英検レベルラベルは名前の横に移動済み。ここは 2 本のバーのみ。
           return e('div', {
             style: { marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }
           },
-            e('div', {
-              style: {
-                fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
-                letterSpacing: '0.06em',
-                color: profile.color, marginBottom: 2,
-              }
-            }, eikenLabel + ' レベル'),
             renderBar('単語', loadComfort(profile.id, 'vocab')),
             renderBar('英作', loadComfort(profile.id, 'composition')),
           );
