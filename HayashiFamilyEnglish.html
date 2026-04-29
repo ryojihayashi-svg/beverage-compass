@@ -2498,42 +2498,27 @@
       db.save(memberId, s);
     } catch {}
   }
-  // Monday 00:00 in member's timezone — the start of the current week.
-  // Times are simple Date objects (UTC under the hood) but we anchor to
-  // the local-Monday boundary so a Sunday-evening session at 23:50 in
-  // Tokyo doesn't bleed into next week.
+  // Monday 00:00 in member's timezone — the start of the current week,
+  // returned as a UTC ms instant so it can be compared to event
+  // timestamps directly. Built on getTodayStartMs (which already does
+  // the timezone-aware midnight) — just shifts back to Monday.
   function getCurrentWeekStartMs(memberId) {
     const tz = MEMBER_TIMEZONE[memberId];
-    const now = new Date();
-    // Build a "local now" Date by formatting then re-parsing pieces.
-    let y, m, d, dow;
+    let dow = new Date().getDay();   // 0..6 Sun..Sat (browser tz)
     try {
       const fmt = new Intl.DateTimeFormat('en-CA', Object.assign({
-        year: 'numeric', month: '2-digit', day: '2-digit',
         weekday: 'short',
       }, tz ? { timeZone: tz } : {}));
-      const parts = fmt.formatToParts(now);
-      const o = {};
-      for (const p of parts) o[p.type] = p.value;
-      y = parseInt(o.year, 10);
-      m = parseInt(o.month, 10);
-      d = parseInt(o.day, 10);
-      const wd = o.weekday;  // Mon, Tue, ...
-      dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(wd);
-    } catch {
-      const local = new Date();
-      y = local.getFullYear();
-      m = local.getMonth() + 1;
-      d = local.getDate();
-      dow = local.getDay();
-    }
+      const parts = fmt.formatToParts(new Date());
+      const wd = parts.find(p => p.type === 'weekday');
+      if (wd) {
+        const idx = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(wd.value);
+        if (idx >= 0) dow = idx;
+      }
+    } catch {}
     // Monday = day 1; if Sunday(0) we need to go back 6 days, else dow-1.
-    const offset = dow === 0 ? 6 : (dow - 1);
-    const monday = new Date(Date.UTC(y, m - 1, d - offset, 0, 0, 0));
-    // Adjust if the timezone differs from UTC: this is an approximation
-    // — works well for both UK (≈0 offset) and JP (+9). The error is at
-    // most a few hours which doesn't affect a 7-day window.
-    return monday.getTime();
+    const daysFromMonday = dow === 0 ? 6 : (dow - 1);
+    return getTodayStartMs(memberId) - daysFromMonday * 86400000;
   }
   // Sum of session-minutes for events that fall in the current week.
   function getThisWeekMinutes(memberId) {
@@ -2549,30 +2534,36 @@
     }
     return Math.round(totalMs / 60000);
   }
-  // Local-midnight (member's timezone) of "today" → ms. Mirrors the
-  // logic of getCurrentWeekStartMs but for a single-day boundary, so
-  // a Sunday-evening session in Tokyo doesn't bleed into "yesterday".
+  // Local-midnight (member's timezone) of "today" → UTC ms instant.
+  // We avoid the older Date.UTC(y,m,d) trick because that interprets
+  // y/m/d as UTC, not as the member's local date — a Tokyo morning
+  // session at 06:00 JST (= 21:00 UTC the day before) would then be
+  // classified as "yesterday" / "last week", silently missing from
+  // the gauge. Subtracting "hours into the day" from now() gives the
+  // correct local-midnight instant regardless of member timezone.
   function getTodayStartMs(memberId) {
     const tz = MEMBER_TIMEZONE[memberId];
-    const now = new Date();
-    let y, m, d;
+    const now = Date.now();
+    let h = 0, m = 0, s = 0;
     try {
       const fmt = new Intl.DateTimeFormat('en-CA', Object.assign({
-        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
       }, tz ? { timeZone: tz } : {}));
-      const parts = fmt.formatToParts(now);
+      const parts = fmt.formatToParts(new Date(now));
       const o = {};
       for (const p of parts) o[p.type] = p.value;
-      y = parseInt(o.year, 10);
-      m = parseInt(o.month, 10);
-      d = parseInt(o.day, 10);
+      h = parseInt(o.hour, 10) || 0;
+      m = parseInt(o.minute, 10) || 0;
+      s = parseInt(o.second, 10) || 0;
+      // Some locales (en-US) report 24 at midnight; normalise to 0.
+      if (h === 24) h = 0;
     } catch {
-      const local = new Date();
-      y = local.getFullYear();
-      m = local.getMonth() + 1;
-      d = local.getDate();
+      const local = new Date(now);
+      h = local.getHours();
+      m = local.getMinutes();
+      s = local.getSeconds();
     }
-    return Date.UTC(y, m - 1, d, 0, 0, 0);
+    return now - ((h * 3600 + m * 60 + s) * 1000);
   }
   // Sum of session-minutes for events that fall in "today" (member's tz).
   // Used to surface a "今日 X 分やった" indicator on the home gauge so
@@ -9794,23 +9785,31 @@
                 }
               }, '🎉 達成'),
             ),
-            // Progress bar — with a faint "今日までの理想" tick on top so
-            // the user can see whether they're ahead of pace at a glance.
+            // Progress bar — with a faint "今日までの理想" tick that
+            // extends slightly above/below the bar so it reads as a
+            // pace marker. The bar itself clips its colored fill to
+            // its rounded shape, so the tick must live OUTSIDE that
+            // overflow:hidden container.
             e('div', {
-              style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden', marginBottom: 8, position: 'relative' }
+              style: { position: 'relative', height: 10, marginBottom: 8 }
             },
               e('div', {
-                style: {
-                  height: '100%', width: pct + '%',
-                  background: profile.color,
-                  transition: 'width 0.4s ease',
-                }
-              }),
+                style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden', marginTop: 2 }
+              },
+                e('div', {
+                  style: {
+                    height: '100%', width: pct + '%',
+                    background: profile.color,
+                    transition: 'width 0.4s ease',
+                  }
+                }),
+              ),
               !reached && e('div', {
                 style: {
-                  position: 'absolute', top: -2, bottom: -2,
+                  position: 'absolute', top: 0, bottom: 0,
                   left: Math.max(0, Math.min(100, expectedToday / Math.max(1, goal) * 100)) + '%',
-                  width: 2, background: C.sub, opacity: 0.45,
+                  width: 2, marginLeft: -1,
+                  background: C.sub, opacity: 0.45,
                 }
               }),
             ),
