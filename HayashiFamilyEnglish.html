@@ -14598,6 +14598,169 @@
     return null;
   }
 
+  // ---------- 間違い復習: タップ時の詳細プレビュー (bottom sheet) ----------
+  // 復習を始める前に「どんな問題か / 正解は何か / 例文 / 類義語 / 使い分け」
+  // を確認できるシート。閉じてから「復習を始める」を押すと通常の出題が始まる。
+  function renderMistakePreview(item, profile, onClose) {
+    const kindLabel = item.kind === 'vocab' ? '単語'
+                    : item.kind === 'sentence' ? '英作文' : 'フレーズ';
+    const synList = item.kind === 'vocab' ? (item.syn || getVocabSynonyms(item.id)) : null;
+    const usageNote = item.kind === 'vocab' ? (item.usage || getVocabUsage(item.id)) : null;
+    const conj = item.kind === 'vocab' ? getConjugation(item) : null;
+    const sectionTitle = (label) => e('div', {
+      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+               textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
+    }, label);
+    return e('div', {
+      onClick: onClose,
+      style: {
+        position: 'fixed', inset: 0, background: 'rgba(42,37,32,0.45)', zIndex: 200,
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0,
+      }
+    },
+      e('div', {
+        onClick: (ev) => ev.stopPropagation(),
+        style: {
+          background: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+          maxWidth: 520, width: '100%', maxHeight: '88vh', overflowY: 'auto',
+          padding: '20px 22px 30px',
+        }
+      },
+        // つまみ
+        e('div', {
+          style: {
+            width: 40, height: 4, background: C.line, borderRadius: 2,
+            margin: '0 auto 16px', flexShrink: 0,
+          }
+        }),
+        // ヘッダ
+        e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 } },
+          e('span', {
+            style: {
+              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              background: profile.color + '1A', color: profile.color,
+            }
+          }, kindLabel),
+          item.level && e('span', {
+            style: {
+              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              background: C.softer, color: C.sub,
+            }
+          }, 'レベル ' + item.level),
+          e('div', { style: { flex: 1 } }),
+          e('button', {
+            onClick: onClose,
+            style: {
+              background: 'transparent', border: 'none', color: C.sub,
+              fontSize: 20, padding: '4px 10px', cursor: 'pointer',
+            }
+          }, '✕'),
+        ),
+        // 日本語 (= 出題文)
+        e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 6 } }, '日本語'),
+        e('div', {
+          style: { fontSize: item.kind === 'vocab' ? 30 : 20, fontWeight: 800, color: C.text, lineHeight: 1.4, marginBottom: 16 }
+        }, item.ja),
+        // 英語 (= 正解)
+        e('div', {
+          style: { borderTop: '1px dashed ' + C.line, paddingTop: 14, marginBottom: 14 }
+        },
+          e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, letterSpacing: '0.08em', marginBottom: 6 } }, '英語'),
+          e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+            e('div', {
+              style: { fontFamily: SERIF, fontSize: item.kind === 'vocab' ? 30 : 22, fontWeight: 800, color: C.text, flex: 1, lineHeight: 1.35 }
+            }, item.en),
+            e(SpeakerBtn, { onClick: () => speak(item.en), color: profile.color, size: 44 }),
+          ),
+        ),
+        // 例文 (vocab のみ)
+        item.kind === 'vocab' && item.exEn && e('div', { style: { marginBottom: 14 } },
+          e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            e('div', {
+              style: { flex: 1, fontSize: 16, fontWeight: 600, color: C.text, lineHeight: 1.55, fontFamily: SERIF_READ }
+            }, item.exEn),
+            e(SpeakerBtn, { onClick: () => speak(item.exEn), color: profile.color, size: 36 }),
+          ),
+          item.exJa && e('div', { style: { fontSize: 13, color: C.sub, lineHeight: 1.7, marginTop: 4 } }, item.exJa),
+        ),
+        // 第 2 例文 (あれば)
+        item.kind === 'vocab' && item.exEn2 && e('div', { style: { marginBottom: 14, paddingTop: 8, borderTop: '1px dashed ' + C.line } },
+          e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, paddingTop: 8 } },
+            e('div', {
+              style: { flex: 1, fontSize: 16, fontWeight: 600, color: C.text, lineHeight: 1.55, fontFamily: SERIF_READ }
+            }, item.exEn2),
+            e(SpeakerBtn, { onClick: () => speak(item.exEn2), color: profile.color, size: 36 }),
+          ),
+          item.exJa2 && e('div', { style: { fontSize: 13, color: C.sub, lineHeight: 1.7, marginTop: 4 } }, item.exJa2),
+        ),
+        // 別の言い方 (類義語)
+        synList && synList.length > 0 && e('div', { style: { marginBottom: 14 } },
+          sectionTitle('別の言い方 (Similar)'),
+          e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            synList.map((w, i) => e('div', {
+              key: 'syn_' + i,
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '4px 10px 4px 12px', borderRadius: 999,
+                background: C.softer, border: '1px solid ' + C.line,
+                fontSize: 13, color: C.text, fontFamily: SERIF, fontWeight: 600,
+              }
+            },
+              e('span', null, w),
+              e(SpeakerBtn, { onClick: () => speak(w), color: profile.color, size: 22 }),
+            )),
+          ),
+        ),
+        // 使い分け
+        usageNote && e('div', { style: { marginBottom: 14 } },
+          sectionTitle('使い分け (Usage)'),
+          e('div', {
+            style: {
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 12, padding: '12px 14px',
+              fontSize: 13, color: C.text, lineHeight: 1.7,
+            }
+          }, usageNote),
+        ),
+        // 活用 (動詞)
+        conj && e('div', { style: { marginBottom: 14 } },
+          sectionTitle('活用 (Past tense)'),
+          e('div', {
+            style: {
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 12, padding: '12px 14px',
+              fontSize: 13, color: C.text, lineHeight: 1.7,
+              display: 'flex', flexWrap: 'wrap', gap: 12,
+            }
+          },
+            e('span', null, '過去形: ', e('strong', null, conj.past)),
+            e('span', null, '過去分詞: ', e('strong', null, conj.pp)),
+          ),
+        ),
+        // 文法 (sentence のみ)
+        item.kind === 'sentence' && item.grammar && e('div', { style: { marginBottom: 14 } },
+          sectionTitle('文法'),
+          e('div', { style: { fontSize: 12, color: C.sub } }, item.grammar),
+        ),
+        // 場面 (phrase のみ)
+        item.kind === 'phrase' && item.scene && e('div', { style: { marginBottom: 14 } },
+          sectionTitle('場面'),
+          e('div', { style: { fontSize: 12, color: C.sub } }, SCENE_LABELS[item.scene] || item.scene),
+        ),
+        // 閉じる
+        e('button', {
+          onClick: onClose,
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginTop: 8,
+          }
+        }, '閉じる'),
+      ),
+    );
+  }
+
   function MistakeReview({ profile, onBack, kindFilter }) {
     // The user picks 'all' / 'vocab' / 'sentence' from a chooser at the
     // top of the list screen. If a kindFilter prop was passed (legacy
@@ -14606,6 +14769,17 @@
     // Bumps when a batch finishes so initialList re-reads from db with
     // the just-overcome items already removed.
     const [refreshKey, setRefreshKey] = useState(0);
+    // タップで詳細 (en/ja/例文/類義語/使い分け) を表示するプレビュー対象
+    const [previewItem, setPreviewItem] = useState(null);
+    // 出題順をランダムにするためのシャッフル
+    function shuffleArr(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
     function computeList() {
       const ms = db.getMistakesNormalized(profile.id);
       const seen = new Set(); const out = [];
@@ -14668,7 +14842,9 @@
 
     function startBatch() {
       const list = computeList();
-      const next = list.slice(0, BATCH_SIZE).map(m => m.item);
+      // ランダム順で 5 問選ぶ。リストの上から順だとパターン化して
+      // 復習が単調になるため、毎回違う組み合わせ + 違う順番にする。
+      const next = shuffleArr(list).slice(0, BATCH_SIZE).map(m => m.item);
       if (next.length === 0) return;
       setBatchItems(next);
       setQueue(next);
@@ -14690,7 +14866,8 @@
       // already been removed from the mistakes table by record(true),
       // so this picks up the next 5 still pending.
       const list = computeList();
-      const next = list.slice(0, BATCH_SIZE).map(m => m.item);
+      // 同じくランダム順で 5 問。
+      const next = shuffleArr(list).slice(0, BATCH_SIZE).map(m => m.item);
       if (next.length === 0) {
         // No more mistakes — head back to list (which will show the
         // "まだ間違いがありません" empty state).
@@ -14855,12 +15032,18 @@
                   const it = m.item;
                   const kindLabel = it.kind === 'vocab' ? '単語'
                                   : it.kind === 'sentence' ? '英作文' : 'フレーズ';
-                  return e('div', {
+                  // タップで詳細プレビューを開く。復習前にどんな問題か
+                  // (英語・例文・類義語・使い分け) を確認できる。
+                  return e('button', {
                     key: it.kind + ':' + it.id,
+                    type: 'button',
+                    onClick: () => { hapticTap(); setPreviewItem(it); },
                     style: {
                       display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '14px 14px',
+                      padding: '14px 14px', width: '100%',
+                      background: 'transparent', border: 'none',
                       borderBottom: i < initialList.length - 1 ? '1px solid ' + C.line : 'none',
+                      cursor: 'pointer', textAlign: 'left',
                     }
                   },
                     e('div', {
@@ -14904,6 +15087,9 @@
                 }),
               ),
             ),
+        // タップしたアイテムのプレビュー (en/ja/例文/類義語/使い分け)
+        previewItem && renderMistakePreview(previewItem, profile,
+          () => setPreviewItem(null)),
       );
     }
 
