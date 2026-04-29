@@ -4600,6 +4600,24 @@
         'これが新しいものを発見する唯一の方法だ。',
     },
     {
+      id: 'pas_musk_03',
+      level: 4,
+      title: 'Elon Musk · ③ 失敗してもいい',
+      icon: '🚗',
+      en:
+        "Failure is an option here. " +
+        "If things are not failing, you are not innovating enough. " +
+        "When something is important enough, you try, even when the outcome is not certain. " +
+        "Persistence is very important. " +
+        "You should not give up unless you are forced to give up.",
+      ja:
+        '失敗してもいい。' +
+        'もし何も失敗していないなら、十分に新しいことに挑戦できていない。' +
+        '何かが十分に重要なとき、結果が確かでなくてもやってみる。' +
+        '粘り強さがとても重要だ。' +
+        '諦めざるを得ない時以外は、諦めるべきではない。',
+    },
+    {
       id: 'pas_son_01',
       level: 4,
       title: 'Masayoshi Son · ① 登る山を決める',
@@ -4635,6 +4653,26 @@
         '私たちは情報革命の始まりにすぎない。' +
         '一番大切なのは、道が不確かな時でも、ビジョンを明確に保ち続けることだ。' +
         'ビジョンは戦術よりも大事だ。',
+    },
+    {
+      id: 'pas_son_03',
+      level: 4,
+      title: 'Masayoshi Son · ③ 七割の確信',
+      icon: '🗻',
+      en:
+        "I never start a venture if I am only 50 percent sure of success. " +
+        "That is gambling. " +
+        "But I do not wait until I am 90 percent sure either. " +
+        "By then, the opportunity has already passed. " +
+        "Seventy percent — that is when courage matters most. " +
+        "You believe, you decide, and then you commit everything.",
+      ja:
+        '成功の確信が 50% しかないとき、私は決して新しい挑戦は始めない。' +
+        'それはギャンブルだ。' +
+        'しかし 90% の確信を待つこともしない。' +
+        'その頃には、機会はもう過ぎ去っている。' +
+        '70% ―― そこが勇気の最も問われる瞬間だ。' +
+        '信じて、決めて、そしてすべてを賭ける。',
     },
   ];
 
@@ -9652,9 +9690,13 @@
         const weekStartMs = getCurrentWeekStartMs(profile.id);
         const elapsed = Math.max(0, Math.floor((Date.now() - weekStartMs) / dayMs));
         const daysLeft = Math.max(0, 6 - elapsed);  // Mon=0 ... Sun=6
-        const dayIndex = elapsed + 1; // 1..7  — "今日は週の何日目か"
+        // Cap at 7 — DST jumps or clock skew can briefly make elapsed >6
+        // before getCurrentWeekStartMs rolls over to the new Monday. Without
+        // this cap, expectedToday would exceed goal and the user would see
+        // "ペース達成" replaced with "あと N分" on the very last day.
+        const dayIndex = Math.min(7, elapsed + 1); // 1..7  — "今日は週の何日目か"
         const perDay = Math.round(goal / 7);
-        const expectedToday = perDay * dayIndex; // ideal minutes by end of today
+        const expectedToday = Math.min(goal, perDay * dayIndex); // ideal minutes by end of today
         const onPace = done >= expectedToday;
         const aheadMin = done - expectedToday;
         // Pace badge text — ahead / on track / behind by N minutes.
