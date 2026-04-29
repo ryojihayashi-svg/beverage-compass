@@ -7313,6 +7313,157 @@
     ],
   };
 
+  // ---------- レベル診断テスト ----------
+  // 段階式テスト: Stage 1 (基礎) → Stage 2 (中級) → Stage 3 (上級)
+  // 各ステージで合格率を超えると次のステージに挑戦できる。挑戦をやめた、
+  // または不合格になった時点で「ひとつ下のレベル」を判定とする。
+  //
+  // メインターゲット: 留学中の吉成 (英国・英検4級〜3級レベル)
+  // ファミリー全員: 林亮治 (準2級), 林なるみち (準2級), 林あゆみ (4級),
+  //                  林吉成 (4級), 林きっぺい (5級)
+  //
+  // 1ステージあたり 13 問 = リスニング 3 + リーディング 2 + 文法 8 を
+  // ランダム抽選で出題 (毎回違う組み合わせ)。
+  //
+  // level の意味:
+  //   1 = 英検5級 (中1)、 2 = 英検4級 (中2)、 3 = 英検3級 (中3)、
+  //   4 = 英検準2級 (高校基礎)、 5 = 英検2級 (高校卒業〜大学)
+  //
+  // ※ 今は最小プール (各レベル数問ずつ)。今後 30 問/レベルまで増やしていく。
+  const DIAG_STAGES = [
+    { id: 'stage1', label: '基礎',  levels: [1, 2],    passRate: 0.90, eiken: '英検4級' },
+    { id: 'stage2', label: '中級',  levels: [2, 3],    passRate: 0.85, eiken: '英検3級' },
+    { id: 'stage3', label: '上級',  levels: [3, 4, 5], passRate: 0.80, eiken: '英検準2級' },
+  ];
+
+  // 文法・語彙の問題プール。q = 質問、choices = 選択肢、answer = 正解index、
+  // explain = 解説 (必須。点数だけでは学習にならない)
+  const DIAGNOSTIC_POOL = [
+    // ========== 英検5級 (中1) ==========
+    { id:'dq1_01', level:1, type:'grammar', q:'I ___ a student.',                               choices:['am','is','are','be'],         answer:0, explain:'主語が I のとき be動詞は am。' },
+    { id:'dq1_02', level:1, type:'grammar', q:'She ___ to school every day.',                   choices:['go','goes','going','gone'],   answer:1, explain:'三人称単数現在 (she/he/it) は動詞に s。go → goes。' },
+    { id:'dq1_03', level:1, type:'vocab',   q:'"Thank you." の意味は？',                          choices:['さようなら','ありがとう','おはよう','すみません'], answer:1, explain:'Thank you = ありがとう。最も基本の感謝表現。' },
+    { id:'dq1_04', level:1, type:'grammar', q:'My brother ___ soccer on Sundays.',              choices:['play','plays','playing','played'], answer:1, explain:'主語 my brother は三人称単数 → plays。' },
+    { id:'dq1_05', level:1, type:'vocab',   q:'"Saturday" の意味は？',                            choices:['月曜日','水曜日','土曜日','日曜日'], answer:2, explain:'Saturday = 土曜日。Sunday と混同しやすい。' },
+
+    // ========== 英検4級 (中2) ==========
+    { id:'dq2_01', level:2, type:'grammar', q:'I ___ lunch at noon yesterday.',                 choices:['eat','ate','eaten','eating'], answer:1, explain:'yesterday があるので過去形。eat → ate。' },
+    { id:'dq2_02', level:2, type:'grammar', q:'It ___ rain tomorrow.',                          choices:['will','was','is','are'],      answer:0, explain:'tomorrow なので未来形 will + 動詞の原形。' },
+    { id:'dq2_03', level:2, type:'grammar', q:'My sister is ___ than me.',                      choices:['tall','taller','tallest','more tall'], answer:1, explain:'2 つを比較 → 比較級 taller。' },
+    { id:'dq2_04', level:2, type:'grammar', q:'There ___ two cats on the sofa.',                choices:['is','am','are','be'],         answer:2, explain:'two cats と複数なので there are。' },
+    { id:'dq2_05', level:2, type:'vocab',   q:'"because" の意味は？',                             choices:['しかし','〜なので','〜のとき','もし〜なら'], answer:1, explain:'because = なぜなら/〜なので。理由を表す接続詞。' },
+
+    // ========== 英検3級 (中3) ==========
+    { id:'dq3_01', level:3, type:'grammar', q:'I have ___ to Kyoto three times.',               choices:['go','went','been','going'],   answer:2, explain:'have been to = 〜に行ったことがある (現在完了の経験)。' },
+    { id:'dq3_02', level:3, type:'grammar', q:'This book ___ written by a famous author.',      choices:['is','was','has','does'],      answer:1, explain:'受動態 be + 過去分詞。書かれた = was written。' },
+    { id:'dq3_03', level:3, type:'grammar', q:'The boy ___ is playing the piano is my brother.', choices:['who','which','what','whose'], answer:0, explain:'人を修飾する関係代名詞 → who。' },
+    { id:'dq3_04', level:3, type:'grammar', q:"I'm too tired ___ go out tonight.",              choices:['to','for','of','in'],         answer:0, explain:'too 〜 to V = 〜すぎて V できない。' },
+    { id:'dq3_05', level:3, type:'vocab',   q:'"experience" の意味は？',                          choices:['実験','経験','期待','専門家'], answer:1, explain:'experience = 経験。動詞でも「経験する」と使う。' },
+
+    // ========== 英検準2級 (高校基礎) ==========
+    { id:'dq4_01', level:4, type:'grammar', q:'If I ___ you, I would accept the offer.',        choices:['am','was','were','be'],       answer:2, explain:'仮定法過去 If I were you = もし私があなたなら。were を使うのが正式。' },
+    { id:'dq4_02', level:4, type:'grammar', q:'___ along the street, I saw an old friend.',     choices:['Walk','Walking','Walked','To walk'], answer:1, explain:'分詞構文。〜しながら = -ing 形。' },
+    { id:'dq4_03', level:4, type:'grammar', q:'The teacher suggested that he ___ harder.',      choices:['studies','studied','study','studying'], answer:2, explain:'suggest that S + 動詞の原形。仮定法現在。' },
+    { id:'dq4_04', level:4, type:'vocab',   q:'"postpone" に最も近い意味は？',                    choices:['前倒しする','延期する','中止する','繰り返す'], answer:1, explain:'postpone = 延期する。put off と同義。' },
+    { id:'dq4_05', level:4, type:'vocab',   q:'"submit" の意味は？',                              choices:['提出する','拒否する','編集する','保存する'], answer:0, explain:'submit a report = レポートを提出する。' },
+
+    // ========== 英検2級 (高校卒業〜大学) ==========
+    { id:'dq5_01', level:5, type:'grammar', q:'Had I known about the problem, I ___ have contacted you sooner.', choices:['will','shall','should','would'], answer:3, explain:'仮定法過去完了の倒置。Had I known = If I had known。帰結節は would have + 過去分詞。' },
+    { id:'dq5_02', level:5, type:'grammar', q:'Not only ___ he handsome, but he is also smart.', choices:['is','was','does','did'],      answer:0, explain:'否定の副詞句 (Not only) を文頭に出すと倒置。is he 〜。' },
+    { id:'dq5_03', level:5, type:'grammar', q:'It is essential that every student ___ the form by Friday.', choices:['submits','submitted','submit','submitting'], answer:2, explain:'It is essential that S + 動詞の原形 (仮定法現在)。submit のまま。' },
+    { id:'dq5_04', level:5, type:'vocab',   q:'"meticulous" の意味は？',                          choices:['几帳面な','大雑把な','悲観的な','楽観的な'], answer:0, explain:'meticulous = 細部まで気を配る、几帳面な。' },
+    { id:'dq5_05', level:5, type:'vocab',   q:'"corroborate" の意味は？',                         choices:['反論する','裏付ける','想像する','破壊する'], answer:1, explain:'corroborate = (証拠などで) 裏付ける、確証する。' },
+  ];
+
+  // リスニング診断プール。conversation の text を TTS で読み上げる。
+  const LISTENING_DIAG_POOL = [
+    {
+      id:'dl_diag_01', level:2,
+      conversation:[
+        { speaker:'A', text:'Good morning. How can I help you?' },
+        { speaker:'B', text:'I have a reservation for three at seven. The name is Smith.' },
+      ],
+      q:'Bの予約は何名ですか？',
+      choices:['2名','3名','4名','予約なし'], answer:1,
+      explain:'"for three" = 3名分。数字の聞き取りがポイント。',
+    },
+    {
+      id:'dl_diag_02', level:3,
+      conversation:[
+        { speaker:'A', text:'Excuse me, where can I find the post office?' },
+        { speaker:'B', text:'Go straight for two blocks, then turn right. It\'s next to the bank.' },
+      ],
+      q:'郵便局はどこにありますか？',
+      choices:['銀行の前','銀行の隣','学校の中','駅の上'], answer:1,
+      explain:'"next to the bank" = 銀行の隣。next to は道案内の頻出表現。',
+    },
+    {
+      id:'dl_diag_03', level:4,
+      conversation:[
+        { speaker:'A', text:'The seminar starts at four, but I think we should arrive by three thirty.' },
+        { speaker:'B', text:'Sounds good. Shall we meet at the cafe across from the campus at three?' },
+      ],
+      q:'2人は何時にカフェで会いますか？',
+      choices:['3:00','3:30','4:00','5:00'], answer:0,
+      explain:'最後に "at three" = 3時にカフェで会う。複数の時刻が出るので注意。',
+    },
+  ];
+
+  // リーディング診断プール。passage の長さは level に応じて伸ばす。
+  const READING_DIAG_POOL = [
+    {
+      id:'dr_diag_01', level:2,
+      passage:'The library is open from 9 a.m. to 6 p.m. on weekdays. On weekends, it closes at 4 p.m. It is closed on national holidays.',
+      q:'土曜日は何時に閉まりますか？',
+      choices:['14:00','16:00','18:00','休館'], answer:1,
+      explain:'"On weekends, it closes at 4 p.m." = 週末は16時閉館。weekends には土日が含まれる。',
+    },
+    {
+      id:'dr_diag_02', level:3,
+      passage:'Yoshinari moved to London last September to study English. He lives in a small dormitory near the campus and has classes from Monday to Thursday. On weekends, he often visits museums and tries different foods with his friends.',
+      q:'吉成は週に何日授業がありますか？',
+      choices:['3日','4日','5日','7日'], answer:1,
+      explain:'"from Monday to Thursday" = 月曜日から木曜日まで → 4 日間。',
+    },
+    {
+      id:'dr_diag_03', level:4,
+      passage:'We are pleased to announce our new seasonal menu, available from January through March. The 8-course menu features winter ingredients sourced from local farms. Wine pairing is available for an additional 5,000 yen. Reservations are required at least 3 days in advance.',
+      q:'ワインペアリングについて正しいのは？',
+      choices:['コースに含まれている','追加5,000円で利用可能','利用不可','予約不要'], answer:1,
+      explain:'"available for an additional 5,000 yen" = 追加5,000円で利用可能。additional = 追加の。',
+    },
+  ];
+
+  // 出題セクションを判定する補助関数 (結果画面のグルーピング用)
+  function getQuestionSection(q) {
+    if (q && q.conversation) return 'listening';
+    if (q && q.passage)      return 'reading';
+    return 'grammar';
+  }
+
+  // ステージの問題を組み立てる: リスニング 3 + リーディング 2 + 文法 8
+  // 同じセッション内では出題は固定 (ステージ開始時に一度だけ抽選)。
+  function buildStageQuestions(stage) {
+    const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+    const maxLv   = Math.max(...stage.levels);
+
+    // リスニング/リーディングはステージ最高レベル以下から幅広く抽選
+    const lqs = LISTENING_DIAG_POOL.filter(q => q.level <= maxLv);
+    const rqs = READING_DIAG_POOL.filter(q => q.level <= maxLv);
+    const listening = shuffle(lqs).slice(0, 3);
+    const reading   = shuffle(rqs).slice(0, 2);
+
+    // 文法はステージ対象レベルから均等に抽選 (各 level 4 問ずつ → 計 8〜12 問)
+    const gPerLevel = Math.ceil(8 / stage.levels.length);
+    const grammar   = [];
+    for (const lv of stage.levels) {
+      const pool = DIAGNOSTIC_POOL.filter(q => q.level === lv);
+      grammar.push(...shuffle(pool).slice(0, gPerLevel));
+    }
+    // リスニング → リーディング → 文法 の順で出題
+    return [...listening, ...reading, ...shuffle(grammar)];
+  }
+
   // ---------- AI 採点テスト用 問題集 ----------
   // 「週1回くらいの実力チェック」用に、レベル別に独立した問題プールを
   // 持つ。1セッション = 3問 (短くして達成感重視)、もっとやりたければ
