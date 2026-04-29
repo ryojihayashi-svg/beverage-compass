@@ -115,6 +115,8 @@
     { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true  },
     { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false },
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false },
+    { id: 'comp_test',          label: 'AI英作文テスト', desc: '週1回 · 3問だけ · AI採点',
+                                                                                          fullWidth: true, forLearner: true, forViewer: false },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',
@@ -4724,6 +4726,76 @@
     },
   ];
 
+  // ---------- AI 採点テスト用 問題集 ----------
+  // 「週1回くらいの実力チェック」用に、レベル別に独立した問題プールを
+  // 持つ。1セッション = 3問 (短くして達成感重視)、もっとやりたければ
+  // +3問ずつ追加。問題は瞬間英作文より少し「テスト」っぽい固有性 (家族
+  // の話・日常のシーン) を優先。回答は AI 採点 (Claude Haiku) で
+  // ◎/○/△ + 短コメント + 別解 を返す。
+  const COMPOSITION_TEST_POOL = [
+    // ===== LV1 (英検5級〜4級): be動詞・基本動詞・所有 =====
+    { id: 'ct1_01', level: 1, ja: '私は学生です。',                                  en: 'I am a student.' },
+    { id: 'ct1_02', level: 1, ja: '父はレストランのオーナーです。',                  en: 'My father is a restaurant owner.' },
+    { id: 'ct1_03', level: 1, ja: '私は犬を飼っています。',                          en: 'I have a dog.' },
+    { id: 'ct1_04', level: 1, ja: '私はサッカーが好きです。',                        en: 'I like soccer.' },
+    { id: 'ct1_05', level: 1, ja: 'これは私の本です。',                              en: 'This is my book.' },
+    { id: 'ct1_06', level: 1, ja: '母は東京に住んでいます。',                        en: 'My mother lives in Tokyo.' },
+    { id: 'ct1_07', level: 1, ja: '私は毎日英語を勉強します。',                      en: 'I study English every day.' },
+    { id: 'ct1_08', level: 1, ja: '私たちは仲のいい家族です。',                      en: 'We are a close family.' },
+    { id: 'ct1_09', level: 1, ja: '弟は10歳です。',                                  en: 'My brother is ten years old.' },
+    { id: 'ct1_10', level: 1, ja: '私はりんごが好きではありません。',                en: "I don't like apples." },
+
+    // ===== LV2 (英検4級〜3級): 過去形・進行形・can =====
+    { id: 'ct2_01', level: 2, ja: '昨日、母とラーメンを食べました。',                en: 'I ate ramen with my mother yesterday.' },
+    { id: 'ct2_02', level: 2, ja: '私は今、宿題をしています。',                      en: 'I am doing my homework now.' },
+    { id: 'ct2_03', level: 2, ja: '父は先週、東京に行きました。',                    en: 'My father went to Tokyo last week.' },
+    { id: 'ct2_04', level: 2, ja: '私は今朝、6時に起きました。',                     en: 'I got up at 6 this morning.' },
+    { id: 'ct2_05', level: 2, ja: '母は料理をしているところです。',                  en: 'My mother is cooking.' },
+    { id: 'ct2_06', level: 2, ja: '私は速く走ることができます。',                    en: 'I can run fast.' },
+    { id: 'ct2_07', level: 2, ja: '友達と公園で遊びました。',                        en: 'I played in the park with my friends.' },
+    { id: 'ct2_08', level: 2, ja: '雨が降っていました。',                            en: 'It was raining.' },
+    { id: 'ct2_09', level: 2, ja: '駅で先生に会いました。',                          en: 'I met my teacher at the station.' },
+    { id: 'ct2_10', level: 2, ja: '私はパンとミルクを買いました。',                  en: 'I bought bread and milk.' },
+
+    // ===== LV3 (英検3級〜準2級): 現在完了・未来・比較・不定詞 =====
+    { id: 'ct3_01', level: 3, ja: 'ロンドンに行ったことがあります。',                en: 'I have been to London.' },
+    { id: 'ct3_02', level: 3, ja: '来週、京都に行く予定です。',                      en: 'I will go to Kyoto next week.' },
+    { id: 'ct3_03', level: 3, ja: '彼は私より背が高いです。',                        en: 'He is taller than me.' },
+    { id: 'ct3_04', level: 3, ja: '一番好きな食べ物はラーメンです。',                en: 'My favorite food is ramen.' },
+    { id: 'ct3_05', level: 3, ja: '私はもう宿題を終えました。',                      en: 'I have already finished my homework.' },
+    { id: 'ct3_06', level: 3, ja: 'もし時間があれば、映画を見ます。',                en: 'If I have time, I will watch a movie.' },
+    { id: 'ct3_07', level: 3, ja: '私は英語を話せるようになりたい。',                en: 'I want to be able to speak English.' },
+    { id: 'ct3_08', level: 3, ja: '兄ほど速く走れません。',                          en: "I can't run as fast as my brother." },
+    { id: 'ct3_09', level: 3, ja: '雨が降りそうです。',                              en: "It looks like it's going to rain." },
+    { id: 'ct3_10', level: 3, ja: '母はいつもお米を炊いてくれます。',                en: 'My mother always cooks rice for me.' },
+
+    // ===== LV4 (英検準2級〜2級): 関係詞・分詞・仮定法・知覚動詞 =====
+    { id: 'ct4_01', level: 4, ja: '私が昨日会った男の人は私の先生です。',            en: 'The man I met yesterday is my teacher.' },
+    { id: 'ct4_02', level: 4, ja: 'もっとお金があれば、新しい車を買うのに。',        en: 'If I had more money, I would buy a new car.' },
+    { id: 'ct4_03', level: 4, ja: 'その机の上にある本は私のです。',                  en: 'The book on the desk is mine.' },
+    { id: 'ct4_04', level: 4, ja: '彼が来るまで待ちましょう。',                      en: "Let's wait until he comes." },
+    { id: 'ct4_05', level: 4, ja: '私は昨日読んだ本のことを覚えています。',          en: 'I remember the book I read yesterday.' },
+    { id: 'ct4_06', level: 4, ja: '彼に何時に来るか聞いてみよう。',                  en: 'Let me ask him what time he will come.' },
+    { id: 'ct4_07', level: 4, ja: '子どもの頃、よく公園で遊びました。',              en: 'I used to play in the park when I was a child.' },
+    { id: 'ct4_08', level: 4, ja: '雨が降らなければ、ピクニックに行きます。',        en: "If it doesn't rain, we'll go for a picnic." },
+    { id: 'ct4_09', level: 4, ja: '彼女は買い物に行くのが好きだと言いました。',      en: 'She said she likes going shopping.' },
+    { id: 'ct4_10', level: 4, ja: '私は誰かが歌っているのを聞いた。',                en: 'I heard someone singing.' },
+
+    // ===== LV5 (英検2級〜準1級): 仮定法過去完了・分詞構文・関係副詞 =====
+    { id: 'ct5_01', level: 5, ja: 'もっと早く起きていたら、電車に乗り遅れなかったのに。',
+                                                                                    en: "If I had gotten up earlier, I wouldn't have missed the train." },
+    { id: 'ct5_02', level: 5, ja: '彼は今までに会った中で最も親切な人です。',         en: 'He is the kindest person I have ever met.' },
+    { id: 'ct5_03', level: 5, ja: '何時間も歩いた後、ようやくホテルに着きました。',   en: 'After walking for hours, we finally arrived at the hotel.' },
+    { id: 'ct5_04', level: 5, ja: 'その本は読む価値があります。',                     en: 'That book is worth reading.' },
+    { id: 'ct5_05', level: 5, ja: '彼が成功するかどうかは時間次第だ。',               en: 'Whether he succeeds or not depends on time.' },
+    { id: 'ct5_06', level: 5, ja: '私が驚いたことに、彼は試験に合格していた。',       en: 'To my surprise, he had passed the exam.' },
+    { id: 'ct5_07', level: 5, ja: '何があっても約束を守ります。',                     en: 'No matter what happens, I will keep my promise.' },
+    { id: 'ct5_08', level: 5, ja: '彼が言ったことは本当だとわかった。',               en: 'What he said turned out to be true.' },
+    { id: 'ct5_09', level: 5, ja: '仕事で疲れていたので、すぐに眠ってしまった。',     en: 'Being tired from work, I fell asleep right away.' },
+    { id: 'ct5_10', level: 5, ja: '言うは易く行うは難し。',                           en: 'Easier said than done.' },
+  ];
+  const COMPOSITION_TEST_BY_ID = Object.fromEntries(COMPOSITION_TEST_POOL.map(x => [x.id, x]));
+
   // ---------- Speaker grouping helpers for long-form shadowing ----------
   // Each passage's id is "pas_<speaker>_<chapter>" (or just "pas_<speaker>"
   // for the closing chapter — they were spliced in over time). Grouping
@@ -9201,6 +9273,81 @@
       .filter(s => s.length > 0);
   }
 
+  // ---------- AI 採点: 学習者の英作文を ◎/○/△ で評価 ----------
+  // 学習者がタイプした英文 + 元の日本語 + 模範訳 を Claude に渡し、
+  // 「文法・自然さ」を 0/1/2 で採点。返答は厳密に JSON。失敗時は
+  // 緩い文字列マッチでフォールバック。週1のテスト用なので fast/cheap
+  // な haiku を使う。
+  async function gradeComposition(sourceJa, modelEn, userEn) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const trimmed = (userEn || '').trim();
+    if (!trimmed) throw new Error('英文を入力してください');
+    const prompt =
+      '日本語: 「' + sourceJa + '」\n' +
+      '模範訳:  「' + modelEn + '」\n' +
+      '学習者の答え: 「' + trimmed + '」\n\n' +
+      '学習者の英語を採点してください。次の JSON のみを返答してください ' +
+      '(説明文や前置きは禁止):\n' +
+      '{"score": 2, "comment": "短い日本語のフィードバック (50字以内)", ' +
+      '"alternatives": ["別の言い方1","別の言い方2"]}\n\n' +
+      'score の基準: 2=自然で正しい / 1=意味は通じるが少し不自然 / 0=明確な誤り。' +
+      'alternatives は模範訳と異なる自然な英語表現を 0〜2 個。' +
+      '採点は厳しすぎないこと、子どもが続けたくなる短めのコメントで。';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: '英語学習者の家族向けアプリのアシスタント。学習者の英作文を ' +
+                '優しく・正確に採点します。',
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    // Try strict JSON first; fall back to ```json fenced```; fall back to
+    // best-effort regex.
+    let parsed = null;
+    try { parsed = JSON.parse(text); } catch {}
+    if (!parsed) {
+      const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (fenced) {
+        try { parsed = JSON.parse(fenced[1].trim()); } catch {}
+      }
+    }
+    if (!parsed) {
+      const m = text.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { parsed = JSON.parse(m[0]); } catch {}
+      }
+    }
+    if (!parsed || typeof parsed !== 'object') {
+      // Last resort: treat any response as 1 (acceptable) so the user
+      // isn't blocked. The raw text becomes the comment.
+      return { score: 1, comment: text.slice(0, 80) || '採点できませんでした。', alternatives: [] };
+    }
+    const score = parsed.score === 2 || parsed.score === 1 || parsed.score === 0
+      ? parsed.score : 1;
+    const comment = typeof parsed.comment === 'string' ? parsed.comment.trim() : '';
+    const alternatives = Array.isArray(parsed.alternatives)
+      ? parsed.alternatives.filter(s => typeof s === 'string' && s.trim().length > 0).slice(0, 3)
+      : [];
+    return { score, comment, alternatives };
+  }
+
   // ---------- PWA install detection ----------
   // Lightweight detector for whether the app is already running standalone
   // (iOS or Android), and a flag persistence helper so the install prompt is
@@ -9342,6 +9489,7 @@
       else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
       else if (route.feature === 'english_lessons')   body = e(EnglishLessons,    { profile, onBack: back });
       else if (route.feature === 'shadowing')         body = e(ShadowingPractice, { profile, onBack: back });
+      else if (route.feature === 'comp_test')         body = e(CompositionTest,   { profile, onBack: back });
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
@@ -12552,6 +12700,480 @@
         }, 'できた'),
       ),
     );
+  }
+
+  // ---------- AI 作文テスト (週1回くらいの実力チェック) ----------
+  // Goal: ユーザーが自分でタイプした英文を Claude が採点し、その場で
+  // ◎/○/△ + コメント + 別解 を返す。1セッション = 3問だけ。
+  // 達成感重視。もっとやりたければ「もう3問」ボタンで追加。
+  // 5問だと心理的に重いので、必ず 3 の倍数で進める。
+  const COMP_TEST_BATCH = 3;
+  function CompositionTest({ profile, onBack }) {
+    const [phase, setPhase] = useState('intro');     // 'intro' | 'study' | 'feedback' | 'done'
+    const [level, setLevel] = useState(() => {
+      // Default to a level the user has been working on (composition comfort).
+      try {
+        const c = loadComfort(profile.id, 'composition');
+        return Math.max(1, Math.min(5, Math.floor(c)));
+      } catch { return Math.max(1, Math.min(5, profile.level || 2)); }
+    });
+    const [queue, setQueue]         = useState([]);
+    const [index, setIndex]         = useState(0);
+    const [userInput, setUserInput] = useState('');
+    const [grading, setGrading]     = useState(null);   // { score, comment, alternatives }
+    const [busy, setBusy]           = useState(false);
+    const [error, setError]         = useState('');
+    const [results, setResults]     = useState([]);
+    const sessionStartRef = useRef(null);
+    // Avoid asking the same item twice in a row across "もう3問" extensions.
+    const usedIdsRef = useRef(new Set());
+    const inputRef = useRef(null);
+
+    function pickBatch(lv, count) {
+      const pool = COMPOSITION_TEST_POOL.filter(p => p.level === lv);
+      if (pool.length === 0) return [];
+      const fresh = pool.filter(p => !usedIdsRef.current.has(p.id));
+      // If we've exhausted fresh items at this level, reset the used-set
+      // so the next batch can start drawing from the full pool again.
+      const arrSrc = fresh.length >= count ? fresh : (function () {
+        usedIdsRef.current = new Set();
+        return pool;
+      })();
+      const arr = arrSrc.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      const picked = arr.slice(0, count);
+      for (const p of picked) usedIdsRef.current.add(p.id);
+      return picked;
+    }
+
+    function startTest() {
+      const items = pickBatch(level, COMP_TEST_BATCH);
+      if (items.length === 0) return;
+      setQueue(items);
+      setIndex(0);
+      setUserInput('');
+      setGrading(null);
+      setError('');
+      setResults([]);
+      sessionStartRef.current = Date.now();
+      setPhase('study');
+    }
+    function continueWithMore() {
+      // Add 3 more questions at the same level. Past results are kept.
+      const items = pickBatch(level, COMP_TEST_BATCH);
+      if (items.length === 0) return;
+      setQueue(items);
+      setIndex(0);
+      setUserInput('');
+      setGrading(null);
+      setError('');
+      sessionStartRef.current = Date.now();
+      setPhase('study');
+    }
+
+    async function submitAnswer() {
+      if (busy) return;
+      const cur = queue[index];
+      if (!cur) return;
+      const trimmed = (userInput || '').trim();
+      if (!trimmed) {
+        setError('英文を入力してください。');
+        return;
+      }
+      setBusy(true);
+      setError('');
+      try {
+        const r = await gradeComposition(cur.ja, cur.en, trimmed);
+        setGrading(r);
+        const isCorrect = r.score >= 1;
+        try {
+          db.recordSentence(profile.id, cur.id, isCorrect);
+          if (typeof cur.level === 'number') {
+            db.recordLevelAnswer(profile.id, 'composition', cur.level, isCorrect);
+          }
+        } catch {}
+        if (r.score === 2)      { soundCorrect(); hapticWin(); }
+        else if (r.score === 1) { soundCorrect(); hapticTap(); }
+        else                    { soundWrong();   hapticBuzz(); }
+        setPhase('feedback');
+      } catch (err) {
+        setError((err && err.message) || String(err));
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function nextOrFinish() {
+      const cur = queue[index];
+      const newResults = results.concat([{
+        id: cur.id, ja: cur.ja, en: cur.en, level: cur.level,
+        userInput: (userInput || '').trim(),
+        score: grading.score, comment: grading.comment,
+        alternatives: grading.alternatives,
+      }]);
+      setResults(newResults);
+      if (index + 1 >= queue.length) {
+        const correct = newResults.filter(r => r.score >= 1).length;
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        try {
+          db.recordTurn(profile.id, 'composition');
+          db.pushEvent(profile.id, {
+            kind: 'composition',
+            total: newResults.length,
+            correct,
+            direction: 'ja2en',
+            label: 'AIテスト',
+            durationMs,
+          });
+          adjustComfortFromMastery(profile.id, 'composition');
+          markPathStepDone(profile, 'composition_ja2en');
+        } catch {}
+        setPhase('done');
+        return;
+      }
+      setIndex(i => i + 1);
+      setUserInput('');
+      setGrading(null);
+      setError('');
+      setPhase('study');
+    }
+
+    // Auto-focus the textarea when entering 'study' phase so the keyboard
+    // pops up on mobile without an extra tap.
+    useEffect(() => {
+      if (phase === 'study' && inputRef.current) {
+        try { inputRef.current.focus(); } catch {}
+      }
+    }, [phase, index]);
+
+    const cur = queue[index] || null;
+    const total = queue.length;
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'AI英作文テスト'),
+      phase === 'study' && total > 0 && e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+          color: profile.color, fontVariantNumeric: 'tabular-nums',
+        }
+      }, (index + 1) + ' / ' + total),
+    );
+
+    // ============ INTRO ============
+    if (phase === 'intro') {
+      const apiOk = !!loadApiKey();
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, '今週の英作文テスト'),
+          e('div', {
+            style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+          }, '日本語を見て、英語にタイプしてみよう。' +
+             'AI が ◎ ○ △ で採点して、別の言い方も教えてくれます。' +
+             '1 セットは ' + COMP_TEST_BATCH + ' 問だけ。週に 1 回くらいでも OK。'),
+        ),
+        // Level picker
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'LEVEL'),
+        e('div', {
+          style: {
+            display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: 6, marginBottom: 18,
+          }
+        },
+          [1, 2, 3, 4, 5].map(lv => {
+            const isActive = level === lv;
+            const count = COMPOSITION_TEST_POOL.filter(p => p.level === lv).length;
+            return e('button', {
+              key: 'lv_' + lv,
+              onClick: () => setLevel(lv),
+              disabled: count === 0,
+              style: {
+                padding: '10px 0', borderRadius: 999,
+                background: isActive ? profile.color : C.card,
+                color:      isActive ? '#fff' : C.text,
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: count === 0 ? 'default' : 'pointer',
+                opacity: count === 0 ? 0.45 : 1, letterSpacing: '0.04em',
+              }
+            }, 'LV' + lv);
+          }),
+        ),
+        // Helper note about chosen level
+        e('div', {
+          style: {
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '14px 16px', marginBottom: 18,
+            fontSize: 12, color: C.sub, lineHeight: 1.7,
+          }
+        },
+          level === 1 ? '英検5級〜4級レベル: 「I am a student.」のような短い基本文。'
+          : level === 2 ? '英検4級〜3級レベル: 過去形・進行形・can。'
+          : level === 3 ? '英検3級〜準2級レベル: 現在完了・未来・比較・不定詞。'
+          : level === 4 ? '英検準2級〜2級レベル: 関係詞・分詞・仮定法。'
+          :               '英検2級〜準1級レベル: 仮定法過去完了・分詞構文。',
+        ),
+        // API key warning
+        !apiOk && e('div', {
+          style: {
+            background: C.danger + '14', border: '1px solid ' + C.danger,
+            borderRadius: 14, padding: '12px 14px', marginBottom: 18,
+            fontSize: 12, color: C.danger, lineHeight: 1.6,
+          }
+        }, 'AI採点には Anthropic API キーが必要です。設定画面で登録してください。'),
+        e('button', {
+          onClick: () => { if (apiOk) startTest(); },
+          disabled: !apiOk,
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 14,
+            background: apiOk ? profile.color : C.softer,
+            color: apiOk ? '#fff' : C.sub,
+            border: '1px solid ' + (apiOk ? profile.color : C.line),
+            fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
+            letterSpacing: '0.04em', cursor: apiOk ? 'pointer' : 'default',
+          }
+        }, 'テスト開始 (' + COMP_TEST_BATCH + ' 問)'),
+      );
+    }
+
+    // ============ STUDY (one question; user types) ============
+    if (phase === 'study' && cur) {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 16, padding: '20px 18px', marginBottom: 14,
+          }
+        },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: profile.color, marginBottom: 10,
+            }
+          }, '日本語 → 英語'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.5 }
+          }, cur.ja),
+        ),
+        e('textarea', {
+          ref: inputRef,
+          value: userInput,
+          onChange: (ev) => setUserInput(ev.target.value),
+          placeholder: 'ここに英語をタイプ…',
+          spellCheck: true,
+          autoCapitalize: 'sentences',
+          autoCorrect: 'on',
+          rows: 3,
+          style: {
+            width: '100%', boxSizing: 'border-box',
+            padding: '14px 16px', borderRadius: 14,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 16, fontFamily: SERIF, color: C.text,
+            lineHeight: 1.5, resize: 'vertical',
+            marginBottom: 12,
+          },
+        }),
+        error && e('div', {
+          style: {
+            background: C.danger + '14', border: '1px solid ' + C.danger,
+            borderRadius: 12, padding: '10px 14px', marginBottom: 12,
+            fontSize: 12, color: C.danger, lineHeight: 1.5,
+          }
+        }, error),
+        e('button', {
+          onClick: submitAnswer,
+          disabled: busy,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: busy ? C.softer : profile.color,
+            color: busy ? C.sub : '#fff',
+            border: '1px solid ' + (busy ? C.line : profile.color),
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+            letterSpacing: '0.04em', cursor: busy ? 'default' : 'pointer',
+          }
+        }, busy ? 'AI採点中…' : '採点してもらう'),
+      );
+    }
+
+    // ============ FEEDBACK ============
+    if (phase === 'feedback' && cur && grading) {
+      const scoreIcon  = grading.score === 2 ? '◎' : grading.score === 1 ? '○' : '△';
+      const scoreColor = grading.score === 2 ? C.success : grading.score === 1 ? C.ocean : C.accent;
+      const scoreLabel = grading.score === 2 ? 'バッチリ！' : grading.score === 1 ? '通じるよ' : 'もう少し';
+      const last = index + 1 >= queue.length;
+      return e('div', { style: pageStyle },
+        topBar,
+        // Score header
+        e('div', { style: { textAlign: 'center', padding: '8px 4px 20px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 64, fontWeight: 800, color: scoreColor, lineHeight: 1 }
+          }, scoreIcon),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 14, fontWeight: 700, color: scoreColor, marginTop: 6, letterSpacing: '0.06em' }
+          }, scoreLabel),
+        ),
+        // Comment from AI
+        grading.comment && e('div', {
+          style: {
+            background: scoreColor + '14', border: '1px solid ' + scoreColor,
+            borderRadius: 14, padding: '12px 16px', marginBottom: 14,
+            fontSize: 13, color: C.text, lineHeight: 1.7,
+          }
+        }, grading.comment),
+        // Question recap
+        e('div', {
+          style: {
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '14px 16px', marginBottom: 14,
+          }
+        },
+          e('div', {
+            style: { fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+          }, '日本語'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, cur.ja),
+          e('div', {
+            style: { fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+          }, 'あなたの答え'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, (userInput || '').trim()),
+          e('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em',
+            }
+          },
+            e('span', null, '模範訳'),
+            e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 22 }),
+          ),
+          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5 } }, cur.en),
+        ),
+        // Alternatives (if any)
+        grading.alternatives && grading.alternatives.length > 0 && e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '14px 16px', marginBottom: 14,
+          }
+        },
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 10, fontWeight: 700, color: C.sub, marginBottom: 8, letterSpacing: '0.12em' }
+          }, '別の言い方'),
+          grading.alternatives.map((alt, i) => e('div', {
+            key: 'alt_' + i,
+            style: {
+              display: 'flex', alignItems: 'flex-start', gap: 10,
+              padding: '8px 0',
+              borderTop: i === 0 ? 'none' : '1px solid ' + C.line,
+            }
+          },
+            e('div', { style: { flex: 1, fontFamily: SERIF, fontSize: 14, color: C.text, lineHeight: 1.5 } }, alt),
+            e(SpeakerBtn, { onClick: () => speak(alt), color: profile.color, size: 22 }),
+          )),
+        ),
+        e('button', {
+          onClick: nextOrFinish,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+            cursor: 'pointer', letterSpacing: '0.04em',
+          }
+        }, last ? '結果を見る →' : '次の問題へ →'),
+      );
+    }
+
+    // ============ DONE (3問終わり、もう3問 or 終了) ============
+    if (phase === 'done') {
+      const correct = results.filter(r => r.score >= 1).length;
+      const perfect = results.filter(r => r.score === 2).length;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, '🎉 おつかれさま！'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
+          }, correct + ' / ' + results.length),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
+          }, perfect > 0 ? ('◎ ' + perfect + ' 問 完璧!') : 'よくがんばった!'),
+        ),
+        // Results recap
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '4px 0', marginBottom: 18,
+          }
+        },
+          results.map((r, i) => {
+            const icon  = r.score === 2 ? '◎' : r.score === 1 ? '○' : '△';
+            const color = r.score === 2 ? C.success : r.score === 1 ? C.ocean : C.accent;
+            return e('div', {
+              key: 'r_' + i,
+              style: {
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '12px 16px',
+                borderBottom: i === results.length - 1 ? 'none' : '1px solid ' + C.line,
+              }
+            },
+              e('span', {
+                style: {
+                  fontFamily: SERIF, fontSize: 24, fontWeight: 800,
+                  color, lineHeight: 1, width: 24, textAlign: 'center', flexShrink: 0,
+                }
+              }, icon),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', { style: { fontSize: 12, color: C.sub, lineHeight: 1.5 } }, r.ja),
+                e('div', { style: { fontFamily: SERIF, fontSize: 13, color: C.text, marginTop: 3, lineHeight: 1.5 } }, r.userInput || '(未入力)'),
+              ),
+            );
+          }),
+        ),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          e('button', {
+            onClick: continueWithMore,
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 14,
+              background: profile.color, color: '#fff',
+              border: '1px solid ' + profile.color,
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            }
+          }, 'もう ' + COMP_TEST_BATCH + ' 問やる'),
+          e('button', {
+            onClick: onBack,
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 14,
+              background: C.softer, color: C.text,
+              border: '1px solid ' + C.line,
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            }
+          }, '今日はここまで'),
+        ),
+      );
+    }
+
+    // Fallback (e.g. phase 'study' but no current item) — back to intro.
+    return e('div', { style: pageStyle }, topBar);
   }
 
   // Friendly relative time. "数秒前 / 12分前 / 3時間前 / 2日前 / 2026/4/26 12:00".
