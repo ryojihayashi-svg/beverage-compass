@@ -17,7 +17,7 @@
 <link rel="mask-icon" href="hfe-icon.svg" color="#1A1714">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=DM+Sans:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *,*:before,*:after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; min-height: 100%; background: #F6F4F0; color: #1A1714; font-family: 'Shippori Mincho', 'Noto Sans JP', 'DM Sans', serif; -webkit-font-smoothing: antialiased; }
@@ -81,8 +81,16 @@
     success: '#6E9560',
     brand:   '#7A6F60',   // single brand color — warm taupe / greige
   };
-  const SERIF   = "'Cormorant Garamond', 'Shippori Mincho', 'Noto Serif JP', Georgia, serif";
-  const SANS_UI = "'DM Sans', 'Noto Sans JP', system-ui, sans-serif";
+  // SERIF       — display serif used for big decorative headers
+  //               (Cormorant Garamond — thin, elegant).
+  // SERIF_READ  — body-text serif tuned for legibility (Lora — uniform
+  //               stroke width, designed for screen reading). Use this
+  //               for English body content like lesson examples,
+  //               vocab examples, and quiz prompts so eyes stay happy.
+  // SANS_UI     — UI labels, numbers, buttons.
+  const SERIF      = "'Cormorant Garamond', 'Shippori Mincho', 'Noto Serif JP', Georgia, serif";
+  const SERIF_READ = "'Lora', 'Cormorant Garamond', 'Noto Serif JP', Georgia, serif";
+  const SANS_UI    = "'DM Sans', 'Noto Sans JP', system-ui, sans-serif";
 
   // ---------- Family profiles ----------
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
@@ -9934,7 +9942,7 @@
                 e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, 'Example'),
                 e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                   e('div', {
-                    style: { flex: 1, fontSize: 18, fontWeight: 600, color: C.text, lineHeight: 1.5, fontFamily: SERIF }
+                    style: { flex: 1, fontSize: 19, fontWeight: 500, color: C.text, lineHeight: 1.55, fontFamily: SERIF_READ }
                   }, current.exEn),
                   e(SpeakerBtn, { onClick: () => speak(current.exEn), color: profile.color, size: 36 }),
                 ),
@@ -10492,7 +10500,7 @@
                 // Vocab-only: show example sentence
                 current.kind === 'vocab' && current.exEn && e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                   e('div', {
-                    style: { flex: 1, fontSize: 23, fontWeight: 700, color: C.text, lineHeight: 1.55, fontStyle: 'italic', fontFamily: SERIF }
+                    style: { flex: 1, fontSize: 23, fontWeight: 600, color: C.text, lineHeight: 1.55, fontFamily: SERIF_READ }
                   }, current.exEn),
                   e(SpeakerBtn, { onClick: () => speak(current.exEn), color: profile.color, size: 60 }),
                 ),
@@ -11458,7 +11466,7 @@
           const promptLabel = isEn2Ja ? 'English' : '日本語';
           const promptText  = isEn2Ja ? current.en : current.ja;
           const promptStyle = isEn2Ja
-            ? { fontFamily: SERIF, fontStyle: 'italic', fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+            ? { fontFamily: SERIF_READ, fontSize: 26, fontWeight: 600, color: C.text, lineHeight: 1.5 }
             : { fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.5 };
           return e('div', { style: { padding: '4px 0 8px' } },
             e('div', {
@@ -11492,7 +11500,7 @@
               const answerText = isEn2Ja ? current.ja : current.en;
               const answerStyle = isEn2Ja
                 ? { fontSize: 20, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.5 }
-                : { fontFamily: SERIF, fontStyle: 'italic', fontSize: 24, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.4 };
+                : { fontFamily: SERIF_READ, fontSize: 24, fontWeight: 600, color: C.text, flex: 1, lineHeight: 1.5 };
               const altsForCurrent = (current && altMap[current.id]) || null;
               return e('div', { style: { marginTop: 'auto' } },
                 e('div', {
@@ -16055,8 +16063,8 @@
         }, lesson.subtitle),
         lesson.todayQ && e('div', {
           style: {
-            fontFamily: SERIF, fontSize: 18, fontWeight: 600,
-            color: C.text, lineHeight: 1.5,
+            fontFamily: SERIF_READ, fontSize: 19, fontWeight: 600,
+            color: C.text, lineHeight: 1.6,
           }
         }, '🤔  ' + lesson.todayQ),
       ),
@@ -16070,7 +16078,7 @@
       },
         sectionTitle('IMAGE'),
         e('div', {
-          style: { fontSize: 14, color: C.text, lineHeight: 1.7 }
+          style: { fontSize: 15, color: C.text, lineHeight: 1.75 }
         }, lesson.imagery),
       ),
 
@@ -16083,7 +16091,7 @@
       },
         sectionTitle('一言ルール'),
         e('div', {
-          style: { fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.6 }
+          style: { fontFamily: SERIF_READ, fontSize: 18, fontWeight: 600, color: C.text, lineHeight: 1.6 }
         }, lesson.rule),
       ),
 
@@ -16105,12 +16113,12 @@
           },
             e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
               e('div', {
-                style: { flex: 1, fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.5 }
+                style: { flex: 1, fontFamily: SERIF_READ, fontSize: 19, fontWeight: 500, color: C.text, lineHeight: 1.55 }
               }, ex.en),
               e(SpeakerBtn, { onClick: () => speak(ex.en), color: profile.color, size: 30 }),
             ),
             e('div', {
-              style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+              style: { fontSize: 13, color: C.sub, marginTop: 5, lineHeight: 1.7 }
             }, ex.ja),
           )),
         ),
@@ -16127,7 +16135,7 @@
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
           lesson.points.map((p, i) => e('div', {
             key: i,
-            style: { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, color: C.text, lineHeight: 1.7 }
+            style: { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: C.text, lineHeight: 1.75 }
           },
             e('span', {
               style: {
@@ -16208,7 +16216,7 @@
           style: { display: 'flex', alignItems: 'flex-start', gap: 10 }
         },
           e('div', {
-            style: { flex: 1, fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
+            style: { flex: 1, fontFamily: SERIF_READ, fontSize: 22, fontWeight: 600, color: C.text, lineHeight: 1.5 }
           }, q.q),
           e(SpeakerBtn, {
             onClick: () => speakLessonEnglish(q.q, isAnswered ? q.choices[q.answer] : null),
@@ -16219,7 +16227,7 @@
           style: {
             marginTop: 10, paddingTop: 10,
             borderTop: '1px dashed ' + C.line,
-            fontSize: 13, color: C.sub, lineHeight: 1.6,
+            fontSize: 14, color: C.sub, lineHeight: 1.7,
           }
         }, q.qJa),
       ),
@@ -16244,7 +16252,7 @@
               padding: '14px 16px',
               background: bg, border, color,
               borderRadius: 14, textAlign: 'left',
-              fontFamily: SERIF, fontSize: 18, fontWeight: 600,
+              fontFamily: SERIF_READ, fontSize: 19, fontWeight: 500,
               cursor: isAnswered ? 'default' : 'pointer',
               transition: 'background .15s, border-color .15s',
             }
@@ -16318,8 +16326,8 @@
           }, '答え'),
           e('span', {
             style: {
-              flex: 1, fontFamily: SERIF, fontSize: 18, fontWeight: 700,
-              color: C.text, lineHeight: 1.4,
+              flex: 1, fontFamily: SERIF_READ, fontSize: 19, fontWeight: 600,
+              color: C.text, lineHeight: 1.45,
             }
           }, q.choices[q.answer]),
           e(SpeakerBtn, {
@@ -16328,7 +16336,7 @@
           }),
         ),
         e('div', {
-          style: { fontSize: 14, color: C.text, lineHeight: 1.75 }
+          style: { fontSize: 15, color: C.text, lineHeight: 1.8 }
         }, q.explain),
       ),
       isAnswered && e('button', {
