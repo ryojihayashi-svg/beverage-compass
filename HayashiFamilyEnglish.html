@@ -13423,13 +13423,11 @@
                   letterSpacing: '0.12em', color: profile.color, marginBottom: 4,
                 }
               }, 'ベース完走 ✓ もう一歩、いってみる？'),
-              e('div', {
-                style: { fontSize: 13, color: C.text, lineHeight: 1.7, marginBottom: 10 }
-              }, '英語は「もう一回」で伸びる。間違いを復習して固めるか、口をもう一周動かすかしよう。'),
               // Bonus action row — surface the most useful next move.
               // Mistake review takes priority when there's anything to
               // review; otherwise nudge toward shadowing (mouth) →
               // vocab → composition.
+              // 表示は最大 2 件のみ (ユーザー要望)
               (function () {
                 const mistakeCount = (db.getMistakesNormalized
                   ? db.getMistakesNormalized(profile.id).length : 0);
@@ -13440,10 +13438,11 @@
                 buttons.push({ id: 'shadowing',         label: 'シャドーイングもう 1 セット' });
                 buttons.push({ id: 'vocab_ja2en',       label: '単語をもう 10 問' });
                 buttons.push({ id: 'composition_ja2en', label: '瞬間英作文をもう 10 問' });
+                const top2 = buttons.slice(0, 2);
                 return e('div', {
-                  style: { display: 'flex', flexDirection: 'column', gap: 6 }
+                  style: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }
                 },
-                  buttons.map(b => e('button', {
+                  top2.map(b => e('button', {
                     key: b.id,
                     onClick: () => onPickFeature(b.id),
                     style: {
