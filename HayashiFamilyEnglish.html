@@ -123,6 +123,10 @@
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',
                                                                                           fullWidth: true, forLearner: true, forViewer: false },
+    { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢',
+                                                                                          fullWidth: true, forLearner: true, forViewer: false },
+    { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',
+                                                                                          fullWidth: true, forLearner: true, forViewer: false },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
                                                                                           fullWidth: true, forLearner: true, forViewer: true },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',
@@ -6354,6 +6358,954 @@
     },
   ];
 
+  // ---------- リスニング理解クイズ ----------
+  // audio: TTS で読み上げる発話の配列。speaker は 'A' / 'B' / 単独セリフなら null。
+  // q + choices: LV1-2 は日本語、LV3+ は英語で出題 (作問時に決定)。
+  // 答えを聞き取れたかを 4 択で確認。スピーカーボタンで再生は何度でも可。
+  const LISTENING_QUIZ = [
+    // ===== LV1 (10) =====
+    {
+      id: 'lq01', level: 1,
+      audio: [
+        { speaker: 'A', en: 'Where are you from?' },
+        { speaker: 'B', en: "I'm from Japan." },
+      ],
+      q: 'B さんはどこの出身ですか？',
+      choices: ['日本', 'アメリカ', '中国', 'イギリス'],
+      answer: 0,
+      explain: '"I\'m from Japan." (日本出身です) と答えている。',
+    },
+    {
+      id: 'lq02', level: 1,
+      audio: [
+        { speaker: 'A', en: "What's your name?" },
+        { speaker: 'B', en: 'My name is Ken.' },
+      ],
+      q: 'B さんの名前は？',
+      choices: ['ケン', 'トム', 'ジョン', 'サム'],
+      answer: 0,
+      explain: '"My name is Ken." と答えている。',
+    },
+    {
+      id: 'lq03', level: 1,
+      audio: [
+        { speaker: 'A', en: 'How old are you?' },
+        { speaker: 'B', en: "I'm fifteen years old." },
+      ],
+      q: 'B さんは何歳？',
+      choices: ['13 歳', '14 歳', '15 歳', '16 歳'],
+      answer: 2,
+      explain: 'fifteen = 15。',
+    },
+    {
+      id: 'lq04', level: 1,
+      audio: [{ speaker: null, en: 'I go to bed at ten every night.' }],
+      q: 'この人は何時に寝ますか？',
+      choices: ['9 時', '10 時', '11 時', '12 時'],
+      answer: 1,
+      explain: 'ten = 10。',
+    },
+    {
+      id: 'lq05', level: 1,
+      audio: [{ speaker: null, en: 'I eat breakfast at seven every morning.' }],
+      q: 'この人はいつ朝食を食べますか？',
+      choices: ['毎朝 7 時', '毎晩 7 時', '時々 7 時', '8 時'],
+      answer: 0,
+      explain: '"every morning at seven" = 毎朝 7 時。',
+    },
+    {
+      id: 'lq06', level: 1,
+      audio: [{ speaker: null, en: 'I have one older brother and one younger sister.' }],
+      q: 'この人の兄弟姉妹は？',
+      choices: ['兄 1 人と妹 1 人', '弟 1 人だけ', '姉 2 人', '兄弟姉妹はいない'],
+      answer: 0,
+      explain: 'older brother = 兄 / younger sister = 妹。',
+    },
+    {
+      id: 'lq07', level: 1,
+      audio: [{ speaker: null, en: 'We have a small dog at home.' }],
+      q: '家にいるペットは何？',
+      choices: ['小さな犬', '大きな犬', '猫', 'うさぎ'],
+      answer: 0,
+      explain: 'a small dog = 小さな犬。',
+    },
+    {
+      id: 'lq08', level: 1,
+      audio: [{ speaker: null, en: "I love science class. It's so interesting." }],
+      q: 'この人が好きな科目は？',
+      choices: ['理科', '英語', '数学', '体育'],
+      answer: 0,
+      explain: 'science = 理科。',
+    },
+    {
+      id: 'lq09', level: 1,
+      audio: [{ speaker: null, en: 'My favorite food is sushi.' }],
+      q: '好きな食べ物は何？',
+      choices: ['寿司', 'パスタ', 'ピザ', 'ラーメン'],
+      answer: 0,
+    },
+    {
+      id: 'lq10', level: 1,
+      audio: [
+        { speaker: 'A', en: 'How are you today?' },
+        { speaker: 'B', en: "I'm tired today." },
+      ],
+      q: 'B さんの今日の様子は？',
+      choices: ['疲れている', '元気', '眠い', '怒っている'],
+      answer: 0,
+      explain: 'tired = 疲れている。',
+    },
+
+    // ===== LV2 (10) =====
+    {
+      id: 'lq11', level: 2,
+      audio: [
+        { speaker: 'A', en: 'Are you ready to order?' },
+        { speaker: 'B', en: "Yes, I'd like the chicken curry, please." },
+      ],
+      q: 'B さんは何を注文しましたか？',
+      choices: ['チキンカレー', 'ビーフステーキ', 'パスタ', 'ラーメン'],
+      answer: 0,
+    },
+    {
+      id: 'lq12', level: 2,
+      audio: [
+        { speaker: 'A', en: 'Excuse me, where is the station?' },
+        { speaker: 'B', en: 'Go straight and turn left at the second corner.' },
+      ],
+      q: '駅への行き方は？',
+      choices: ['まっすぐ進んで 2 つ目の角を左', 'まっすぐ進んで右に曲がる', '右に曲がってまっすぐ', '左に曲がって 2 つ目を右'],
+      answer: 0,
+    },
+    {
+      id: 'lq13', level: 2,
+      audio: [
+        { speaker: 'A', en: 'How much is this shirt?' },
+        { speaker: 'B', en: "It's fifty dollars." },
+      ],
+      q: 'シャツの値段は？',
+      choices: ['$50', '$15', '$5', '$500'],
+      answer: 0,
+      explain: 'fifty = 50。fifteen ($15) と聞き間違いやすいので注意。',
+    },
+    {
+      id: 'lq14', level: 2,
+      audio: [{ speaker: null, en: "I really like history class, but I'm not good at math." }],
+      q: 'この人について正しいのは？',
+      choices: ['歴史が好きで数学が苦手', '数学が好きで歴史が苦手', '両方好き', '両方苦手'],
+      answer: 0,
+    },
+    {
+      id: 'lq15', level: 2,
+      audio: [
+        { speaker: 'A', en: 'What are you doing this weekend?' },
+        { speaker: 'B', en: "I'm going to the beach with my friends." },
+      ],
+      q: 'B さんの週末の予定は？',
+      choices: ['友達と海に行く', '一人で山に行く', '家にいる', '勉強する'],
+      answer: 0,
+    },
+    {
+      id: 'lq16', level: 2,
+      audio: [{ speaker: null, en: 'I love playing the piano. I practice for an hour every day.' }],
+      q: 'この人の趣味と練習時間は？',
+      choices: ['ピアノ・毎日 1 時間', 'ギター・毎日 30 分', 'バイオリン・週 1 回', 'ピアノ・週末のみ'],
+      answer: 0,
+    },
+    {
+      id: 'lq17', level: 2,
+      audio: [{ speaker: null, en: 'I went to Kyoto last weekend with my family. We saw the temples.' }],
+      q: '先週末の旅行内容は？',
+      choices: ['家族と京都・寺を見た', '友達と京都・寺を見た', '一人で東京・公園に行った', '家族と大阪・買い物'],
+      answer: 0,
+    },
+    {
+      id: 'lq18', level: 2,
+      audio: [
+        { speaker: 'A', en: 'What time should we meet tomorrow?' },
+        { speaker: 'B', en: 'How about three in the afternoon?' },
+      ],
+      q: '明日の待ち合わせ時間は？',
+      choices: ['午後 3 時', '午前 3 時', '午後 2 時', '午後 4 時'],
+      answer: 0,
+    },
+    {
+      id: 'lq19', level: 2,
+      audio: [
+        { speaker: 'A', en: 'Would you like something to drink?' },
+        { speaker: 'B', en: 'Just water, please. No ice.' },
+      ],
+      q: 'B さんは何を頼みましたか？',
+      choices: ['氷なしの水', '氷入りの水', 'コーヒー', '紅茶'],
+      answer: 0,
+    },
+    {
+      id: 'lq20', level: 2,
+      audio: [{ speaker: null, en: 'I just finished reading a great mystery novel. It was really exciting.' }],
+      q: '読み終わった本のジャンルと感想は？',
+      choices: ['ミステリー・面白かった', '恋愛・退屈だった', '歴史・難しかった', 'SF・難しかった'],
+      answer: 0,
+    },
+
+    // ===== LV3 (5) — choices in English =====
+    {
+      id: 'lq21', level: 3,
+      audio: [
+        { speaker: 'A', en: 'What do you recommend?' },
+        { speaker: 'B', en: 'The seafood pasta is excellent. Many of our regulars order it.' },
+      ],
+      q: 'What is recommended and why?',
+      choices: [
+        'Seafood pasta — many regulars order it',
+        'Steak — the chef\'s favorite',
+        'Chicken — easiest to cook',
+        'Pizza — fastest to serve',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq22', level: 3,
+      audio: [
+        { speaker: 'A', en: 'Have you ever been to Hawaii?' },
+        { speaker: 'B', en: 'Yes, twice. I love it there. The beaches are amazing.' },
+      ],
+      q: 'How does B feel about Hawaii?',
+      choices: [
+        'Loves it — beaches are amazing',
+        'Has never been there',
+        'Did not enjoy the trip',
+        'Wants to move there permanently',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq23', level: 3,
+      audio: [
+        { speaker: 'A', en: 'What do you do?' },
+        { speaker: 'B', en: "I'm a software engineer at a small tech startup in Tokyo." },
+      ],
+      q: "What is B's job and where does B work?",
+      choices: [
+        'Software engineer at a Tokyo startup',
+        'Doctor at a Tokyo hospital',
+        'Teacher at a Tokyo school',
+        'Designer at a Tokyo agency',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq24', level: 3,
+      audio: [{ speaker: null, en: 'The new movie was disappointing. The story was weak and the acting was poor.' }],
+      q: 'How does the speaker feel about the movie?',
+      choices: [
+        'Disappointed — weak story and acting',
+        'Excited — great story',
+        'Confused but interested',
+        'Surprised by the ending',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq25', level: 3,
+      audio: [
+        { speaker: 'A', en: 'Are you free on Friday?' },
+        { speaker: 'B', en: "I have a meeting in the morning, but I'm free after lunch." },
+      ],
+      q: 'When is B available on Friday?',
+      choices: [
+        'Friday afternoon',
+        'Friday morning only',
+        'Friday evening only',
+        'Not free at all',
+      ],
+      answer: 0,
+    },
+
+    // ===== LV4 (3) =====
+    {
+      id: 'lq26', level: 4,
+      audio: [{ speaker: null, en: "I used to live in London for five years before moving back to Tokyo last year." }],
+      q: 'Where did the speaker live before, and for how long?',
+      choices: [
+        'London for five years',
+        'Tokyo for five years',
+        'New York for one year',
+        'Has always lived in Tokyo',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq27', level: 4,
+      audio: [
+        { speaker: 'A', en: 'Which is more important — money or time?' },
+        { speaker: 'B', en: 'Time, definitely. You can earn money back, but not time.' },
+      ],
+      q: 'Why does B value time over money?',
+      choices: [
+        'Time cannot be earned back',
+        'Money is always abundant',
+        'B is already rich',
+        'Time costs money',
+      ],
+      answer: 0,
+    },
+    {
+      id: 'lq28', level: 4,
+      audio: [{ speaker: null, en: 'Although the project was extremely difficult, the team finished it two weeks ahead of schedule thanks to good teamwork.' }],
+      q: 'What happened with the project?',
+      choices: [
+        'Finished two weeks early thanks to teamwork',
+        'Finished two weeks late',
+        'Was canceled mid-way',
+        'Is still ongoing',
+      ],
+      answer: 0,
+    },
+
+    // ===== LV5 (2) =====
+    {
+      id: 'lq29', level: 5,
+      audio: [{ speaker: null, en: 'If I had known about the traffic jam, I would have left earlier. As it was, I missed the entire meeting.' }],
+      q: 'What actually happened to the speaker?',
+      choices: [
+        'Missed the meeting due to traffic',
+        'Arrived early to the meeting',
+        'Arrived on time',
+        'Skipped the meeting on purpose',
+      ],
+      answer: 0,
+      explain: '"As it was" = 「実際には」。仮定法と対比される実際の結末。',
+    },
+    {
+      id: 'lq30', level: 5,
+      audio: [{ speaker: null, en: 'Despite his lack of formal education, he managed to build a successful business through sheer determination and a willingness to learn from every failure.' }],
+      q: 'What contributed most to his success?',
+      choices: [
+        'Determination and learning from failure',
+        'Formal education',
+        'Family wealth',
+        'Government support',
+      ],
+      answer: 0,
+      explain: '"despite his lack of formal education" は対比 (~にもかかわらず)。本当の成功要因は determination と learning from failure。',
+    },
+  ];
+
+  // ---------- リーディング理解問題 (passage 別) ----------
+  // SHADOWING_PASSAGES に対応する 4 択 comprehension 問題。
+  // キーは passage の id。各値は 3 問の配列。
+  // LV3 までは選択肢を日本語、LV4+ は英語にしている。
+  // 出題は ReadingComprehension コンポーネントが処理。
+  const READING_QUESTIONS = {
+    // ========== Steve Jobs Stanford (LV3) ==========
+    pas_jobs_stanford_01: [
+      {
+        q: 'Jobs はなぜ "this is the closest I\'ve ever gotten to a college graduation" と言ったのか？',
+        choices: [
+          '彼自身が大学を卒業していないから',
+          '式典が嫌いだから',
+          '初めて Stanford に来たから',
+          '名誉学位をもらったから',
+        ],
+        answer: 0,
+      },
+      {
+        q: '今日 Jobs は何を話すと言ったか？',
+        choices: ['人生から 3 つの話', '会社の歴史', '製品の発表', '家族の物語'],
+        answer: 0,
+      },
+      {
+        q: '"No big deal" の意味は？',
+        choices: ['大したことではない', 'とても大きな問題だ', '大規模な計画', '取引はない'],
+        answer: 0,
+      },
+    ],
+    pas_jobs_stanford_02: [
+      {
+        q: '点と点をつなぐ方向はどちらか？',
+        choices: ['振り返ったとき (looking backwards) のみ', '前を向いてのみ', '両方できる', 'どちらもできない'],
+        answer: 0,
+      },
+      {
+        q: 'Jobs はこの考え方について何と言ったか？',
+        choices: [
+          '一度も裏切られなかった、人生を大きく変えた',
+          '時々失敗したが大体うまくいった',
+          '科学的に証明されている',
+          '若者だけに有効',
+        ],
+        answer: 0,
+      },
+      {
+        q: '何を信じよと言っているか？',
+        choices: ['直感・運命・人生・カルマなど何か', '神のみ', '科学のみ', '家族のみ'],
+        answer: 0,
+      },
+    ],
+    pas_jobs_stanford_03: [
+      {
+        q: 'Jobs を前進させ続けたものは？',
+        choices: ['自分のしていることを愛していたこと', '家族の励まし', '富', '名声'],
+        answer: 0,
+      },
+      {
+        q: '本当に満足する唯一の方法は？',
+        choices: [
+          '自分が偉大だと信じる仕事をすること',
+          '高給の仕事に就くこと',
+          'たくさん休むこと',
+          '友達を作ること',
+        ],
+        answer: 0,
+      },
+      {
+        q: '仕事は人生の何を占めるか？',
+        choices: ['大きな部分', '小さな部分', 'ほとんど影響しない', '全部'],
+        answer: 0,
+      },
+    ],
+    pas_jobs_stanford_04: [
+      {
+        q: 'Jobs が "the most important tool" と呼んだものは？',
+        choices: [
+          '自分がすぐ死ぬと思い出すこと',
+          'コンピュータ',
+          '家族の支え',
+          '健康な食事',
+        ],
+        answer: 0,
+      },
+      {
+        q: '死を前にすると何が消えていくと言っているか？',
+        choices: [
+          '外の期待・プライド・恥や失敗への恐れ',
+          '健康・体力',
+          '富・地位',
+          '家族・友人',
+        ],
+        answer: 0,
+      },
+      {
+        q: '消えた後に残るのは何か？',
+        choices: ['本当に大切なもの', '怒り', '後悔', '記憶のみ'],
+        answer: 0,
+      },
+    ],
+    pas_jobs_stanford: [
+      {
+        q: 'Jobs の最重要メッセージは？',
+        choices: [
+          '心と直感に従う勇気を持つこと',
+          'お金を貯めること',
+          '他人と同じ道を歩むこと',
+          '常識に従うこと',
+        ],
+        answer: 0,
+      },
+      {
+        q: '"don\'t waste it living someone else\'s life" の意味は？',
+        choices: [
+          '他人の人生を生きて時間を無駄にするな',
+          '他人を真似るのが一番',
+          '自分の人生は無駄である',
+          '長生きしてはいけない',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'dogma とはここで何を指すか？',
+        choices: [
+          '他人の考えの結果として生きること',
+          '宗教の決まり',
+          '自分の信念',
+          '伝統的な料理',
+        ],
+        answer: 0,
+      },
+    ],
+
+    // ========== Jensen Huang Caltech (LV4 — choices in English) ==========
+    pas_huang_caltech_01: [
+      {
+        q: 'According to Huang, what did the graduates do to deserve being there?',
+        choices: [
+          'Chose the harder path, challenged convention, endured pain',
+          'Were lucky and well-connected',
+          'Inherited their position',
+          'Won a lottery',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What does Huang say about enjoying the moment?',
+        choices: [
+          'Take a moment to enjoy it — they earned it',
+          'Skip enjoyment and move on quickly',
+          'Enjoy it for the rest of life',
+          'Enjoyment is a distraction',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What must they now do?',
+        choices: [
+          'Look ahead at the world that awaits',
+          'Look back at past mistakes',
+          'Stay at university longer',
+          'Focus only on family',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_huang_caltech: [
+      {
+        q: 'What does pain and suffering build?',
+        choices: ['Character', 'Wealth', 'Beauty', 'Fame'],
+        answer: 0,
+      },
+      {
+        q: 'According to Huang, why must you run?',
+        choices: [
+          'Either running for food or running from being food',
+          'Because exercise is healthy',
+          'To beat the others',
+          'To save time',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is required for true greatness?',
+        choices: ['Character', 'Money', 'Connections', 'Luck'],
+        answer: 0,
+      },
+    ],
+    pas_huang_caltech_03: [
+      {
+        q: 'What does Huang wish upon the graduates?',
+        choices: [
+          'Ample doses of pain and suffering',
+          'Easy success',
+          'Endless luck',
+          'Constant happiness',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'When was the character of great people forged?',
+        choices: [
+          'In moments of pain and suffering',
+          'In times of comfort',
+          'In their sleep',
+          'In school',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What do pain and suffering test?',
+        choices: ['Our resilience', 'Our money', 'Our looks', 'Our friends'],
+        answer: 0,
+      },
+    ],
+
+    // ========== Jack Ma (LV4 — choices in English) ==========
+    pas_jack_ma_01: [
+      {
+        q: 'How many jobs did Jack Ma apply for and get rejected from?',
+        choices: ['Thirty', 'Three', 'Three hundred', 'Twenty-three'],
+        answer: 0,
+      },
+      {
+        q: 'In the KFC interview, how many were rejected out of 24?',
+        choices: ['Only Jack Ma (1)', 'Twenty-three', 'Half', 'All twenty-four'],
+        answer: 0,
+      },
+      {
+        q: 'What did Jack Ma learn from these failures?',
+        choices: [
+          'Failure is not the end — it is part of the journey',
+          'He should give up trying',
+          'Job interviews are unfair',
+          'KFC was a bad company',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_jack_ma: [
+      {
+        q: "What is the day after tomorrow according to Jack Ma's quote?",
+        choices: ['Sunshine', 'Hardest', 'Same as today', 'Empty'],
+        answer: 0,
+      },
+      {
+        q: 'What problem do most people have?',
+        choices: [
+          "They die tomorrow night and never see the sunshine",
+          'They wake up too early',
+          'They work too hard',
+          'They forget their goals',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is the message?',
+        choices: [
+          'Never give up today',
+          'Take long breaks',
+          'Avoid hardship',
+          'Trust your luck',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_jack_ma_03: [
+      {
+        q: 'What changes the world, according to Jack Ma?',
+        choices: [
+          'What you do, not what you say',
+          'Wealth and power',
+          'Government policy alone',
+          'Technology alone',
+        ],
+        answer: 0,
+      },
+      {
+        q: "What is Jack Ma's view on great ideas?",
+        choices: [
+          'Many have them, but few act on them',
+          'Only geniuses have them',
+          'They appear in dreams',
+          'They are unimportant',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'If you try, what do you have at minimum?',
+        choices: ['A chance', 'Money', 'Fame', 'Luck'],
+        answer: 0,
+      },
+    ],
+    pas_jack_ma_04: [
+      {
+        q: 'In what order does Jack Ma rank the priorities?',
+        choices: [
+          'Customers > Employees > Shareholders',
+          'Shareholders > Customers > Employees',
+          'Employees > Customers > Shareholders',
+          'All equal',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What happens if shareholders are put first?',
+        choices: [
+          'You will lose customers',
+          'Profits double',
+          'Employees become happier',
+          'Nothing changes',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'According to Jack Ma, this priority order builds what?',
+        choices: [
+          'A long-lasting business',
+          'A quick profit',
+          'A famous brand',
+          'A small team',
+        ],
+        answer: 0,
+      },
+    ],
+
+    // ========== Family Meals (LV3 — choices in Japanese) ==========
+    pas_family_meals: [
+      {
+        q: '家族と分け合う食事は何と表現されているか？',
+        choices: [
+          '栄養以上のもの ― 思い出・安心・文化が一皿に',
+          '単なる栄養補給',
+          '高級な料理',
+          '速くて便利なもの',
+        ],
+        answer: 0,
+      },
+      {
+        q: '食卓は何の場所だと言っているか？',
+        choices: [
+          '物語を語る場所',
+          '勉強する場所',
+          'テレビを見る場所',
+          '仕事をする場所',
+        ],
+        answer: 0,
+      },
+      {
+        q: '例として挙げられているのは？',
+        choices: [
+          '手作りのラーメン、日曜のロースト',
+          '寿司とピザ',
+          'ファーストフード',
+          '冷凍食品',
+        ],
+        answer: 0,
+      },
+    ],
+
+    // ========== Cristiano Ronaldo (LV4 — English) ==========
+    pas_ronaldo_01: [
+      {
+        q: 'For whom does Ronaldo say he works hard?',
+        choices: [
+          'For himself, not for trophies',
+          'For the trophies',
+          'For his teammates',
+          'For the coach',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is the only way Ronaldo can sleep at night?',
+        choices: [
+          'Knowing he gave everything',
+          'Taking sleeping pills',
+          'Watching TV',
+          'Listening to music',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What will he do tomorrow?',
+        choices: [
+          'Work even harder than today',
+          'Take a rest day',
+          'Retire from football',
+          'Same routine as today',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_ronaldo_work: [
+      {
+        q: 'According to Ronaldo, talent without hard work is what?',
+        choices: ['Nothing', 'Enough', 'Inherited', 'Lucky'],
+        answer: 0,
+      },
+      {
+        q: 'What defines a true champion?',
+        choices: [
+          'Dedication, love for the game, treatment of people',
+          'Trophies and money',
+          'Fame and followers',
+          'Talent alone',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'How often must one work harder?',
+        choices: [
+          'Every day, harder than the day before',
+          'Only on game days',
+          'Once a week',
+          'When the coach asks',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_ronaldo_03: [
+      {
+        q: 'Without his family, Ronaldo says he is what?',
+        choices: ['Nothing', 'Stronger', 'Free', 'Wealthier'],
+        answer: 0,
+      },
+      {
+        q: 'What does his family remind him of?',
+        choices: [
+          'Who he is, where he came from, what truly matters',
+          'His training schedule',
+          'His financial goals',
+          'His next opponent',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is easy when one becomes famous?',
+        choices: [
+          'To forget who you are',
+          'To make friends',
+          'To win games',
+          'To gain weight',
+        ],
+        answer: 0,
+      },
+    ],
+
+    // ========== Elon Musk (LV4 — English) ==========
+    pas_musk_01: [
+      {
+        q: 'When does Musk say to do something even if odds are against you?',
+        choices: [
+          'When something is important enough',
+          'When everyone agrees',
+          'When you have a guarantee',
+          'When you feel lucky',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is the first step?',
+        choices: [
+          'To believe it is possible',
+          'To wait for permission',
+          'To gather supporters',
+          'To get funding',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What follows once you believe it is possible?',
+        choices: [
+          'Probability will follow',
+          'Money will appear',
+          'Friends will help',
+          'Time will slow',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_musk_02: [
+      {
+        q: 'How do most people normally reason according to Musk?',
+        choices: ['By analogy', 'By first principles', 'By instinct', 'By math'],
+        answer: 0,
+      },
+      {
+        q: 'What does first principles thinking involve?',
+        choices: [
+          'Boiling things down to fundamental truths and reasoning up',
+          'Doing what others have done',
+          'Trusting intuition only',
+          'Avoiding numbers',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'What is first principles thinking the only way to do?',
+        choices: [
+          'Discover something new',
+          'Save money',
+          'Make friends',
+          'Stay safe',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_musk_03: [
+      {
+        q: 'According to Musk, if things are not failing, what does it mean?',
+        choices: [
+          'You are not innovating enough',
+          'You are doing great',
+          'Time to rest',
+          'You should celebrate',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'When something is important enough, you should:',
+        choices: [
+          'Try, even when the outcome is not certain',
+          'Wait for guarantees',
+          'Ask for permission',
+          'Find someone else to do it',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'When should you give up?',
+        choices: [
+          'Only when forced to',
+          'When it gets hard',
+          'After one failure',
+          'When others say so',
+        ],
+        answer: 0,
+      },
+    ],
+
+    // ========== Masayoshi Son (LV4 — English) ==========
+    pas_son_01: [
+      {
+        q: 'According to Son, what is the most important thing?',
+        choices: [
+          'Decide which mountain to climb',
+          'Save money',
+          'Find friends',
+          'Avoid risk',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'Why do many people fail?',
+        choices: [
+          'They keep changing mountains',
+          'They climb too fast',
+          'They stop too early',
+          'They have no map',
+        ],
+        answer: 0,
+      },
+      {
+        q: 'After deciding the mountain, what is the rest?',
+        choices: [
+          'Just walking',
+          'Resting',
+          'Hiring help',
+          'Looking for shortcuts',
+        ],
+        answer: 0,
+      },
+    ],
+    pas_son_02: [
+      {
+        q: "How long is Son's vision for SoftBank?",
+        choices: ['300 years', '30 years', '3 years', '3000 years'],
+        answer: 0,
+      },
+      {
+        q: 'According to Son, what matters more than tactics?',
+        choices: ['Vision', 'Money', 'Speed', 'Connections'],
+        answer: 0,
+      },
+      {
+        q: 'Where does Son say we are in the information revolution?',
+        choices: ['At the beginning', 'At the middle', 'At the end', 'Past the peak'],
+        answer: 0,
+      },
+    ],
+    pas_son_03: [
+      {
+        q: 'At what percentage of certainty does Son say courage matters most?',
+        choices: ['70%', '50%', '90%', '100%'],
+        answer: 0,
+      },
+      {
+        q: 'What does Son call starting at 50% certainty?',
+        choices: ['Gambling', 'Wisdom', 'Caution', 'Genius'],
+        answer: 0,
+      },
+      {
+        q: 'Why does Son not wait for 90% certainty?',
+        choices: [
+          'By then the opportunity has passed',
+          '90% is impossible to reach',
+          'It costs too much',
+          'It bores him',
+        ],
+        answer: 0,
+      },
+    ],
+  };
+
   // ---------- AI 採点テスト用 問題集 ----------
   // 「週1回くらいの実力チェック」用に、レベル別に独立した問題プールを
   // 持つ。1セッション = 3問 (短くして達成感重視)、もっとやりたければ
@@ -11489,6 +12441,8 @@
       else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
       else if (route.feature === 'english_lessons')   body = e(EnglishLessons,    { profile, onBack: back });
       else if (route.feature === 'shadowing')         body = e(ShadowingPractice, { profile, onBack: back });
+      else if (route.feature === 'listening')         body = e(ListeningQuiz,     { profile, onBack: back });
+      else if (route.feature === 'reading')           body = e(ReadingComprehension, { profile, onBack: back });
       else if (route.feature === 'comp_test')         body = e(CompositionTest,   { profile, onBack: back });
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
@@ -20405,6 +21359,691 @@
         }, '一覧に戻る'),
       ),
     );
+  }
+
+  // ---------- ListeningQuiz: 音声を聞いて 4 択 ----------
+  // フロー: intro → listen (TTS 自動再生) → question (4 択) → feedback → next
+  // データは LISTENING_QUIZ。1 セッション = 5 問。
+  const LISTENING_SESSION_COUNT = 5;
+  function ListeningQuiz({ profile, onBack }) {
+    const [phase, setPhase]         = useState('intro');     // 'intro' | 'listen' | 'question' | 'feedback' | 'done'
+    const [selectedLevel, setSelectedLevel] = useState('auto');
+    const [queue, setQueue]         = useState([]);
+    const [index, setIndex]         = useState(0);
+    const [chosen, setChosen]       = useState(null);
+    const [results, setResults]     = useState([]);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const sessionStartRef = useRef(null);
+
+    function startSession() {
+      // Pick LISTENING_SESSION_COUNT items at the chosen level (or auto = all)
+      let pool = LISTENING_QUIZ.slice();
+      if (selectedLevel !== 'auto') {
+        pool = pool.filter(q => q.level === selectedLevel);
+      }
+      // Shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+      }
+      const q = pool.slice(0, LISTENING_SESSION_COUNT);
+      if (q.length === 0) return;
+      setQueue(q);
+      setIndex(0);
+      setChosen(null);
+      setResults([]);
+      sessionStartRef.current = Date.now();
+      unlockAudioForBluetooth();
+      setPhase('listen');
+    }
+
+    // Play audio sequence on entering 'listen' phase
+    useEffect(() => {
+      if (phase !== 'listen') return;
+      const cur = queue[index];
+      if (!cur || !cur.audio || cur.audio.length === 0) return;
+      let cancelled = false;
+      let i = 0;
+      setIsPlaying(true);
+      const playNext = () => {
+        if (cancelled || i >= cur.audio.length) {
+          setIsPlaying(false);
+          if (!cancelled) setPhase('question');
+          return;
+        }
+        const u = new SpeechSynthesisUtterance(cur.audio[i].en);
+        u.lang = 'en-GB';
+        u.rate = 0.95;
+        u.onend = () => { i++; setTimeout(playNext, 350); };
+        u.onerror = () => { i++; setTimeout(playNext, 350); };
+        try { window.speechSynthesis.cancel(); } catch {}
+        try { window.speechSynthesis.speak(u); } catch {}
+      };
+      playNext();
+      return () => {
+        cancelled = true;
+        try { window.speechSynthesis.cancel(); } catch {}
+        setIsPlaying(false);
+      };
+    }, [phase, index, queue]);
+
+    function replayAudio() {
+      // Re-trigger by bumping phase to 'listen' (effect re-runs on entry)
+      try { window.speechSynthesis.cancel(); } catch {}
+      setPhase('listen');
+    }
+
+    function pickAnswer(idx) {
+      if (chosen !== null) return;
+      const cur = queue[index];
+      const isCorrect = idx === cur.answer;
+      setChosen(idx);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
+      const newResults = results.concat([{ id: cur.id, isCorrect, chosen: idx }]);
+      setResults(newResults);
+      setPhase('feedback');
+    }
+
+    function nextQuestion() {
+      if (index + 1 >= queue.length) {
+        // Done
+        const correct = results.filter(r => r.isCorrect).length;
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        try {
+          db.recordTurn(profile.id, 'listening');
+          db.pushEvent(profile.id, {
+            kind: 'listening', total: queue.length, correct, durationMs,
+          });
+          markPathStepDone(profile, 'listening');
+          if (correct >= Math.ceil(queue.length * 0.7)) hapticWin();
+        } catch {}
+        setPhase('done');
+        return;
+      }
+      setIndex(i => i + 1);
+      setChosen(null);
+      setPhase('listen');
+    }
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'リスニング理解'),
+      phase !== 'intro' && phase !== 'done' && e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+          color: profile.color, fontVariantNumeric: 'tabular-nums',
+        }
+      }, (index + 1) + ' / ' + queue.length),
+    );
+
+    // ============ INTRO ============
+    if (phase === 'intro') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, '🎧 リスニング理解'),
+          e('div', {
+            style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+          }, '英語の会話・短文を聞いて 4 択で答える。LV1-2 は日本語の選択肢、LV3 以上は英語の選択肢になります。1 セット ' + LISTENING_SESSION_COUNT + ' 問。'),
+        ),
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'LEVEL'),
+        e('div', {
+          style: {
+            display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: 6, marginBottom: 18,
+          }
+        },
+          [{id:'auto',label:'おまかせ'},{id:1,label:'1'},{id:2,label:'2'},{id:3,label:'3'},{id:4,label:'4'},{id:5,label:'5'}].map(opt => {
+            const isActive = selectedLevel === opt.id;
+            const count = opt.id === 'auto' ? LISTENING_QUIZ.length : LISTENING_QUIZ.filter(q => q.level === opt.id).length;
+            const empty = count === 0;
+            return e('button', {
+              key: 'lv_' + opt.id,
+              onClick: () => { if (!empty) setSelectedLevel(opt.id); },
+              disabled: empty,
+              style: {
+                padding: '10px 0', borderRadius: 999,
+                background: isActive ? profile.color : C.card,
+                color:      isActive ? '#fff' : (empty ? C.sub : C.text),
+                border: '1px solid ' + (isActive ? profile.color : C.line),
+                fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+                cursor: empty ? 'default' : 'pointer',
+                opacity: empty ? 0.45 : 1, letterSpacing: '0.04em',
+              }
+            }, opt.label);
+          }),
+        ),
+        e('button', {
+          onClick: startSession,
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
+            letterSpacing: '0.04em', cursor: 'pointer',
+          }
+        }, 'スタート (' + LISTENING_SESSION_COUNT + ' 問)'),
+      );
+    }
+
+    const cur = queue[index] || null;
+    if (!cur) return e('div', { style: pageStyle }, topBar);
+
+    // ============ LISTEN ============
+    if (phase === 'listen') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 16, padding: '40px 20px', marginBottom: 14,
+            textAlign: 'center',
+          }
+        },
+          e('div', { style: { fontSize: 64, marginBottom: 16 } }, isPlaying ? '🎧' : '⏸️'),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 13, fontWeight: 700, color: profile.color, letterSpacing: '0.12em' }
+          }, isPlaying ? '再生中…' : '再生終了'),
+          e('div', { style: { fontSize: 12, color: C.sub, marginTop: 8 } },
+            isPlaying ? 'よく聞いてください' : '質問が表示されます…'),
+        ),
+        e('button', {
+          onClick: replayAudio,
+          disabled: isPlaying,
+          style: {
+            width: '100%', padding: '12px 0', borderRadius: 14,
+            background: C.softer, color: isPlaying ? C.sub : C.text,
+            border: '1px solid ' + C.line,
+            fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
+            cursor: isPlaying ? 'default' : 'pointer',
+            opacity: isPlaying ? 0.6 : 1,
+          }
+        }, '🔁 もう一度聞く'),
+      );
+    }
+
+    // ============ QUESTION ============
+    if (phase === 'question' || phase === 'feedback') {
+      return e('div', { style: pageStyle },
+        topBar,
+        // Replay button (always available)
+        e('button', {
+          onClick: replayAudio,
+          style: {
+            background: 'transparent', color: profile.color,
+            border: '1px dashed ' + profile.color + '66',
+            padding: '8px 14px', borderRadius: 999,
+            fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+            cursor: 'pointer', marginBottom: 14,
+          }
+        }, '🔁 もう一度聞く'),
+        e('div', {
+          style: {
+            fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text,
+            lineHeight: 1.5, marginBottom: 16,
+          }
+        }, cur.q),
+        // 4 choices
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+          cur.choices.map((c, i) => {
+            const isSel  = chosen === i;
+            const isAns  = cur.answer === i;
+            const showCorrect = phase === 'feedback' && isAns;
+            const showWrong   = phase === 'feedback' && isSel && !isAns;
+            const bg = showCorrect ? C.success + '22'
+                     : showWrong   ? C.danger + '22'
+                     : isSel       ? profile.color + '14'
+                     :               C.card;
+            const border = showCorrect ? C.success
+                         : showWrong   ? C.danger
+                         : isSel       ? profile.color
+                         :               C.line;
+            return e('button', {
+              key: 'c_' + i,
+              onClick: () => pickAnswer(i),
+              disabled: chosen !== null,
+              style: {
+                padding: '14px 16px', borderRadius: 14,
+                background: bg, border: '1px solid ' + border,
+                fontFamily: SERIF_READ, fontSize: 15, color: C.text,
+                lineHeight: 1.5, textAlign: 'left',
+                cursor: chosen !== null ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }
+            },
+              e('span', {
+                style: {
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: showCorrect ? C.success : showWrong ? C.danger : C.softer,
+                  color: showCorrect || showWrong ? '#fff' : C.sub,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: 800, flexShrink: 0,
+                }
+              }, showCorrect ? '✓' : showWrong ? '✗' : ['A','B','C','D'][i]),
+              e('span', { style: { flex: 1 } }, c),
+            );
+          })
+        ),
+        // Feedback explanation + next
+        phase === 'feedback' && e('div', null,
+          cur.explain && e('div', {
+            style: {
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 12, padding: '12px 14px', marginBottom: 12,
+              fontSize: 13, color: C.text, lineHeight: 1.7,
+            }
+          },
+            e('div', { style: { fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 4, letterSpacing: '0.08em' } }, '解説'),
+            cur.explain,
+          ),
+          // Show transcript on feedback
+          e('div', {
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 12, padding: '12px 14px', marginBottom: 12,
+            }
+          },
+            e('div', { style: { fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 6, letterSpacing: '0.08em' } }, '聞き取り内容 (transcript)'),
+            cur.audio.map((a, i) => e('div', {
+              key: 'a_' + i,
+              style: { fontFamily: SERIF_READ, fontSize: 14, color: C.text, lineHeight: 1.6, marginBottom: 4 }
+            },
+              a.speaker && e('span', { style: { color: profile.color, fontWeight: 700, marginRight: 6 } }, a.speaker + ':'),
+              a.en,
+            )),
+          ),
+          e('button', {
+            onClick: nextQuestion,
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 14,
+              background: profile.color, color: '#fff',
+              border: '1px solid ' + profile.color,
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+            }
+          }, index + 1 >= queue.length ? '結果を見る →' : '次の問題へ →'),
+        ),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      const correct = results.filter(r => r.isCorrect).length;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, '🎉 おつかれさま！'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
+          }, correct + ' / ' + results.length),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
+          }, correct === results.length ? '全問正解！' : 'リスニング ' + Math.round(correct / results.length * 100) + '%'),
+        ),
+        e('button', {
+          onClick: () => { setPhase('intro'); setIndex(0); setChosen(null); setResults([]); },
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer', marginBottom: 8,
+          }
+        }, 'もう一度やる'),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: C.softer, color: C.text,
+            border: '1px solid ' + C.line,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, 'ホームへ戻る'),
+      );
+    }
+
+    return e('div', { style: pageStyle }, topBar);
+  }
+
+  // ---------- ReadingComprehension: 長文を読んで 3 問の 4 択 ----------
+  // フロー: intro (passage 選択) → read → question (3 問順次) → done
+  // 既存の SHADOWING_PASSAGES + READING_QUESTIONS を組み合わせる。
+  function ReadingComprehension({ profile, onBack }) {
+    const [phase, setPhase]   = useState('intro');     // 'intro' | 'read' | 'question' | 'done'
+    const [passage, setPassage] = useState(null);
+    const [questions, setQuestions] = useState([]);
+    const [qIndex, setQIndex] = useState(0);
+    const [chosen, setChosen] = useState(null);
+    const [results, setResults] = useState([]);
+    const sessionStartRef = useRef(null);
+
+    function startPassage(p) {
+      const qs = (READING_QUESTIONS && READING_QUESTIONS[p.id]) || [];
+      if (qs.length === 0) return;
+      setPassage(p);
+      setQuestions(qs);
+      setQIndex(0);
+      setChosen(null);
+      setResults([]);
+      sessionStartRef.current = Date.now();
+      setPhase('read');
+    }
+
+    function pickAnswer(idx) {
+      if (chosen !== null) return;
+      const q = questions[qIndex];
+      const isCorrect = idx === q.answer;
+      setChosen(idx);
+      if (isCorrect) { soundCorrect(); hapticTap(); }
+      else           { soundWrong();   hapticBuzz(); }
+      const newResults = results.concat([{ qIndex, isCorrect, chosen: idx }]);
+      setResults(newResults);
+    }
+
+    function nextQuestion() {
+      if (qIndex + 1 >= questions.length) {
+        const correct = results.filter(r => r.isCorrect).length;
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        try {
+          db.recordTurn(profile.id, 'reading');
+          db.pushEvent(profile.id, {
+            kind: 'reading', total: questions.length, correct, durationMs,
+            label: passage.title,
+          });
+          markPathStepDone(profile, 'reading');
+          if (correct >= Math.ceil(questions.length * 0.7)) hapticWin();
+        } catch {}
+        setPhase('done');
+        return;
+      }
+      setQIndex(i => i + 1);
+      setChosen(null);
+    }
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'リーディング理解'),
+      phase === 'question' && e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+          color: profile.color, fontVariantNumeric: 'tabular-nums',
+        }
+      }, (qIndex + 1) + ' / ' + questions.length),
+    );
+
+    // ============ INTRO (passage picker) ============
+    if (phase === 'intro') {
+      // Group passages by speaker (reuse buildSpeakerGroups)
+      const groups = (typeof buildSpeakerGroups === 'function')
+        ? buildSpeakerGroups()
+        : [{ key: 'all', label: 'All', icon: '📖', chapters: SHADOWING_PASSAGES.slice() }];
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, '📖 リーディング理解'),
+          e('div', {
+            style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+          }, '長文を読んで 4 択 3 問。LV3 まで日本語の選択肢、LV4 以上は英語。各章の理解度を即チェックできます。'),
+        ),
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, '長文を選んでスタート'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+          groups.map(g => e('div', {
+            key: 'spk_' + g.key,
+            style: {
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, padding: '14px 14px 12px',
+            }
+          },
+            e('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }
+            },
+              e('span', { style: { fontSize: 20, flexShrink: 0 } }, g.icon),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+                }, g.label),
+                e('div', {
+                  style: {
+                    fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                    color: C.sub, marginTop: 2, letterSpacing: '0.08em',
+                  }
+                }, g.chapters.length + ' セクション'),
+              ),
+            ),
+            e('div', {
+              style: { display: 'flex', flexWrap: 'wrap', gap: 6 }
+            },
+              g.chapters.map(p => {
+                const hasQs = !!(READING_QUESTIONS && READING_QUESTIONS[p.id] && READING_QUESTIONS[p.id].length);
+                return e('button', {
+                  key: p.id,
+                  onClick: () => { if (hasQs) startPassage(p); },
+                  disabled: !hasQs,
+                  style: {
+                    flex: '1 1 calc(50% - 3px)',
+                    padding: '10px 12px', borderRadius: 10,
+                    background: C.softer, border: '1px solid ' + C.line,
+                    fontFamily: SERIF, fontSize: 13, fontWeight: 600,
+                    color: hasQs ? C.text : C.sub,
+                    textAlign: 'left', cursor: hasQs ? 'pointer' : 'default',
+                    opacity: hasQs ? 1 : 0.4, lineHeight: 1.3,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    gap: 8,
+                  }
+                },
+                  e('span', { style: { flex: 1, minWidth: 0 } },
+                    (typeof getPassageChapterLabel === 'function')
+                      ? getPassageChapterLabel(p)
+                      : p.title),
+                  e('span', {
+                    style: {
+                      fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                      color: profile.color, letterSpacing: '0.06em', flexShrink: 0,
+                    }
+                  }, 'LV' + p.level),
+                );
+              }),
+            ),
+          )),
+        ),
+      );
+    }
+
+    // ============ READ ============
+    if (phase === 'read' && passage) {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { marginBottom: 8 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, passage.title),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: profile.color, marginTop: 4, letterSpacing: '0.08em' }
+          }, 'LV' + passage.level + ' · ' + (passage.en.split(/\s+/).length) + ' words · ' + questions.length + ' 問'),
+        ),
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '18px 18px', marginTop: 14, marginBottom: 14,
+          }
+        },
+          e('div', {
+            style: { fontFamily: SERIF_READ, fontSize: 17, fontWeight: 500, color: C.text, lineHeight: 1.85 }
+          }, passage.en),
+          e('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
+            e(SpeakerBtn, { onClick: () => speak(passage.en), color: profile.color, size: 32 }),
+          ),
+        ),
+        passage.ja && e('details', {
+          style: {
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 12, padding: '10px 14px', marginBottom: 14,
+            fontSize: 13, color: C.sub,
+          }
+        },
+          e('summary', { style: { cursor: 'pointer', fontWeight: 700, color: C.text } }, '日本語訳を見る (オプション)'),
+          e('div', { style: { marginTop: 8, lineHeight: 1.8 } }, passage.ja),
+        ),
+        e('button', {
+          onClick: () => setPhase('question'),
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, '読み終わった → 質問へ'),
+      );
+    }
+
+    // ============ QUESTION ============
+    if (phase === 'question' && passage) {
+      const q = questions[qIndex];
+      if (!q) return e('div', { style: pageStyle }, topBar);
+      const showFeedback = chosen !== null;
+      return e('div', { style: pageStyle },
+        topBar,
+        // Mini passage reference (collapsed)
+        e('details', {
+          style: {
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 10, padding: '8px 12px', marginBottom: 14,
+            fontSize: 12, color: C.sub,
+          }
+        },
+          e('summary', { style: { cursor: 'pointer', fontWeight: 700, color: C.text, fontFamily: SANS_UI } }, '本文を再表示'),
+          e('div', { style: { fontFamily: SERIF_READ, fontSize: 14, color: C.text, lineHeight: 1.7, marginTop: 8 } }, passage.en),
+        ),
+        e('div', {
+          style: {
+            fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: C.text,
+            lineHeight: 1.5, marginBottom: 16,
+          }
+        }, q.q),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+          q.choices.map((c, i) => {
+            const isSel = chosen === i;
+            const isAns = q.answer === i;
+            const showCorrect = showFeedback && isAns;
+            const showWrong   = showFeedback && isSel && !isAns;
+            const bg = showCorrect ? C.success + '22'
+                     : showWrong   ? C.danger + '22'
+                     : isSel       ? profile.color + '14'
+                     :               C.card;
+            const border = showCorrect ? C.success
+                         : showWrong   ? C.danger
+                         : isSel       ? profile.color
+                         :               C.line;
+            return e('button', {
+              key: 'c_' + i,
+              onClick: () => pickAnswer(i),
+              disabled: showFeedback,
+              style: {
+                padding: '14px 16px', borderRadius: 14,
+                background: bg, border: '1px solid ' + border,
+                fontFamily: SERIF_READ, fontSize: 14, color: C.text,
+                lineHeight: 1.5, textAlign: 'left',
+                cursor: showFeedback ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }
+            },
+              e('span', {
+                style: {
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: showCorrect ? C.success : showWrong ? C.danger : C.softer,
+                  color: showCorrect || showWrong ? '#fff' : C.sub,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: 800, flexShrink: 0,
+                }
+              }, showCorrect ? '✓' : showWrong ? '✗' : ['A','B','C','D'][i]),
+              e('span', { style: { flex: 1 } }, c),
+            );
+          }),
+        ),
+        showFeedback && e('button', {
+          onClick: nextQuestion,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, qIndex + 1 >= questions.length ? '結果を見る →' : '次の問題へ →'),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      const correct = results.filter(r => r.isCorrect).length;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { textAlign: 'center', padding: '8px 4px 22px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 30, fontWeight: 700, color: C.text, lineHeight: 1.2 }
+          }, '🎉 おつかれさま！'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: profile.color, lineHeight: 1.2, marginTop: 16 }
+          }, passage ? passage.title : ''),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 56, fontWeight: 800, color: profile.color, lineHeight: 1, marginTop: 16 }
+          }, correct + ' / ' + results.length),
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 12, color: C.sub, marginTop: 10 }
+          }, correct === results.length ? '全問正解！' : 'リーディング ' + Math.round(correct / results.length * 100) + '%'),
+        ),
+        e('button', {
+          onClick: () => { setPhase('intro'); setPassage(null); setQIndex(0); setChosen(null); setResults([]); },
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            border: '1px solid ' + profile.color,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer', marginBottom: 8,
+          }
+        }, '別の長文を読む'),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 0', borderRadius: 14,
+            background: C.softer, color: C.text,
+            border: '1px solid ' + C.line,
+            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+          }
+        }, 'ホームへ戻る'),
+      );
+    }
+
+    return e('div', { style: pageStyle }, topBar);
   }
 
   // ---------- Coming Soon (placeholder for each feature, until implemented) ----------
