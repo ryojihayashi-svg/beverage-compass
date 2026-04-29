@@ -18398,6 +18398,17 @@
       if (filter === 'all') return DAILY_PHRASES;
       return DAILY_PHRASES.filter(p => p.scene === filter);
     }, [filter]);
+    // 表示用の並び順 — 開くたびにシャッフル。同じ並びだと「壁紙化」して
+    // 目に入らなくなるという指摘への対応。useMemo の deps に filter を入れ
+    // ているので、シーンを切り替えるたび / 入り直すたびに再シャッフルされる。
+    const displayOrder = useMemo(() => {
+      const a = filtered.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }, [filter]);
 
     const [phase, setPhase]   = useState(filtered.length > 0 ? 'intro' : 'empty');
     const [queue, setQueue]   = useState([]);
@@ -18616,7 +18627,7 @@
               //   front = Japanese (the prompt the learner sees first)
               //   back  = English answer + speaker
               //   tap anywhere on the card to flip; speaker tap doesn't flip
-              filtered.map(p => {
+              displayOrder.map(p => {
                 const flipped = flippedIds.has(p.id);
                 const cardStyle = {
                   background: C.card, border: '1px solid ' + C.line,
