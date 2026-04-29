@@ -113,6 +113,8 @@
   //   row 7: AI翻訳                 | 翻訳ノート
   // 末尾: ランダムテスト (full-width)
   const FEATURES = [
+    { id: 'diagnostic',         label: '📊 レベル診断テスト', desc: '英検 5 級〜2 級・段階式',
+                                                                                          fullWidth: true, forLearner: true, forViewer: false },
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
@@ -12603,6 +12605,7 @@
       else if (route.feature === 'reading')           body = e(ReadingComprehension, { profile, onBack: back });
       else if (route.feature === 'comp_test')         body = e(CompositionTest,   { profile, onBack: back });
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
+      else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -22199,6 +22202,189 @@
             fontSize: 14, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
           }
         }, 'ホームへ戻る'),
+      );
+    }
+
+    return e('div', { style: pageStyle }, topBar);
+  }
+
+  // ---------- DiagnosticTest: 段階式レベル診断テスト ----------
+  // フロー: intro → test (Stage 1〜3) → stage_clear → result
+  // 今は intro 画面のみ実装。test 以降は別 PR で。
+  // データは DIAG_STAGES / DIAGNOSTIC_POOL / LISTENING_DIAG_POOL /
+  // READING_DIAG_POOL / buildStageQuestions を使用。
+  function DiagnosticTest({ profile, onBack }) {
+    const [phase, setPhase]       = useState('intro');   // 'intro' | 'test' | 'stage_clear' | 'result'
+    const [stageIdx, setStageIdx] = useState(0);
+
+    // 前回の診断結果 (あれば)
+    const prevDiag = (() => {
+      try {
+        const s = db.load(profile.id);
+        if (s.diagnosedEiken) {
+          return {
+            eiken: s.diagnosedEiken,
+            level: s.diagnosedLevel || 0,
+            at: s.diagnosedAt,
+          };
+        }
+      } catch {}
+      return null;
+    })();
+
+    function startFromStage(num) {
+      setStageIdx(num);
+      setPhase('test');
+    }
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'レベル診断テスト'),
+    );
+
+    // ============ INTRO ============
+    if (phase === 'intro') {
+      const formatDate = (iso) => {
+        try { return new Date(iso).toLocaleDateString('ja-JP'); }
+        catch { return ''; }
+      };
+
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, '📊 レベル診断テスト'),
+          e('div', {
+            style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+          }, '段階式テストであなたの英語レベル (英検 5 級〜2 級) を判定します。各ステージで合格率を超えると次に進めます。やめた / 不合格になった時点で「ひとつ下」のレベルが判定です。'),
+        ),
+
+        // ステージ表
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'STAGES'),
+        e('div', {
+          style: {
+            background: C.card, borderRadius: 14,
+            padding: '14px 16px', marginBottom: 18,
+          }
+        },
+          DIAG_STAGES.map((s, i) => e('div', {
+            key: s.id,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 0',
+              borderTop: i === 0 ? 'none' : '1px solid ' + C.border,
+            }
+          },
+            e('div', {
+              style: {
+                fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
+                color: profile.color, minWidth: 56,
+              }
+            }, 'Stage ' + (i + 1)),
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontSize: 14, color: C.text, fontWeight: 600 } }, s.label),
+              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+                '合格率 ' + Math.round(s.passRate * 100) + '%  →  ' + s.eiken),
+            ),
+          )),
+        ),
+
+        // 前回の診断結果
+        prevDiag && prevDiag.eiken && e('div', {
+          style: {
+            background: C.card, borderRadius: 14,
+            padding: '12px 16px', marginBottom: 18,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }
+        },
+          e('div', { style: { fontSize: 18 } }, '✅'),
+          e('div', { style: { flex: 1 } },
+            e('div', { style: { fontSize: 11, color: C.sub } }, '前回の診断'),
+            e('div', { style: { fontSize: 15, color: C.text, fontWeight: 700, marginTop: 2 } },
+              prevDiag.eiken + (prevDiag.at ? ' (' + formatDate(prevDiag.at) + ')' : '')),
+          ),
+        ),
+
+        // 開始ボタン
+        e('button', {
+          onClick: () => startFromStage(Math.min(prevDiag?.level || 0, DIAG_STAGES.length - 1)),
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginBottom: 10,
+          }
+        }, prevDiag && prevDiag.level > 0 ? ('Stage ' + (prevDiag.level + 1) + ' から続ける') : 'テストを始める'),
+
+        // 最初からやり直すボタン (前回診断ありの場合のみ)
+        prevDiag && prevDiag.level > 0 && e('button', {
+          onClick: () => startFromStage(0),
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 14,
+            background: 'transparent', color: C.sub,
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+            border: '1px solid ' + C.border, cursor: 'pointer',
+          }
+        }, 'Stage 1 からやり直す'),
+
+        // 注意書き
+        e('div', {
+          style: {
+            fontSize: 11, color: C.sub, lineHeight: 1.7,
+            marginTop: 18, paddingLeft: 4,
+          }
+        }, '※ 1 ステージあたり約 13 問。リスニング 3 問・リーディング 2 問・文法 8 問の構成。問題は毎回ランダム抽選なので暗記対策はできません。'),
+      );
+    }
+
+    // ============ TEST (placeholder — 別 PR で実装) ============
+    if (phase === 'test') {
+      const stage = DIAG_STAGES[stageIdx];
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text }
+          }, 'Stage ' + (stageIdx + 1) + ' — ' + stage.label),
+          e('div', {
+            style: { fontSize: 12, color: C.sub, marginTop: 6 }
+          }, '合格率 ' + Math.round(stage.passRate * 100) + '%  /  ' + stage.eiken + ' レベル'),
+        ),
+        e('div', {
+          style: {
+            background: C.card, borderRadius: 14,
+            padding: '24px 18px', textAlign: 'center',
+            color: C.sub, fontSize: 13, lineHeight: 1.7,
+          }
+        },
+          e('div', { style: { fontSize: 28, marginBottom: 8 } }, '🚧'),
+          'テスト本体は次のアップデートで',
+          e('br'),
+          '実装します。お楽しみに！',
+        ),
+        e('button', {
+          onClick: () => setPhase('intro'),
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 14,
+            background: 'transparent', color: C.sub,
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+            border: '1px solid ' + C.border, cursor: 'pointer',
+            marginTop: 18,
+          }
+        }, '戻る'),
       );
     }
 
