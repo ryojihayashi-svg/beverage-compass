@@ -3884,6 +3884,8 @@
     overcome: 14, lesson: 25, shadowing: 18,
     // 新機能: リスニング 1問 ≈ 30 秒 (audio + 質問)、リーディング ≈ 60 秒
     listening: 30, reading: 60,
+    // 診断テスト: ステージ全体で 1 イベント。1 問 ≈ 20 秒の見積もり。
+    diagnostic: 20,
   };
   // Sanity cap per session. If a learner started a session and then walked
   // away (locked the phone, took a call, etc.), durationMs can be wildly
@@ -12698,6 +12700,7 @@
       flip: 'めくり',         overcome: '間違い克服',
       lesson: '1分英語解説',  shadowing: 'シャドーイング',
       listening: 'リスニング', reading: 'リーディング',
+      diagnostic: 'レベル診断',
     };
     return e('button', {
       onClick,
@@ -22199,12 +22202,32 @@
 
   // ---------- DiagnosticTest: 段階式レベル診断テスト ----------
   // フロー: intro → test (Stage 1〜3) → stage_clear → result
-  // 今は intro 画面のみ実装。test 以降は別 PR で。
   // データは DIAG_STAGES / DIAGNOSTIC_POOL / LISTENING_DIAG_POOL /
   // READING_DIAG_POOL / buildStageQuestions を使用。
+  //
+  // 各ステージのフロー:
+  //   1) startFromStage(num) で問題を抽選 (リスニング 3 + リーディング 2 + 文法 8)
+  //   2) 1 問ずつ表示 → 選択 → 「決定」で確定 → 次の問題へ
+  //   3) 全問終了したら正答率を計算
+  //      - 合格 & 次のステージあり → stage_clear
+  //      - 合格 & 最終ステージ     → result
+  //      - 不合格                 → result
+  //   4) result では comfort.vocab/composition と diagnosedLevel/Eiken を
+  //      profile に保存 (次のセッションで反映される)
+  const DIAG_EIKEN_MAP   = { 0: '英検5級', 1: '英検4級', 2: '英検3級', 3: '英検準2級' };
+  const DIAG_COMFORT_MAP = { 0: 1.0,        1: 2.0,        2: 3.0,        3: 4.0 };
+
   function DiagnosticTest({ profile, onBack }) {
-    const [phase, setPhase]       = useState('intro');   // 'intro' | 'test' | 'stage_clear' | 'result'
-    const [stageIdx, setStageIdx] = useState(0);
+    const [phase, setPhase]               = useState('intro');   // 'intro' | 'test' | 'stage_clear' | 'result'
+    const [stageIdx, setStageIdx]         = useState(0);
+    const [questions, setQuestions]       = useState([]);
+    const [idx, setIdx]                   = useState(0);
+    const [selected, setSelected]         = useState(null);
+    const [answers, setAnswers]           = useState([]);
+    const [stageResults, setStageResults] = useState([]);
+    const [played, setPlayed]             = useState(false);
+    const [speaking, setSpeaking]         = useState(false);
+    const sessionStartRef = useRef(null);
 
     // 前回の診断結果 (あれば)
     const prevDiag = (() => {
@@ -22222,8 +22245,143 @@
     })();
 
     function startFromStage(num) {
+      const stage = DIAG_STAGES[num];
+      const qs    = buildStageQuestions(stage);
       setStageIdx(num);
+      setQuestions(qs);
+      setIdx(0);
+      setSelected(null);
+      setAnswers([]);
+      setPlayed(false);
+      stopSpeech();
+      if (!sessionStartRef.current) sessionStartRef.current = Date.now();
       setPhase('test');
+    }
+
+    // ----- TTS for listening questions -----
+    function playConversation(lines) {
+      if (!window.speechSynthesis || !lines || lines.length === 0) return;
+      try { window.speechSynthesis.cancel(); } catch {}
+      setSpeaking(true);
+      setPlayed(true);
+      let i = 0;
+      const speakNext = () => {
+        if (i >= lines.length) { setSpeaking(false); return; }
+        const u = new SpeechSynthesisUtterance(lines[i].text);
+        u.lang  = 'en-GB';
+        u.rate  = 1.0;
+        u.onend   = () => { i++; setTimeout(speakNext, 400); };
+        u.onerror = () => { i++; setTimeout(speakNext, 400); };
+        try { window.speechSynthesis.speak(u); } catch {}
+      };
+      speakNext();
+    }
+    function stopSpeech() {
+      if (window.speechSynthesis) {
+        try { window.speechSynthesis.cancel(); } catch {}
+      }
+      setSpeaking(false);
+    }
+
+    // ----- Submit current answer -----
+    function submit() {
+      if (selected === null) return;
+      const q = questions[idx];
+      const correct = selected === q.answer;
+      const newAnswers = answers.concat([{
+        id: q.id, level: q.level,
+        section: getQuestionSection(q),
+        correct, selected,
+      }]);
+      setAnswers(newAnswers);
+
+      if (idx + 1 < questions.length) {
+        // 次の問題へ
+        stopSpeech();
+        setIdx(idx + 1);
+        setSelected(null);
+        setPlayed(false);
+        return;
+      }
+
+      // ステージ終了 — 合否判定
+      const correctCount = newAnswers.filter(a => a.correct).length;
+      const rate         = correctCount / newAnswers.length;
+      const stage        = DIAG_STAGES[stageIdx];
+      const passed       = rate >= stage.passRate;
+      const newStageResults = stageResults.concat([{
+        stageIdx, label: stage.label, passRate: stage.passRate,
+        rate, passed, total: newAnswers.length, correct: correctCount,
+      }]);
+      setStageResults(newStageResults);
+      stopSpeech();
+
+      if (passed && stageIdx + 1 < DIAG_STAGES.length) {
+        // 合格 & 次のステージあり
+        setPhase('stage_clear');
+      } else {
+        // 不合格 or 最終ステージクリア
+        saveResult(passed, newStageResults);
+        setPhase('result');
+      }
+    }
+
+    // 結果を profile に保存 + 学習レベルを反映
+    function saveResult(lastPassed, allStageResults) {
+      // detectedLevel = クリアしたステージ数 (0〜3)
+      let detectedLevel;
+      if (lastPassed) {
+        detectedLevel = stageIdx + 1;
+      } else {
+        detectedLevel = stageIdx;  // 不合格 → 1 つ下のステージが達成済み
+      }
+      const eiken   = DIAG_EIKEN_MAP[detectedLevel]   || '英検5級';
+      const comfort = DIAG_COMFORT_MAP[detectedLevel] || 1.0;
+      try {
+        const s = db.load(profile.id);
+        s.diagnosedLevel = detectedLevel;
+        s.diagnosedEiken = eiken;
+        s.diagnosedAt    = new Date().toISOString();
+        db.save(profile.id, s);
+        // 学習レベル (vocab / composition) を更新
+        saveComfort(profile.id, 'vocab',       comfort);
+        saveComfort(profile.id, 'composition', comfort);
+        // 活動ログにも記録 (診断テスト 1 回 = 1 セッション扱い)
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        try { db.recordTurn(profile.id, 'diagnostic'); } catch {}
+        try {
+          db.pushEvent(profile.id, {
+            kind: 'diagnostic', total: allStageResults.reduce((n, r) => n + r.total, 0),
+            correct: allStageResults.reduce((n, r) => n + r.correct, 0),
+            durationMs, label: eiken,
+          });
+        } catch {}
+      } catch (err) {
+        console.warn('Failed to save diagnostic result', err);
+      }
+    }
+
+    // 次のステージへ進む / ここで終了
+    function continueToNextStage() {
+      const next = stageIdx + 1;
+      const stage = DIAG_STAGES[next];
+      const qs = buildStageQuestions(stage);
+      setStageIdx(next);
+      setQuestions(qs);
+      setIdx(0);
+      setSelected(null);
+      setAnswers([]);
+      setPlayed(false);
+      stopSpeech();
+      setPhase('test');
+    }
+    function stopHereAndSave() {
+      // ここで終了 = 直近のステージは合格しているので
+      // detectedLevel は stageIdx + 1 (= 次のステージに行ける状態)
+      const last = stageResults[stageResults.length - 1];
+      saveResult(last && last.passed, stageResults);
+      setPhase('result');
     }
 
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
@@ -22335,40 +22493,294 @@
       );
     }
 
-    // ============ TEST (placeholder — 別 PR で実装) ============
+    // ============ TEST ============
     if (phase === 'test') {
       const stage = DIAG_STAGES[stageIdx];
+      const q     = questions[idx];
+      if (!q) return e('div', { style: pageStyle }, topBar);
+      const section = getQuestionSection(q);
+      // リスニングは音声を聞かないと選べない
+      const choicesLocked = section === 'listening' && !played;
+
+      // 進捗バー
+      const progress = e('div', {
+        style: { background: C.softer, height: 4, borderRadius: 999, marginBottom: 16, overflow: 'hidden' }
+      },
+        e('div', {
+          style: {
+            height: '100%', width: ((idx + 1) / questions.length * 100) + '%',
+            background: profile.color, transition: 'width 240ms ease-out',
+          }
+        }),
+      );
+
+      const stageHeader = e('div', { style: { padding: '4px 4px 14px' } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase' }
+        }, 'Stage ' + (stageIdx + 1) + ' — ' + stage.label),
+        e('div', {
+          style: { fontSize: 12, color: C.sub, marginTop: 4, fontVariantNumeric: 'tabular-nums' }
+        }, (idx + 1) + ' / ' + questions.length + '  ·  ' +
+           (section === 'listening' ? 'リスニング' :
+            section === 'reading'   ? 'リーディング' : '文法・語彙')),
+      );
+
+      // セクション固有のヘッダ (passage / TTS ボタン)
+      let sectionBody;
+      if (section === 'listening') {
+        sectionBody = e('div', {
+          style: {
+            background: C.card, borderRadius: 14, padding: '20px 18px',
+            marginBottom: 16, textAlign: 'center',
+          }
+        },
+          e('div', {
+            style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', marginBottom: 14 }
+          }, speaking ? '再生中' : (played ? '再生終了' : '準備完了')),
+          e('button', {
+            onClick: () => playConversation(q.conversation),
+            disabled: speaking,
+            style: {
+              width: '100%', padding: '14px 16px', borderRadius: 14,
+              background: speaking ? C.softer : profile.color,
+              color: speaking ? C.sub : '#fff',
+              fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+              border: 'none', cursor: speaking ? 'default' : 'pointer',
+              opacity: speaking ? 0.6 : 1,
+            }
+          }, speaking ? '再生中…' : (played ? 'もう一度聞く' : '会話を聞く')),
+          !played && e('div', {
+            style: { fontSize: 11, color: C.sub, marginTop: 10, lineHeight: 1.6 }
+          }, '※ 音声を聞いてから選択肢を選べます'),
+        );
+      } else if (section === 'reading') {
+        sectionBody = e('div', {
+          style: {
+            background: C.card, borderRadius: 14, padding: '16px 18px',
+            marginBottom: 16,
+            fontSize: 14, lineHeight: 1.8, color: C.text,
+          }
+        }, q.passage);
+      }
+
+      // 質問
+      const question = e('div', {
+        style: {
+          fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.text,
+          lineHeight: 1.5, marginBottom: 16,
+          padding: '0 4px',
+        }
+      }, q.q);
+
+      // 選択肢
+      const choices = e('div', {
+        style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }
+      },
+        q.choices.map((c, i) => {
+          const isSelected = selected === i;
+          return e('button', {
+            key: 'c_' + i,
+            onClick: () => { if (!choicesLocked) setSelected(i); },
+            disabled: choicesLocked,
+            style: {
+              padding: '14px 16px', borderRadius: 12,
+              background: isSelected ? profile.color + '1A' : C.softer,
+              border: '1px solid ' + (isSelected ? profile.color : C.line),
+              color: choicesLocked ? C.sub : C.text,
+              fontFamily: SANS_UI, fontSize: 14, fontWeight: isSelected ? 700 : 500,
+              textAlign: 'left', cursor: choicesLocked ? 'not-allowed' : 'pointer',
+              opacity: choicesLocked ? 0.5 : 1,
+              display: 'flex', alignItems: 'center', gap: 10,
+            }
+          },
+            e('span', {
+              style: {
+                width: 22, height: 22, borderRadius: 999,
+                background: isSelected ? profile.color : '#fff',
+                color: isSelected ? '#fff' : C.sub,
+                border: '1px solid ' + (isSelected ? profile.color : C.line),
+                fontSize: 11, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }
+            }, ['A', 'B', 'C', 'D'][i] || ''),
+            e('span', { style: { flex: 1 } }, c),
+          );
+        }),
+      );
+
+      // 決定ボタン
+      const submitBtn = e('button', {
+        onClick: submit,
+        disabled: selected === null,
+        style: {
+          width: '100%', padding: '14px 16px', borderRadius: 14,
+          background: selected === null ? C.softer : profile.color,
+          color: selected === null ? C.sub : '#fff',
+          fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+          border: 'none', cursor: selected === null ? 'not-allowed' : 'pointer',
+          opacity: selected === null ? 0.6 : 1,
+        }
+      }, idx + 1 === questions.length ? '答えて結果を見る' : '決定');
+
       return e('div', { style: pageStyle },
         topBar,
-        e('div', { style: { padding: '4px 4px 18px' } },
+        progress,
+        stageHeader,
+        sectionBody,
+        question,
+        choices,
+        submitBtn,
+      );
+    }
+
+    // ============ STAGE CLEAR ============
+    if (phase === 'stage_clear') {
+      const last = stageResults[stageResults.length - 1];
+      const next = DIAG_STAGES[stageIdx + 1];
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '20px 4px 24px', textAlign: 'center' } },
           e('div', {
-            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text }
-          }, 'Stage ' + (stageIdx + 1) + ' — ' + stage.label),
+            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 8 }
+          }, 'Stage ' + (stageIdx + 1) + ' クリア'),
           e('div', {
-            style: { fontSize: 12, color: C.sub, marginTop: 6 }
-          }, '合格率 ' + Math.round(stage.passRate * 100) + '%  /  ' + stage.eiken + ' レベル'),
+            style: { fontSize: 13, color: C.sub, lineHeight: 1.7 }
+          },
+            '正答率 ',
+            e('strong', { style: { color: profile.color, fontVariantNumeric: 'tabular-nums' } },
+              Math.round(last.rate * 100) + '%'),
+            '  (' + last.correct + ' / ' + last.total + ')',
+          ),
         ),
         e('div', {
           style: {
-            background: C.card, borderRadius: 14,
-            padding: '24px 18px', textAlign: 'center',
-            color: C.sub, fontSize: 13, lineHeight: 1.7,
+            background: C.card, borderRadius: 14, padding: '16px 18px',
+            marginBottom: 18, fontSize: 13, color: C.text, lineHeight: 1.7,
           }
         },
-          'テスト本体は次のアップデートで',
+          '次は ',
+          e('strong', null, 'Stage ' + (stageIdx + 2) + ' (' + next.label + ')'),
+          ' に挑戦しますか？',
           e('br'),
-          '実装します。お楽しみに。',
+          e('span', { style: { fontSize: 12, color: C.sub } },
+            '合格すれば「' + next.eiken + '」レベルと判定されます。'),
         ),
         e('button', {
-          onClick: () => setPhase('intro'),
+          onClick: continueToNextStage,
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginBottom: 10,
+          }
+        }, '次のステージに挑戦する'),
+        e('button', {
+          onClick: stopHereAndSave,
           style: {
             width: '100%', padding: '12px 16px', borderRadius: 14,
             background: 'transparent', color: C.sub,
             fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
             border: '1px solid ' + C.border, cursor: 'pointer',
-            marginTop: 18,
           }
-        }, '戻る'),
+        }, 'ここで終了する'),
+      );
+    }
+
+    // ============ RESULT ============
+    if (phase === 'result') {
+      // 判定: クリアしたステージ数 = stageResults の中で passed === true の連続数
+      let cleared = 0;
+      for (const r of stageResults) {
+        if (r.passed) cleared = r.stageIdx + 1;
+        else break;
+      }
+      const eiken = DIAG_EIKEN_MAP[cleared] || '英検5級';
+
+      return e('div', { style: pageStyle },
+        topBar,
+        // 大判定
+        e('div', { style: { padding: '20px 4px 30px', textAlign: 'center' } },
+          e('div', {
+            style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }
+          }, 'YOUR LEVEL'),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 38, fontWeight: 700, color: profile.color, lineHeight: 1.2 }
+          }, eiken),
+          e('div', {
+            style: { fontSize: 12, color: C.sub, marginTop: 10, lineHeight: 1.7 }
+          }, cleared === 3 ? 'Stage 3 までクリアしました。素晴らしい！' :
+              cleared === 0 ? 'まずは Stage 1 の合格を目指しましょう。' :
+              'Stage ' + cleared + ' までクリア。次は Stage ' + (cleared + 1) + ' に挑戦してみよう。'),
+        ),
+
+        // ステージ別の結果
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'STAGE RESULTS'),
+        e('div', {
+          style: { background: C.card, borderRadius: 14, padding: '6px 16px', marginBottom: 18 }
+        },
+          stageResults.map((r, i) => e('div', {
+            key: 'sr_' + i,
+            style: {
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '12px 0',
+              borderTop: i === 0 ? 'none' : '1px solid ' + C.border,
+            }
+          },
+            e('div', {
+              style: {
+                width: 22, height: 22, borderRadius: 999,
+                background: r.passed ? profile.color : C.softer,
+                color: r.passed ? '#fff' : C.sub,
+                border: '1px solid ' + (r.passed ? profile.color : C.line),
+                fontSize: 11, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }
+            }, r.passed ? '○' : '✕'),
+            e('div', { style: { flex: 1 } },
+              e('div', { style: { fontSize: 13, color: C.text, fontWeight: 600 } },
+                'Stage ' + (r.stageIdx + 1) + ' — ' + r.label),
+              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
+                Math.round(r.rate * 100) + '%  (' + r.correct + ' / ' + r.total + ')  ' +
+                '/ 合格 ' + Math.round(r.passRate * 100) + '%'),
+            ),
+          )),
+        ),
+
+        // 注意書き: comfort が更新されたこと
+        e('div', {
+          style: {
+            background: C.card, borderRadius: 14, padding: '14px 16px',
+            marginBottom: 18, fontSize: 12, color: C.sub, lineHeight: 1.7,
+          }
+        }, '判定結果に合わせて、単語学習・瞬間英作文の出題レベルを ' + eiken + ' 相当に調整しました。'),
+
+        // 戻る
+        e('button', {
+          onClick: () => { setPhase('intro'); },
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginBottom: 10,
+          }
+        }, 'トップに戻る'),
+        e('button', {
+          onClick: () => startFromStage(0),
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 14,
+            background: 'transparent', color: C.sub,
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+            border: '1px solid ' + C.border, cursor: 'pointer',
+          }
+        }, 'もう一度 Stage 1 から受ける'),
       );
     }
 
