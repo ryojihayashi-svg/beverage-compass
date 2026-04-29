@@ -103,34 +103,32 @@
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
-  // 4 rows × 2 columns. All same-sized tiles (no full-width primary).
-  //   row 1: ランダムテスト       | Daily English
-  //   row 2: 単語学習(日→英)       | 単語学習(英→日)
-  //   row 3: 瞬間英作文(日→英)     | 瞬間英作文(英→日)
-  //   row 4: 間違い復習(単語+英作文)| 覚えた一覧(単語+英作文)
+  // 7 rows × 2 columns of half-width tiles.
+  //   row 1: シャドーイング         | Daily English
+  //   row 2: 単語学習(日→英)        | 単語学習(英→日)
+  //   row 3: 瞬間英作文(日→英)      | 瞬間英作文(英→日)
+  //   row 4: 間違い復習             | 覚えた一覧
+  //   row 5: 1分英語解説            | AI英作文テスト
+  //   row 6: リスニング理解         | リーディング理解
+  //   row 7: AI翻訳                 | 翻訳ノート
+  // 末尾: ランダムテスト (full-width)
   const FEATURES = [
-    { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
+    { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
     { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true  },
     { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false },
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false },
-    { id: 'comp_test',          label: 'AI英作文テスト', desc: '週1回 · 3問だけ · AI採点',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
-    { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true },
-    { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',
+    { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',         forLearner: true, forViewer: true  },
+    { id: 'comp_test',          label: 'AI英作文テスト', desc: '週1回 · 3問だけ · AI採点',  forLearner: true, forViewer: false },
+    { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢', forLearner: true, forViewer: false },
+    { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false },
+    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true },
+    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true },
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '',
                                                                                           fullWidth: true, forLearner: true, forViewer: false },
-    { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false },
-    { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false },
-    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true },
-    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -3882,6 +3880,8 @@
   const EST_SECS_PER_Q_GAUGE = {
     vocab: 12, composition: 14, random_test: 10, mctest: 10,
     overcome: 14, lesson: 25, shadowing: 18,
+    // 新機能: リスニング 1問 ≈ 30 秒 (audio + 質問)、リーディング ≈ 60 秒
+    listening: 30, reading: 60,
   };
   // Sanity cap per session. If a learner started a session and then walked
   // away (locked the phone, took a call, etc.), durationMs can be wildly
@@ -12542,6 +12542,7 @@
       random_test: 'ランダム', mctest: 'Daily',
       flip: 'めくり',         overcome: '間違い克服',
       lesson: '1分英語解説',  shadowing: 'シャドーイング',
+      listening: 'リスニング', reading: 'リーディング',
     };
     return e('button', {
       onClick,
