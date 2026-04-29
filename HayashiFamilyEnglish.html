@@ -7998,32 +7998,36 @@
   // Counts the number of consecutive days (ending today or yesterday) on which
   // the member had any attempts. Today with no activity does not break the
   // streak — it just means the streak was set yesterday.
-  function computeStreak(daily) {
+  // memberId is needed because daily map is keyed by member's local date
+  // (Yoshinari = London tz). Without this, a Tokyo browser viewing son2's
+  // streak would look up daily['2026-04-30'] (Tokyo today) but the map
+  // is keyed '2026-04-29' (London yesterday/today) and the streak would
+  // appear broken.
+  function computeStreak(daily, memberId) {
     let streak = 0;
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    const today = dateKey(d);
+    let d = new Date();
+    const today = dateKeyForMember(memberId, d);
     if (!daily[today] || (daily[today].attempts || 0) === 0) {
-      d.setDate(d.getDate() - 1);
+      d = new Date(d.getTime() - 86400000);
     }
     while (true) {
-      const k = dateKey(d);
+      const k = dateKeyForMember(memberId, d);
       if (daily[k] && (daily[k].attempts || 0) > 0) {
         streak++;
-        d.setDate(d.getDate() - 1);
+        d = new Date(d.getTime() - 86400000);
       } else break;
     }
     return streak;
   }
   // Sum of correct answers over the trailing 7 days (today inclusive).
-  function computeWeeklyCorrect(daily) {
+  // Same memberId reasoning as computeStreak — see above.
+  function computeWeeklyCorrect(daily, memberId) {
     let total = 0;
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
+    let d = new Date();
     for (let i = 0; i < 7; i++) {
-      const k = dateKey(d);
+      const k = dateKeyForMember(memberId, d);
       if (daily[k]) total += daily[k].correct || 0;
-      d.setDate(d.getDate() - 1);
+      d = new Date(d.getTime() - 86400000);
     }
     return total;
   }
@@ -8524,8 +8528,8 @@
     return {
       totalAttempts, totalCorrect, accuracy, learnedCount, masteredCount,
       sentenceAttempts, totalMinutes,
-      weeklyCorrect: computeWeeklyCorrect(daily),
-      streakDays:    computeStreak(daily),
+      weeklyCorrect: computeWeeklyCorrect(daily, memberId),
+      streakDays:    computeStreak(daily, memberId),
     };
   }
 
