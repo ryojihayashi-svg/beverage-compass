@@ -9850,7 +9850,10 @@
     // top of the list screen. If a kindFilter prop was passed (legacy
     // route), seed the picker with it.
     const [activeFilter, setActiveFilter] = useState(kindFilter || 'all');
-    const initialList = useMemo(() => {
+    // Bumps when a batch finishes so initialList re-reads from db with
+    // the just-overcome items already removed.
+    const [refreshKey, setRefreshKey] = useState(0);
+    function computeList() {
       const ms = db.getMistakesNormalized(profile.id);
       const seen = new Set(); const out = [];
       for (const m of ms) {
@@ -9862,23 +9865,63 @@
         if (item) out.push({ item, at: m.at });
       }
       return out;
-    }, [profile.id, activeFilter]);
+    }
+    const initialList = useMemo(() => computeList(), [profile.id, activeFilter, refreshKey]);
 
     const titleLabel = activeFilter === 'vocab'   ? '間違えた単語'
                      : activeFilter === 'sentence' ? '間違えた英作文'
                      : '間違い復習';
 
+    // 5問ずつバッチ。バッチ終了時にコングラ画面で「もう1回 / 次へ /
+    // 終了」を選ばせる。長いリストを通しでやらせるより、こまめな
+    // 完了感が学習継続のモチベーションを保つ。
+    const BATCH_SIZE = 5;
     const [phase, setPhase]     = useState('list');     // 'list' | 'study' | 'done'
     const [queue, setQueue]     = useState([]);
+    // Last batch's items kept for the もう1回 button (re-runs same set).
+    const [batchItems, setBatchItems] = useState([]);
     const [index, setIndex]     = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
 
-    function startAll() {
-      if (initialList.length === 0) return;
-      setQueue(initialList.map(m => m.item));
+    function startBatch() {
+      const list = computeList();
+      const next = list.slice(0, BATCH_SIZE).map(m => m.item);
+      if (next.length === 0) return;
+      setBatchItems(next);
+      setQueue(next);
       setResults([]); setIndex(0); setRevealed(false);
       setPhase('study');
+    }
+    function retryBatch() {
+      // Re-run the SAME 5 items the user just finished. Useful when
+      // they got several wrong and want to immediately re-cement.
+      if (batchItems.length === 0) return;
+      setQueue(batchItems);
+      setResults([]); setIndex(0); setRevealed(false);
+      setPhase('study');
+    }
+    function nextBatch() {
+      // Pull a fresh batch — items the user just got correct have
+      // already been removed from the mistakes table by record(true),
+      // so this picks up the next 5 still pending.
+      const list = computeList();
+      const next = list.slice(0, BATCH_SIZE).map(m => m.item);
+      if (next.length === 0) {
+        // No more mistakes — head back to list (which will show the
+        // "まだ間違いがありません" empty state).
+        setRefreshKey(k => k + 1);
+        setPhase('list');
+        return;
+      }
+      setBatchItems(next);
+      setQueue(next);
+      setResults([]); setIndex(0); setRevealed(false);
+      setPhase('study');
+    }
+    function endReview() {
+      setRefreshKey(k => k + 1);  // re-read db
+      setPhase('list');
     }
 
     function record(isCorrect) {
@@ -10005,7 +10048,7 @@
             )
           : e('div', null,
               e('button', {
-                onClick: startAll,
+                onClick: startBatch,
                 style: {
                   width: '100%', padding: '15px 0', borderRadius: 16,
                   background: profile.color, color: '#fff',
@@ -10013,7 +10056,7 @@
                   boxShadow: '0 8px 22px ' + profile.color + '55',
                   marginBottom: 16,
                 }
-              }, 'まとめて復習する (' + initialList.length + '問)'),
+              }, '復習を始める (5問ずつ・残り ' + initialList.length + ' 問)'),
               e('div', {
                 style: {
                   background: C.card, border: '1px solid ' + C.line,
@@ -10272,10 +10315,83 @@
       );
     }
 
-    // ============ DONE ============
+    // ============ DONE (batch finished) ============
+    // 5 問終わったら「コングラチュレーション」を表示。残りがあれば
+    // 「次の5問へ」、無ければ「終わる」のみ active になる。
     if (phase === 'done') {
       const correct = results.filter(r => r.isCorrect).length;
-      return e(SessionDoneCard, { profile, correct, total: results.length, onBack });
+      const total   = results.length;
+      const remaining = computeList().length;
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', {
+          style: {
+            paddingTop: 28, paddingBottom: 20, textAlign: 'center',
+          }
+        },
+          e('div', { style: { fontSize: 56, marginBottom: 8 } }, '🎉'),
+          e('div', {
+            style: {
+              fontFamily: SERIF, fontSize: 28, fontWeight: 700,
+              color: profile.color, letterSpacing: '0.02em',
+              marginBottom: 10, lineHeight: 1.2,
+            }
+          }, 'コングラチュレーション'),
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 14, color: C.sub,
+              fontVariantNumeric: 'tabular-nums', marginBottom: 28,
+            }
+          }, correct + ' / ' + total + ' 問正解'),
+          e('div', {
+            style: {
+              display: 'flex', flexDirection: 'column', gap: 10,
+              maxWidth: 320, margin: '0 auto',
+            }
+          },
+            // 主アクション: 残りがあれば「次の5問へ」、無ければ薄い disabled。
+            remaining > 0
+              ? e('button', {
+                  onClick: nextBatch,
+                  style: {
+                    padding: '15px 0', borderRadius: 14,
+                    background: profile.color, color: '#fff',
+                    fontWeight: 700, fontSize: 15, border: 'none',
+                    boxShadow: '0 8px 22px ' + profile.color + '55',
+                    cursor: 'pointer',
+                  }
+                }, '次の5問へ (残り ' + remaining + ' 問)')
+              : e('div', {
+                  style: {
+                    padding: '14px 0', borderRadius: 14,
+                    background: C.softer, color: C.sub,
+                    fontWeight: 700, fontSize: 13, fontFamily: SANS_UI,
+                    border: '1px dashed ' + C.line, textAlign: 'center',
+                  }
+                }, '間違いはすべて克服しました'),
+            e('button', {
+              onClick: retryBatch,
+              style: {
+                padding: '12px 0', borderRadius: 14,
+                background: 'transparent', color: profile.color,
+                fontWeight: 700, fontSize: 14,
+                border: '1px solid ' + profile.color + '66',
+                cursor: 'pointer', fontFamily: SANS_UI,
+              }
+            }, 'もう1回この5問'),
+            e('button', {
+              onClick: endReview,
+              style: {
+                padding: '12px 0', borderRadius: 14,
+                background: 'transparent', color: C.sub,
+                fontWeight: 600, fontSize: 13,
+                border: '1px solid ' + C.line,
+                cursor: 'pointer', fontFamily: SANS_UI,
+              }
+            }, '終わる'),
+          ),
+        ),
+      );
     }
 
     return null;
@@ -11121,12 +11237,8 @@
                           fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
                           letterSpacing: '0.12em', textTransform: 'uppercase',
                           color: profile.color, marginBottom: 6,
-                          display: 'flex', alignItems: 'center', gap: 6,
                         }
-                      },
-                        e('span', null, '🤖'),
-                        e('span', null, '別の言い方'),
-                      ),
+                      }, '別の言い方'),
                       ...altsForCurrent.map((s, i) => e('div', {
                         key: i,
                         style: {
@@ -11153,7 +11265,7 @@
                         opacity: altBusy ? 0.6 : 1,
                         width: '100%',
                       }
-                    }, altBusy ? 'AI に聞いています…' : '🤖 別の言い方を AI に聞く'),
+                    }, altBusy ? '別の言い方を取得中…' : '別の言い方を見る'),
                 altError && e('div', {
                   style: {
                     marginTop: 6, fontSize: 11, color: C.danger,
