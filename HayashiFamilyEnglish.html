@@ -10572,6 +10572,11 @@
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [correctCount, setCorrectCount] = useState(0);
+    // Wall-clock session timer so the home gauge can credit actual time
+    // rather than a per-question estimate (a slow learner doing 10 words
+    // in 30 minutes deserves to see 30 min on the gauge, not the rough
+    // 12-sec/q estimate).
+    const sessionStartRef = useRef(null);
 
     function buildQueue() {
       if (selectedLevel === 'auto') {
@@ -10587,12 +10592,14 @@
     function startSession() {
       setQueue(buildQueue());
       setIndex(0); setRevealed(false); setCorrectCount(0);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
     function restart() {
       // Same level / direction, fresh shuffled queue.
       setQueue(buildQueue());
       setIndex(0); setRevealed(false); setCorrectCount(0);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
 
@@ -10615,10 +10622,12 @@
         if (index + 1 >= total) {
           soundComplete();
           db.recordTurn(profile.id, 'vocab');
+          const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+          sessionStartRef.current = null;
           db.pushEvent(profile.id, {
             kind: 'vocab', total, correct: nextCorrect,
             level: selectedLevel === 'auto' ? 'auto' : selectedLevel,
-            direction,
+            direction, durationMs,
           });
           // Float vocab-comfort once per session based on rolling mastery.
           adjustComfortFromMastery(profile.id, 'vocab');
@@ -11114,6 +11123,8 @@
     const [index, setIndex]     = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults] = useState([]);
+    // Wall-clock session timer — see VocabBrowse for rationale.
+    const sessionStartRef = useRef(null);
 
     function startBatch() {
       const list = computeList();
@@ -11122,6 +11133,7 @@
       setBatchItems(next);
       setQueue(next);
       setResults([]); setIndex(0); setRevealed(false);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
     function retryBatch() {
@@ -11130,6 +11142,7 @@
       if (batchItems.length === 0) return;
       setQueue(batchItems);
       setResults([]); setIndex(0); setRevealed(false);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
     function nextBatch() {
@@ -11148,6 +11161,7 @@
       setBatchItems(next);
       setQueue(next);
       setResults([]); setIndex(0); setRevealed(false);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
     function endReview() {
@@ -11183,10 +11197,13 @@
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         // Stamp this session into the activity log so 間違い克服 shows up
         // alongside vocab / composition / random_test / mctest etc.
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
         db.pushEvent(profile.id, {
           kind: 'overcome',
           total: newResults.length,
           correct: correctCount,
+          durationMs,
         });
         markPathStepDone(profile, 'mistakes');
         setPhase('done');
@@ -12106,6 +12123,8 @@
     const [altMap, setAltMap]   = useState({});  // { id: string[] }
     const [altBusy, setAltBusy] = useState(false);
     const [altError, setAltError] = useState('');
+    // Wall-clock session timer — see VocabBrowse for rationale.
+    const sessionStartRef = useRef(null);
 
     function startSession() {
       const opts = selectedLevel === 'auto' ? {} : { level: selectedLevel };
@@ -12115,6 +12134,7 @@
       const q = pickComposition(profile, COMP_COUNT, opts);
       if (q.length === 0) { setPhase('empty'); return; }
       setQueue(q); setIndex(0); setRevealed(false); setResults([]);
+      sessionStartRef.current = Date.now();
       setPhase('study');
     }
 
@@ -12170,8 +12190,10 @@
         const acc = total > 0 ? Math.round(correctCount * 100 / total) : 0;
         setTimeout(() => { soundComplete(); if (acc >= 70) hapticWin(); }, 250);
         db.recordTurn(profile.id, 'composition');
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
         db.pushEvent(profile.id, {
-          kind: 'composition', total, correct: correctCount, direction,
+          kind: 'composition', total, correct: correctCount, direction, durationMs,
         });
         // Float composition-comfort once per session based on rolling mastery.
         adjustComfortFromMastery(profile.id, 'composition');
