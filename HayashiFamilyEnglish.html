@@ -1731,6 +1731,73 @@
     'standard':     ['normal', 'usual', 'regular', 'typical'],
     'specific':     ['particular', 'certain', 'definite', 'specific'],
     'particular':   ['specific', 'certain', 'individual'],
+
+    // ---- Frequent verbs (motion / arrival / staying) ----
+    'eat':          ['have', 'consume', 'devour', 'dine'],
+    'drink':        ['sip', 'gulp', 'consume', 'have'],
+    'sleep':        ['rest', 'doze', 'nap', 'slumber'],
+    'wake':         ['get up', 'rise', 'awake', 'arise'],
+    'go':           ['head', 'travel', 'move', 'leave'],
+    'come':         ['arrive', 'approach', 'show up', 'reach'],
+    'leave':        ['depart', 'go', 'exit', 'set off'],
+    'live':         ['reside', 'dwell', 'stay', 'inhabit'],
+    'stay':         ['remain', 'live', 'wait', 'stop'],
+
+    // ---- Frequent verbs (action / cognition) ----
+    'work':         ['labor', 'operate', 'function', 'serve'],
+    'play':         ['have fun', 'enjoy', 'compete', 'perform'],
+    'study':        ['learn', 'read', 'review', 'examine'],
+    'forget':       ['miss', 'overlook', 'neglect'],
+    'need':         ['require', 'want', 'demand', 'must have'],
+    'love':         ['adore', 'cherish', 'be fond of', 'like a lot'],
+    'enjoy':        ['like', 'have fun with', 'love', 'appreciate'],
+    'try':          ['attempt', 'test', 'have a go', 'strive'],
+    'keep':         ['retain', 'hold', 'maintain', 'continue'],
+    'stop':         ['halt', 'cease', 'pause', 'end'],
+    'wait':         ['hold on', 'stand by', 'pause', 'remain'],
+    'meet':         ['see', 'encounter', 'come across', 'gather'],
+    'understand':   ['get', 'grasp', 'comprehend', 'see'],
+    'believe':      ['think', 'trust', 'feel', 'suppose'],
+    'feel':         ['sense', 'experience', 'perceive', 'think'],
+    'hope':         ['wish', 'expect', 'long for', 'desire'],
+    'wish':         ['hope', 'want', 'desire', 'long for'],
+
+    // ---- Senses ----
+    'look':         ['glance', 'gaze', 'stare', 'watch'],
+    'watch':        ['observe', 'view', 'look at', 'see'],
+    'hear':         ['listen', 'catch', 'pick up'],
+
+    // ---- Communication ----
+    'say':          ['tell', 'state', 'mention', 'utter'],
+    'take':         ['grab', 'pick up', 'carry', 'bring'],
+    'do':           ['perform', 'execute', 'carry out', 'make'],
+
+    // ---- Money / business ----
+    'sell':         ['offer', 'market', 'deal', 'trade'],
+    'pay':          ['settle', 'spend', 'give', 'compensate'],
+    'spend':        ['use', 'pay', 'consume'],
+    'save':         ['keep', 'store', 'put aside', 'rescue'],
+
+    // ---- Containers / cleanliness ----
+    'open':         ['unfold', 'unlock', 'begin', 'launch'],
+    'close':        ['shut', 'lock', 'end', 'finish'],
+    'clean':        ['neat', 'tidy', 'spotless', 'pure'],
+    'dirty':        ['filthy', 'messy', 'unclean', 'dusty'],
+
+    // ---- Adjectives — quality / size ----
+    'great':        ['wonderful', 'excellent', 'fantastic', 'awesome'],
+    'warm':         ['hot', 'mild', 'cozy', 'tepid'],
+    'cool':         ['cold', 'chilly', 'fresh', 'calm'],
+    'hard':         ['difficult', 'tough', 'firm', 'solid'],
+    'quick':        ['fast', 'rapid', 'swift', 'speedy'],
+    'long':         ['lengthy', 'extended', 'prolonged'],
+    'short':        ['brief', 'small', 'concise', 'little'],
+    'tall':         ['high', 'lofty', 'towering', 'big'],
+    'heavy':        ['weighty', 'massive', 'thick', 'serious'],
+    'light':        ['lightweight', 'bright', 'mild', 'easy'],
+
+    // ---- Verbs — beginnings ----
+    'begin':        ['start', 'commence', 'launch', 'initiate'],
   };
   function getVocabSynonyms(vocabId) {
     return VOCAB_SYNONYMS[vocabId] || null;
@@ -2719,10 +2786,36 @@
     return Math.random() < fracUpper ? upper : lower;
   }
 
+  // Returns IDs of items that were attempted "yesterday" (member tz).
+  // Used to seed today's queue with ~30% review items so memory consolidates.
+  // table arg is the per-track progress map ('vocab' or 'composition' or 'phrases').
+  function getYesterdayPracticedIds(memberId, tableKey) {
+    try {
+      const s = db.load(memberId);
+      const table = s[tableKey] || {};
+      const todayStart = getTodayStartMs(memberId);
+      const yesterdayStart = todayStart - 86400000;
+      const ids = [];
+      for (const id in table) {
+        const lastAt = table[id] && table[id].lastAt;
+        if (!lastAt) continue;
+        const t = new Date(lastAt).getTime();
+        if (t >= yesterdayStart && t < todayStart) ids.push(id);
+      }
+      return ids;
+    } catch { return []; }
+  }
+
   // Build a profile-weighted queue of `count` unique items from `pool`.
   // Each draw picks a level via pickLevelForProfile and grabs a random
   // unused item from that level. Falls back to the whole pool if a level
   // bucket is empty so the queue always fills.
+  //
+  // opts.yesterdayIds (optional): if provided, ~30% of slots (max
+  // yesterdayIds.length) are filled first with random items from the
+  // intersection of pool and yesterdayIds. The remainder is filled by the
+  // normal weighted draw. Final order is shuffled so review items don't
+  // all appear up front.
   function pickWeightedQueue(pool, profile, count, opts) {
     if (!pool || pool.length === 0) return [];
     const byLevel = { 1: [], 2: [], 3: [], 4: [], 5: [] };
@@ -2732,6 +2825,26 @@
     }
     const used = new Set();
     const out = [];
+
+    // Seed with yesterday's items (≈ 30% of count, but bounded by what's
+    // actually available). Using floor + min so a 10-question session
+    // gets up to 3 review items, a 3-question test gets up to 1.
+    const yesterdayIds = (opts && Array.isArray(opts.yesterdayIds)) ? opts.yesterdayIds : null;
+    if (yesterdayIds && yesterdayIds.length > 0) {
+      const ySet = new Set(yesterdayIds);
+      const yPool = pool.filter(p => ySet.has(p.id));
+      // Fisher-Yates shuffle
+      for (let i = yPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = yPool[i]; yPool[i] = yPool[j]; yPool[j] = t;
+      }
+      const target = Math.min(Math.floor(count * 0.3), yPool.length);
+      for (let i = 0; i < target && i < yPool.length; i++) {
+        const p = yPool[i];
+        if (!used.has(p.id)) { used.add(p.id); out.push(p); }
+      }
+    }
+
     let safety = count * 20;
     while (out.length < count && safety-- > 0) {
       const lv = pickLevelForProfile(profile, opts);
@@ -2752,6 +2865,11 @@
       if (!picked) break;
       used.add(picked.id);
       out.push(picked);
+    }
+    // Shuffle so yesterday-review items aren't all clustered at the start.
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = out[i]; out[i] = out[j]; out[j] = t;
     }
     return out;
   }
@@ -3005,7 +3123,7 @@
     { id:'s109', level:4, grammar:'関係詞 who + what',ja:'彼は言ったことを実行する人だ。',            en:'He is a man who does what he says.' },
     { id:'s110', level:4, grammar:'never + will',     ja:'私は決してその出来事を忘れない。',          en:'I will never forget that event.' },
     { id:'s111', level:4, grammar:'by all means',     ja:'あなたは何としてもそれを成し遂げるべきだ。',en:'You should accomplish that by all means.' },
-    { id:'s112', level:4, grammar:'very well that',   ja:'彼女が忙しいことはよく分かる。',            en:'I understand very well that she is busy.' },
+    { id:'s112', level:4, grammar:'very well that',   ja:'彼女が忙しいことはとてもよく分かる。',      en:'I understand very well that she is busy.' },
     { id:'s113', level:4, grammar:'as far as',        ja:'私の知る限り、彼は誠実だ。',                en:'As far as I know, he is honest.' },
     { id:'s114', level:4, grammar:'現在完了 just',    ja:'私はちょうど駅に着いたところだ。',          en:'I have just arrived at the station.' },
 
@@ -3118,9 +3236,9 @@
 
     // Yoshinari support / messages from family
     { id:'s197', level:3, grammar:'現在進行形',       ja:'家族はみんなあなたを応援しています。',      en:'All of your family is cheering you on.' },
-    { id:'s198', level:2, grammar:'三単現',           ja:'家族はみんなあなたが大好きです。',          en:'All of your family loves you very much.' },
+    { id:'s198', level:2, grammar:'三単現',           ja:'家族はみんなあなたのことが大好きです。',    en:'All of your family loves you.' },
     { id:'s199', level:3, grammar:'think + that',     ja:'家族はみんなあなたが優しいと思っています。',en:'All of your family thinks you are kind.' },
-    { id:'s200', level:2, grammar:'三単現',           ja:'吉平は吉成のことが大好きです。',            en:'Kippei loves Yoshinari very much.' },
+    { id:'s200', level:2, grammar:'三単現',           ja:'吉平は吉成のことが大好きです。',            en:'Kippei loves Yoshinari.' },
     { id:'s201', level:2, grammar:'be close',         ja:'吉成と吉平はとても仲が良いです。',          en:'Yoshinari and Kippei are very close.' },
     { id:'s202', level:2, grammar:'have',             ja:'吉成は優しい心を持っています。',            en:'Yoshinari has a kind heart.' },
     { id:'s203', level:2, grammar:'have',             ja:'吉成は運動神経が素晴らしいです。',          en:'Yoshinari has great athletic sense.' },
@@ -3130,7 +3248,7 @@
     { id:'s207', level:1, grammar:'be動詞 + 形容詞',  ja:'私の母は背が低いです。',                    en:'My mum is short.' },
 
     // Friends / girlfriend
-    { id:'s208', level:2, grammar:'否定',             ja:'私の友達のトッシーは頭がよくありません。',  en:'My friend Tosshi is not very smart.' },
+    { id:'s208', level:2, grammar:'否定',             ja:'私の友達のトッシーはあまり頭がよくありません。', en:'My friend Tosshi is not very smart.' },
     { id:'s209', level:2, grammar:'always + 三単現',  ja:'トッシーはいつも私の真似をします。',        en:'Tosshi always copies me.' },
     { id:'s210', level:2, grammar:'過去形 + with',    ja:'この前、トッシーと吉平と北海道に行きました。',en:'Recently, I went to Hokkaido with Tosshi and Kippei.' },
     { id:'s211', level:1, grammar:'be動詞 + 形容詞',  ja:'彼女は可愛いです。',                        en:'My girlfriend is cute.' },
@@ -3556,7 +3674,7 @@
     { id:'s545', level:4, grammar:'分詞構文 同時',            ja:'音楽を聴きながら、彼は宿題をした。',                     en:'Listening to music, he did his homework.' },
     { id:'s546', level:4, grammar:'分詞構文 理由',            ja:'疲れていたので、彼女は早く寝た。',                       en:'Being tired, she went to bed early.' },
     { id:'s547', level:4, grammar:'分詞構文 完了',            ja:'宿題を終えたあと、彼はテレビを見始めた。',               en:'Having finished his homework, he started watching TV.' },
-    { id:'s548', level:4, grammar:'分詞構文 受身',            ja:'1900年に建てられたので、その建物は古い。',               en:'Built in 1900, the building is very old.' },
+    { id:'s548', level:4, grammar:'分詞構文 受身',            ja:'1900年に建てられたので、その建物はとても古い。',         en:'Built in 1900, the building is very old.' },
     { id:'s549', level:4, grammar:'関係副詞 where',           ja:'これは私が生まれた家です。',                             en:'This is the house where I was born.' },
     { id:'s550', level:4, grammar:'関係副詞 when',            ja:'夏は人々が海に行く季節です。',                           en:'Summer is the season when people go to the beach.' },
     { id:'s551', level:4, grammar:'関係副詞 why',             ja:'なぜ彼が辞めたのか、誰も知らない。',                     en:'No one knows the reason why he quit.' },
@@ -3969,7 +4087,7 @@
     { id:'sd21', level:2, ja:'ここの人たちは本当にやさしいです。',   en:'Everyone here is really friendly.' },
     { id:'sd22', level:2, ja:'私は英語が上達してきています。',       en:"I'm getting better at English." },
     { id:'sd23', level:2, ja:'いいね、それでいこう。',               en:'That sounds great to me.' },
-    { id:'sd24', level:2, ja:'手伝ってくれて本当にありがとう。',     en:'Thanks a lot for your help.' },
+    { id:'sd24', level:2, ja:'手伝ってくれてどうもありがとう。',     en:'Thanks a lot for your help.' },
 
     // L3 — settled-in reflections, advice, hopes (12)
     { id:'sd25', level:3, ja:'まずは1日ずつ進めればいい。',          en:'Just take it one day at a time.' },
@@ -10908,15 +11026,22 @@
     const sessionStartRef = useRef(null);
 
     function buildQueue() {
+      // Mix in ≈ 30% of yesterday's vocab so yesterday's words come back
+      // for one more pass — short-term retention loop.
+      const yesterdayIds = getYesterdayPracticedIds(profile.id, 'vocab');
       if (selectedLevel === 'auto') {
-        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, { track: 'vocab' });
+        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, {
+          track: 'vocab',
+          yesterdayIds,
+        });
       }
+      // For a manually-picked level, we still want yesterday's review,
+      // but only items at that level qualify.
       const pool = VOCAB.filter(v => v.level === selectedLevel);
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
-      }
-      return pool.slice(0, VOCAB_SESSION_COUNT);
+      return pickWeightedQueue(pool, profile, VOCAB_SESSION_COUNT, {
+        track: 'vocab',
+        yesterdayIds,
+      });
     }
     function startSession() {
       setQueue(buildQueue());
@@ -12506,9 +12631,14 @@
     // direction + track are forwarded so per-direction tweaks (e.g.
     // Kippei reads English easier than he writes it) and per-track
     // comfort (composition has its own comfort vs vocab) can apply.
+    // yesterdayIds bring back ≈ 30% of yesterday's items for retention.
+    const yesterdayIds = profile && profile.id
+      ? getYesterdayPracticedIds(profile.id, 'composition')
+      : [];
     return pickWeightedQueue(pool, profile, count, {
       direction: opts.direction,
       track: 'composition',
+      yesterdayIds,
     });
   }
 
