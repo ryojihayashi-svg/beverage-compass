@@ -325,7 +325,7 @@
     { id:'eleven',      en:'eleven',      ja:'11',                       pos:'num',  level:1, cat:'general', exEn:'There are eleven players on a team.',       exJa:'チームには11人の選手がいる。' },
     { id:'twelve',      en:'twelve',      ja:'12',                       pos:'num',  level:1, cat:'general', exEn:'Twelve months make a year.',                exJa:'12ヶ月で1年だ。' },
     { id:'thirteen',    en:'thirteen',    ja:'13',                       pos:'num',  level:1, cat:'general', exEn:'She is thirteen years old.',                exJa:'彼女は13歳だ。' },
-    { id:'fourteen',    en:'fourteen',    ja:'14',                       pos:'num',  level:1, cat:'general', exEn:"Valentine's Day is February fourteenth.",   exJa:'バレンタインデーは2月14日だ。' },
+    { id:'fourteen',    en:'fourteen',    ja:'14',                       pos:'num',  level:1, cat:'general', exEn:'I have fourteen pencils.',                  exJa:'私は14本の鉛筆を持っている。' },
     { id:'fifteen',     en:'fifteen',     ja:'15',                       pos:'num',  level:1, cat:'general', exEn:'I have fifteen friends.',                   exJa:'私には15人の友達がいる。' },
     { id:'sixteen',     en:'sixteen',     ja:'16',                       pos:'num',  level:1, cat:'general', exEn:'He turned sixteen yesterday.',              exJa:'彼は昨日16歳になった。' },
     { id:'seventeen',   en:'seventeen',   ja:'17',                       pos:'num',  level:1, cat:'general', exEn:'Seventeen students passed.',                exJa:'17人の生徒が合格した。' },
@@ -1688,8 +1688,8 @@
     'bad':       ['poor', 'awful', 'terrible'],
     'fast':      ['quick', 'rapid', 'swift'],
     'slow':      ['sluggish', 'gradual'],
-    'hot':       ['warm', 'boiling'],
-    'cold':      ['cool', 'chilly', 'freezing'],
+    'hot':       ['boiling', 'scorching', 'sweltering', 'burning'],
+    'cold':      ['chilly', 'freezing', 'icy', 'frosty'],
     'easy':      ['simple', 'effortless'],
     'difficult': ['hard', 'tough', 'tricky'],
     'kind':      ['gentle', 'caring', 'thoughtful'],
@@ -1718,7 +1718,7 @@
     'car':       ['vehicle', 'auto', 'automobile'],
     // L2 / L3 — backfilled from words that already exist in VOCAB
     'arrive':       ['reach', 'get to'],
-    'sour':         ['tart'],
+    'sour':         ['tart', 'acidic', 'tangy'],
     'crowded':      ['packed', 'busy'],
     'quiet':        ['silent', 'calm'],
     'confident':    ['self-assured', 'sure'],
@@ -1727,16 +1727,16 @@
     'develop':      ['improve', 'grow', 'build'],
     'decide':       ['choose', 'determine'],
     'compare':      ['contrast'],
-    'opportunity':  ['chance'],
-    'environment':  ['surroundings'],
+    'opportunity':  ['chance', 'occasion', 'opening'],
+    'environment':  ['surroundings', 'atmosphere', 'setting'],
     'significant':  ['important', 'major', 'meaningful'],
     'essential':    ['vital', 'crucial', 'necessary'],
     'analyze':      ['examine', 'study', 'review'],
     'achieve':      ['accomplish', 'attain', 'reach'],
     'classmate':    ['schoolmate'],
-    'neighbor':     ['neighbour'],
-    'experience':   ['practice', "what one's been through"],
-    'remember':     ['recall'],
+    // 'neighbor' は 'neighbour' と単なる米英スペル違いなので類義語ではなく除外。
+    'experience':   ['know-how', 'background', 'expertise', 'exposure'],
+    'remember':     ['recall', 'recollect', 'bring to mind'],
     'reason':       ['cause', 'purpose'],
     'goal':         ['target', 'aim', 'objective'],
     'effort':       ['hard work', 'endeavor'],
@@ -1801,7 +1801,7 @@
     'ordinary':     ['normal', 'common', 'usual', 'plain'],
     'typical':      ['usual', 'common', 'standard', 'normal'],
     'standard':     ['normal', 'usual', 'regular', 'typical'],
-    'specific':     ['particular', 'certain', 'definite', 'specific'],
+    'specific':     ['particular', 'certain', 'definite', 'precise'],
     'particular':   ['specific', 'certain', 'individual'],
 
     // ---- Frequent verbs (motion / arrival / staying) ----
@@ -1813,7 +1813,7 @@
     'come':         ['arrive', 'approach', 'show up', 'reach'],
     'leave':        ['depart', 'go', 'exit', 'set off'],
     'live':         ['reside', 'dwell', 'stay', 'inhabit'],
-    'stay':         ['remain', 'live', 'wait', 'stop'],
+    'stay':         ['remain', 'reside', 'wait', 'lodge'],
 
     // ---- Frequent verbs (action / cognition) ----
     'work':         ['labor', 'operate', 'function', 'serve'],
@@ -1830,8 +1830,8 @@
     'meet':         ['see', 'encounter', 'come across', 'gather'],
     'understand':   ['get', 'grasp', 'comprehend', 'see'],
     'believe':      ['think', 'trust', 'feel', 'suppose'],
-    'feel':         ['sense', 'experience', 'perceive', 'think'],
-    'hope':         ['wish', 'expect', 'long for', 'desire'],
+    'feel':         ['sense', 'experience', 'perceive'],
+    'hope':         ['wish', 'long for', 'desire'],
     'wish':         ['hope', 'want', 'desire', 'long for'],
 
     // ---- Senses ----
@@ -1858,13 +1858,13 @@
 
     // ---- Adjectives — quality / size ----
     'great':        ['wonderful', 'excellent', 'fantastic', 'awesome'],
-    'warm':         ['hot', 'mild', 'cozy', 'tepid'],
-    'cool':         ['cold', 'chilly', 'fresh', 'calm'],
+    'warm':         ['mild', 'cozy', 'tepid', 'lukewarm'],
+    'cool':         ['chilly', 'fresh', 'mild', 'breezy'],
     'hard':         ['difficult', 'tough', 'firm', 'solid'],
     'quick':        ['fast', 'rapid', 'swift', 'speedy'],
     'long':         ['lengthy', 'extended', 'prolonged'],
     'short':        ['brief', 'small', 'concise', 'little'],
-    'tall':         ['high', 'lofty', 'towering', 'big'],
+    'tall':         ['high', 'lofty', 'towering'],
     'heavy':        ['weighty', 'massive', 'thick', 'serious'],
     'light':        ['lightweight', 'bright', 'mild', 'easy'],
 
@@ -3259,7 +3259,7 @@
 
     // ========== 家族・吉成テーマ (s161-s220) — varied tenses, mixed grammar ==========
     // Family — Ryoji / Ayumi / Narumichi / Kippei / dad / mom / grandparents
-    { id:'s161', level:2, grammar:'三単現',           ja:'領事はワインが好きです。',                  en:'Ryoji likes wine.' },
+    { id:'s161', level:2, grammar:'三単現',           ja:'亮治はワインが好きです。',                  en:'Ryoji likes wine.' },
     { id:'s162', level:2, grammar:'三単現',           ja:'歩みはビールが好きです。',                  en:'Ayumi likes beer.' },
     { id:'s163', level:2, grammar:'want to',          ja:'成道はアパレルの仕事に就きたいと思っています。',en:'Narumichi wants to work in the fashion industry.' },
     { id:'s164', level:2, grammar:'三単現 + 場所',    ja:'成道は清涼高校に通っています。',            en:'Narumichi goes to Seiryo High School.' },
@@ -3323,9 +3323,9 @@
     { id:'s208', level:2, grammar:'否定',             ja:'私の友達のトッシーはあまり頭がよくありません。', en:'My friend Tosshi is not very smart.' },
     { id:'s209', level:2, grammar:'always + 三単現',  ja:'トッシーはいつも私の真似をします。',        en:'Tosshi always copies me.' },
     { id:'s210', level:2, grammar:'過去形 + with',    ja:'この前、トッシーと吉平と北海道に行きました。',en:'Recently, I went to Hokkaido with Tosshi and Kippei.' },
-    { id:'s211', level:1, grammar:'be動詞 + 形容詞',  ja:'彼女は可愛いです。',                        en:'My girlfriend is cute.' },
-    { id:'s212', level:1, grammar:'be動詞 + 形容詞',  ja:'彼女は優しいです。',                        en:'My girlfriend is kind.' },
-    { id:'s213', level:2, grammar:'現在進行形',       ja:'今、彼女と話しています。',                  en:'I am talking with my girlfriend now.' },
+    { id:'s211', level:1, grammar:'be動詞 + 形容詞',  ja:'私の彼女は可愛いです。',                    en:'My girlfriend is cute.' },
+    { id:'s212', level:1, grammar:'be動詞 + 形容詞',  ja:'私の彼女は優しいです。',                    en:'My girlfriend is kind.' },
+    { id:'s213', level:2, grammar:'現在進行形',       ja:'今、私の彼女と話しています。',              en:'I am talking with my girlfriend now.' },
 
     // Parental notes
     { id:'s214', level:3, grammar:'say + that',       ja:'お母さんは私がいなくて寂しいと言っています。',en:'Mum says she misses me.' },
@@ -3592,9 +3592,9 @@
     { id:'s427', level:2, grammar:"Let's",                    ja:'明日も頑張ろう。',                                     en:"Let's do our best tomorrow too." },
 
     // ----- Toshi (Dad's best friend) + UK dorm life -----
-    { id:'s428', level:2, grammar:'過去形 + again',           ja:'トッシーがまた俺の服の真似をした。',                  en:'Toshi copied my outfit again.' },
-    { id:'s429', level:2, grammar:'三単現 + always',          ja:'トッシーはいつも私が着ているものを真似します。',       en:'Toshi always copies what I wear.' },
-    { id:'s430', level:2, grammar:'三単現 + look up to',      ja:'トッシーは吉成に憧れている。',                          en:'Toshi looks up to Yoshinari.' },
+    { id:'s428', level:2, grammar:'過去形 + again',           ja:'トッシーがまた俺の服の真似をした。',                  en:'Tosshi copied my outfit again.' },
+    { id:'s429', level:2, grammar:'三単現 + always',          ja:'トッシーはいつも私が着ているものを真似します。',       en:'Tosshi always copies what I wear.' },
+    { id:'s430', level:2, grammar:'三単現 + look up to',      ja:'トッシーは吉成に憧れている。',                          en:'Tosshi looks up to Yoshinari.' },
     { id:'s431', level:2, grammar:'三単現 + at night',        ja:'今のイギリスの寮は、夜になるとWi-Fiが切れる。',         en:'At my UK dorm, the Wi-Fi cuts off at night.' },
     { id:'s432', level:1, grammar:'be動詞 + adj',             ja:'イギリスの寮のご飯はまあまあです。',                    en:'The food at the UK dorm is okay.' },
     { id:'s433', level:3, grammar:'比較 + completely',        ja:'日本のご飯とイギリスのご飯は、特に白ごはんが、まったく違います。', en:'Japanese rice and British rice are completely different — especially the white rice.' },
