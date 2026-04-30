@@ -23348,9 +23348,11 @@
       const rate         = correctCount / newAnswers.length;
       const stage        = DIAG_STAGES[stageIdx];
       const passed       = rate >= stage.passRate;
+      // answers を一緒に保存しておくと、結果画面で答え合わせ + 解説を表示できる。
       const newStageResults = stageResults.concat([{
         stageIdx, label: stage.label, passRate: stage.passRate,
         rate, passed, total: newAnswers.length, correct: correctCount,
+        answers: newAnswers,
       }]);
       setStageResults(newStageResults);
       stopSpeech();
@@ -23837,6 +23839,156 @@
                 '/ 合格 ' + Math.round(r.passRate * 100) + '%'),
             ),
           )),
+        ),
+
+        // ==================== 答え合わせ + 解説 ====================
+        // ステージごとに、出題された問題を 1 つずつ並べる。
+        // 各カードに: セクション (リスニング/リーディング/文法) バッジ・
+        // 正誤マーク・問題文・選択肢 (ユーザーの選択と正解を色分け)・解説。
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4, marginTop: 4,
+          }
+        }, 'ANSWER REVIEW'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 } },
+          stageResults.map((r, sIdx) => {
+            const stageAnswers = r.answers || [];
+            if (stageAnswers.length === 0) return null;
+            return e('div', {
+              key: 'review_' + sIdx,
+              style: {
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, padding: '14px 16px',
+              }
+            },
+              e('div', {
+                style: {
+                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  color: r.passed ? profile.color : C.sub,
+                  letterSpacing: '0.08em', marginBottom: 10,
+                }
+              }, 'Stage ' + (r.stageIdx + 1) + ' — ' + r.label +
+                 '   (' + r.correct + ' / ' + r.total + ')'),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+                stageAnswers.map((a, aIdx) => {
+                  // 該当する問題を pool から逆引き
+                  const findQ = (id, section) => {
+                    if (section === 'listening') return LISTENING_DIAG_POOL.find(x => x.id === id);
+                    if (section === 'reading')   return READING_DIAG_POOL.find(x => x.id === id);
+                    return DIAGNOSTIC_POOL.find(x => x.id === id);
+                  };
+                  const q = findQ(a.id, a.section);
+                  if (!q) return null;
+                  const sectionLabel = a.section === 'listening' ? 'リスニング'
+                                     : a.section === 'reading'   ? 'リーディング'
+                                     :                              '文法・語彙';
+                  return e('div', {
+                    key: 'rev_' + sIdx + '_' + aIdx,
+                    style: {
+                      paddingTop: aIdx === 0 ? 0 : 12,
+                      borderTop: aIdx === 0 ? 'none' : '1px dashed ' + C.line,
+                    }
+                  },
+                    // ヘッダ: セクションバッジ + 正誤マーク
+                    e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                      e('span', {
+                        style: {
+                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                          background: C.softer, color: C.sub,
+                        }
+                      }, sectionLabel + ' · LV' + q.level),
+                      e('div', { style: { flex: 1 } }),
+                      e('span', {
+                        style: {
+                          fontSize: 13, fontWeight: 800,
+                          color: a.correct ? profile.color : C.danger,
+                          minWidth: 18, textAlign: 'right',
+                        }
+                      }, a.correct ? '○' : '✕'),
+                    ),
+                    // リスニングは会話を表示 (TTS 不要、内容を文字で確認)
+                    a.section === 'listening' && q.conversation && e('div', {
+                      style: {
+                        background: C.softer, borderRadius: 10, padding: '10px 12px',
+                        fontSize: 12, lineHeight: 1.7, color: C.text, marginBottom: 8,
+                      }
+                    },
+                      q.conversation.map((line, li) => e('div', {
+                        key: 'conv_' + li,
+                      },
+                        e('strong', null, line.speaker + ': '),
+                        line.text,
+                      )),
+                    ),
+                    // リーディングは passage 全文 (またはトリミング無しで表示)
+                    a.section === 'reading' && q.passage && e('div', {
+                      style: {
+                        background: C.softer, borderRadius: 10, padding: '10px 12px',
+                        fontSize: 12, lineHeight: 1.7, color: C.text, marginBottom: 8,
+                      }
+                    }, q.passage),
+                    // 質問
+                    e('div', {
+                      style: {
+                        fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: C.text,
+                        lineHeight: 1.5, marginBottom: 8,
+                      }
+                    }, q.q),
+                    // 選択肢: 正解は緑系、ユーザーの誤答は赤系、他はグレー
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 } },
+                      q.choices.map((c, ci) => {
+                        const isCorrect = ci === q.answer;
+                        const isUserPick = ci === a.selected;
+                        let bg = 'transparent', border = C.line, color = C.sub;
+                        if (isCorrect) {
+                          bg = profile.color + '14';
+                          border = profile.color + '88';
+                          color = C.text;
+                        } else if (isUserPick) {
+                          bg = C.danger + '12';
+                          border = C.danger + '88';
+                          color = C.text;
+                        }
+                        return e('div', {
+                          key: 'c_' + ci,
+                          style: {
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            padding: '6px 10px', borderRadius: 8,
+                            background: bg, border: '1px solid ' + border,
+                            fontSize: 12, color, lineHeight: 1.4,
+                          }
+                        },
+                          e('span', {
+                            style: {
+                              fontFamily: SANS_UI, fontWeight: 700, fontSize: 10,
+                              minWidth: 14,
+                            }
+                          }, ['A','B','C','D'][ci] || ''),
+                          e('span', { style: { flex: 1 } }, c),
+                          isCorrect && e('span', {
+                            style: { fontSize: 12, fontWeight: 700, color: profile.color }
+                          }, '正解'),
+                          isUserPick && !isCorrect && e('span', {
+                            style: { fontSize: 12, fontWeight: 700, color: C.danger }
+                          }, 'あなた'),
+                        );
+                      }),
+                    ),
+                    // 解説
+                    q.explain && e('div', {
+                      style: {
+                        background: C.softer, borderLeft: '3px solid ' + profile.color,
+                        padding: '8px 12px', borderRadius: 6,
+                        fontSize: 12, color: C.text, lineHeight: 1.7,
+                      }
+                    }, q.explain),
+                  );
+                }),
+              ),
+            );
+          }),
         ),
 
         // 注意書き: comfort が更新されたこと
