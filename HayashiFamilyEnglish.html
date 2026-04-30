@@ -11037,14 +11037,14 @@
       this.save(memberId, s);
     },
     getMistakesNormalized(memberId) {
-      // 1 度きりのクリーンアップ: 過去のバグで残ってしまった「もう克服した」
-      // 単語が間違いリストに残っているケースを、進捗データを根拠に整理する。
-      // - vocab: status === 'mastered' (片方の方向でも覚えた状態) なら除外
-      // - sentence: consecutiveCorrect >= 1 (直近で正解している) なら除外
-      // - phrase: 同上
-      // 1 メンバーにつき 1 度だけ実行する (s._mistakesCleanedV1 フラグ)。
+      // 「克服したのに mistakes に残る」バグへの対策。読むたびに進捗データ
+      // を根拠に整理する (実際に変化があったときだけ書き戻す)。
+      // - vocab: status === 'mastered' (片方の方向でも覚えた状態)
+      //          または consecutiveCorrect >= 1 (直近で正解している) → 除外
+      // - sentence: consecutiveCorrect >= 1 → 除外
+      // - phrase:   consecutiveCorrect >= 1 → 除外
       const s = this.load(memberId);
-      if (!s._mistakesCleanedV1 && Array.isArray(s.mistakes) && s.mistakes.length > 0) {
+      if (Array.isArray(s.mistakes) && s.mistakes.length > 0) {
         const cleaned = s.mistakes.filter(m => {
           const kind = m.kind || 'vocab';
           const id   = m.id  || m.vocabId;
@@ -11061,9 +11061,10 @@
           }
           return true;
         });
-        s.mistakes = cleaned;
-        s._mistakesCleanedV1 = true;
-        this.save(memberId, s);
+        if (cleaned.length !== s.mistakes.length) {
+          s.mistakes = cleaned;
+          this.save(memberId, s);
+        }
       }
       const raw = s.mistakes || [];
       return raw.map(m => ({
