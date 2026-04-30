@@ -11037,7 +11037,35 @@
       this.save(memberId, s);
     },
     getMistakesNormalized(memberId) {
-      const raw = this.load(memberId).mistakes || [];
+      // 1 度きりのクリーンアップ: 過去のバグで残ってしまった「もう克服した」
+      // 単語が間違いリストに残っているケースを、進捗データを根拠に整理する。
+      // - vocab: status === 'mastered' (片方の方向でも覚えた状態) なら除外
+      // - sentence: consecutiveCorrect >= 1 (直近で正解している) なら除外
+      // - phrase: 同上
+      // 1 メンバーにつき 1 度だけ実行する (s._mistakesCleanedV1 フラグ)。
+      const s = this.load(memberId);
+      if (!s._mistakesCleanedV1 && Array.isArray(s.mistakes) && s.mistakes.length > 0) {
+        const cleaned = s.mistakes.filter(m => {
+          const kind = m.kind || 'vocab';
+          const id   = m.id  || m.vocabId;
+          if (!id) return false;
+          if (kind === 'vocab') {
+            const p = (s.vocab && s.vocab[id]) || null;
+            if (p && (p.status === 'mastered' || (p.consecutiveCorrect || 0) >= 1)) return false;
+          } else if (kind === 'sentence') {
+            const p = (s.composition && s.composition[id]) || null;
+            if (p && (p.consecutiveCorrect || 0) >= 1) return false;
+          } else if (kind === 'phrase') {
+            const p = (s.phrases && s.phrases[id]) || null;
+            if (p && (p.consecutiveCorrect || 0) >= 1) return false;
+          }
+          return true;
+        });
+        s.mistakes = cleaned;
+        s._mistakesCleanedV1 = true;
+        this.save(memberId, s);
+      }
+      const raw = s.mistakes || [];
       return raw.map(m => ({
         kind: m.kind || 'vocab',
         id:   m.id  || m.vocabId,
@@ -11046,16 +11074,21 @@
     },
 
     // Single entry point for "the user answered a question". Updates SRS state,
-    // mistake log, and daily counters in one place. Pass removeOnCorrect: true
-    // when the source is the mistake-review screen (a correct answer there
-    // should clear the item from the mistake log).
+    // mistake log, and daily counters in one place.
+    //
+    // 正解 → 必ず mistakes から削除 (recordSentence / recordPhrase と同じ挙動)。
+    // 不正解 → mistakes に追加。
+    // 以前は MistakeReview だけが removeOnCorrect: true を渡したときに削除して
+    // いたため、「単語学習」や「ランダムテスト」で正解しても間違いリストに
+    // 残るバグがあった。removeOnCorrect オプションは後方互換のため残置 (今は
+    // 渡しても渡さなくても同じ挙動)。
     recordAnswer(memberId, vocabId, isCorrect, opts) {
       const prev = this.getVocabProgress(memberId, vocabId);
       const direction = (opts && opts.direction) || 'ja2en';
       const next = srs.apply(prev, isCorrect, direction);
       this.setVocabProgress(memberId, vocabId, next);
       if (!isCorrect) this.pushMistake(memberId, vocabId);
-      else if (opts && opts.removeOnCorrect) this.removeMistake(memberId, vocabId);
+      else            this.removeMistake(memberId, vocabId);
       this.recordDaily(memberId, isCorrect);
       return next;
     },
