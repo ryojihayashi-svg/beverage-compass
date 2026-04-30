@@ -7549,10 +7549,12 @@
   //   4 = 英検準2級 (高校基礎)、 5 = 英検2級 (高校卒業〜大学)
   //
   // ※ 今は最小プール (各レベル数問ずつ)。今後 30 問/レベルまで増やしていく。
+  // weights: 各 level から何問の文法を引くか (合計が問題数)。
+  // Stage 2 は 英検3級 寄りに難易度を上げるため Lv3 を 5、Lv2 を 3 に重み付け。
   const DIAG_STAGES = [
-    { id: 'stage1', label: '基礎',  levels: [1, 2],    passRate: 0.90, eiken: '英検4級' },
-    { id: 'stage2', label: '中級',  levels: [2, 3],    passRate: 0.85, eiken: '英検3級' },
-    { id: 'stage3', label: '上級',  levels: [3, 4, 5], passRate: 0.80, eiken: '英検準2級' },
+    { id: 'stage1', label: '基礎',  levels: [1, 2],    weights: [4, 4],    passRate: 0.90, eiken: '英検4級' },
+    { id: 'stage2', label: '中級',  levels: [2, 3],    weights: [3, 5],    passRate: 0.85, eiken: '英検3級' },
+    { id: 'stage3', label: '上級',  levels: [3, 4, 5], weights: [3, 3, 3], passRate: 0.80, eiken: '英検準2級' },
   ];
 
   // 文法・語彙の問題プール。q = 質問、choices = 選択肢、answer = 正解index、
@@ -7564,6 +7566,11 @@
     { id:'dq1_03', level:1, type:'vocab',   q:'"Thank you." の意味は？',                          choices:['さようなら','ありがとう','おはよう','すみません'], answer:1, explain:'Thank you = ありがとう。最も基本の感謝表現。' },
     { id:'dq1_04', level:1, type:'grammar', q:'My brother ___ soccer on Sundays.',              choices:['play','plays','playing','played'], answer:1, explain:'主語 my brother は三人称単数 → plays。' },
     { id:'dq1_05', level:1, type:'vocab',   q:'"Saturday" の意味は？',                            choices:['月曜日','水曜日','土曜日','日曜日'], answer:2, explain:'Saturday = 土曜日。Sunday と混同しやすい。' },
+    { id:'dq1_06', level:1, type:'grammar', q:'___ are you from?',                               choices:['What','Where','When','Who'],  answer:1, explain:'出身を聞く → Where are you from? = どこ出身？' },
+    { id:'dq1_07', level:1, type:'grammar', q:'This is ___ apple.',                              choices:['a','an','the','no'],          answer:1, explain:'母音 (a/i/u/e/o) で始まる単語 → an。an apple。' },
+    { id:'dq1_08', level:1, type:'vocab',   q:'"book" の意味は？',                                choices:['机','椅子','本','鉛筆'],      answer:2, explain:'book = 本。' },
+    { id:'dq1_09', level:1, type:'grammar', q:"Don't ___ noisy in class.",                       choices:['be','is','are','am'],         answer:0, explain:'否定命令文 Don\'t + 動詞の原形。be 動詞も原形は be。' },
+    { id:'dq1_10', level:1, type:'vocab',   q:'"every day" の意味は？',                            choices:['毎日','時々','たまに','一度も〜ない'], answer:0, explain:'every day = 毎日。' },
 
     // ========== 英検4級 (中2) ==========
     { id:'dq2_01', level:2, type:'grammar', q:'I ___ lunch at noon yesterday.',                 choices:['eat','ate','eaten','eating'], answer:1, explain:'yesterday があるので過去形。eat → ate。' },
@@ -7576,6 +7583,16 @@
     { id:'dq2_08', level:2, type:'grammar', q:'There ___ a lot of snow last winter.',           choices:['is','was','were','are'],      answer:1, explain:'last winter は過去 + snow は不可算なので was。' },
     { id:'dq2_09', level:2, type:'grammar', q:'What is the ___ mountain in Japan?',             choices:['high','higher','highest','more high'], answer:2, explain:'3 つ以上で最も高い → 最上級 the highest。' },
     { id:'dq2_10', level:2, type:'vocab',   q:'"breakfast" の意味は？',                            choices:['朝食','昼食','夕食','間食'], answer:0, explain:'breakfast = 朝食。lunch (昼食) / dinner (夕食) と区別。' },
+    { id:'dq2_11', level:2, type:'grammar', q:"We ___ going to visit our grandparents next Sunday.", choices:['is','are','were','was'],    answer:1, explain:'be going to + V = 〜する予定。主語が we なので are。' },
+    { id:'dq2_12', level:2, type:'grammar', q:'My father ___ to London ten years ago.',         choices:['go','goes','went','gone'],    answer:2, explain:'ten years ago は過去 → went。go の不規則変化 go-went-gone。' },
+    { id:'dq2_13', level:2, type:'grammar', q:'Lucy ___ swim very well when she was five.',     choices:['can','could','must','should'], answer:1, explain:'when she was five (5 歳のとき) → 過去の能力 → could。' },
+    { id:'dq2_14', level:2, type:'grammar', q:'I usually have lunch ___ noon.',                 choices:['in','on','at','to'],          answer:2, explain:'時刻のピンポイントは at。at noon = 正午に / at 7 o\'clock。' },
+    { id:'dq2_15', level:2, type:'grammar', q:'My birthday is ___ March.',                      choices:['in','on','at','to'],          answer:0, explain:'月単位の前置詞は in。in March / in 2026。曜日・日付は on。' },
+    { id:'dq2_16', level:2, type:'vocab',   q:'"weekend" の意味は？',                              choices:['平日','週末','月初め','月末'], answer:1, explain:'weekend = 週末 (土日)。weekday (平日) と区別。' },
+    { id:'dq2_17', level:2, type:'grammar', q:"How ___ apples do you have?",                    choices:['much','many','some','any'],   answer:1, explain:'apples は数えられる名詞の複数形 → many。much は不可算 (water/time/money)。' },
+    { id:'dq2_18', level:2, type:'grammar', q:'I will call you ___ I get home.',                choices:['if','when','because','but'], answer:1, explain:'when + 主語 + 動詞 = 〜する時。「家に着いたら電話する」。' },
+    { id:'dq2_19', level:2, type:'grammar', q:'Do you have ___ time after school today?',       choices:['some','any','many','a'],     answer:1, explain:'疑問文では any を使うのが普通。「何か時間ある？」。' },
+    { id:'dq2_20', level:2, type:'vocab',   q:'"borrow" の意味は？',                              choices:['貸す','借りる','売る','買う'], answer:1, explain:'borrow = (人から) 借りる。lend (貸す) と方向が逆。' },
 
     // ========== 英検3級 (中3) ==========
     { id:'dq3_01', level:3, type:'grammar', q:'I have ___ to Kyoto three times.',               choices:['go','went','been','going'],   answer:2, explain:'have been to = 〜に行ったことがある (現在完了の経験)。' },
@@ -7588,6 +7605,16 @@
     { id:'dq3_08', level:3, type:'grammar', q:'I enjoy ___ music after dinner.',                choices:['listen','to listen','listening','listened'], answer:2, explain:'enjoy + -ing 形。enjoy to listen は不可。動名詞をとる動詞。' },
     { id:'dq3_09', level:3, type:'grammar', q:'My father told me ___ honest.',                  choices:['be','to be','being','been'], answer:1, explain:'tell 人 to V = 人に V するように言う。to 不定詞をとる。' },
     { id:'dq3_10', level:3, type:'vocab',   q:'"available" の意味は？',                            choices:['利用可能な','失敗した','深刻な','一般的な'], answer:0, explain:'available = 利用可能な、入手できる。お店や予約で頻出。' },
+    { id:'dq3_11', level:3, type:'grammar', q:'It is important ___ practice English every day.', choices:['for','of','to','at'],        answer:2, explain:'It is + 形容詞 + to V (= 〜することは ... だ)。形式主語 it。' },
+    { id:'dq3_12', level:3, type:'grammar', q:'I went to bed early ___ I was tired.',           choices:['so','because','but','that'],  answer:1, explain:'because + 文 = 〜なので。理由を表す。so は結果。' },
+    { id:'dq3_13', level:3, type:'grammar', q:'This door ___ be locked at night.',              choices:['has','must','can','will'],    answer:1, explain:'must = 〜しなければならない / 〜に違いない。must be locked = 鍵がかかってなければならない (受動態の助動詞)。' },
+    { id:'dq3_14', level:3, type:'grammar', q:'I stopped ___ a phone call from my mother.',     choices:['take','to take','taking','taken'], answer:1, explain:'stop to V = (それまでしていたことを止めて) V するため止まる。stop -ing は「-ing をやめる」で意味が異なる。' },
+    { id:'dq3_15', level:3, type:'grammar', q:'The window was broken ___ a baseball.',          choices:['by','with','of','from'],      answer:0, explain:'受動態の動作主は by。by + 行為者 (a baseball は人ではないが、ここでは原因 → by が使われる)。' },
+    { id:'dq3_16', level:3, type:'grammar', q:'Could you tell me ___ to get to the station?',   choices:['where','how','what','which'], answer:1, explain:'how to V = 〜の方法。「駅への行き方を教えてください」。' },
+    { id:'dq3_17', level:3, type:'vocab',   q:'"although" の意味は？',                            choices:['それゆえ','〜だけれども','〜の間','〜のおかげで'], answer:1, explain:'although + 文 = 〜だけれども (譲歩)。though も同じ意味。' },
+    { id:'dq3_18', level:3, type:'grammar', q:'I am looking forward ___ seeing you again.',     choices:['to','for','at','of'],         answer:0, explain:'look forward to + 動名詞。to は前置詞なので後ろは -ing。' },
+    { id:'dq3_19', level:3, type:'vocab',   q:'"discuss" の使い方として正しいのは？',                choices:['discuss about the issue','discuss the issue','discuss on the issue','discuss for the issue'], answer:1, explain:'discuss は他動詞。前置詞なしで discuss + 目的語。「about」を付けるのは典型的な誤り。' },
+    { id:'dq3_20', level:3, type:'grammar', q:"If it ___ tomorrow, we will stay home.",         choices:['rain','rains','rained','will rain'], answer:1, explain:'時・条件の副詞節 (if/when 〜) では未来でも現在形。it rains が正解。' },
 
     // ========== 英検準2級 (高校基礎) ==========
     { id:'dq4_01', level:4, type:'grammar', q:'If I ___ you, I would accept the offer.',        choices:['am','was','were','be'],       answer:2, explain:'仮定法過去 If I were you = もし私があなたなら。were を使うのが正式。' },
@@ -7595,6 +7622,11 @@
     { id:'dq4_03', level:4, type:'grammar', q:'The teacher suggested that he ___ harder.',      choices:['studies','studied','study','studying'], answer:2, explain:'suggest that S + 動詞の原形。仮定法現在。' },
     { id:'dq4_04', level:4, type:'vocab',   q:'"postpone" に最も近い意味は？',                    choices:['前倒しする','延期する','中止する','繰り返す'], answer:1, explain:'postpone = 延期する。put off と同義。' },
     { id:'dq4_05', level:4, type:'vocab',   q:'"submit" の意味は？',                              choices:['提出する','拒否する','編集する','保存する'], answer:0, explain:'submit a report = レポートを提出する。' },
+    { id:'dq4_06', level:4, type:'grammar', q:"I'll lend you my umbrella so that you ___ get wet.", choices:['didn\'t','don\'t','won\'t','wouldn\'t'], answer:2, explain:'so that S + 助動詞 = 〜するように / しないように。未来の話なので won\'t。' },
+    { id:'dq4_07', level:4, type:'grammar', q:'He is supposed ___ at the airport by 6 p.m.',    choices:['arrive','arriving','to arrive','arrived'], answer:2, explain:'be supposed to + V = 〜することになっている。to 不定詞。' },
+    { id:'dq4_08', level:4, type:'grammar', q:'I had my hair ___ at a new salon yesterday.',    choices:['cut','to cut','cutting','cuts'], answer:0, explain:'have + O + 過去分詞 = 人に O を 〜してもらう。cut は不規則 (cut-cut-cut)。' },
+    { id:'dq4_09', level:4, type:'grammar', q:'By the time we got to the cinema, the film ___ already started.', choices:['has','had','have','was'], answer:1, explain:'過去より前のことを言うときの過去完了 had + 過去分詞。「映画はもう始まってしまっていた」。' },
+    { id:'dq4_10', level:4, type:'vocab',   q:'"reluctant" の意味は？',                          choices:['熱心な','気が進まない','率直な','頑固な'], answer:1, explain:'reluctant = (〜するのを) 嫌がる、気が進まない。be reluctant to V でよく使う。' },
 
     // ========== 英検2級 (高校卒業〜大学) ==========
     { id:'dq5_01', level:5, type:'grammar', q:'Had I known about the problem, I ___ have contacted you sooner.', choices:['will','shall','should','would'], answer:3, explain:'仮定法過去完了の倒置。Had I known = If I had known。帰結節は would have + 過去分詞。' },
@@ -7602,6 +7634,11 @@
     { id:'dq5_03', level:5, type:'grammar', q:'It is essential that every student ___ the form by Friday.', choices:['submits','submitted','submit','submitting'], answer:2, explain:'It is essential that S + 動詞の原形 (仮定法現在)。submit のまま。' },
     { id:'dq5_04', level:5, type:'vocab',   q:'"meticulous" の意味は？',                          choices:['几帳面な','大雑把な','悲観的な','楽観的な'], answer:0, explain:'meticulous = 細部まで気を配る、几帳面な。' },
     { id:'dq5_05', level:5, type:'vocab',   q:'"corroborate" の意味は？',                         choices:['反論する','裏付ける','想像する','破壊する'], answer:1, explain:'corroborate = (証拠などで) 裏付ける、確証する。' },
+    { id:'dq5_06', level:5, type:'grammar', q:'No sooner had he sat down ___ the phone rang.',  choices:['when','than','as','that'],    answer:1, explain:'No sooner had + S + 過去分詞 + than + S + 過去形 = 〜するや否や。当ペアは when ではなく than。' },
+    { id:'dq5_07', level:5, type:'grammar', q:'Were it not for your help, I ___ have failed.',  choices:['will','would','should','must'], answer:1, explain:'Were it not for = if it were not for の倒置。〜が無ければ。仮定法 → would have + 過去分詞。' },
+    { id:'dq5_08', level:5, type:'grammar', q:'Seldom ___ I seen such a beautiful sunset.',     choices:['have','has','had','do'],      answer:0, explain:'否定的副詞 Seldom を文頭に置くと倒置。現在完了の have I + 過去分詞 が正解。' },
+    { id:'dq5_09', level:5, type:'vocab',   q:'"imperative" (形容詞) の意味は？',                 choices:['任意の','必須の','一時的な','疑わしい'], answer:1, explain:'imperative = 必須の、絶対に必要な。It is imperative that S + 動詞の原形。' },
+    { id:'dq5_10', level:5, type:'vocab',   q:'"ephemeral" の意味は？',                          choices:['永続的な','つかの間の','透明な','重大な'], answer:1, explain:'ephemeral = はかない、つかの間の。文学的な高度語彙。' },
   ];
 
   // リスニング診断プール。conversation の text を TTS で読み上げる。
@@ -7736,6 +7773,129 @@
       choices:['ローンチを早める','ローンチを延期する','ローンチを中止する','研究を打ち切る'], answer:1,
       explain:'"agreed to postpone the launch" = ローンチを延期することに合意。unanimously = 全会一致で。',
     },
+
+    // === 追加問題 (LV1-4 を強化、LV5 を追加) ===
+    // ----- Lv1 追加 -----
+    {
+      id:'dl_diag_lv1_04', level:1,
+      conversation:[
+        { speaker:'A', text:'Do you have any pets?' },
+        { speaker:'B', text:'Yes, I have a small dog named Coco.' },
+      ],
+      q:'B はどんなペットを飼っていますか？',
+      choices:['猫','小さな犬','鳥','魚'], answer:1,
+      explain:'"a small dog named Coco" = ココという名前の小さな犬。',
+    },
+    {
+      id:'dl_diag_lv1_05', level:1,
+      conversation:[
+        { speaker:'A', text:'What time is it now?' },
+        { speaker:'B', text:'It is half past two.' },
+      ],
+      q:'今何時ですか？',
+      choices:['1:30','2:00','2:30','3:00'], answer:2,
+      explain:'half past two = 2 時半 (2:30)。half past = 30 分過ぎ。',
+    },
+
+    // ----- Lv2 追加 -----
+    {
+      id:'dl_diag_lv2_04', level:2,
+      conversation:[
+        { speaker:'A', text:'Hi, can I get a flat white, please?' },
+        { speaker:'B', text:'Sure. Whole milk or oat milk?' },
+        { speaker:'A', text:'Oat milk, please.' },
+      ],
+      q:'A はどのミルクを選びましたか？',
+      choices:['牛乳','豆乳','オーツミルク','アーモンドミルク'], answer:2,
+      explain:'"Oat milk, please" = オーツミルクをお願い。海外カフェで頻出。',
+    },
+    {
+      id:'dl_diag_lv2_05', level:2,
+      conversation:[
+        { speaker:'A', text:'Don\'t forget our homework is due on Friday.' },
+        { speaker:'B', text:'Oh no, I thought it was due next Monday.' },
+      ],
+      q:'宿題はいつまでですか？',
+      choices:['今日','明日','金曜日','次の月曜日'], answer:2,
+      explain:'"due on Friday" = 金曜日が締め切り。due = 期限。',
+    },
+    {
+      id:'dl_diag_lv2_06', level:2,
+      conversation:[
+        { speaker:'A', text:'Are you free this Saturday afternoon?' },
+        { speaker:'B', text:'Sorry, I have a basketball game. How about Sunday?' },
+      ],
+      q:'B が土曜午後に予定があるのは何ですか？',
+      choices:['宿題','バスケの試合','旅行','買い物'], answer:1,
+      explain:'"I have a basketball game" = バスケの試合がある。',
+    },
+
+    // ----- Lv3 追加 -----
+    {
+      id:'dl_diag_lv3_04', level:3,
+      conversation:[
+        { speaker:'A', text:'Hi, I\'d like to check in. The reservation is under Tanaka.' },
+        { speaker:'B', text:'Welcome, Mr. Tanaka. Your room is on the fifth floor. The Wi-Fi password is on this card.' },
+      ],
+      q:'部屋は何階ですか？',
+      choices:['3 階','4 階','5 階','6 階'], answer:2,
+      explain:'"on the fifth floor" = 5 階。on the X floor で「X 階」。',
+    },
+    {
+      id:'dl_diag_lv3_05', level:3,
+      conversation:[
+        { speaker:'A', text:'Excuse me, how long does the train to Oxford take?' },
+        { speaker:'B', text:'About an hour, but the next express leaves in ten minutes.' },
+      ],
+      q:'オックスフォード行きの列車は何分くらいかかりますか？',
+      choices:['10 分','30 分','1 時間','2 時間'], answer:2,
+      explain:'"About an hour" = 約 1 時間。"in ten minutes" は出発までの時間。',
+    },
+    {
+      id:'dl_diag_lv3_06', level:3,
+      conversation:[
+        { speaker:'A', text:'Hi, this is Sarah. I\'m afraid I can\'t make it to the meeting tomorrow morning.' },
+        { speaker:'B', text:'I see. Shall I let everyone know? Anything you\'d like me to share?' },
+        { speaker:'A', text:'Yes, please tell them I\'ll send the report by email.' },
+      ],
+      q:'Sarah は何をすると言っていますか？',
+      choices:['明日の会議に出る','会議をリスケする','メールでレポートを送る','他の人に頼む'], answer:2,
+      explain:'"I\'ll send the report by email" = メールでレポートを送る。can\'t make it to = 〜に行けない。',
+    },
+
+    // ----- Lv4 追加 -----
+    {
+      id:'dl_diag_lv4_03', level:4,
+      conversation:[
+        { speaker:'A', text:'I\'ve been having headaches for a few weeks. Could it be from staring at the screen too much?' },
+        { speaker:'B', text:'Possibly. I\'d recommend taking a 10-minute break every hour and getting your eyes checked.' },
+      ],
+      q:'医師は何を推奨しましたか？',
+      choices:['すぐ薬を飲む','1 時間ごとに 10 分休憩 + 視力検査','寝不足を解消','運動を控える'], answer:1,
+      explain:'"a 10-minute break every hour and getting your eyes checked" = 1 時間ごとの 10 分休憩と視力検査。',
+    },
+    {
+      id:'dl_diag_lv4_04', level:4,
+      conversation:[
+        { speaker:'A', text:'Hi, I bought this jumper last week, but it\'s the wrong size. Can I exchange it?' },
+        { speaker:'B', text:'Of course, as long as it\'s within 30 days and you have the receipt. Do you have a different size in mind?' },
+      ],
+      q:'交換の条件は何ですか？',
+      choices:['7 日以内','14 日以内','30 日以内 + レシート','レシートのみ必要'], answer:2,
+      explain:'"within 30 days and you have the receipt" = 30 日以内 + レシート保持。as long as = 〜であるかぎり。',
+    },
+
+    // ----- Lv5 追加 -----
+    {
+      id:'dl_diag_lv5_02', level:5,
+      conversation:[
+        { speaker:'A', text:'Despite the encouraging quarterly figures, the board remains cautious about expanding into emerging markets.' },
+        { speaker:'B', text:'They\'re probably worried about volatility and currency risk.' },
+      ],
+      q:'役員会が新興市場進出に慎重な主な懸念は何ですか？',
+      choices:['人材不足','変動性と為替リスク','法律問題','技術力'], answer:1,
+      explain:'"volatility and currency risk" = 変動性と為替リスク。emerging markets = 新興市場。',
+    },
   ];
 
   // リーディング診断プール。passage の長さは level に応じて伸ばす。
@@ -7812,6 +7972,80 @@
       choices:['ファストファッションは環境に良い','安価な服の需要は減っている','ファストファッションには見えにくい代償がある','すべてのブランドが持続可能になった'], answer:2,
       explain:'"the true cost ... is far greater than the price tag suggests" = 値札以上の代償がある。汚染・水・労働問題などが「見えにくい代償」。',
     },
+
+    // === 追加問題 ===
+    // ----- Lv1 追加 -----
+    {
+      id:'dr_diag_lv1_03', level:1,
+      passage:'NOTICE: The school will be closed on Monday for the public holiday. Classes will start again on Tuesday at 8:30 a.m.',
+      q:'学校はいつから再開しますか？',
+      choices:['月曜日 8:30','火曜日 8:30','水曜日 8:30','金曜日 8:30'], answer:1,
+      explain:'"Classes will start again on Tuesday at 8:30 a.m." = 火曜日 8:30 から再開。',
+    },
+    {
+      id:'dr_diag_lv1_04', level:1,
+      passage:"From Mom: I'm at the supermarket. Do you need anything? Yoshi is coming home for dinner. We're having pizza tonight.",
+      q:'今夜の夕飯は何ですか？',
+      choices:['パスタ','ピザ','カレー','寿司'], answer:1,
+      explain:'"We\'re having pizza tonight" = 今夜はピザ。',
+    },
+
+    // ----- Lv2 追加 -----
+    {
+      id:'dr_diag_lv2_03', level:2,
+      passage:'School trip news: This year we will visit the Science Museum on October 14. The bus leaves school at 8:00 a.m. and returns by 4:00 p.m. Please bring your own lunch and a notebook. Tickets cost £5 per student.',
+      q:'生徒が持参するように言われているのは何ですか？',
+      choices:['お金とノート','お弁当とノート','カメラとノート','地図と昼食'], answer:1,
+      explain:'"Please bring your own lunch and a notebook" = お弁当とノートを持参。',
+    },
+    {
+      id:'dr_diag_lv2_04', level:2,
+      passage:"Hi Mike, sorry for the late reply! I'd love to come to your party on Saturday. Can I bring a friend? Also, what time does it start? See you soon, Anna",
+      q:'Anna が知りたいことは何ですか？',
+      choices:['プレゼントの値段','パーティーの場所','友達を連れて行ってよいか + 開始時刻','服装'], answer:2,
+      explain:'"Can I bring a friend?" + "what time does it start?" の 2 点を尋ねている。',
+    },
+
+    // ----- Lv3 追加 -----
+    {
+      id:'dr_diag_lv3_03', level:3,
+      passage:'Reading "The Quiet Library" was a refreshing change for me. The story follows a young librarian who discovers that books can rearrange themselves at midnight. While the plot is simple, the characters are warmly drawn, and the ending leaves you with a small, hopeful smile. I\'d recommend it to anyone who enjoys a slow, gentle read.',
+      q:'この書評の主な印象として正しいのは？',
+      choices:['プロットが複雑','登場人物が冷たい','ゆっくり穏やかに楽しめる本','悲しい結末で考えさせられる'], answer:2,
+      explain:'"a slow, gentle read" + "warmly drawn" + "hopeful smile" → ゆっくり穏やかに楽しめる本。',
+    },
+    {
+      id:'dr_diag_lv3_04', level:3,
+      passage:'WEEKEND IN LONDON. Saturday: Borough Market in the morning, then a walk along the South Bank. Lunch at a small Indian restaurant. Evening: see a play at the Globe Theatre. Sunday: visit the British Museum (free entry), and finish with afternoon tea at a café in Covent Garden before heading home.',
+      q:'土曜日の午前中の予定は？',
+      choices:['British Museum','Borough Market','Globe Theatre','Covent Garden'], answer:1,
+      explain:'"Saturday: Borough Market in the morning" = 土曜午前は Borough Market。',
+    },
+
+    // ----- Lv4 追加 -----
+    {
+      id:'dr_diag_lv4_03', level:4,
+      passage:'WORKSHOP ANNOUNCEMENT — "Wine and Food Pairing Basics". This three-hour evening session will cover how to match wines with common dishes, including roast meats, fish, and vegetable-based meals. Participants will sample six wines. The fee is £45 and includes light snacks. Spaces are limited; book online by April 30.',
+      q:'このワークショップの主要な目的は？',
+      choices:['ワインの歴史を学ぶ','料理とワインの合わせ方を学ぶ','ワインを瓶詰めする','料理コンテストに出場する'], answer:1,
+      explain:'"how to match wines with common dishes" = 料理とワインの合わせ方。pairing = ペアリング。',
+    },
+    {
+      id:'dr_diag_lv4_04', level:4,
+      passage:"Customer review: We had a quiet dinner at this small wine bar last Friday. The selection of natural wines is impressive, and the staff were happy to explain each one without being pushy. The food menu is short — mostly small plates — but everything was carefully made. The only downside was the noise level once the place filled up around 9 p.m.",
+      q:'この店のレビューで唯一マイナスだった点は？',
+      choices:['ワインの質','スタッフの態度','料理の量','9 時以降の騒音'], answer:3,
+      explain:'"the only downside was the noise level once the place filled up around 9 p.m." = 9 時以降の騒音だけが残念。',
+    },
+
+    // ----- Lv5 追加 -----
+    {
+      id:'dr_diag_lv5_02', level:5,
+      passage:'In recent decades, urban planners have increasingly recognised that walkable neighbourhoods are not merely a lifestyle preference but a public-health necessity. Communities designed around cars tend to discourage daily physical activity and weaken the social fabric, whereas streets built for pedestrians foster spontaneous interaction and longer life expectancy. The challenge, however, lies in retrofitting existing car-centric cities, where vested interests often slow the transition.',
+      q:'この文章の主要な論点として最も適切なのは？',
+      choices:['歩きやすい街は健康と地域社会に資するが、既存都市の改修が課題','歩道の整備よりも自動車道の拡張が必要','歩行者と自動車は共存できない','都市計画は公衆衛生と無関係'], answer:0,
+      explain:'歩行者中心の街は健康・社会につながる、と論じつつ、既存の車中心都市の改修 (retrofit) が難しい、と問題提起している。',
+    },
   ];
 
   // 出題セクションを判定する補助関数 (結果画面のグルーピング用)
@@ -7829,7 +8063,6 @@
   function buildStageQuestions(stage, excludeIds) {
     const exclude = excludeIds || new Set();
     const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
-    const maxLv   = Math.max(...stage.levels);
 
     // 未出題を優先、足りなければ出題済みからも補充。
     const pickFresh = (pool, count) => {
@@ -7839,15 +8072,20 @@
       return [...shuffle(fresh), ...shuffle(seen).slice(0, count - fresh.length)];
     };
 
-    // リスニング/リーディングはステージ最高レベル以下から幅広く抽選
-    const listening = pickFresh(LISTENING_DIAG_POOL.filter(q => q.level <= maxLv), 3);
-    const reading   = pickFresh(READING_DIAG_POOL.filter(q => q.level <= maxLv),   2);
+    // リスニング/リーディングは「ステージの対象レベルそのもの」から抽選 して
+    // ターゲット難易度を絞る (例: Stage 2 は Lv2-3 のみ、Lv1 は混ぜない)。
+    const lvSet = new Set(stage.levels);
+    const listening = pickFresh(LISTENING_DIAG_POOL.filter(q => lvSet.has(q.level)), 3);
+    const reading   = pickFresh(READING_DIAG_POOL.filter(q => lvSet.has(q.level)),   2);
 
-    // 文法はステージ対象レベルから均等に抽選 (各 level 4 問ずつ → 計 8〜12 問)
-    const gPerLevel = Math.ceil(8 / stage.levels.length);
-    const grammar   = [];
-    for (const lv of stage.levels) {
-      grammar.push(...pickFresh(DIAGNOSTIC_POOL.filter(q => q.level === lv), gPerLevel));
+    // 文法は stage.weights があればそれを使う (= 上のレベルに重み付け)。
+    // 未指定なら従来通り均等割り。
+    const weights = stage.weights || stage.levels.map(() => Math.ceil(8 / stage.levels.length));
+    const grammar = [];
+    for (let i = 0; i < stage.levels.length; i++) {
+      const lv    = stage.levels[i];
+      const count = weights[i] || 0;
+      grammar.push(...pickFresh(DIAGNOSTIC_POOL.filter(q => q.level === lv), count));
     }
     // リスニング → リーディング → 文法 の順で出題
     return [...listening, ...reading, ...shuffle(grammar)];
@@ -22993,7 +23231,35 @@
     const [speaking, setSpeaking]         = useState(false);
     const sessionStartRef = useRef(null);
     // セッション中に既に出題した問題 ID — ステージをまたいで重複させないため。
-    const usedIdsRef = useRef(new Set());
+    // 直近セッションで出した ID も読み込んでおき、初回の抽選から外す
+    // (= 前回と同じ問題ばかりが出る現象を防ぐ)。完走時に localStorage を更新。
+    const usedIdsRef = useRef((() => {
+      try {
+        const s = db.load(profile.id);
+        const arr = (s.diagRecentIds || []);
+        return new Set(arr);
+      } catch { return new Set(); }
+    })());
+
+    // セッション終了時に直近 ID リストを永続化 (古いものから捨てて 80 件まで)。
+    function persistRecentIds() {
+      try {
+        const s = db.load(profile.id);
+        const ids = Array.from(usedIdsRef.current);
+        // 新しい順に並ぶよう先頭に追加 → 重複を除いて先頭 80 件保持
+        const merged = ids.concat(s.diagRecentIds || []);
+        const seen = new Set();
+        const cleaned = [];
+        for (const id of merged) {
+          if (seen.has(id)) continue;
+          seen.add(id);
+          cleaned.push(id);
+          if (cleaned.length >= 80) break;
+        }
+        s.diagRecentIds = cleaned;
+        db.save(profile.id, s);
+      } catch {}
+    }
 
     // 前回の診断結果 (あれば)
     const prevDiag = (() => {
@@ -23127,12 +23393,17 @@
       } catch (err) {
         console.warn('Failed to save diagnostic partial', err);
       }
+      // ステージごとに「出題済み ID」を永続化しておくと、ステージ間で
+      // アプリを閉じても次回はこれらを除外して抽選できる。
+      persistRecentIds();
     }
 
     // 完走時の最終保存。途中保存に加えて、ログ (recordTurn + pushEvent) も書く。
     function saveResult(lastPassed, allStageResults) {
       // 直前の途中保存と同じロジックでレベルを保存。
       savePartialProgress(allStageResults);
+      // セッション中に出した問題 ID を永続化 → 次回はこれを除外して抽選。
+      persistRecentIds();
       try {
         const detectedLevel = detectClearedLevel(allStageResults);
         const eiken         = DIAG_EIKEN_MAP[detectedLevel] || '英検5級';
