@@ -10869,6 +10869,24 @@
       return this.load(memberId).events || [];
     },
 
+    // ---------- リーディングの完読カウント ----------
+    // どの passage を何回読んだか (= 完読 + 4 択 3 問を回答完了した回数)
+    // を passage id ごとに記録する。一覧画面で「既読」の色付けと
+    // ①②③ バッジ表示に使う。
+    getReadingProgress(memberId) {
+      return this.load(memberId).readingProgress || {};
+    },
+    recordReadingProgress(memberId, passageId) {
+      if (!passageId) return;
+      const s = this.load(memberId);
+      if (!s.readingProgress) s.readingProgress = {};
+      const cur = s.readingProgress[passageId] || { count: 0, lastAt: null };
+      cur.count = (cur.count || 0) + 1;
+      cur.lastAt = new Date().toISOString();
+      s.readingProgress[passageId] = cur;
+      this.save(memberId, s);
+    },
+
     // Per-track-per-level rolling answer buffer (last 30 results per
     // level per track; 1=correct, 0=wrong). Drives the mastery-based
     // level progression — when the user is consistently correct at
@@ -22598,6 +22616,19 @@
     const [chosen, setChosen] = useState(null);
     const [results, setResults] = useState([]);
     const sessionStartRef = useRef(null);
+    // 完読カウント — 一覧画面で「既読」の色付け + ①②③ バッジに使う。
+    // 完読するたびに変わるので state にして done フェーズ後に再読込する。
+    const [readingProgress, setReadingProgress] = useState(() => {
+      try { return db.getReadingProgress(profile.id) || {}; } catch { return {}; }
+    });
+    function refreshReadingProgress() {
+      try { setReadingProgress(db.getReadingProgress(profile.id) || {}); } catch {}
+    }
+    // 整数 → 丸囲み数字 (①〜⑳)。21 以上は「N回」。
+    function circledNumber(n) {
+      if (n >= 1 && n <= 20) return String.fromCharCode(0x245F + n);
+      return n + '回';
+    }
 
     function startPassage(p) {
       const qs = (READING_QUESTIONS && READING_QUESTIONS[p.id]) || [];
@@ -22633,6 +22664,9 @@
             kind: 'reading', total: questions.length, correct, durationMs,
             label: passage.title,
           });
+          // 完読カウントを passage id ごとに記録 (一覧画面で「既読」表示に使う)
+          db.recordReadingProgress(profile.id, passage.id);
+          refreshReadingProgress();
           markPathStepDone(profile, 'reading');
           if (correct >= Math.ceil(questions.length * 0.7)) hapticWin();
         } catch {}
@@ -22712,14 +22746,19 @@
             },
               g.chapters.map(p => {
                 const hasQs = !!(READING_QUESTIONS && READING_QUESTIONS[p.id] && READING_QUESTIONS[p.id].length);
+                // 既読カウント (1 度読んだら背景に色付け + ①②③ バッジ)
+                const readCount = (readingProgress[p.id] && readingProgress[p.id].count) || 0;
+                const isRead = readCount > 0;
                 return e('button', {
                   key: p.id,
                   onClick: () => { if (hasQs) startPassage(p); },
                   disabled: !hasQs,
                   style: {
                     flex: '1 1 calc(50% - 3px)',
+                    position: 'relative',
                     padding: '10px 12px', borderRadius: 10,
-                    background: C.softer, border: '1px solid ' + C.line,
+                    background: isRead ? profile.color + '14' : C.softer,
+                    border: '1px solid ' + (isRead ? profile.color + '55' : C.line),
                     fontFamily: SERIF, fontSize: 13, fontWeight: 600,
                     color: hasQs ? C.text : C.sub,
                     textAlign: 'left', cursor: hasQs ? 'pointer' : 'default',
@@ -22738,6 +22777,19 @@
                       color: profile.color, letterSpacing: '0.06em', flexShrink: 0,
                     }
                   }, 'LV' + p.level),
+                  // 既読バッジ (右上)
+                  isRead && e('span', {
+                    style: {
+                      position: 'absolute', top: -6, right: -6,
+                      minWidth: 18, height: 18, borderRadius: 999,
+                      background: profile.color, color: '#fff',
+                      fontSize: 11, fontWeight: 800,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 5px',
+                      border: '1.5px solid ' + C.bg,
+                      lineHeight: 1,
+                    }
+                  }, circledNumber(readCount)),
                 );
               }),
             ),
