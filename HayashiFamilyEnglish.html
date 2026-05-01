@@ -2466,6 +2466,12 @@
     'sick':         ['ill', 'unwell'],
     'ill':          ['sick', 'unwell'],
     'disease':      ['illness', 'sickness'],
+    // ---- Main / primary 系 ----
+    'main':         ['primary', 'principal', 'chief', 'major'],
+    'primary':      ['main', 'principal', 'chief'],
+    'chief':        ['main', 'primary', 'principal', 'head'],
+    'major':        ['main', 'big', 'significant'],
+    'minor':        ['small', 'slight', 'secondary'],
     // ---- General / common / typical 系 ----
     'general':      ['common', 'usual', 'ordinary', 'normal', 'typical', 'standard'],
     'common':       ['general', 'usual', 'ordinary', 'frequent'],
@@ -3023,6 +3029,28 @@
   // Indexed by ANY form (adj / adv / noun / verb) so the panel surfaces
   // even when the kid lands on a derived form first.
   const WORD_FAMILIES = [
+    {
+      adj:  { en: 'main',     ja: '主要な' },
+      adv:  { en: 'mainly',   ja: '主に・主として' },
+      note: '副詞 mainly は「主に〜」(mainly used for / mainly because)。形容詞 main は名詞の前に置く限定用法が中心。',
+      syn:  ['primary', 'principal', 'chief'],
+    },
+    {
+      adj:  { en: 'simple',     ja: '簡単な・素朴な' },
+      adv:  { en: 'simply',     ja: '単純に・ただ〜' },
+      noun: { en: 'simplicity', ja: '単純さ・素朴さ' },
+      verb: { en: 'simplify',   ja: '単純化する' },
+      note: 'simply は「ただ〜」(I simply forgot)、simplify は「分かりやすくする」。simplicity は名詞 (the simplicity of the design)。',
+      syn:  ['easy', 'plain', 'basic'],
+    },
+    {
+      adj:  { en: 'easy',     ja: '簡単な' },
+      adv:  { en: 'easily',   ja: '簡単に' },
+      noun: { en: 'ease',     ja: '気楽さ・容易さ' },
+      verb: { en: 'ease',     ja: '和らげる' },
+      note: 'ease は名詞でも動詞でも同形 (ease the pain = 痛みを和らげる)。easily は動詞を修飾 (You can easily do this)。',
+      syn:  ['simple', 'effortless'],
+    },
     {
       adj:  { en: 'soft',     ja: '柔らかい・優しい' },
       adv:  { en: 'softly',   ja: '静かに・そっと' },
