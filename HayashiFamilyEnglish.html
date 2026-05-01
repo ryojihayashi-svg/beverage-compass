@@ -6483,6 +6483,33 @@
         '蔵元と一緒にセラーで話すと、ワインがすべてに形づくられていることが分かる ―― 丘の傾き、5 月の雨、蔵の主の忍耐。' +
         '1 本のボトルは、ガラスに封じ込められた 1 年そのものだ。',
     },
+
+    // ============ English lessons — 林亮治の英会話練習用 ============
+    // 自己紹介・レストラン・ワイン・出店プロジェクトなど、本人が
+    // 実際に話すシチュエーションを想定したオリジナル英文。
+    // 今後 ②③ と章を増やしていく予定。
+    {
+      id: 'pas_lessons_01',
+      level: 3,
+      title: 'English lessons · ① 自己紹介',
+      icon: '',
+      en:
+        "Let me introduce myself. I'm Ryoji Hayashi. Please call me Ryoji. " +
+        "I run restaurants in Tokyo and Shimane. " +
+        "I have three Chinese restaurants, two Japanese restaurants, and one French restaurant. " +
+        "I also run a wine business. " +
+        "This year, I will open new restaurants in Tokyo. " +
+        "This is a big project, so this year is very important for me. " +
+        "Thank you.",
+      ja:
+        '自己紹介をさせてください。林亮治と申します。亮治と呼んでください。' +
+        '東京と島根でレストランを経営しています。' +
+        '中華料理店が 3 軒、日本料理店が 2 軒、フランス料理店が 1 軒あります。' +
+        'ワイン事業も手がけています。' +
+        '今年は東京で新しいレストランをオープンします。' +
+        '大きなプロジェクトなので、今年は私にとってとても大事な年です。' +
+        'ありがとうございます。',
+    },
   ];
 
   // ---------- リスニング理解クイズ ----------
@@ -7561,6 +7588,40 @@
         answer: 2,
       },
     ],
+
+    // ========== English lessons · ① 自己紹介 (LV3) ==========
+    pas_lessons_01: [
+      {
+        q: '亮治さんはどこでレストランを経営していますか？',
+        choices: [
+          '東京と大阪',
+          '東京と島根',
+          '大阪と島根',
+          '京都と島根',
+        ],
+        answer: 1,
+      },
+      {
+        q: '亮治さんが持っているフランス料理店は何軒ですか？',
+        choices: [
+          '1 軒',
+          '2 軒',
+          '3 軒',
+          'まだ無い',
+        ],
+        answer: 0,
+      },
+      {
+        q: '今年、亮治さんは何をすると言っていますか？',
+        choices: [
+          '島根に新しい店を開く',
+          '東京に新しい店を開く',
+          'レストランを売る',
+          'ワイン事業をやめる',
+        ],
+        answer: 1,
+      },
+    ],
   };
 
   // ---------- レベル診断テスト ----------
@@ -8213,6 +8274,8 @@
     chef_career:      { label: 'Andrew Talks to Chefs',     icon: '' },
     monocle_menu:     { label: 'The Menu (Monocle)',        icon: '' },
     wine_pairing:     { label: "I'll Drink to That",        icon: '' },
+    // 林亮治オリジナル — 自己紹介・本人の話す英文
+    lessons:          { label: 'English lessons',           icon: '' },
   };
   // Pull the speaker key out of "pas_<key>_NN" or "pas_<key>".
   // 'pas_jack_ma_03' → 'jack_ma'; 'pas_jack_ma' → 'jack_ma' (closing piece).
