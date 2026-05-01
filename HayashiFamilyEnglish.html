@@ -17249,15 +17249,15 @@
             style: { fontFamily: SERIF, fontSize: 64, fontWeight: 800, color: scoreColor, lineHeight: 1 }
           }, scoreIcon),
           e('div', {
-            style: { fontFamily: SANS_UI, fontSize: 14, fontWeight: 700, color: scoreColor, marginTop: 6, letterSpacing: '0.06em' }
+            style: { fontFamily: SANS_UI, fontSize: 16, fontWeight: 700, color: scoreColor, marginTop: 6, letterSpacing: '0.06em' }
           }, scoreLabel),
         ),
         // Comment from AI
         grading.comment && e('div', {
           style: {
             background: scoreColor + '14', border: '1px solid ' + scoreColor,
-            borderRadius: 14, padding: '12px 16px', marginBottom: 14,
-            fontSize: 13, color: C.text, lineHeight: 1.7,
+            borderRadius: 14, padding: '14px 18px', marginBottom: 14,
+            fontSize: 15, color: C.text, lineHeight: 1.75,
           }
         }, grading.comment),
         // Question recap
@@ -17268,53 +17268,53 @@
           }
         },
           e('div', {
-            style: { fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+            style: { fontSize: 13, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
           }, '日本語'),
-          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, cur.ja),
+          e('div', { style: { fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 14 } }, cur.ja),
           e('div', {
-            style: { fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+            style: { fontSize: 13, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
           }, 'あなたの答え'),
-          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, (userInput || '').trim()),
+          e('div', { style: { fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 14 } }, (userInput || '').trim()),
           e('div', {
             style: {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em',
+              fontSize: 13, color: C.sub, marginBottom: 4, letterSpacing: '0.06em',
             }
           },
             e('span', null, '模範訳'),
-            e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 22 }),
+            e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 24 }),
           ),
-          e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5 } }, cur.en),
+          e('div', { style: { fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.5 } }, cur.en),
         ),
         // Alternatives (if any)
         grading.alternatives && grading.alternatives.length > 0 && e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
-            borderRadius: 14, padding: '14px 16px', marginBottom: 14,
+            borderRadius: 14, padding: '16px 16px', marginBottom: 14,
           }
         },
           e('div', {
-            style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, marginBottom: 8, letterSpacing: '0.12em' }
+            style: { fontFamily: SANS_UI, fontSize: 13, fontWeight: 700, color: C.sub, marginBottom: 10, letterSpacing: '0.12em' }
           }, '別の言い方'),
           grading.alternatives.map((alt, i) => e('div', {
             key: 'alt_' + i,
             style: {
               display: 'flex', alignItems: 'flex-start', gap: 10,
-              padding: '8px 0',
+              padding: '10px 0',
               borderTop: i === 0 ? 'none' : '1px solid ' + C.line,
             }
           },
-            e('div', { style: { flex: 1, fontFamily: SERIF, fontSize: 14, color: C.text, lineHeight: 1.5 } }, alt),
-            e(SpeakerBtn, { onClick: () => speak(alt), color: profile.color, size: 22 }),
+            e('div', { style: { flex: 1, fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.5 } }, alt),
+            e(SpeakerBtn, { onClick: () => speak(alt), color: profile.color, size: 24 }),
           )),
         ),
         e('button', {
           onClick: nextOrFinish,
           style: {
-            width: '100%', padding: '14px 0', borderRadius: 14,
+            width: '100%', padding: '15px 0', borderRadius: 14,
             background: profile.color, color: '#fff',
             border: '1px solid ' + profile.color,
-            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+            fontSize: 15, fontWeight: 700, fontFamily: SANS_UI,
             cursor: 'pointer', letterSpacing: '0.04em',
           }
         }, last ? '結果を見る →' : '次の問題へ →'),
