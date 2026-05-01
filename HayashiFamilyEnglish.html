@@ -7589,39 +7589,8 @@
       },
     ],
 
-    // ========== English lessons · ① 自己紹介 (LV3) ==========
-    pas_lessons_01: [
-      {
-        q: '亮治さんはどこでレストランを経営していますか？',
-        choices: [
-          '東京と大阪',
-          '東京と島根',
-          '大阪と島根',
-          '京都と島根',
-        ],
-        answer: 1,
-      },
-      {
-        q: '亮治さんが持っているフランス料理店は何軒ですか？',
-        choices: [
-          '1 軒',
-          '2 軒',
-          '3 軒',
-          'まだ無い',
-        ],
-        answer: 0,
-      },
-      {
-        q: '今年、亮治さんは何をすると言っていますか？',
-        choices: [
-          '島根に新しい店を開く',
-          '東京に新しい店を開く',
-          'レストランを売る',
-          'ワイン事業をやめる',
-        ],
-        answer: 1,
-      },
-    ],
+    // English lessons (pas_lessons_*) はシャドーイング専用なので
+    // リーディング理解には登録しない (= 一覧に出さない)。
   };
 
   // ---------- レベル診断テスト ----------
@@ -23131,10 +23100,16 @@
 
     // ============ INTRO (passage picker) ============
     if (phase === 'intro') {
-      // Group passages by speaker (reuse buildSpeakerGroups)
-      const groups = (typeof buildSpeakerGroups === 'function')
+      // Group passages by speaker (reuse buildSpeakerGroups)。
+      // 全 chapter に問題が無いグループ (例: English lessons はシャドーイング
+      // 専用) は一覧から除外する。
+      const hasReadingQs = (id) => !!(READING_QUESTIONS && READING_QUESTIONS[id] && READING_QUESTIONS[id].length);
+      const allGroups = (typeof buildSpeakerGroups === 'function')
         ? buildSpeakerGroups()
         : [{ key: 'all', label: 'All', icon: '', chapters: SHADOWING_PASSAGES.slice() }];
+      const groups = allGroups
+        .map(g => Object.assign({}, g, { chapters: g.chapters.filter(p => hasReadingQs(p.id)) }))
+        .filter(g => g.chapters.length > 0);
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '4px 4px 18px' } },
