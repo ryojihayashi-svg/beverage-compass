@@ -3546,7 +3546,7 @@
     ].filter(r => r.form && r.form.en);
     return e('div', null,
       e('div', {
-        style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+        style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                  textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
       }, '語族 (Word Family)'),
       e('div', {
@@ -3566,7 +3566,7 @@
               borderTop: i > 0 ? '1px dashed ' + C.line : 'none',
             }
           },
-            e('span', { style: { width: 36, color: C.sub, fontSize: 11, flexShrink: 0 } }, r.tag),
+            e('span', { style: { width: 36, color: C.sub, fontSize: 12.5, flexShrink: 0 } }, r.tag),
             e('span', {
               style: {
                 fontFamily: SERIF, fontWeight: 700, fontSize: 14,
@@ -12182,7 +12182,7 @@
         padding: '4px 10px', borderRadius: 999,
         background: C.ocean + '14', color: C.ocean,
         border: '1px solid ' + C.ocean + '33',
-        fontSize: 10, fontWeight: 700, fontFamily: SANS_UI,
+        fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
         letterSpacing: '0.06em', whiteSpace: 'nowrap',
       },
     }, 'オフライン');
@@ -12262,7 +12262,7 @@
           style: { fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.3 }
         }, '新しいバージョンがあります'),
         e('div', {
-          style: { fontSize: 11, color: C.sub, marginTop: 2, lineHeight: 1.5 }
+          style: { fontSize: 12.5, color: C.sub, marginTop: 2, lineHeight: 1.5 }
         }, 'タップで更新（数秒で再読み込みされます）'),
       ),
       e('span', {
@@ -13383,7 +13383,7 @@
       // Footer note
       e('div', {
         style: {
-          marginTop: 10, textAlign: 'center', fontSize: 11,
+          marginTop: 10, textAlign: 'center', fontSize: 12.5,
           color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
         }
       }, 'v0.1 — プロトタイプ'),
@@ -13456,7 +13456,7 @@
           // セクションからこちらへ移動)
           e('span', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               padding: '2px 8px', borderRadius: 999,
               background: profile.color + '14', color: profile.color,
               letterSpacing: '0.04em',
@@ -13464,7 +13464,7 @@
           }, profileEikenLabel(profile.id) + ' レベル'),
           isViewer && e('span', {
             style: {
-              fontSize: 10, fontWeight: 600,
+              fontSize: 12, fontWeight: 600,
               padding: '2px 8px', borderRadius: 999,
               background: profile.color + '1F', color: profile.color,
               letterSpacing: '0.08em',
@@ -13475,7 +13475,7 @@
         e('div', {
           style: {
             display: 'flex', gap: 14, marginTop: 4,
-            fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+            fontFamily: SANS_UI, fontSize: 12.5, color: C.sub,
             fontVariantNumeric: 'tabular-nums',
           }
         },
@@ -13497,7 +13497,7 @@
         latestEvent && e('div', {
           style: {
             marginTop: 3,
-            fontFamily: SANS_UI, fontSize: 10.5, color: C.sub,
+            fontFamily: SANS_UI, fontSize: 12, color: C.sub,
             fontVariantNumeric: 'tabular-nums',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }
@@ -13524,7 +13524,7 @@
             const pct   = Math.max(0, Math.min(100, Math.round((c - lower) * 100)));
             return e('div', {
               style: {
-                fontFamily: SANS_UI, fontSize: 10, color: C.sub,
+                fontFamily: SANS_UI, fontSize: 12, color: C.sub,
                 fontVariantNumeric: 'tabular-nums',
                 display: 'flex', alignItems: 'center', gap: 6,
               }
@@ -13691,7 +13691,7 @@
         },
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: profile.color, marginBottom: 6,
             }
@@ -13767,7 +13767,7 @@
         return e('div', { style: { marginBottom: 18 } },
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 10, paddingLeft: 4,
             }
@@ -13799,7 +13799,7 @@
               e('div', { style: { flex: 1 } }),
               reached && e('span', {
                 style: {
-                  fontSize: 11, fontWeight: 700, color: profile.color,
+                  fontSize: 12.5, fontWeight: 700, color: profile.color,
                   fontFamily: SANS_UI, letterSpacing: '0.04em',
                   background: profile.color + '14',
                   padding: '3px 10px', borderRadius: 999,
@@ -13838,7 +13838,7 @@
             e('div', {
               style: {
                 display: 'flex', justifyContent: 'space-between',
-                fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+                fontFamily: SANS_UI, fontSize: 12.5, color: C.sub,
                 fontVariantNumeric: 'tabular-nums',
                 marginBottom: 8,
               }
@@ -13863,7 +13863,7 @@
               e('span', {
                 style: {
                   display: 'inline-block',
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
                   color: paceColor, background: paceBg,
                   padding: '4px 10px', borderRadius: 999,
                   letterSpacing: '0.04em',
@@ -13873,7 +13873,7 @@
               e('span', {
                 style: {
                   display: 'inline-block',
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
                   color: dailyHit ? profile.color : C.sub,
                   background: dailyHit ? (profile.color + '14') : C.softer,
                   padding: '4px 10px', borderRadius: 999,
@@ -13890,7 +13890,7 @@
       // the user can tell at a glance what this block is.
       todayPhrase && e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 10, paddingLeft: 4,
         }
@@ -13929,7 +13929,7 @@
           ? e('div', null,
               e('div', {
                 style: {
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                   letterSpacing: '0.12em', color: profile.color, marginBottom: 4,
                 }
               }, 'ベース完走 ✓ もう一歩、いってみる？'),
@@ -13971,7 +13971,7 @@
               e('div', {
                 style: {
                   display: 'flex', alignItems: 'center', gap: 8,
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                   letterSpacing: '0.12em', color: C.sub, marginBottom: 6,
                 }
               },
@@ -14113,7 +14113,7 @@
     return e('div', { style: { marginTop: 26 } },
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
@@ -14141,7 +14141,7 @@
           days.map((d, i) => e('div', {
             key: 'h_' + i,
             style: {
-              fontSize: 10, color: d.date === todayKey ? C.text : C.sub,
+              fontSize: 12, color: d.date === todayKey ? C.text : C.sub,
               fontWeight: d.date === todayKey ? 700 : 500,
               fontFamily: SANS_UI, textAlign: 'center',
               fontVariantNumeric: 'tabular-nums',
@@ -14159,7 +14159,7 @@
             padding: '6px 0',
           }
         },
-          e('div', { style: { fontSize: 11, color: C.text, fontFamily: SANS_UI, fontWeight: 600 } }, r.label),
+          e('div', { style: { fontSize: 12.5, color: C.text, fontFamily: SANS_UI, fontWeight: 600 } }, r.label),
           days.map((d, i) => {
             const v = d.counts[r.key] || 0;
             return e('div', {
@@ -14207,7 +14207,7 @@
       return e('div', { style: { marginTop: 26 } },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 12, paddingLeft: 4,
           }
@@ -14310,7 +14310,7 @@
       },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub,
           }
@@ -14327,7 +14327,7 @@
                 background: active ? profile.color : 'transparent',
                 color: active ? '#fff' : C.sub,
                 border: '1px solid ' + (active ? profile.color : C.line),
-                fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                fontSize: 12.5, fontWeight: 700, fontFamily: SANS_UI,
                 cursor: 'pointer', letterSpacing: '0.04em',
               }
             }, opt.label);
@@ -14376,7 +14376,7 @@
             ),
             breakdown && e('div', {
               style: {
-                fontSize: 11, color: C.sub, marginTop: 6,
+                fontSize: 12.5, color: C.sub, marginTop: 6,
                 fontFamily: SANS_UI,
               }
             }, breakdown),
@@ -14415,7 +14415,7 @@
               e('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 } },
                 e('span', {
                   style: {
-                    display: 'inline-block', width: 12, fontSize: 10,
+                    display: 'inline-block', width: 12, fontSize: 12,
                     color: C.sub, fontWeight: 700,
                     transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
                     transition: 'transform 0.15s ease',
@@ -14429,7 +14429,7 @@
                     }
                   }, isToday ? '今日 · ' + g.dayLabel : g.dayLabel),
                   e('div', {
-                    style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, marginTop: 2 }
+                    style: { fontSize: 12.5, color: C.sub, fontFamily: SANS_UI, marginTop: 2 }
                   }, summary),
                 ),
               ),
@@ -14484,7 +14484,7 @@
                       style: { fontSize: 13, color: C.text, fontWeight: 700 }
                     }, kindLabel),
                     detail && e('div', {
-                      style: { fontSize: 11, color: C.sub, marginTop: 2 }
+                      style: { fontSize: 12.5, color: C.sub, marginTop: 2 }
                     }, detail),
                   ),
                 );
@@ -14534,7 +14534,7 @@
           position: 'absolute', top: 8, right: 8,
           minWidth: 22, height: 22, padding: '0 6px', borderRadius: 999,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 11, fontWeight: 800, fontFamily: SANS_UI,
+          fontSize: 12.5, fontWeight: 800, fontFamily: SANS_UI,
           background: isCurrent ? accent : isDone ? C.success : C.softer,
           color: (isCurrent || isDone) ? '#fff' : accent,
           border: '1px solid ' + (isCurrent ? accent : isDone ? C.success : accent + '55'),
@@ -14549,7 +14549,7 @@
         e('div', { style: { fontFamily: SANS_UI, fontSize: 15, fontWeight: 700, lineHeight: 1.2 } }, feature.label),
         e('div', {
           style: {
-            fontSize: 11, marginTop: 2, lineHeight: 1.4,
+            fontSize: 12.5, marginTop: 2, lineHeight: 1.4,
             color: C.sub, fontFamily: SANS_UI, fontWeight: 600,
           }
         }, sub),
@@ -14718,7 +14718,7 @@
         // Level picker
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -14739,7 +14739,7 @@
             },
               e('div', { style: { flex: 1, minWidth: 0 } },
                 e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, opt.label),
-                e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } }, opt.desc),
+                e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } }, opt.desc),
               ),
               isActive && e('div', { style: { fontSize: 16, color: profile.color, flexShrink: 0, fontWeight: 700 } }, '✓'),
             );
@@ -14748,7 +14748,7 @@
         // Direction picker (hidden when the tile already chose a direction)
         !forcedDirection && e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -14770,7 +14770,7 @@
               }
             },
               e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } }, opt.label),
-              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } }, opt.desc),
+              e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } }, opt.desc),
             );
           })
         ),
@@ -14824,20 +14824,20 @@
           e('div', { style: { display: 'flex', gap: 8 } },
             e('span', {
               style: {
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
                 background: profile.color + '1A', color: profile.color, fontFamily: SANS_UI,
               }
             }, 'レベル ' + current.level),
             e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub, fontFamily: SANS_UI,
               }
             }, posLabelJa(current.pos)),
           ),
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
               background: stInfo.color + '1A', color: stInfo.color, fontFamily: SANS_UI,
             }
           }, stInfo.label),
@@ -14846,7 +14846,7 @@
         isJa2En
           ? e('div', { style: { textAlign: 'center', padding: '20px 0' } },
               e('div', {
-                style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 10, fontFamily: SANS_UI }
+                style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 10, fontFamily: SANS_UI }
               }, '日本語'),
               e('div', {
                 style: { fontSize: 38, fontWeight: 800, color: C.text, lineHeight: 1.3 }
@@ -14854,7 +14854,7 @@
             )
           : e('div', { style: { textAlign: 'center', padding: '20px 0' } },
               e('div', {
-                style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 10, fontFamily: SANS_UI }
+                style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 10, fontFamily: SANS_UI }
               }, 'English'),
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
                 e('div', {
@@ -14886,7 +14886,7 @@
             },
               isJa2En
                 ? e('div', null,
-                    e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, 'English'),
+                    e('div', { style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, 'English'),
                     e('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
                       e('div', {
                         style: { flex: 1, fontFamily: SERIF, fontSize: 36, fontWeight: 800, letterSpacing: '-0.02em', color: C.text, lineHeight: 1.2 }
@@ -14895,7 +14895,7 @@
                     ),
                   )
                 : e('div', null,
-                    e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, '日本語'),
+                    e('div', { style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, '日本語'),
                     e('div', {
                       style: { fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1.3 }
                     }, current.ja),
@@ -14904,7 +14904,7 @@
               // ship a second example (exEn2/exJa2) for polysemous or
               // high-frequency words — render both when present.
               e('div', null,
-                e('div', { style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, 'Example'),
+                e('div', { style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI } }, 'Example'),
                 e('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
                   e('div', {
                     style: { flex: 1, fontSize: 19, fontWeight: 500, color: C.text, lineHeight: 1.55, fontFamily: SERIF_READ }
@@ -14937,7 +14937,7 @@
                 if (!list || list.length === 0) return null;
                 return e('div', null,
                   e('div', {
-                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                    style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                              textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                   }, '類義語 (Similar)'),
                   e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -14969,7 +14969,7 @@
                 if (!note) return null;
                 return e('div', null,
                   e('div', {
-                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                    style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                              textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                   }, '使い分け (Usage)'),
                   e('div', {
@@ -14991,7 +14991,7 @@
                 const samePp   = conj.pp   === current.en;
                 return e('div', null,
                   e('div', {
-                    style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                    style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                              textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                   }, '活用 (Past tense)'),
                   e('div', {
@@ -15125,7 +15125,7 @@
     const usageNote = item.kind === 'vocab' ? (item.usage || getVocabUsage(item.id)) : null;
     const conj = item.kind === 'vocab' ? getConjugation(item) : null;
     const sectionTitle = (label) => e('div', {
-      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+      style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
     }, label);
     return e('div', {
@@ -15154,13 +15154,13 @@
         e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 } },
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
               background: profile.color + '1A', color: profile.color,
             }
           }, kindLabel),
           item.level && e('span', {
             style: {
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
               background: C.softer, color: C.sub,
             }
           }, 'レベル ' + item.level),
@@ -15508,7 +15508,7 @@
               e('div', null, opt.label),
               e('div', {
                 style: {
-                  fontSize: 10, marginTop: 2, fontVariantNumeric: 'tabular-nums',
+                  fontSize: 12, marginTop: 2, fontVariantNumeric: 'tabular-nums',
                   color: isActive ? profile.color : C.sub, opacity: 0.85,
                 }
               }, opt.count + '件'),
@@ -15575,13 +15575,13 @@
                       e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 } },
                         e('span', {
                           style: {
-                            fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            fontSize: 12.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
                             background: C.softer, color: C.sub, flexShrink: 0,
                           }
                         }, kindLabel),
                         it.level && e('span', {
                           style: {
-                            fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            fontSize: 12.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
                             background: C.softer, color: C.sub, flexShrink: 0,
                           }
                         }, 'レベル ' + it.level),
@@ -15599,7 +15599,7 @@
                         }
                       }, it.ja),
                     ),
-                    e('div', { style: { fontSize: 11, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
+                    e('div', { style: { fontSize: 12.5, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
                   );
                 }),
               ),
@@ -15643,31 +15643,31 @@
           e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
             e('span', {
               style: {
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
                 background: profile.color + '1A', color: profile.color,
               }
             }, current.kind === 'vocab' ? '単語' : current.kind === 'sentence' ? '英作文' : 'フレーズ'),
             current.level && e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
             }, 'レベル ' + current.level),
             current.pos && e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
             }, posLabelJa(current.pos)),
             current.grammar && e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
             }, current.grammar),
             current.scene && e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub,
               }
             }, SCENE_LABELS[current.scene]),
@@ -15727,7 +15727,7 @@
                   if (!list || list.length === 0) return null;
                   return e('div', null,
                     e('div', {
-                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                      style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                                textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                     }, '類義語 (Similar)'),
                     e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
@@ -15758,7 +15758,7 @@
                   if (!note) return null;
                   return e('div', null,
                     e('div', {
-                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                      style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                                textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                     }, '使い分け (Usage)'),
                     e('div', {
@@ -15780,7 +15780,7 @@
                   const samePp   = conj.pp   === current.en;
                   return e('div', null,
                     e('div', {
-                      style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
+                      style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.16em',
                                textTransform: 'uppercase', marginBottom: 8, fontFamily: SANS_UI }
                     }, '活用 (Past tense)'),
                     e('div', {
@@ -15813,7 +15813,7 @@
                         },
                           e('div', {
                             style: {
-                              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                               letterSpacing: '0.12em', textTransform: 'uppercase',
                               color: C.ocean, marginBottom: 6,
                             }
@@ -15837,7 +15837,7 @@
                         }, expBusy ? '解説を取得中…' : '解説を見る'),
                     expError && e('div', {
                       style: {
-                        marginTop: 6, fontSize: 11, color: C.danger,
+                        marginTop: 6, fontSize: 12.5, color: C.danger,
                         fontFamily: SANS_UI,
                       }
                     }, expError),
@@ -16092,7 +16092,7 @@
       // ----- Recipient -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, '宛先'),
         e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
           e('button', {
@@ -16109,7 +16109,7 @@
       // ----- Message body -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, 'メッセージ'),
         e('textarea', {
           value: body,
@@ -16125,14 +16125,14 @@
           }
         }),
         e('div', {
-          style: { fontSize: 11, color: C.sub, marginTop: 6, textAlign: 'right' }
+          style: { fontSize: 12.5, color: C.sub, marginTop: 6, textAlign: 'right' }
         }, body.length + ' 文字'),
       ),
 
       // ----- Photo (optional) -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, '写真（あれば）'),
         // Hidden file input
         e('input', {
@@ -16177,7 +16177,7 @@
               }
             },
               e('div', null, '写真を選ぶ'),
-              e('div', { style: { fontSize: 11, opacity: 0.7 } },
+              e('div', { style: { fontSize: 12.5, opacity: 0.7 } },
                 '豚・ご飯・弟・なんでも'),
             ),
         imgErr && e('div', {
@@ -16188,7 +16188,7 @@
       // ----- Voice (optional, max 15s) -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, '音声メッセージ（最大15秒）'),
         voiceUrl
           ? e('div', {
@@ -16234,7 +16234,7 @@
                   }),
                   e('span', null, '録音中... ' + recordSec + 's / 15s'),
                 ),
-                e('div', { style: { fontSize: 11, opacity: 0.75 } }, 'タップで停止'),
+                e('div', { style: { fontSize: 12.5, opacity: 0.75 } }, 'タップで停止'),
               )
             : e('button', {
                 onClick: startRecording,
@@ -16246,7 +16246,7 @@
                 }
               },
                 e('div', null, '音声を録音'),
-                e('div', { style: { fontSize: 11, opacity: 0.7 } },
+                e('div', { style: { fontSize: 12.5, opacity: 0.7 } },
                   '15秒まで・声で温度が伝わる'),
               ),
         voiceErr && e('div', {
@@ -16257,7 +16257,7 @@
       // ----- Hue -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, 'カードの色'),
         e('div', { style: { display: 'flex', gap: 10 } },
           HUES.map(h => e('button', {
@@ -16279,7 +16279,7 @@
       // ----- Unlock condition -----
       e('div', { style: { marginBottom: 22 } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
+          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
         }, 'いつ開けられる？'),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           UNLOCKS.map(u => e('button', {
@@ -16568,7 +16568,7 @@
         // Level picker (single label per row, no monogram square)
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -16592,7 +16592,7 @@
             },
               e('div', { style: { flex: 1, minWidth: 0 } },
                 e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, opt.label),
-                e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+                e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } },
                   isLocked ? 'まだ解放されていません' : opt.desc),
               ),
               isActive && e('div', { style: { fontSize: 16, color: profile.color, flexShrink: 0, fontWeight: 700 } }, '✓'),
@@ -16602,7 +16602,7 @@
         // Direction picker (hidden when the tile already chose a direction)
         !forcedDirection && e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -16624,7 +16624,7 @@
               }
             },
               e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } }, opt.label),
-              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } }, opt.desc),
+              e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } }, opt.desc),
             );
           })
         ),
@@ -16697,7 +16697,7 @@
                 style: { fontSize: 13, fontFamily: SERIF, fontStyle: 'italic', color: C.text }
               }, s.en),
             ),
-            e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
+            e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, flexShrink: 0 } },
               isPhrase ? '会話' : ('レベル ' + (s.level || 2))),
           );
         }),
@@ -16736,13 +16736,13 @@
         e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
               background: profile.color + '1A', color: profile.color,
             }
           }, 'レベル ' + current.level),
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
               background: C.softer, color: C.sub,
             }
           }, current.grammar),
@@ -16815,7 +16815,7 @@
                     },
                       e('div', {
                         style: {
-                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                           letterSpacing: '0.12em', textTransform: 'uppercase',
                           color: profile.color, marginBottom: 6,
                         }
@@ -16850,7 +16850,7 @@
                     }, altBusy ? '別の言い方を取得中…' : '別の言い方を見る'),
                 altError && e('div', {
                   style: {
-                    marginTop: 6, fontSize: 11, color: C.danger,
+                    marginTop: 6, fontSize: 12.5, color: C.danger,
                     fontFamily: SANS_UI,
                   }
                 }, altError),
@@ -16868,7 +16868,7 @@
                     },
                       e('div', {
                         style: {
-                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                           letterSpacing: '0.12em', textTransform: 'uppercase',
                           color: C.ocean, marginBottom: 6,
                         }
@@ -16892,7 +16892,7 @@
                     }, expBusy ? '解説を取得中…' : '解説を見る'),
                 expError && e('div', {
                   style: {
-                    marginTop: 6, fontSize: 11, color: C.danger,
+                    marginTop: 6, fontSize: 12.5, color: C.danger,
                     fontFamily: SANS_UI,
                   }
                 }, expError),
@@ -17107,7 +17107,7 @@
         // Level picker
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -17186,7 +17186,7 @@
         },
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: profile.color, marginBottom: 10,
             }
@@ -17268,17 +17268,17 @@
           }
         },
           e('div', {
-            style: { fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+            style: { fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
           }, '日本語'),
           e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, cur.ja),
           e('div', {
-            style: { fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
+            style: { fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em' }
           }, 'あなたの答え'),
           e('div', { style: { fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 } }, (userInput || '').trim()),
           e('div', {
             style: {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              fontSize: 11, color: C.sub, marginBottom: 4, letterSpacing: '0.06em',
+              fontSize: 12.5, color: C.sub, marginBottom: 4, letterSpacing: '0.06em',
             }
           },
             e('span', null, '模範訳'),
@@ -17294,7 +17294,7 @@
           }
         },
           e('div', {
-            style: { fontFamily: SANS_UI, fontSize: 10, fontWeight: 700, color: C.sub, marginBottom: 8, letterSpacing: '0.12em' }
+            style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, marginBottom: 8, letterSpacing: '0.12em' }
           }, '別の言い方'),
           grading.alternatives.map((alt, i) => e('div', {
             key: 'alt_' + i,
@@ -17480,7 +17480,7 @@
     return e('div', { style: { marginTop: 32 } },
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 10, paddingLeft: 4,
         }
@@ -17511,14 +17511,14 @@
             style: {
               padding: '6px 12px', borderRadius: 999,
               background: C.softer, border: '1px solid ' + C.line,
-              fontSize: 11, fontWeight: 600, color: C.sub, fontFamily: SANS_UI,
+              fontSize: 12.5, fontWeight: 600, color: C.sub, fontFamily: SANS_UI,
               cursor: !s.enabled || pinging || syncing ? 'default' : 'pointer',
               opacity: !s.enabled || pinging || syncing ? 0.5 : 1,
             }
           }, (pinging || syncing) ? '同期中…' : '今すぐ同期'),
         ),
         // What's being synced
-        e('div', { style: { fontSize: 11, color: C.sub, lineHeight: 1.6, marginBottom: 12 } },
+        e('div', { style: { fontSize: 12.5, color: C.sub, lineHeight: 1.6, marginBottom: 12 } },
           !s.enabled
             ? 'Supabase クライアントを読み込めませんでした。オフラインのまま使えます。'
             : !s.online
@@ -17530,7 +17530,7 @@
         },
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 9, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 8,
             }
@@ -17546,7 +17546,7 @@
               e('div', { style: { flex: 1, fontWeight: 600 } }, getDisplayName(row.profile)),
               e('div', {
                 style: {
-                  fontSize: 11, color: row.updatedAt ? C.sub : C.sub + 'AA',
+                  fontSize: 12.5, color: row.updatedAt ? C.sub : C.sub + 'AA',
                   fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI,
                 }
               }, row.updatedAt ? formatRelativeTime(row.updatedAt) : 'まだクラウドにありません'),
@@ -17562,7 +17562,7 @@
               e('div', { style: { flex: 1, fontWeight: 600 } }, '家族の共有データ'),
               e('div', {
                 style: {
-                  fontSize: 11, color: C.sub,
+                  fontSize: 12.5, color: C.sub,
                   fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI,
                 }
               }, familyRow && familyRow.updatedAt
@@ -17573,7 +17573,7 @@
         ),
         s.lastError && e('div', {
           style: {
-            fontSize: 10, color: C.danger, marginTop: 10, lineHeight: 1.5,
+            fontSize: 12, color: C.danger, marginTop: 10, lineHeight: 1.5,
             wordBreak: 'break-word', padding: '8px 10px',
             background: C.danger + '0F', borderRadius: 8, border: '1px solid ' + C.danger + '33',
           }
@@ -17915,7 +17915,7 @@
       // separate アイコン and 名前 sections.
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
@@ -17968,7 +17968,7 @@
             // Default name (greyed) + editable input
             e('div', { style: { flex: 1, minWidth: 0 } },
               e('div', {
-                style: { fontSize: 11, color: C.sub, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 }
+                style: { fontSize: 12.5, color: C.sub, fontWeight: 600, letterSpacing: '0.06em', marginBottom: 4 }
               }, p.name + ' (' + p.subtitle + ')'),
               e('input', {
                 type: 'text',
@@ -18009,7 +18009,7 @@
       // are to it every day.
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
@@ -18049,7 +18049,7 @@
                 }, '1日 ' + curDay + ' 分'),
                 e('div', {
                   style: {
-                    fontSize: 10, fontWeight: 600, color: C.sub,
+                    fontSize: 12, fontWeight: 600, color: C.sub,
                     fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums', marginTop: 1,
                   }
                 }, '週 ' + cur + ' 分'),
@@ -18084,7 +18084,7 @@
       // ----- Section: AI チャット -----
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+          fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
@@ -18167,7 +18167,7 @@
         ),
 
         e('div', {
-          style: { fontSize: 11, color: C.sub, marginTop: 10, lineHeight: 1.7 }
+          style: { fontSize: 12.5, color: C.sub, marginTop: 10, lineHeight: 1.7 }
         },
           'console.anthropic.com で無料アカウント作成 → "API Keys" → "Create Key" → コピー → 上に貼り付け。',
           e('br'),
@@ -18205,7 +18205,7 @@
 
         // Table cell styles, defined once for consistency.
         const headCell  = (style) => Object.assign({
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 800,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 800,
           letterSpacing: '0.08em', color: C.sub,
           padding: '8px 4px', textAlign: 'center',
           borderBottom: '1px solid ' + C.line,
@@ -18223,7 +18223,7 @@
         return e('div', null,
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 11, fontWeight: 600,
+              fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 12, paddingLeft: 4,
             }
@@ -18295,7 +18295,7 @@
       // Privacy note
       e('div', {
         style: {
-          marginTop: 20, fontSize: 11, color: C.sub, textAlign: 'center',
+          marginTop: 20, fontSize: 12.5, color: C.sub, textAlign: 'center',
           padding: '12px 16px', background: C.softer, borderRadius: 12, lineHeight: 1.6,
         }
       },
@@ -18315,13 +18315,13 @@
         },
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
               letterSpacing: '0.18em', textTransform: 'uppercase', color: C.sub,
             }
           }, 'Family Photos'),
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.text,
+              fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700, color: C.text,
               fontVariantNumeric: 'tabular-nums',
             }
           }, photos.length + ' 枚'),
@@ -18342,7 +18342,7 @@
           const danger = pct >= 90;
           return e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 11, color: C.sub,
+              fontFamily: SANS_UI, fontSize: 12.5, color: C.sub,
               marginBottom: 10, paddingLeft: 4,
               fontVariantNumeric: 'tabular-nums',
             }
@@ -18363,7 +18363,7 @@
               }),
             ),
             warn && e('div', {
-              style: { marginTop: 6, fontSize: 11, color: danger ? C.danger : '#a86b3b' }
+              style: { marginTop: 6, fontSize: 12.5, color: danger ? C.danger : '#a86b3b' }
             }, danger
               ? '容量がほぼ満杯です。古い写真を何枚か削除してください。'
               : '容量に余裕が少なくなってきました。'),
@@ -18387,7 +18387,7 @@
               background: 'transparent',
               color: C.sub,
               border: '1px solid ' + C.line,
-              fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+              fontSize: 12.5, fontWeight: 700, fontFamily: SANS_UI,
               cursor: (diagBusy || recompressBusy) ? 'default' : 'pointer',
               opacity: (diagBusy || recompressBusy) ? 0.6 : 1,
             }
@@ -18400,7 +18400,7 @@
               background: 'transparent',
               color: C.sub,
               border: '1px solid ' + C.line,
-              fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+              fontSize: 12.5, fontWeight: 700, fontFamily: SANS_UI,
               cursor: (diagBusy || recompressBusy || photos.length === 0) ? 'default' : 'pointer',
               opacity: (diagBusy || recompressBusy || photos.length === 0) ? 0.5 : 1,
             }
@@ -18412,7 +18412,7 @@
           style: {
             background: C.softer, border: '1px dashed ' + C.line,
             borderRadius: 10, padding: 12, marginBottom: 10,
-            fontFamily: SANS_UI, fontSize: 11,
+            fontFamily: SANS_UI, fontSize: 12.5,
             fontVariantNumeric: 'tabular-nums',
             lineHeight: 1.7,
           }
@@ -18426,7 +18426,7 @@
             e('span', { style: { color: C.text, fontWeight: 700 } },
               cloudDiag.cloudCount + ' 枚 / 名前 ' + cloudDiag.cloudNames + ' 件')),
           cloudDiag.updatedAt && e('div', {
-            style: { color: C.sub, fontSize: 10, marginTop: 4 }
+            style: { color: C.sub, fontSize: 12, marginTop: 4 }
           }, '最終クラウド更新: ' + new Date(cloudDiag.updatedAt).toLocaleString('ja-JP')),
           cloudDiag.cloudCount > cloudDiag.localCount && e('button', {
             onClick: restoreFromCloud,
@@ -18442,17 +18442,17 @@
             }
           }, '⬇ クラウドから ' + (cloudDiag.cloudCount - cloudDiag.localCount) + ' 枚を取得'),
           cloudDiag.cloudCount === 0 && cloudDiag.localCount === 0 && e('div', {
-            style: { color: C.sub, fontSize: 11, marginTop: 8, lineHeight: 1.6 }
+            style: { color: C.sub, fontSize: 12.5, marginTop: 8, lineHeight: 1.6 }
           }, '残念ながらクラウドにも写真は残っていません。残念ですが、ここでの復元はできません。'),
           cloudDiag.cloudCount > 0 && cloudDiag.cloudCount === cloudDiag.localCount && e('div', {
-            style: { color: C.sub, fontSize: 11, marginTop: 8 }
+            style: { color: C.sub, fontSize: 12.5, marginTop: 8 }
           }, '同期は揃っています。'),
         ),
         cloudDiag && !cloudDiag.ok && e('div', {
           style: {
             background: C.softer, border: '1px dashed ' + C.danger,
             borderRadius: 10, padding: 12, marginBottom: 10,
-            fontFamily: SANS_UI, fontSize: 11, color: C.danger,
+            fontFamily: SANS_UI, fontSize: 12.5, color: C.danger,
           }
         }, 'クラウド確認に失敗: ' + cloudDiag.error),
 
@@ -18540,7 +18540,7 @@
       e('div', { style: { marginTop: 32 } },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.danger, marginBottom: 10, paddingLeft: 4,
           }
@@ -18557,7 +18557,7 @@
         }, '学習データを最初から'),
         e('div', {
           style: {
-            fontSize: 11, color: C.sub, marginTop: 8, lineHeight: 1.6,
+            fontSize: 12.5, color: C.sub, marginTop: 8, lineHeight: 1.6,
             paddingLeft: 4,
           }
         }, '進捗・間違い・統計・応援メッセージのみを消去します。\nカスタム名・プロフィール写真・ファミリーフォトはそのまま残ります。'),
@@ -18708,7 +18708,7 @@
       },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
             letterSpacing: '0.32em', textTransform: 'uppercase',
             color: C.gold, marginBottom: 6,
           }
@@ -18741,7 +18741,7 @@
         ),
         e('div', {
           style: {
-            fontSize: 10, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
+            fontSize: 12, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
             letterSpacing: '0.08em', textTransform: 'uppercase',
           }
         }, pct.toFixed(1) + '% to goal'),
@@ -18800,7 +18800,7 @@
                 e('div', { style: { fontSize: 13, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
                 e('span', {
                   style: {
-                    fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    fontSize: 12.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI,
                     letterSpacing: '0.06em', flexShrink: 0,
                   }
@@ -18842,7 +18842,7 @@
       },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 600,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
             letterSpacing: '0.32em', textTransform: 'uppercase',
             color: C.gold, marginBottom: 6,
           }
@@ -18871,7 +18871,7 @@
         ),
         e('div', {
           style: {
-            fontSize: 10, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
+            fontSize: 12, color: C.sub, marginTop: 8, fontFamily: SANS_UI,
             letterSpacing: '0.08em', textTransform: 'uppercase',
           }
         }, pct.toFixed(0) + '% complete'),
@@ -18924,7 +18924,7 @@
               e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, padding: '14px 12px' } },
                 e('span', {
                   style: {
-                    fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    fontSize: 12.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
                   }
                 }, 'レベル ' + s.level),
@@ -19200,20 +19200,20 @@
                     // FRONT — Japanese
                     e('div', { className: 'flip-face front', style: cardStyle },
                       e('div', {
-                        style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
+                        style: { fontSize: 12, color: C.sub, fontWeight: 600, marginBottom: 6,
                                  letterSpacing: '0.08em', fontFamily: SANS_UI }
                       }, SCENE_LABELS[p.scene]),
                       e('div', {
                         style: { fontSize: 18, color: C.text, fontWeight: 700, lineHeight: 1.4 }
                       }, p.ja),
                       e('div', {
-                        style: { fontSize: 11, color: C.sub, marginTop: 8, fontFamily: SANS_UI }
+                        style: { fontSize: 12.5, color: C.sub, marginTop: 8, fontFamily: SANS_UI }
                       }, 'タップで英語'),
                     ),
                     // BACK — English + speaker
                     e('div', { className: 'flip-face back', style: cardStyle },
                       e('div', {
-                        style: { fontSize: 10, color: C.sub, fontWeight: 600, marginBottom: 6,
+                        style: { fontSize: 12, color: C.sub, fontWeight: 600, marginBottom: 6,
                                  letterSpacing: '0.08em', fontFamily: SANS_UI }
                       }, SCENE_LABELS[p.scene]),
                       e('div', {
@@ -19280,13 +19280,13 @@
           e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
             e('span', {
               style: {
-                fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
                 background: profile.color + '1A', color: profile.color, fontFamily: SANS_UI,
               }
             }, SCENE_LABELS[cur.scene]),
             e('span', {
               style: {
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+                fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
                 background: C.softer, color: C.sub, fontFamily: SANS_UI,
               }
             }, dirLabel),
@@ -19582,11 +19582,11 @@
                   '→ ' + r.correct),
                 correctIsEn && e(SpeakerBtn, { onClick: () => speak(r.correct), color: profile.color, size: 26 }),
               ),
-              !r.isCorrect && e('div', { style: { fontSize: 11, color: C.danger, marginTop: 2 } },
+              !r.isCorrect && e('div', { style: { fontSize: 12.5, color: C.danger, marginTop: 2 } },
                 'あなたの答え: ' + r.chosen),
             );
           })(),
-          e('div', { style: { fontSize: 10, color: C.sub, fontWeight: 600, flexShrink: 0 } },
+          e('div', { style: { fontSize: 12, color: C.sub, fontWeight: 600, flexShrink: 0 } },
             r.kind === 'vocab' ? '単語' : r.kind === 'sentence' ? '英作文' : 'フレーズ'),
         )),
       );
@@ -19625,13 +19625,13 @@
         e('div', { style: { display: 'flex', gap: 8 } },
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
               background: profile.color + '1A', color: profile.color,
             }
           }, kindLabel),
           e('span', {
             style: {
-              fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+              fontSize: 12.5, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
               background: C.softer, color: C.sub,
             }
           }, dirLabel),
@@ -20123,7 +20123,7 @@
                     background: isActive ? profile.color : C.softer,
                     color: isActive ? '#fff' : C.text,
                     border: '1px solid ' + (isActive ? profile.color : C.line),
-                    fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                    fontSize: 12.5, fontWeight: 700, fontFamily: SANS_UI,
                     cursor: 'pointer', letterSpacing: '0.02em',
                   }
                 }, d.label);
@@ -20204,7 +20204,7 @@
             ),
             recording && e('div', {
               style: {
-                fontSize: 11, color: C.danger, fontFamily: SANS_UI,
+                fontSize: 12.5, color: C.danger, fontFamily: SANS_UI,
                 fontWeight: 700, letterSpacing: '0.06em',
                 marginBottom: 10, paddingLeft: 4,
               }
@@ -20268,7 +20268,7 @@
     return e('div', { style: { marginTop: 24 } },
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
           display: 'flex', alignItems: 'center', gap: 8,
@@ -20277,7 +20277,7 @@
         e('span', { style: { flex: 1 } }, '蓄積中 · MY DICTIONARY'),
         items.length > 0 && e('span', {
           style: {
-            fontWeight: 800, fontSize: 11, letterSpacing: 0,
+            fontWeight: 800, fontSize: 12.5, letterSpacing: 0,
             color: profile.color,
           }
         }, items.length + ' 件'),
@@ -20312,7 +20312,7 @@
                 e('div', { style: { flex: 1, minWidth: 0 } },
                   e('div', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                       letterSpacing: '0.12em', color: C.sub, marginBottom: 4,
                     }
                   }, it.srcLang === 'ja' ? '日本語 → 英語' : '英語 → 日本語'),
@@ -20368,7 +20368,7 @@
 
     const sectionTitle = (label) => e('div', {
       style: {
-        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+        fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
         letterSpacing: '0.16em', color: C.sub, textTransform: 'uppercase',
         marginBottom: 8,
       }
@@ -20390,7 +20390,7 @@
       },
         e('span', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.16em', color: C.sub, flex: 1,
           }
         }, '翻訳結果'),
@@ -20412,7 +20412,7 @@
           onClick: () => setShowMore(v => !v),
           style: {
             marginTop: 12, padding: '6px 0',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.06em',
+            fontSize: 12.5, fontWeight: 700, letterSpacing: '0.06em',
             color: profile.color, fontFamily: SANS_UI,
             background: 'none', border: 'none', cursor: 'pointer',
           }
@@ -20429,7 +20429,7 @@
         result.casual && e('div', null,
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
               display: 'flex', alignItems: 'center', gap: 8,
             }
@@ -20444,7 +20444,7 @@
         result.formal && e('div', null,
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
               display: 'flex', alignItems: 'center', gap: 8,
             }
@@ -20481,7 +20481,7 @@
                   style: { fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: C.text }
                 }, v.word || ''),
                 v.phonetic && e('span', {
-                  style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
+                  style: { fontSize: 12.5, color: C.sub, fontFamily: SANS_UI, fontVariantNumeric: 'tabular-nums' }
                 }, v.phonetic),
               ),
               v.meaning && e('div', {
@@ -20652,7 +20652,7 @@
                 },
                   e('div', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                       letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
                       display: 'flex', gap: 10, alignItems: 'center',
                     }
@@ -20684,7 +20684,7 @@
                 },
                   e('span', {
                     style: {
-                      flex: 1, fontSize: 11, color: profile.color,
+                      flex: 1, fontSize: 12.5, color: profile.color,
                       fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em',
                     }
                   }, expanded ? '閉じる ' : 'もっと見る '),
@@ -20714,7 +20714,7 @@
                     item.casual && e('div', null,
                       e('div', {
                         style: {
-                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                           letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
                           display: 'flex', alignItems: 'center', gap: 8,
                         }
@@ -20729,7 +20729,7 @@
                     item.formal && e('div', null,
                       e('div', {
                         style: {
-                          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                           letterSpacing: '0.16em', color: C.sub, marginBottom: 4,
                           display: 'flex', alignItems: 'center', gap: 8,
                         }
@@ -20745,7 +20745,7 @@
                   item.vocab && item.vocab.length > 0 && e('div', null,
                     e('div', {
                       style: {
-                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                         letterSpacing: '0.16em', color: C.sub, marginBottom: 8,
                       }
                     }, 'KEY WORDS'),
@@ -20762,7 +20762,7 @@
                               style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text }
                             }, v.word || ''),
                             v.phonetic && e('span', {
-                              style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI }
+                              style: { fontSize: 12.5, color: C.sub, fontFamily: SANS_UI }
                             }, v.phonetic),
                           ),
                           v.meaning && e('div', {
@@ -20776,7 +20776,7 @@
                   item.grammar && e('div', null,
                     e('div', {
                       style: {
-                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                         letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
                       }
                     }, 'GRAMMAR'),
@@ -20787,7 +20787,7 @@
                   item.example && (item.example.en || item.example.ja) && e('div', null,
                     e('div', {
                       style: {
-                        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                        fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                         letterSpacing: '0.16em', color: C.sub, marginBottom: 6,
                       }
                     }, 'EXAMPLE · 同じ文型で'),
@@ -21210,7 +21210,7 @@
         // Mode toggle — short sentences vs long passages.
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -21252,7 +21252,7 @@
           // at the chosen speed, so the order matters for UX.
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 10, paddingLeft: 4,
             }
@@ -21285,7 +21285,7 @@
           ),
           e('div', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase',
               color: C.sub, marginBottom: 10, paddingLeft: 4,
             }
@@ -21313,7 +21313,7 @@
                   }, g.label),
                   e('div', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                       color: C.sub, marginTop: 2, letterSpacing: '0.08em',
                     }
                   }, g.chapters.length + ' セクション'),
@@ -21341,7 +21341,7 @@
                   e('span', { style: { flex: 1, minWidth: 0 } }, getPassageChapterLabel(p)),
                   e('span', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                      fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                       color: profile.color, letterSpacing: '0.06em',
                       flexShrink: 0,
                     }
@@ -21355,7 +21355,7 @@
         // ---- short-mode below: level picker + speed picker + start ----
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -21396,7 +21396,7 @@
               e('span', null, opt.label),
               !empty && e('span', {
                 style: {
-                  fontSize: 10, fontWeight: 800,
+                  fontSize: 12, fontWeight: 800,
                   background: isActive ? 'rgba(255,255,255,0.25)' : C.softer,
                   color:      isActive ? '#fff' : C.sub,
                   padding: '1px 6px', borderRadius: 999,
@@ -21404,7 +21404,7 @@
               }, String(count)),
               empty && e('span', {
                 style: {
-                  fontSize: 9, fontWeight: 700, letterSpacing: 0,
+                  fontSize: 12.5, fontWeight: 700, letterSpacing: 0,
                   color: C.sub,
                 }
               }, '準備中'),
@@ -21415,7 +21415,7 @@
         // Speed picker — ① ゆっくり / ② ふつう / ③ 早口
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -21528,7 +21528,7 @@
         ),
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -21561,7 +21561,7 @@
                   padding: '1px 7px', borderRadius: 999,
                   background: p.role === 'Q' ? C.ocean + '14' : C.success + '14',
                   color:      p.role === 'Q' ? C.ocean        : C.success,
-                  fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                   letterSpacing: '0.1em',
                 }
               }, p.role === 'Q' ? '質問' : '答え'),
@@ -21688,7 +21688,7 @@
       },
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
             letterSpacing: '0.16em', color: isSpeaking ? profile.color : C.sub,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }
@@ -21705,14 +21705,14 @@
             background: current.role === 'Q' ? C.ocean + '14' : C.success + '14',
             color:      current.role === 'Q' ? C.ocean        : C.success,
             border: '1px solid ' + (current.role === 'Q' ? C.ocean : C.success) + '55',
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 800,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 800,
             letterSpacing: '0.12em',
           }
         }, current.role === 'Q' ? '質問 · QUESTION' : '答え · ANSWER'),
         // Passage title (long-form mode only)
         current.isPassage && current.title && e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
             letterSpacing: '0.16em', color: profile.color,
             textAlign: 'center', textTransform: 'uppercase',
             marginBottom: 4,
@@ -21983,7 +21983,7 @@
             e('span', null, 'LV' + lv),
             count > 0 && e('span', {
               style: {
-                fontSize: 10, fontWeight: 800,
+                fontSize: 12, fontWeight: 800,
                 background: isActive ? 'rgba(255,255,255,0.25)' : C.softer,
                 color:      isActive ? '#fff'                  : C.sub,
                 padding: '1px 6px', borderRadius: 999,
@@ -21996,7 +21996,7 @@
       // Selected-level header caption
       e('div', {
         style: {
-          fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 12, paddingLeft: 4,
         }
@@ -22049,7 +22049,7 @@
                   }, l.subtitle),
                   e('div', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                      fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                       letterSpacing: '0.06em', color: p && p.bestScore >= 4 ? C.success : C.sub,
                       marginTop: 6,
                     }
@@ -22069,7 +22069,7 @@
     if (!lesson) return null;
     const sectionTitle = (label) => e('div', {
       style: {
-        fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+        fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
         letterSpacing: '0.18em', textTransform: 'uppercase',
         color: C.sub, marginBottom: 10,
       }
@@ -22087,7 +22087,7 @@
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '4px 10px', borderRadius: 999,
             background: C.softer, border: '1px solid ' + C.line,
-            fontSize: 11, fontWeight: 700, color: C.sub,
+            fontSize: 12.5, fontWeight: 700, color: C.sub,
             fontFamily: SANS_UI, letterSpacing: '0.06em',
             marginBottom: 12,
           }
@@ -22184,7 +22184,7 @@
                 width: 18, height: 18, flexShrink: 0,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 background: profile.color + '1A', color: profile.color,
-                borderRadius: 999, fontSize: 11, fontWeight: 700, fontFamily: SANS_UI,
+                borderRadius: 999, fontSize: 12.5, fontWeight: 700, fontFamily: SANS_UI,
                 marginTop: 2,
               }
             }, String(i + 1)),
@@ -22219,7 +22219,7 @@
         }
       },
         e('div', {
-          style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em' }
+          style: { fontSize: 12.5, color: C.sub, fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em' }
         }, lesson.title),
         e('div', { style: { flex: 1 } }),
         e('div', {
@@ -22346,7 +22346,7 @@
           e('span', { style: { flex: 1 } }),
           e('span', {
             style: {
-              fontSize: 11, color: C.sub, fontFamily: SANS_UI,
+              fontSize: 12.5, color: C.sub, fontFamily: SANS_UI,
               fontWeight: 700, letterSpacing: '0.16em',
             }
           }, '解説'),
@@ -22362,7 +22362,7 @@
         },
           e('span', {
             style: {
-              fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
               letterSpacing: '0.12em', color: C.sub, flexShrink: 0,
             }
           }, '答え'),
@@ -22414,7 +22414,7 @@
         }, score + ' / ' + total),
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
             letterSpacing: '0.18em', color: C.sub, marginTop: 10,
           }
         }, lesson.title.toUpperCase()),
@@ -22441,7 +22441,7 @@
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               background: (r.correct ? C.success : C.danger) + '1A',
               color: r.correct ? C.success : C.danger,
-              borderRadius: 999, fontSize: 11, fontWeight: 800,
+              borderRadius: 999, fontSize: 12.5, fontWeight: 800,
             }
           }, r.correct ? '○' : '✕'),
           e('span', {
@@ -22620,7 +22620,7 @@
         ),
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -22771,7 +22771,7 @@
               fontSize: 13, color: C.text, lineHeight: 1.7,
             }
           },
-            e('div', { style: { fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 4, letterSpacing: '0.08em' } }, '解説'),
+            e('div', { style: { fontSize: 12.5, fontWeight: 700, color: C.sub, marginBottom: 4, letterSpacing: '0.08em' } }, '解説'),
             cur.explain,
           ),
           // Show transcript on feedback
@@ -22781,7 +22781,7 @@
               borderRadius: 12, padding: '12px 14px', marginBottom: 12,
             }
           },
-            e('div', { style: { fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 6, letterSpacing: '0.08em' } }, '聞き取り内容 (transcript)'),
+            e('div', { style: { fontSize: 12.5, fontWeight: 700, color: C.sub, marginBottom: 6, letterSpacing: '0.08em' } }, '聞き取り内容 (transcript)'),
             cur.audio.map((a, i) => e('div', {
               key: 'a_' + i,
               style: { fontFamily: SERIF_READ, fontSize: 14, color: C.text, lineHeight: 1.6, marginBottom: 4 }
@@ -22950,7 +22950,7 @@
         ),
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -22973,7 +22973,7 @@
                 }, g.label),
                 e('div', {
                   style: {
-                    fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+                    fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
                     color: C.sub, marginTop: 2, letterSpacing: '0.08em',
                   }
                 }, g.chapters.length + ' セクション'),
@@ -23011,7 +23011,7 @@
                       : p.title),
                   e('span', {
                     style: {
-                      fontFamily: SANS_UI, fontSize: 9, fontWeight: 800,
+                      fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                       color: profile.color, letterSpacing: '0.06em', flexShrink: 0,
                     }
                   }, 'LV' + p.level),
@@ -23021,7 +23021,7 @@
                       position: 'absolute', top: -6, right: -6,
                       minWidth: 18, height: 18, borderRadius: 999,
                       background: profile.color, color: '#fff',
-                      fontSize: 11, fontWeight: 800,
+                      fontSize: 12.5, fontWeight: 800,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       padding: '0 5px',
                       border: '1.5px solid ' + C.bg,
@@ -23045,7 +23045,7 @@
             style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.3 }
           }, passage.title),
           e('div', {
-            style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: profile.color, marginTop: 4, letterSpacing: '0.08em' }
+            style: { fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700, color: profile.color, marginTop: 4, letterSpacing: '0.08em' }
           }, 'LV' + passage.level + ' · ' + (passage.en.split(/\s+/).length) + ' words · ' + questions.length + ' 問'),
         ),
         e('div', {
@@ -23480,7 +23480,7 @@
         // ステージ表
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -23507,7 +23507,7 @@
             }, 'Stage ' + (i + 1)),
             e('div', { style: { flex: 1 } },
               e('div', { style: { fontSize: 14, color: C.text, fontWeight: 600 } }, s.label),
-              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2 } },
+              e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } },
                 '合格率 ' + Math.round(s.passRate * 100) + '%  →  ' + s.eiken),
             ),
           )),
@@ -23520,7 +23520,7 @@
             padding: '12px 16px', marginBottom: 18,
           }
         },
-          e('div', { style: { fontSize: 11, color: C.sub } }, '前回の診断'),
+          e('div', { style: { fontSize: 12.5, color: C.sub } }, '前回の診断'),
           e('div', { style: { fontSize: 15, color: C.text, fontWeight: 700, marginTop: 2 } },
             prevDiag.eiken + (prevDiag.at ? ' (' + formatDate(prevDiag.at) + ')' : '')),
         ),
@@ -23569,7 +23569,7 @@
         // 注意書き
         e('div', {
           style: {
-            fontSize: 11, color: C.sub, lineHeight: 1.7,
+            fontSize: 12.5, color: C.sub, lineHeight: 1.7,
             marginTop: 18, paddingLeft: 4,
           }
         }, '※ 1 ステージあたり約 13 問。リスニング 3 問・リーディング 2 問・文法 8 問の構成。問題は毎回ランダム抽選なので暗記対策はできません。'),
@@ -23599,7 +23599,7 @@
 
       const stageHeader = e('div', { style: { padding: '4px 4px 14px' } },
         e('div', {
-          style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase' }
+          style: { fontSize: 12.5, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase' }
         }, 'Stage ' + (stageIdx + 1) + ' — ' + stage.label),
         e('div', {
           style: { fontSize: 12, color: C.sub, marginTop: 4, fontVariantNumeric: 'tabular-nums' }
@@ -23618,7 +23618,7 @@
           }
         },
           e('div', {
-            style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', marginBottom: 14 }
+            style: { fontSize: 12.5, color: C.sub, letterSpacing: '0.18em', marginBottom: 14 }
           }, speaking ? '再生中' : (played ? '再生終了' : '準備完了')),
           e('button', {
             onClick: () => playConversation(q.conversation),
@@ -23633,7 +23633,7 @@
             }
           }, speaking ? '再生中…' : (played ? 'もう一度聞く' : '会話を聞く')),
           !played && e('div', {
-            style: { fontSize: 11, color: C.sub, marginTop: 10, lineHeight: 1.6 }
+            style: { fontSize: 12.5, color: C.sub, marginTop: 10, lineHeight: 1.6 }
           }, '※ 音声を聞いてから選択肢を選べます'),
         );
       } else if (section === 'reading') {
@@ -23686,7 +23686,7 @@
                 background: isSelected ? profile.color : '#fff',
                 color: isSelected ? '#fff' : C.sub,
                 border: '1px solid ' + (isSelected ? profile.color : C.line),
-                fontSize: 11, fontWeight: 700,
+                fontSize: 12.5, fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }
@@ -23789,7 +23789,7 @@
         // 大判定
         e('div', { style: { padding: '20px 4px 30px', textAlign: 'center' } },
           e('div', {
-            style: { fontSize: 11, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }
+            style: { fontSize: 12.5, color: C.sub, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 8 }
           }, 'YOUR LEVEL'),
           e('div', {
             style: { fontFamily: SERIF, fontSize: 38, fontWeight: 700, color: profile.color, lineHeight: 1.2 }
@@ -23804,7 +23804,7 @@
         // ステージ別の結果
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4,
           }
@@ -23826,7 +23826,7 @@
                 background: r.passed ? profile.color : C.softer,
                 color: r.passed ? '#fff' : C.sub,
                 border: '1px solid ' + (r.passed ? profile.color : C.line),
-                fontSize: 11, fontWeight: 700,
+                fontSize: 12.5, fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }
@@ -23834,7 +23834,7 @@
             e('div', { style: { flex: 1 } },
               e('div', { style: { fontSize: 13, color: C.text, fontWeight: 600 } },
                 'Stage ' + (r.stageIdx + 1) + ' — ' + r.label),
-              e('div', { style: { fontSize: 11, color: C.sub, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
+              e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2, fontVariantNumeric: 'tabular-nums' } },
                 Math.round(r.rate * 100) + '%  (' + r.correct + ' / ' + r.total + ')  ' +
                 '/ 合格 ' + Math.round(r.passRate * 100) + '%'),
             ),
@@ -23847,7 +23847,7 @@
         // 正誤マーク・問題文・選択肢 (ユーザーの選択と正解を色分け)・解説。
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 10, fontWeight: 700,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             color: C.sub, marginBottom: 10, paddingLeft: 4, marginTop: 4,
           }
@@ -23865,7 +23865,7 @@
             },
               e('div', {
                 style: {
-                  fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                  fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 800,
                   color: r.passed ? profile.color : C.sub,
                   letterSpacing: '0.08em', marginBottom: 10,
                 }
@@ -23895,7 +23895,7 @@
                     e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       e('span', {
                         style: {
-                          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                          fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
                           background: C.softer, color: C.sub,
                         }
                       }, sectionLabel + ' · LV' + q.level),
@@ -23962,7 +23962,7 @@
                         },
                           e('span', {
                             style: {
-                              fontFamily: SANS_UI, fontWeight: 700, fontSize: 10,
+                              fontFamily: SANS_UI, fontWeight: 700, fontSize: 12,
                               minWidth: 14,
                             }
                           }, ['A','B','C','D'][ci] || ''),
