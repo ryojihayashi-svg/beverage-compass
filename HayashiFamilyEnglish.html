@@ -15565,41 +15565,41 @@
                   },
                     e('div', {
                       style: {
-                        width: 30, height: 30, borderRadius: 10,
+                        width: 32, height: 32, borderRadius: 10,
                         background: C.danger + '18', color: C.danger,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 14, fontWeight: 700, flexShrink: 0,
+                        fontSize: 16, fontWeight: 700, flexShrink: 0,
                       }
                     }, '✗'),
                     e('div', { style: { flex: 1, minWidth: 0 } },
-                      e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 } },
+                      e('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                         e('span', {
                           style: {
-                            fontSize: 12.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
                             background: C.softer, color: C.sub, flexShrink: 0,
                           }
                         }, kindLabel),
                         it.level && e('span', {
                           style: {
-                            fontSize: 12.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                            fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
                             background: C.softer, color: C.sub, flexShrink: 0,
                           }
                         }, 'レベル ' + it.level),
                       ),
                       e('div', {
                         style: {
-                          fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: C.text,
+                          fontFamily: SERIF, fontSize: 17, fontWeight: 700, color: C.text,
                           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }
                       }, it.en),
                       e('div', {
                         style: {
-                          fontSize: 12, color: C.sub, marginTop: 2,
+                          fontSize: 14, color: C.sub, marginTop: 3,
                           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         }
                       }, it.ja),
                     ),
-                    e('div', { style: { fontSize: 12.5, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
+                    e('div', { style: { fontSize: 13, color: C.sub, flexShrink: 0 } }, timeAgo(m.at)),
                   );
                 }),
               ),
@@ -18793,14 +18793,14 @@
               },
                 e('div', {
                   style: {
-                    fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.text,
+                    fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.text,
                     flex: 1, minWidth: 0,
                   }
                 }, v.en),
-                e('div', { style: { fontSize: 13, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
+                e('div', { style: { fontSize: 14, color: C.sub, flex: 1, minWidth: 0 } }, v.ja),
                 e('span', {
                   style: {
-                    fontSize: 12.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI,
                     letterSpacing: '0.06em', flexShrink: 0,
                   }
@@ -18916,15 +18916,15 @@
                   textAlign: 'left',
                 }
               },
-                e('div', { style: { fontSize: 12, color: C.sub, marginBottom: 4 } }, s.ja),
+                e('div', { style: { fontSize: 14, color: C.sub, marginBottom: 4 } }, s.ja),
                 e('div', {
-                  style: { fontFamily: SERIF, fontSize: 16, fontWeight: 500, color: C.text, lineHeight: 1.4 }
+                  style: { fontFamily: SERIF, fontSize: 17, fontWeight: 500, color: C.text, lineHeight: 1.4 }
                 }, s.en),
               ),
               e('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, padding: '14px 12px' } },
                 e('span', {
                   style: {
-                    fontSize: 12.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                    fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
                     background: C.softer, color: C.gold, fontFamily: SANS_UI, letterSpacing: '0.06em',
                   }
                 }, 'レベル ' + s.level),
