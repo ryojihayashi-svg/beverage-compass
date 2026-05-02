@@ -132,6 +132,8 @@
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false },
+    { id: 'useful_phrases',     label: 'お役立ちフレーズ', desc: 'Repeat After Me · 主導権・要約・添削など',
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -3915,6 +3917,8 @@
     listening: 30, reading: 60,
     // 診断テスト: ステージ全体で 1 イベント。1 問 ≈ 20 秒の見積もり。
     diagnostic: 20,
+    // お役立ちフレーズ: 1 セッション = 1 セット完走。1 フレーズ ≈ 8 秒。
+    useful_phrases: 8,
   };
   // Sanity cap per session. If a learner started a session and then walked
   // away (locked the phone, took a call, etc.), durationMs can be wildly
@@ -5373,6 +5377,209 @@
     { id:'p080', scene:'friends', ja:'すみません。',                          en:'Excuse me.' },
   ];
   const PHRASE_BY_ID = Object.fromEntries(DAILY_PHRASES.map(p => [p.id, p]));
+
+  // ---------- お役立ち英語フレーズ (Repeat After Me) ----------
+  // 順番通りに「日本語 → 英語」とテンポよく流す音読練習用データ。
+  // section: で見出しを挟むと、その後ろのフレーズ群がそのセクションに属する。
+  // ユーザー提供資料 #01〜#08 をそのまま打ち込んだもの (今後 #09 以降を追加)。
+  const USEFUL_PHRASE_SETS = [
+    {
+      id: 'phrases_01',
+      no: 1,
+      title: '主導権を握る英語フレーズ (導入パート)',
+      subtitle: 'レッスン開始直後から使う英語フレーズ',
+      quote: '会話の主導権はいつも、質問する者に与えられる。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: '私の声が聞こえて顔が見えますか？',                          en: 'Can you hear and see me?' },
+        { ja: 'はい、ハッキリと聞こえて見えます。',                        en: 'Yes, I can hear and see you clearly.' },
+        { ja: 'こんにちは！お元気ですか？',                                en: 'Hi, how are you doing?' },
+        { ja: '元気です、あなたは？',                                      en: "I'm good, thank you. And you?" },
+        { ja: '聞いてくれて有難う、元気です。',                            en: "Thank you for asking me. I'm good." },
+        { ja: '何とお呼びすればいいですか？',                              en: 'How can I call you?' },
+        { ja: 'ヨシと呼んで下さい。',                                      en: 'Call me Yoshi.' },
+        { ja: '初めまして、ヨシさん。',                                    en: 'Nice to meet you, Yoshi!' },
+        { ja: '今回が初めてのレッスンなので自己紹介させて下さい。',        en: 'Since this is our first lesson, let me introduce myself.' },
+        { ja: '以上です。聴いてくれてありがとう。',                        en: "That's it. Thank you for listening." },
+        { ja: 'そして 2 つリクエストがあります。',                         en: 'And I have two requests.' },
+        { ja: '1 つ目は、出来る限りゆっくり話して下さい。',                en: 'First, please speak as slowly as you can.' },
+        { ja: '2 つ目は、話す時は同時にたくさん話さないで下さい。',        en: "Second, when you speak, please don't say many sentences at the same time." },
+        { ja: 'なぜならそれらを聴き取るのが難しいからです。',              en: "Because it's difficult for me to listen to them." },
+        { ja: '一度に英文は 1 つだけ話して下さい。',                       en: 'Speak one sentence at a time.' },
+        { ja: 'では、あなたの番です。',                                    en: "Well, it's your turn." },
+        { ja: '自己紹介して下さい。',                                      en: 'Please introduce yourself.' },
+        { ja: '出身はどちらですか。',                                      en: 'Where are you from?' },
+        { ja: 'どこに住んでいるのですか？',                                en: 'Where do you live?' },
+        { ja: 'そこはどんな所ですか？',                                    en: 'What is it like?' },
+        { ja: 'あなたの情報をシェアしてくれて有難う。',                    en: 'Thank you for sharing your information.' },
+      ],
+    },
+    {
+      id: 'phrases_02',
+      no: 2,
+      title: '主導権を握る英語フレーズ (本編パート)',
+      subtitle: 'レッスン本編 → 終盤までの定型',
+      quote: '相手に幸福感を感じてもらうために言葉と時間を使おう。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: 'フリートークがしたいです。',                                en: 'I want to (wanna) have a free conversation.' },
+        { ja: 'このレッスンの間は主導権を握らせて下さい。',                en: 'Let me take the initiative during (in) this lesson.' },
+        { ja: '質問せずに私の話を聞いて欲しいです。',                      en: 'I want you to listen to me without asking me questions.' },
+        { ja: 'いいですか？',                                              en: 'Is it OK?' },
+        { ja: 'これについてお話しさせて下さい。',                          en: 'Let me talk about this.' },
+        { ja: '私の話は分かりますか？',                                    en: 'Do you understand me?' },
+        { ja: '1 つ質問させて下さい。',                                    en: 'Let me ask you a question.' },
+        { section: '残り 2 分からの英語' },
+        { ja: 'あぁ、時間が経つのは早いですね。',                          en: 'Oh, time flies.' },
+        { ja: '私はここでレッスンを終わりたいと思います。',                en: 'I will finish this class here.' },
+        { ja: '私の英語についてどう思いますか？',                          en: 'What do you think about my English?' },
+        { ja: 'レッスン後にフィードバックをチャットボックスに送ってもらえますか？', en: 'Could you send me the feedback on the chat box after this lesson?' },
+        { section: '締め括り英語' },
+        { ja: '今日はレッスンを有難うございます。',                        en: 'Thank you for your lesson today.' },
+        { ja: 'レッスンはとても楽しかったです。',                          en: 'I enjoyed it so much.' },
+        { ja: 'またレッスンを楽しみにしています。',                        en: "I'm looking forward to having it again." },
+        { ja: 'あなたのような講師に出会えて幸運です。',                    en: "I'm lucky to meet a great teacher like you." },
+        { ja: 'では良い 1 日を。',                                         en: 'See you and have a nice day! Bye bye!' },
+      ],
+    },
+    {
+      id: 'phrases_03',
+      no: 3,
+      title: '意思表示のための英語フレーズ (聴くパート)',
+      subtitle: '「相手が話す英語が分からない…」と思った時に使う英語フレーズ',
+      quote: '「聴いて分からないこと」が問題なのではなく、「『分からない』と意思表示できないこと」が問題なのだ。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { section: '声が小さくて聞こえない場合' },
+        { ja: 'もっと大きな声で話して下さい。',                            en: 'Louder, please.' },
+        { ja: 'よく聞こえません。',                                        en: "I can't hear you well." },
+        { ja: '回線状況が悪いです。',                                      en: 'We have a bad connection.' },
+        { ja: 'あなたの声が途切れています。',                              en: 'Your voice is choppy.' },
+        { section: '話すスピードが早い場合' },
+        { ja: 'ゆっくり話して下さい。',                                    en: 'Please speak slowly.' },
+        { ja: 'もう一度言って下さい。',                                    en: 'Come again? Sorry?' },
+        { ja: '話す時は、同時にたくさんの英文を話さないで下さい。',        en: "When you speak, please don't say many sentences at the same time." },
+        { ja: 'なぜならそれらを聴き取るのは私には難しいからです。',        en: "Because it's difficult for me to listen to them." },
+        { section: '聞こえたが意味が分からない場合' },
+        { ja: 'それはどういう意味ですか？',                                en: 'What do you mean?' },
+        { ja: 'A とはどういう意味ですか？',                                en: 'What is the meaning of A?' },
+        { section: '言い換えてもらったが意味が分からない場合' },
+        { ja: 'どんなスペルですか？',                                      en: 'How do you spell it?' },
+        { ja: 'それを書いてもらえますか？',                                en: 'Could you type it?' },
+        { section: '結局、書いてもらっても意味が分からない場合' },
+        { ja: '理解できないので、ここは飛ばしてもいいですか？',            en: "Can I skip here because I don't understand?" },
+      ],
+    },
+    {
+      id: 'phrases_04',
+      no: 4,
+      title: '意思表示のための英語フレーズ (話すパート)',
+      subtitle: '「英語で何と言えばいいのか分からない…」と思った時に使う英語フレーズ',
+      quote: '自信がないこと自体は何も悪くない。ただ、それを言い訳にして一歩踏み出さないことが良くないだけだ。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { section: '咄嗟に出てこない (filler words)' },
+        { ja: 'えっと…',                                                  en: 'Well... Let me see... What should I say?' },
+        { section: '日本語で考えを整理する' },
+        { ja: 'まずは日本語で意見を整理させて下さい。',                    en: 'Let me organize my opinion in Japanese first.' },
+        { section: '考えるための時間を稼ぐ' },
+        { ja: '英語でこれを何て言えばいいのだろう？ (独り言)',             en: 'What should I say this in English?' },
+        { section: '日英ミックスで頭を整理する' },
+        { ja: '私は「それは一石二鳥です」と英語で言いたいです。',          en: 'I want to say "それは一石二鳥です" in English.' },
+        { section: '雰囲気英語を清書してもらう' },
+        { ja: '私の言っていることは分かりますか？',                        en: 'Do you understand me?' },
+        { ja: 'これは正しいですか？',                                      en: 'Is this correct?' },
+        { ja: 'この場合、何と言うべきでしょうか？',                        en: 'How should I say in this case?' },
+        { section: '結局、英語で何と言えばいいのか分からない場合' },
+        { ja: '何と言えばいいのか分からないので、ここは飛ばしてもいいですか？', en: "Can I skip here because I don't know what to say?" },
+      ],
+    },
+    {
+      id: 'phrases_05',
+      no: 5,
+      title: '日本に関する英語フレーズ',
+      subtitle: '相手を自分のペースに持ち込みたい時に使う英語フレーズ',
+      quote: '負けないために、得意な領域で戦え。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: '日本に来たことはありますか？',                              en: 'Have you ever been to Japan?' },
+        { ja: '【講師】 いいえ、ありません。',                              en: 'No, I have never been there.' },
+        { ja: '日本に来たいですか？',                                      en: 'Do you want to (wanna) come to Japan?' },
+        { ja: '【講師】 もちろん、行きたいです。',                          en: 'Of course, I want to (wanna) go there.' },
+        { ja: 'なぜ日本に来たいのですか？',                                en: 'Why do you want to (wanna) come to Japan?' },
+        { ja: '日本のどこに行きたいですか？',                              en: 'Where do you want to (wanna) visit in Japan?' },
+        { ja: 'なぜ日本文化が好きなのですか？',                            en: 'Why do you like Japanese culture?' },
+        { ja: 'なぜそう思うのですか？',                                    en: 'Why do you think so?' },
+        { ja: '日本のどこに行ったのですか？',                              en: 'Where did you visit in Japan?' },
+        { ja: 'そこに行って下さい。なぜなら〜があるからです。',            en: 'You should go there because there is something special.' },
+      ],
+    },
+    {
+      id: 'phrases_06',
+      no: 6,
+      title: 'Why 質問の英語フレーズ',
+      subtitle: '相手の回答をさらに掘り下げる時に使う英語フレーズ (疑問詞 + 疑問文)',
+      quote: '本質は、結論ではなく解釈に潜んでいる。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: 'なぜ、それが好きなのですか？',                              en: 'Why do you like it?' },
+        { ja: 'なぜ、それがしたいのですか？',                              en: 'Why do you want to (wanna) do that?' },
+        { ja: 'なぜ、そう思うのですか？',                                  en: 'Why do you think so?' },
+        { ja: 'なぜ、そこに行きたいのですか？',                            en: 'Why do you want to (wanna) go there?' },
+        { ja: 'なぜ、英語講師をしているのですか？',                        en: 'Why do you work as an English teacher?' },
+        { ja: 'なぜ、それが好きだったのですか？',                          en: 'Why did you like it?' },
+        { ja: 'なぜ、それがしたかったのですか？',                          en: 'Why did you want to (wanna) do that?' },
+        { ja: 'なぜ、そう思ったのですか？',                                en: 'Why did you think so?' },
+        { ja: 'なぜ、そこに行きたかったのですか？',                        en: 'Why did you want to (wanna) go there?' },
+        { ja: 'なぜ、その仕事をしていたのですか？',                        en: 'Why did you do that job?' },
+      ],
+    },
+    {
+      id: 'phrases_07',
+      no: 7,
+      title: '要約のための英語フレーズ',
+      subtitle: '相手の話を正確に理解できているか確かめる時に使う英語フレーズ',
+      quote: '理解した分、要約できるので、知ったかぶりはしないでね。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: 'ここまでのあなたの話を要約させて下さい。',                  en: 'Let me summarize your story so far.' },
+        { ja: 'あなたの言ったことが理解できているかどうか確かめさせて下さい。', en: 'I want to (wanna) make sure if I understand you.' },
+        { ja: 'そこでリクエストがあります。',                              en: 'And I have a request.' },
+        { ja: 'もし私が間違っていれば直して欲しいです。',                  en: 'I want you to correct me when I make mistakes.' },
+        { section: 'OREO で要約' },
+        { ja: 'あなたは〜です。 (Opinion)',                                en: 'You ....' },
+        { ja: 'なぜなら〜だからです。 (Reason)',                            en: 'Because you ....' },
+        { ja: '実際、〜です。 (Episode)',                                  en: 'Actually, you ....' },
+        { ja: 'そういう訳で、〜です。 (Opinion)',                          en: "That's why, you ...." },
+        { ja: 'これが私が理解した全てです。',                              en: 'This is all I understand from you.' },
+        { ja: '私の英語はどうですか？',                                    en: 'How is my English?' },
+      ],
+    },
+    {
+      id: 'phrases_08',
+      no: 8,
+      title: '添削依頼のための英語フレーズ',
+      subtitle: '「文法的には間違ってる…」と思った時に伝える英語フレーズ',
+      quote: '人生はエスカレーター。ただ一歩踏み出せばいい。',
+      quoteAuthor: 'ソルティウス',
+      items: [
+        { ja: '私の英語はどうですか？',                                    en: 'How is my English?' },
+        { ja: '私の言っていることは理解しましたか？',                      en: 'Do you understand me?' },
+        { ja: 'これは正しいですか？',                                      en: 'Is this correct?' },
+        { ja: '本当に？私の英語は完璧ですか？',                            en: 'Are you sure? Is my English perfect?' },
+        { ja: '私がお願いしたいのは、文法的に間違えていたら直して欲しいということです。', en: 'What I wanna ask you is to correct my English when I make mistakes grammatically.' },
+        { ja: 'もう一度挑戦しますから、しっかり聞いて下さいね。',          en: 'Let me try again, so listen to me carefully.' },
+        { ja: 'こういう場合はどう言えば良いですか？',                      en: 'How should I say in this case?' },
+        { ja: 'あなたが言ったことを書いてもらえますか？',                  en: 'Could you type it?' },
+        { ja: '全文を書いてもらえますか？',                                en: 'Could you give me the whole sentence?' },
+        { ja: 'ゆっくりと声に出して読んでもらえますか？',                  en: 'Could you read aloud slowly?' },
+        { ja: '練習させて下さい。',                                        en: 'Let me practice this.' },
+        { ja: '私の発音はいかがですか？',                                  en: 'How is my pronunciation?' },
+        { ja: 'では、次に行きましょう。',                                  en: "Let's go to the next." },
+      ],
+    },
+  ];
+  const USEFUL_PHRASE_SET_BY_ID = Object.fromEntries(USEFUL_PHRASE_SETS.map(s => [s.id, s]));
   const SCENE_LABELS = {
     school:    'School',
     cafeteria: 'Meal',
@@ -13398,6 +13605,7 @@
       else if (route.feature === 'comp_test')         body = e(CompositionTest,   { profile, onBack: back });
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
+      else if (route.feature === 'useful_phrases')    body = e(UsefulPhrases,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -13492,6 +13700,7 @@
       lesson: '1分英語解説',  shadowing: 'シャドーイング',
       listening: 'リスニング', reading: 'リーディング',
       diagnostic: 'レベル診断',
+      useful_phrases: 'お役立ちフレーズ',
     };
     return e('button', {
       onClick,
@@ -14191,6 +14400,7 @@
       { key: 'listening',   label: 'リスニング理解' },
       { key: 'reading',     label: 'リーディング理解' },
       { key: 'diagnostic',  label: 'レベル診断テスト' },
+      { key: 'useful_phrases', label: 'お役立ちフレーズ' },
     ];
     const todayKey = db.todayKey(profile.id);
 
@@ -19108,6 +19318,348 @@
   // device (per-feed-id, per-member-id; toggle on second tap).
 
   // ---------- Achievements Screen (full grid of all 23 badges) ----------
+
+  // ---------- お役立ちフレーズ (Repeat After Me) ----------
+  // 順番通りに「日本語 → 英語」を出して、英語を 2 回再生して次へ進む。
+  // データは USEFUL_PHRASE_SETS。1 セット完走時に活動ログに記録。
+  function UsefulPhrases({ profile, onBack }) {
+    const [phase, setPhase]     = useState('list');     // 'list' | 'practice' | 'done'
+    const [setIdx, setSetIdx]   = useState(0);
+    const [itemIdx, setItemIdx] = useState(0);
+    const [speaking, setSpeaking] = useState(false);
+    const sessionStartRef = useRef(null);
+    const playSeqRef = useRef(0);
+
+    const set = USEFUL_PHRASE_SETS[setIdx];
+    // section ヘッダ含む items 配列。phrase だけのフラットインデックスも作る。
+    const items = (set && set.items) || [];
+    const phraseIdxList = useMemo(() => {
+      const list = [];
+      items.forEach((it, i) => { if (it && it.ja && it.en) list.push(i); });
+      return list;
+    }, [setIdx]);
+    const totalPhrases = phraseIdxList.length;
+    const currentRawIdx = phraseIdxList[itemIdx];
+    const currentItem   = items[currentRawIdx] || null;
+    // 直近のセクション見出しを探す
+    const currentSection = (() => {
+      for (let i = currentRawIdx; i >= 0; i--) {
+        if (items[i] && items[i].section) return items[i].section;
+      }
+      return null;
+    })();
+
+    function stopAudio() {
+      playSeqRef.current++;  // 進行中の playTwice をキャンセル
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch {}
+      setSpeaking(false);
+    }
+
+    // 英語を 2 回テンポよく再生する。1 回目 → 0.4s 間 → 2 回目。
+    function playTwice(text) {
+      if (!window.speechSynthesis || !text) return;
+      const seq = ++playSeqRef.current;
+      try { window.speechSynthesis.cancel(); } catch {}
+      setSpeaking(true);
+      const speakOnce = (then) => {
+        if (seq !== playSeqRef.current) return;
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-GB';
+        u.rate = 0.95;
+        u.onend   = () => { if (seq === playSeqRef.current) then(); };
+        u.onerror = () => { if (seq === playSeqRef.current) then(); };
+        try { window.speechSynthesis.speak(u); } catch {}
+      };
+      speakOnce(() => {
+        setTimeout(() => {
+          if (seq !== playSeqRef.current) return;
+          speakOnce(() => {
+            if (seq === playSeqRef.current) setSpeaking(false);
+          });
+        }, 400);
+      });
+    }
+
+    // フレーズが切り替わったタイミングで自動再生
+    useEffect(() => {
+      if (phase !== 'practice' || !currentItem) return;
+      const t = setTimeout(() => playTwice(currentItem.en), 250);
+      return () => { clearTimeout(t); };
+    }, [phase, setIdx, itemIdx]);
+
+    // 練習を開始
+    function startPractice(idx) {
+      stopAudio();
+      setSetIdx(idx);
+      setItemIdx(0);
+      sessionStartRef.current = Date.now();
+      setPhase('practice');
+    }
+    function nextPhrase() {
+      if (itemIdx + 1 >= totalPhrases) {
+        // 完走
+        stopAudio();
+        try {
+          db.recordTurn(profile.id, 'useful_phrases');
+          const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+          sessionStartRef.current = null;
+          db.pushEvent(profile.id, {
+            kind: 'useful_phrases',
+            total: totalPhrases, correct: totalPhrases,
+            durationMs, label: set ? ('#' + (set.no || '?') + ' ' + set.title) : '',
+          });
+        } catch {}
+        setPhase('done');
+        return;
+      }
+      setItemIdx(itemIdx + 1);
+    }
+    function prevPhrase() {
+      if (itemIdx <= 0) return;
+      stopAudio();
+      setItemIdx(itemIdx - 1);
+    }
+    function backToList() {
+      stopAudio();
+      setPhase('list');
+    }
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: phase === 'practice' ? backToList : onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'お役立ちフレーズ'),
+      phase === 'practice' && e('div', {
+        style: { fontSize: 13, color: C.sub, fontVariantNumeric: 'tabular-nums' }
+      }, (itemIdx + 1) + ' / ' + totalPhrases),
+    );
+
+    // ============ LIST ============
+    if (phase === 'list') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '4px 4px 18px' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+          }, 'お役立ちフレーズ'),
+          e('div', {
+            style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+          }, 'Repeat After Me 形式で、日本語 → 英語をテンポよく流します。英語は 2 回ずつ再生されます。'),
+        ),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+          USEFUL_PHRASE_SETS.map((s, i) => {
+            const phraseCount = s.items.filter(it => it.ja && it.en).length;
+            return e('button', {
+              key: s.id,
+              onClick: () => startPractice(i),
+              style: {
+                width: '100%', padding: '14px 16px', borderRadius: 14,
+                background: C.card, border: '1px solid ' + C.line,
+                cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 12,
+              }
+            },
+              e('div', {
+                style: {
+                  width: 36, height: 36, borderRadius: 12,
+                  background: profile.color + '14', color: profile.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
+                  flexShrink: 0,
+                }
+              }, '#' + (s.no < 10 ? '0' + s.no : s.no)),
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+                }, s.title),
+                s.subtitle && e('div', {
+                  style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+                }, s.subtitle),
+                e('div', {
+                  style: { fontSize: 12, color: C.sub, marginTop: 6, fontVariantNumeric: 'tabular-nums' }
+                }, phraseCount + ' フレーズ'),
+              ),
+              e('div', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
+            );
+          })
+        ),
+      );
+    }
+
+    // ============ PRACTICE ============
+    if (phase === 'practice' && currentItem) {
+      // 進捗バー
+      const progress = e('div', {
+        style: { background: C.softer, height: 4, borderRadius: 999, marginBottom: 16, overflow: 'hidden' }
+      },
+        e('div', {
+          style: {
+            height: '100%', width: ((itemIdx + 1) / totalPhrases * 100) + '%',
+            background: profile.color, transition: 'width 240ms ease-out',
+          }
+        }),
+      );
+
+      return e('div', { style: pageStyle },
+        topBar,
+        progress,
+        // セットタイトル + セクション
+        e('div', { style: { padding: '4px 4px 14px' } },
+          e('div', {
+            style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+                     color: profile.color, letterSpacing: '0.08em' }
+          }, '#' + (set.no < 10 ? '0' + set.no : set.no) + ' ' + set.title),
+          currentSection && e('div', {
+            style: { fontSize: 13, color: C.sub, marginTop: 4, fontWeight: 600 }
+          }, '· ' + currentSection),
+        ),
+
+        // 日本語 (上)
+        e('div', {
+          style: {
+            background: C.card, borderRadius: 14, padding: '20px 18px',
+            marginBottom: 12, minHeight: 100,
+            display: 'flex', alignItems: 'center',
+          }
+        },
+          e('div', { style: { width: '100%' } },
+            e('div', {
+              style: { fontSize: 11, color: C.sub, fontWeight: 700,
+                       letterSpacing: '0.16em', marginBottom: 6 }
+            }, 'JAPANESE'),
+            e('div', {
+              style: { fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
+            }, currentItem.ja),
+          ),
+        ),
+
+        // 英語 (下) + 音声ボタン
+        e('div', {
+          style: {
+            background: profile.color + '0E', borderRadius: 14,
+            border: '1px solid ' + profile.color + '33',
+            padding: '20px 18px', marginBottom: 18,
+          }
+        },
+          e('div', {
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }
+          },
+            e('div', {
+              style: { fontSize: 11, color: profile.color, fontWeight: 700, letterSpacing: '0.16em' }
+            }, 'ENGLISH'),
+            e('div', {
+              style: { fontSize: 12, color: speaking ? profile.color : C.sub, fontWeight: 600 }
+            }, speaking ? '再生中…' : ''),
+          ),
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 600, color: C.text, lineHeight: 1.5 }
+          }, currentItem.en),
+          e('button', {
+            onClick: () => { soundTap(); playTwice(currentItem.en); },
+            disabled: speaking,
+            style: {
+              marginTop: 14, width: '100%', padding: '12px 16px', borderRadius: 12,
+              background: speaking ? C.softer : '#fff',
+              border: '1px solid ' + profile.color + '55',
+              color: speaking ? C.sub : profile.color,
+              fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+              cursor: speaking ? 'default' : 'pointer',
+              opacity: speaking ? 0.7 : 1,
+            }
+          }, speaking ? '再生中…' : 'もう一度聞く'),
+        ),
+
+        // ナビボタン
+        e('div', { style: { display: 'flex', gap: 10 } },
+          e('button', {
+            onClick: prevPhrase,
+            disabled: itemIdx <= 0,
+            style: {
+              flex: 1, padding: '14px 0', borderRadius: 14,
+              background: 'transparent', color: C.sub,
+              border: '1px solid ' + C.border,
+              fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+              cursor: itemIdx <= 0 ? 'default' : 'pointer',
+              opacity: itemIdx <= 0 ? 0.4 : 1,
+            }
+          }, '‹ 前'),
+          e('button', {
+            onClick: () => { soundTap(); hapticTap(); nextPhrase(); },
+            style: {
+              flex: 2, padding: '14px 0', borderRadius: 14,
+              background: profile.color, color: '#fff',
+              border: 'none',
+              fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+              cursor: 'pointer',
+            }
+          }, itemIdx + 1 >= totalPhrases ? '完了する' : '次の文 ›'),
+        ),
+      );
+    }
+
+    // ============ DONE ============
+    if (phase === 'done') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '20px 4px 30px', textAlign: 'center' } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 8 }
+          }, 'おつかれさま！'),
+          e('div', {
+            style: { fontSize: 13, color: C.sub, lineHeight: 1.7 }
+          }, '#' + (set.no < 10 ? '0' + set.no : set.no) + ' ' + set.title + ' を完走しました。'),
+        ),
+        set.quote && e('div', {
+          style: {
+            background: C.card, borderRadius: 14,
+            border: '1px solid ' + C.line,
+            padding: '18px 18px', marginBottom: 18,
+          }
+        },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.7, marginBottom: 8 }
+          }, '「' + set.quote + '」'),
+          set.quoteAuthor && e('div', {
+            style: { fontSize: 12, color: C.sub, textAlign: 'right' }
+          }, '— ' + set.quoteAuthor),
+        ),
+        e('button', {
+          onClick: () => startPractice(setIdx),
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginBottom: 10,
+          }
+        }, 'もう一度このセット'),
+        setIdx + 1 < USEFUL_PHRASE_SETS.length && e('button', {
+          onClick: () => startPractice(setIdx + 1),
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: 'transparent', color: profile.color,
+            border: '1px solid ' + profile.color + '66',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            cursor: 'pointer', marginBottom: 10,
+          }
+        }, '次のセット (#' + (setIdx + 2 < 10 ? '0' + (setIdx + 2) : (setIdx + 2)) + ') へ ›'),
+        e('button', {
+          onClick: backToList,
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 14,
+            background: 'transparent', color: C.sub,
+            border: '1px solid ' + C.border,
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          }
+        }, '一覧に戻る'),
+      );
+    }
+
+    return e('div', { style: pageStyle }, topBar);
+  }
 
   // ---------- Daily Phrases (簡単英語) ----------
   // Scene-tagged phrasebook with a Daily20-style practice flow.
