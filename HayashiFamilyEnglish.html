@@ -19319,347 +19319,330 @@
 
   // ---------- Achievements Screen (full grid of all 23 badges) ----------
 
-  // ---------- お役立ちフレーズ (Repeat After Me) ----------
-  // 順番通りに「日本語 → 英語」を出して、英語を 2 回再生して次へ進む。
-  // データは USEFUL_PHRASE_SETS。1 セット完走時に活動ログに記録。
+  // ---------- お役立ちフレーズ (Repeat After Me, 連続スクロール) ----------
+  // 全セットを 1 ページにずらっと並べ、開いた瞬間から英語を自動再生していく。
+  // 各フレーズで EN を 2 回再生 → 次へ自動遷移。ハイライトは中央に自動スクロール。
+  // 制御ボタン: 逆戻り (前のセット) / 停止・再生 / 次へ (1 フレーズ進む) / 早送り (次のセット)
   function UsefulPhrases({ profile, onBack }) {
-    const [phase, setPhase]     = useState('list');     // 'list' | 'practice' | 'done'
-    const [setIdx, setSetIdx]   = useState(0);
-    const [itemIdx, setItemIdx] = useState(0);
-    const [speaking, setSpeaking] = useState(false);
-    const sessionStartRef = useRef(null);
-    const playSeqRef = useRef(0);
-
-    const set = USEFUL_PHRASE_SETS[setIdx];
-    // section ヘッダ含む items 配列。phrase だけのフラットインデックスも作る。
-    const items = (set && set.items) || [];
-    const phraseIdxList = useMemo(() => {
+    // 全セットの全フレーズをフラット化。section 情報も一緒に持つ。
+    const phrases = useMemo(() => {
       const list = [];
-      items.forEach((it, i) => { if (it && it.ja && it.en) list.push(i); });
+      USEFUL_PHRASE_SETS.forEach((set) => {
+        let curSection = null;
+        set.items.forEach((it) => {
+          if (it.section) curSection = it.section;
+          else if (it.ja && it.en) {
+            list.push({
+              globalIdx: list.length,
+              setId: set.id,
+              setNo: set.no,
+              setTitle: set.title,
+              section: curSection,
+              ja: it.ja, en: it.en,
+            });
+          }
+        });
+      });
       return list;
-    }, [setIdx]);
-    const totalPhrases = phraseIdxList.length;
-    const currentRawIdx = phraseIdxList[itemIdx];
-    const currentItem   = items[currentRawIdx] || null;
-    // 直近のセクション見出しを探す
-    const currentSection = (() => {
-      for (let i = currentRawIdx; i >= 0; i--) {
-        if (items[i] && items[i].section) return items[i].section;
+    }, []);
+
+    const [currentIdx, setCurrentIdx] = useState(0);
+    const [playing, setPlaying] = useState(true); // 開いた瞬間に自動再生
+    const [reachedEnd, setReachedEnd] = useState(false);
+    const phraseRefs = useRef({});
+    const playSeq    = useRef(0);
+    const sessionStartRef = useRef(Date.now());
+    const recordedDoneRef = useRef(false);
+
+    // 現在ハイライトを画面中央へスクロール
+    useEffect(() => {
+      const node = phraseRefs.current[currentIdx];
+      if (node && typeof node.scrollIntoView === 'function') {
+        try { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch {}
       }
-      return null;
-    })();
+    }, [currentIdx]);
 
-    function stopAudio() {
-      playSeqRef.current++;  // 進行中の playTwice をキャンセル
-      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch {}
-      setSpeaking(false);
-    }
-
-    // 英語を 2 回テンポよく再生する。1 回目 → 0.4s 間 → 2 回目。
-    function playTwice(text) {
-      if (!window.speechSynthesis || !text) return;
-      const seq = ++playSeqRef.current;
-      try { window.speechSynthesis.cancel(); } catch {}
-      setSpeaking(true);
-      const speakOnce = (then) => {
-        if (seq !== playSeqRef.current) return;
+    // 自動再生 — playing が true で currentIdx が有効な間、JA を読む時間 → EN×2 → 次へ
+    useEffect(() => {
+      if (!playing) return;
+      if (currentIdx >= phrases.length) return;
+      const seq = ++playSeq.current;
+      const cur = phrases[currentIdx];
+      let cancelled = false;
+      const timeouts = [];
+      const cancel = () => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+      const speakOnce = (text, then) => {
+        if (cancelled || seq !== playSeq.current) return;
+        if (!window.speechSynthesis) { then(); return; }
+        try { window.speechSynthesis.cancel(); } catch {}
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'en-GB';
         u.rate = 0.95;
-        u.onend   = () => { if (seq === playSeqRef.current) then(); };
-        u.onerror = () => { if (seq === playSeqRef.current) then(); };
-        try { window.speechSynthesis.speak(u); } catch {}
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) then(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
+        try { window.speechSynthesis.speak(u); } catch { then(); }
       };
-      speakOnce(() => {
-        setTimeout(() => {
-          if (seq !== playSeqRef.current) return;
-          speakOnce(() => {
-            if (seq === playSeqRef.current) setSpeaking(false);
-          });
-        }, 400);
-      });
-    }
+      // 1.3s で日本語を読む間 → EN → 0.4s → EN → 0.6s → 次へ
+      timeouts.push(setTimeout(() => {
+        speakOnce(cur.en, () => {
+          timeouts.push(setTimeout(() => {
+            speakOnce(cur.en, () => {
+              timeouts.push(setTimeout(() => {
+                if (cancelled || seq !== playSeq.current) return;
+                if (currentIdx + 1 >= phrases.length) {
+                  setReachedEnd(true);
+                  setPlaying(false);
+                  // 完走を 1 回だけ記録
+                  if (!recordedDoneRef.current) {
+                    recordedDoneRef.current = true;
+                    try {
+                      db.recordTurn(profile.id, 'useful_phrases');
+                      db.pushEvent(profile.id, {
+                        kind: 'useful_phrases',
+                        total: phrases.length, correct: phrases.length,
+                        durationMs: Date.now() - sessionStartRef.current,
+                      });
+                    } catch {}
+                  }
+                } else {
+                  setCurrentIdx(currentIdx + 1);
+                }
+              }, 600));
+            });
+          }, 400));
+        });
+      }, 1300));
+      return cancel;
+    }, [playing, currentIdx, phrases.length, profile.id]);
 
-    // フレーズが切り替わったタイミングで自動再生
+    // 停止時にも音声をきれいに止める
     useEffect(() => {
-      if (phase !== 'practice' || !currentItem) return;
-      const t = setTimeout(() => playTwice(currentItem.en), 250);
-      return () => { clearTimeout(t); };
-    }, [phase, setIdx, itemIdx]);
+      if (playing) return;
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, [playing]);
 
-    // 練習を開始
-    function startPractice(idx) {
-      stopAudio();
-      setSetIdx(idx);
-      setItemIdx(0);
-      sessionStartRef.current = Date.now();
-      setPhase('practice');
-    }
-    function nextPhrase() {
-      if (itemIdx + 1 >= totalPhrases) {
-        // 完走
-        stopAudio();
-        try {
-          db.recordTurn(profile.id, 'useful_phrases');
-          const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
-          sessionStartRef.current = null;
-          db.pushEvent(profile.id, {
-            kind: 'useful_phrases',
-            total: totalPhrases, correct: totalPhrases,
-            durationMs, label: set ? ('#' + (set.no || '?') + ' ' + set.title) : '',
-          });
-        } catch {}
-        setPhase('done');
+    // ----- ボタン操作 -----
+    function togglePlay() {
+      soundTap(); hapticTap();
+      // 終わってる状態で「再生」を押されたら最初に戻す
+      if (reachedEnd && !playing) {
+        setReachedEnd(false);
+        setCurrentIdx(0);
+        setPlaying(true);
         return;
       }
-      setItemIdx(itemIdx + 1);
+      setPlaying(!playing);
     }
-    function prevPhrase() {
-      if (itemIdx <= 0) return;
-      stopAudio();
-      setItemIdx(itemIdx - 1);
+    function goNext() {
+      soundTap();
+      if (currentIdx + 1 < phrases.length) setCurrentIdx(currentIdx + 1);
     }
-    function backToList() {
-      stopAudio();
-      setPhase('list');
+    // 早送り: 現在のセット最後 → 次のセット先頭へジャンプ
+    function skipForward() {
+      soundTap();
+      const cur = phrases[currentIdx];
+      if (!cur) return;
+      let i = currentIdx + 1;
+      while (i < phrases.length && phrases[i].setId === cur.setId) i++;
+      if (i < phrases.length) setCurrentIdx(i);
+      else setCurrentIdx(phrases.length - 1);
+    }
+    // 逆戻り: 現在のセットの先頭へ。すでに先頭なら前のセットの先頭へ。
+    function skipBack() {
+      soundTap();
+      const cur = phrases[currentIdx];
+      if (!cur) return;
+      let firstOfCur = currentIdx;
+      while (firstOfCur > 0 && phrases[firstOfCur - 1].setId === cur.setId) firstOfCur--;
+      if (firstOfCur === currentIdx && currentIdx > 0) {
+        // すでにセット先頭 → 前のセット先頭へ
+        let i = currentIdx - 1;
+        const prevSetId = phrases[i].setId;
+        while (i > 0 && phrases[i - 1].setId === prevSetId) i--;
+        setCurrentIdx(i);
+      } else {
+        setCurrentIdx(firstOfCur);
+      }
     }
 
-    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    // ----- レンダ -----
+    const pageStyle = {
+      maxWidth: 480, margin: '0 auto',
+      padding: '44px 22px 130px',  // 下部の固定コントロールバー分の余白
+    };
+
+    // ヘッダ
     const topBar = e('div', {
-      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }
     },
-      e('button', { onClick: phase === 'practice' ? backToList : onBack,
-        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1, background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
-      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+      e('div', { style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.2 } },
         'お役立ちフレーズ'),
-      phase === 'practice' && e('div', {
-        style: { fontSize: 13, color: C.sub, fontVariantNumeric: 'tabular-nums' }
-      }, (itemIdx + 1) + ' / ' + totalPhrases),
+      e('div', { style: { fontFamily: SANS_UI, fontSize: 13, color: C.sub, fontVariantNumeric: 'tabular-nums' } },
+        (currentIdx + 1) + ' / ' + phrases.length),
     );
 
-    // ============ LIST ============
-    if (phase === 'list') {
-      return e('div', { style: pageStyle },
-        topBar,
-        e('div', { style: { padding: '4px 4px 18px' } },
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-          }, 'お役立ちフレーズ'),
-          e('div', {
-            style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
-          }, 'Repeat After Me 形式で、日本語 → 英語をテンポよく流します。英語は 2 回ずつ再生されます。'),
-        ),
-        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-          USEFUL_PHRASE_SETS.map((s, i) => {
-            const phraseCount = s.items.filter(it => it.ja && it.en).length;
-            return e('button', {
-              key: s.id,
-              onClick: () => startPractice(i),
-              style: {
-                width: '100%', padding: '14px 16px', borderRadius: 14,
-                background: C.card, border: '1px solid ' + C.line,
-                cursor: 'pointer', textAlign: 'left',
-                display: 'flex', alignItems: 'center', gap: 12,
-              }
-            },
-              e('div', {
-                style: {
-                  width: 36, height: 36, borderRadius: 12,
-                  background: profile.color + '14', color: profile.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
-                  flexShrink: 0,
-                }
-              }, '#' + (s.no < 10 ? '0' + s.no : s.no)),
-              e('div', { style: { flex: 1, minWidth: 0 } },
-                e('div', {
-                  style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
-                }, s.title),
-                s.subtitle && e('div', {
-                  style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.5 }
-                }, s.subtitle),
-                e('div', {
-                  style: { fontSize: 12, color: C.sub, marginTop: 6, fontVariantNumeric: 'tabular-nums' }
-                }, phraseCount + ' フレーズ'),
-              ),
-              e('div', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
-            );
-          })
-        ),
-      );
-    }
+    // 進捗バー
+    const progressBar = e('div', {
+      style: { background: C.softer, height: 4, borderRadius: 999, marginBottom: 18, overflow: 'hidden' }
+    },
+      e('div', {
+        style: {
+          height: '100%', width: ((currentIdx + 1) / Math.max(1, phrases.length) * 100) + '%',
+          background: profile.color, transition: 'width 280ms ease-out',
+        }
+      }),
+    );
 
-    // ============ PRACTICE ============
-    if (phase === 'practice' && currentItem) {
-      // 進捗バー
-      const progress = e('div', {
-        style: { background: C.softer, height: 4, borderRadius: 999, marginBottom: 16, overflow: 'hidden' }
+    // 全セットを縦に並べる
+    const setBlocks = USEFUL_PHRASE_SETS.map((set) => {
+      // 各 item を順に描画 (section header または phrase row)
+      const rows = [];
+      let curSection = null;
+      set.items.forEach((it, i) => {
+        if (it.section) {
+          curSection = it.section;
+          rows.push(e('div', {
+            key: 'sec_' + set.id + '_' + i,
+            style: {
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+              color: C.sub, letterSpacing: '0.04em',
+              margin: '14px 4px 6px',
+            }
+          }, '— ' + it.section + ' —'));
+          return;
+        }
+        if (!it.ja || !it.en) return;
+        // この phrase の global idx を逆引き
+        const phraseInfo = phrases.find(p => p.setId === set.id && p.ja === it.ja && p.en === it.en);
+        if (!phraseInfo) return;
+        const isCurrent = phraseInfo.globalIdx === currentIdx;
+        rows.push(e('div', {
+          key: 'p_' + set.id + '_' + i,
+          ref: el => { if (el) phraseRefs.current[phraseInfo.globalIdx] = el; },
+          onClick: () => { soundTap(); setCurrentIdx(phraseInfo.globalIdx); },
+          style: {
+            cursor: 'pointer',
+            background: isCurrent ? profile.color + '14' : C.card,
+            border: '1px solid ' + (isCurrent ? profile.color + '88' : C.line),
+            borderRadius: 12,
+            padding: '12px 14px',
+            marginBottom: 8,
+            transition: 'background 200ms, border-color 200ms',
+            boxShadow: isCurrent ? '0 4px 14px ' + profile.color + '22' : 'none',
+          }
+        },
+          // 日本語
+          e('div', {
+            style: { fontSize: 15, color: C.text, fontWeight: 600, lineHeight: 1.5, marginBottom: 6 }
+          }, it.ja),
+          // 英語
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5, fontWeight: isCurrent ? 700 : 600 }
+          }, it.en),
+        ));
+      });
+
+      return e('div', { key: set.id, style: { marginBottom: 28 } },
+        // セットヘッダ
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 800,
+            color: profile.color, letterSpacing: '0.06em',
+            padding: '10px 12px', marginBottom: 4,
+            background: profile.color + '0E',
+            borderLeft: '4px solid ' + profile.color,
+            borderRadius: 6,
+          }
+        }, '#' + (set.no < 10 ? '0' + set.no : set.no) + '  ' + set.title),
+        set.subtitle && e('div', {
+          style: { fontSize: 12, color: C.sub, lineHeight: 1.6, padding: '0 12px', marginBottom: 10 }
+        }, set.subtitle),
+        rows,
+      );
+    });
+
+    // 制御ボタンの共通スタイル
+    const ctrlBtn = (extra) => Object.assign({
+      width: 52, height: 52, borderRadius: 999,
+      background: '#fff', border: '1px solid ' + C.line,
+      color: C.text, fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
+      cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 2px 6px rgba(42,37,32,0.06)',
+    }, extra || {});
+
+    // 下部固定コントロールバー (4 ボタン)
+    const controlBar = e('div', {
+      style: {
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(8px)',
+        borderTop: '1px solid ' + C.line,
+        padding: '12px 20px calc(12px + env(safe-area-inset-bottom))',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+        zIndex: 50,
+      }
+    },
+      // 逆戻り (前のセットへ)
+      e('button', {
+        onClick: skipBack,
+        style: ctrlBtn(),
+        'aria-label': '逆戻り',
       },
-        e('div', {
-          style: {
-            height: '100%', width: ((itemIdx + 1) / totalPhrases * 100) + '%',
-            background: profile.color, transition: 'width 240ms ease-out',
-          }
+        e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '⟪'),
+        e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '戻る'),
+      ),
+      // 停止 / 再生
+      e('button', {
+        onClick: togglePlay,
+        style: ctrlBtn({
+          width: 64, height: 64, background: profile.color,
+          color: '#fff', border: '1px solid ' + profile.color,
+          boxShadow: '0 6px 16px ' + profile.color + '55',
         }),
-      );
+        'aria-label': playing ? '一時停止' : '再生',
+      },
+        e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } },
+          playing ? '||' : '▶'),
+        e('div', { style: { fontSize: 9, color: '#fff', opacity: 0.85, marginTop: 2 } },
+          playing ? '停止' : '再生'),
+      ),
+      // 次へ (1 フレーズ進む)
+      e('button', {
+        onClick: goNext,
+        style: ctrlBtn(),
+        'aria-label': '次へ',
+      },
+        e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '›'),
+        e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '次へ'),
+      ),
+      // 早送り (次のセットへ)
+      e('button', {
+        onClick: skipForward,
+        style: ctrlBtn(),
+        'aria-label': '早送り',
+      },
+        e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '⟫'),
+        e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '早送り'),
+      ),
+    );
 
-      return e('div', { style: pageStyle },
+    return e('div', null,
+      e('div', { style: pageStyle },
         topBar,
-        progress,
-        // セットタイトル + セクション
-        e('div', { style: { padding: '4px 4px 14px' } },
-          e('div', {
-            style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
-                     color: profile.color, letterSpacing: '0.08em' }
-          }, '#' + (set.no < 10 ? '0' + set.no : set.no) + ' ' + set.title),
-          currentSection && e('div', {
-            style: { fontSize: 13, color: C.sub, marginTop: 4, fontWeight: 600 }
-          }, '· ' + currentSection),
-        ),
-
-        // 日本語 (上)
-        e('div', {
-          style: {
-            background: C.card, borderRadius: 14, padding: '20px 18px',
-            marginBottom: 12, minHeight: 100,
-            display: 'flex', alignItems: 'center',
-          }
-        },
-          e('div', { style: { width: '100%' } },
-            e('div', {
-              style: { fontSize: 11, color: C.sub, fontWeight: 700,
-                       letterSpacing: '0.16em', marginBottom: 6 }
-            }, 'JAPANESE'),
-            e('div', {
-              style: { fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.45 }
-            }, currentItem.ja),
-          ),
-        ),
-
-        // 英語 (下) + 音声ボタン
-        e('div', {
-          style: {
-            background: profile.color + '0E', borderRadius: 14,
-            border: '1px solid ' + profile.color + '33',
-            padding: '20px 18px', marginBottom: 18,
-          }
-        },
-          e('div', {
-            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }
-          },
-            e('div', {
-              style: { fontSize: 11, color: profile.color, fontWeight: 700, letterSpacing: '0.16em' }
-            }, 'ENGLISH'),
-            e('div', {
-              style: { fontSize: 12, color: speaking ? profile.color : C.sub, fontWeight: 600 }
-            }, speaking ? '再生中…' : ''),
-          ),
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 22, fontWeight: 600, color: C.text, lineHeight: 1.5 }
-          }, currentItem.en),
-          e('button', {
-            onClick: () => { soundTap(); playTwice(currentItem.en); },
-            disabled: speaking,
-            style: {
-              marginTop: 14, width: '100%', padding: '12px 16px', borderRadius: 12,
-              background: speaking ? C.softer : '#fff',
-              border: '1px solid ' + profile.color + '55',
-              color: speaking ? C.sub : profile.color,
-              fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
-              cursor: speaking ? 'default' : 'pointer',
-              opacity: speaking ? 0.7 : 1,
-            }
-          }, speaking ? '再生中…' : 'もう一度聞く'),
-        ),
-
-        // ナビボタン
-        e('div', { style: { display: 'flex', gap: 10 } },
-          e('button', {
-            onClick: prevPhrase,
-            disabled: itemIdx <= 0,
-            style: {
-              flex: 1, padding: '14px 0', borderRadius: 14,
-              background: 'transparent', color: C.sub,
-              border: '1px solid ' + C.border,
-              fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
-              cursor: itemIdx <= 0 ? 'default' : 'pointer',
-              opacity: itemIdx <= 0 ? 0.4 : 1,
-            }
-          }, '‹ 前'),
-          e('button', {
-            onClick: () => { soundTap(); hapticTap(); nextPhrase(); },
-            style: {
-              flex: 2, padding: '14px 0', borderRadius: 14,
-              background: profile.color, color: '#fff',
-              border: 'none',
-              fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
-              cursor: 'pointer',
-            }
-          }, itemIdx + 1 >= totalPhrases ? '完了する' : '次の文 ›'),
-        ),
-      );
-    }
-
-    // ============ DONE ============
-    if (phase === 'done') {
-      return e('div', { style: pageStyle },
-        topBar,
-        e('div', { style: { padding: '20px 4px 30px', textAlign: 'center' } },
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, marginBottom: 8 }
-          }, 'おつかれさま！'),
-          e('div', {
-            style: { fontSize: 13, color: C.sub, lineHeight: 1.7 }
-          }, '#' + (set.no < 10 ? '0' + set.no : set.no) + ' ' + set.title + ' を完走しました。'),
-        ),
-        set.quote && e('div', {
-          style: {
-            background: C.card, borderRadius: 14,
-            border: '1px solid ' + C.line,
-            padding: '18px 18px', marginBottom: 18,
-          }
-        },
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 16, color: C.text, lineHeight: 1.7, marginBottom: 8 }
-          }, '「' + set.quote + '」'),
-          set.quoteAuthor && e('div', {
-            style: { fontSize: 12, color: C.sub, textAlign: 'right' }
-          }, '— ' + set.quoteAuthor),
-        ),
-        e('button', {
-          onClick: () => startPractice(setIdx),
-          style: {
-            width: '100%', padding: '14px 16px', borderRadius: 14,
-            background: profile.color, color: '#fff',
-            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
-            border: 'none', cursor: 'pointer', marginBottom: 10,
-          }
-        }, 'もう一度このセット'),
-        setIdx + 1 < USEFUL_PHRASE_SETS.length && e('button', {
-          onClick: () => startPractice(setIdx + 1),
-          style: {
-            width: '100%', padding: '14px 16px', borderRadius: 14,
-            background: 'transparent', color: profile.color,
-            border: '1px solid ' + profile.color + '66',
-            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
-            cursor: 'pointer', marginBottom: 10,
-          }
-        }, '次のセット (#' + (setIdx + 2 < 10 ? '0' + (setIdx + 2) : (setIdx + 2)) + ') へ ›'),
-        e('button', {
-          onClick: backToList,
-          style: {
-            width: '100%', padding: '12px 16px', borderRadius: 14,
-            background: 'transparent', color: C.sub,
-            border: '1px solid ' + C.border,
-            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          }
-        }, '一覧に戻る'),
-      );
-    }
-
-    return e('div', { style: pageStyle }, topBar);
+        progressBar,
+        setBlocks,
+      ),
+      controlBar,
+    );
   }
+
 
   // ---------- Daily Phrases (簡単英語) ----------
   // Scene-tagged phrasebook with a Daily20-style practice flow.
