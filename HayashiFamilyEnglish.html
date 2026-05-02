@@ -19604,7 +19604,7 @@
         u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
         try { window.speechSynthesis.speak(u); } catch { then(); }
       };
-      // 1.3s 待ち → EN → 0.4s → EN → 0.6s → 次へ
+      // 1.3s 待ち → EN → 1.5s (口を動かす時間) → EN → 0.8s → 次へ
       timeouts.push(setTimeout(() => {
         speakOnce(cur.en, () => {
           timeouts.push(setTimeout(() => {
@@ -19629,9 +19629,9 @@
                 } else {
                   setCurrentIdx(currentIdx + 1);
                 }
-              }, 600));
+              }, 800));
             });
-          }, 400));
+          }, 1500));
         });
       }, 1300));
       return cancel;
