@@ -20897,10 +20897,20 @@
         '余計な前置きは要りません。例文の本文だけを 1 行で返してください。';
       setExtraBusy(true); setExtraError('');
       try {
-        const raw = await callClaudeText(prompt, TRANSLATE_SYSTEM);
+        // 注意: TRANSLATE_SYSTEM は「JSON で返せ」と指示しているのでここでは
+        // 使えない (使うと JSON 形式の文字列が返ってきてしまう)。プレーンな
+        // 1 行を要求する別 system プロンプトを渡す。
+        const ALT_SYSTEM =
+          'You are a Japanese–English tutor for the Hayashi family (British English preferred). ' +
+          'When asked, return EXACTLY ONE alternative translation as a single plain text line — ' +
+          'no JSON, no markdown, no code fences, no quotes, no commentary, no labels.';
+        const raw = await callClaudeText(prompt, ALT_SYSTEM);
         // 1 行目だけ採用 (引用符や前置きをトリム)
         let line = (raw || '').trim().split('\n')[0] || '';
-        line = line.replace(/^[「『"']+/, '').replace(/[」』"'。]+$/, '').trim();
+        // 念のため "alternative" や JSON っぽい構造が混ざっていれば中の値を取り出す
+        const jsonMatch = line.match(/"([^"]{2,})"/);
+        if (line.startsWith('{') && jsonMatch) line = jsonMatch[1];
+        line = line.replace(/^[「『"'`*\-\s]+/, '').replace(/[」』"'`*。\s]+$/, '').trim();
         if (!line) {
           setExtraError('別の言い方が取得できませんでした。');
           return;
