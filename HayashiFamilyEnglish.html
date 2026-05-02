@@ -19451,35 +19451,121 @@
 
   // ---------- Achievements Screen (full grid of all 23 badges) ----------
 
-  // ---------- お役立ちフレーズ (Repeat After Me, 連続スクロール) ----------
-  // 全セットを 1 ページにずらっと並べ、開いた瞬間から英語を自動再生していく。
-  // 各フレーズで EN を 2 回再生 → 次へ自動遷移。ハイライトは中央に自動スクロール。
-  // 制御ボタン: 逆戻り (前のセット) / 停止・再生 / 次へ (1 フレーズ進む) / 早送り (次のセット)
+  // ---------- お役立ちフレーズ (List → Practice 形式) ----------
+  // トップは 15 セットの一覧。タップで入ったセット内のみ連続スクロール
+  // + 自動再生 (タップが user gesture となるため iOS PWA でも音声が出る)。
+  // データは USEFUL_PHRASE_SETS。
   function UsefulPhrases({ profile, onBack }) {
-    // 全セットの全フレーズをフラット化。section 情報も一緒に持つ。
+    const [setIdx, setSetIdx] = useState(-1); // -1 = list、0+ = practice
+    return (setIdx < 0)
+      ? e(UsefulPhrasesList, {
+          profile, onBack,
+          onPickSet: (idx) => {
+            // 重要: ここはタップハンドラ。先に空発話を投げて TTS を解錠してから
+            // 練習画面に遷移させる。これで iOS PWA でも自動再生が通る。
+            try {
+              if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(' ');
+                u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+                window.speechSynthesis.speak(u);
+              }
+            } catch {}
+            setSetIdx(idx);
+          },
+        })
+      : e(UsefulPhrasesPractice, {
+          profile, setIdx,
+          onBackToList: () => setSetIdx(-1),
+        });
+  }
+
+  // ----- 一覧画面 -----
+  function UsefulPhrasesList({ profile, onBack, onPickSet }) {
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'お役立ちフレーズ'),
+    );
+    return e('div', { style: pageStyle },
+      topBar,
+      e('div', { style: { padding: '4px 4px 18px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+        }, 'お役立ちフレーズ'),
+        e('div', {
+          style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+        }, 'タップしたセットの中で「日本語 → 英語 (×2)」がテンポよく自動再生されます。'),
+      ),
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        USEFUL_PHRASE_SETS.map((s, i) => {
+          const phraseCount = s.items.filter(it => it.ja && it.en).length;
+          return e('button', {
+            key: s.id,
+            onClick: () => onPickSet(i),
+            style: {
+              width: '100%', padding: '14px 16px', borderRadius: 14,
+              background: C.card, border: '1px solid ' + C.line,
+              cursor: 'pointer', textAlign: 'left',
+              display: 'flex', alignItems: 'center', gap: 12,
+            }
+          },
+            e('div', {
+              style: {
+                width: 40, height: 40, borderRadius: 12,
+                background: profile.color + '14', color: profile.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
+                flexShrink: 0,
+              }
+            }, '#' + (s.no < 10 ? '0' + s.no : s.no)),
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+              }, s.title),
+              s.subtitle && e('div', {
+                style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+              }, s.subtitle),
+              e('div', {
+                style: { fontSize: 12, color: C.sub, marginTop: 6, fontVariantNumeric: 'tabular-nums' }
+              }, phraseCount + ' フレーズ'),
+            ),
+            e('div', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ----- 練習画面 (1 セットの連続スクロール + 自動再生) -----
+  function UsefulPhrasesPractice({ profile, setIdx, onBackToList }) {
+    const set = USEFUL_PHRASE_SETS[setIdx];
+    const items = (set && set.items) || [];
+
+    // この練習セッションのフレーズ (ja+en だけ抽出、section ごとに分かれて並ぶ)
     const phrases = useMemo(() => {
       const list = [];
-      USEFUL_PHRASE_SETS.forEach((set) => {
-        let curSection = null;
-        set.items.forEach((it) => {
-          if (it.section) curSection = it.section;
-          else if (it.ja && it.en) {
-            list.push({
-              globalIdx: list.length,
-              setId: set.id,
-              setNo: set.no,
-              setTitle: set.title,
-              section: curSection,
-              ja: it.ja, en: it.en,
-            });
-          }
-        });
+      let curSection = null;
+      items.forEach((it) => {
+        if (it.section) curSection = it.section;
+        else if (it.ja && it.en) {
+          list.push({
+            globalIdx: list.length,
+            section: curSection,
+            ja: it.ja, en: it.en,
+          });
+        }
       });
       return list;
-    }, []);
+    }, [setIdx]);
 
     const [currentIdx, setCurrentIdx] = useState(0);
-    const [playing, setPlaying] = useState(true); // 開いた瞬間に自動再生
+    const [playing, setPlaying] = useState(true);  // 入った瞬間から自動再生
     const [reachedEnd, setReachedEnd] = useState(false);
     const phraseRefs = useRef({});
     const playSeq    = useRef(0);
@@ -19518,7 +19604,7 @@
         u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
         try { window.speechSynthesis.speak(u); } catch { then(); }
       };
-      // 1.3s で日本語を読む間 → EN → 0.4s → EN → 0.6s → 次へ
+      // 1.3s 待ち → EN → 0.4s → EN → 0.6s → 次へ
       timeouts.push(setTimeout(() => {
         speakOnce(cur.en, () => {
           timeouts.push(setTimeout(() => {
@@ -19528,7 +19614,6 @@
                 if (currentIdx + 1 >= phrases.length) {
                   setReachedEnd(true);
                   setPlaying(false);
-                  // 完走を 1 回だけ記録
                   if (!recordedDoneRef.current) {
                     recordedDoneRef.current = true;
                     try {
@@ -19537,6 +19622,7 @@
                         kind: 'useful_phrases',
                         total: phrases.length, correct: phrases.length,
                         durationMs: Date.now() - sessionStartRef.current,
+                        label: '#' + (set.no < 10 ? '0' + set.no : set.no) + ' ' + set.title,
                       });
                     } catch {}
                   }
@@ -19560,8 +19646,8 @@
     // ----- ボタン操作 -----
     function togglePlay() {
       soundTap(); hapticTap();
-      // 終わってる状態で「再生」を押されたら最初に戻す
       if (reachedEnd && !playing) {
+        // 完走後に再生 → 最初に戻す
         setReachedEnd(false);
         setCurrentIdx(0);
         setPlaying(true);
@@ -19573,54 +19659,57 @@
       soundTap();
       if (currentIdx + 1 < phrases.length) setCurrentIdx(currentIdx + 1);
     }
-    // 早送り: 現在のセット最後 → 次のセット先頭へジャンプ
+    // 早送り: セクションをまたぐか、なければ最後へ
     function skipForward() {
       soundTap();
       const cur = phrases[currentIdx];
       if (!cur) return;
+      // 同じ section 内ならスキップして次の section の先頭へ。
+      // section が無いセットでは 5 個進む扱いに。
       let i = currentIdx + 1;
-      while (i < phrases.length && phrases[i].setId === cur.setId) i++;
-      if (i < phrases.length) setCurrentIdx(i);
-      else setCurrentIdx(phrases.length - 1);
+      if (cur.section) {
+        while (i < phrases.length && phrases[i].section === cur.section) i++;
+      } else {
+        i = Math.min(phrases.length - 1, currentIdx + 5);
+      }
+      setCurrentIdx(Math.min(phrases.length - 1, i));
     }
-    // 逆戻り: 現在のセットの先頭へ。すでに先頭なら前のセットの先頭へ。
+    // 逆戻り: 現在の section の先頭 (なければ前 section、なければ 5 個戻し)
     function skipBack() {
       soundTap();
       const cur = phrases[currentIdx];
       if (!cur) return;
-      let firstOfCur = currentIdx;
-      while (firstOfCur > 0 && phrases[firstOfCur - 1].setId === cur.setId) firstOfCur--;
-      if (firstOfCur === currentIdx && currentIdx > 0) {
-        // すでにセット先頭 → 前のセット先頭へ
-        let i = currentIdx - 1;
-        const prevSetId = phrases[i].setId;
-        while (i > 0 && phrases[i - 1].setId === prevSetId) i--;
-        setCurrentIdx(i);
+      if (cur.section) {
+        let firstOfCur = currentIdx;
+        while (firstOfCur > 0 && phrases[firstOfCur - 1].section === cur.section) firstOfCur--;
+        if (firstOfCur === currentIdx && currentIdx > 0) {
+          let i = currentIdx - 1;
+          const prevSec = phrases[i].section;
+          while (i > 0 && phrases[i - 1].section === prevSec) i--;
+          setCurrentIdx(i);
+        } else {
+          setCurrentIdx(firstOfCur);
+        }
       } else {
-        setCurrentIdx(firstOfCur);
+        setCurrentIdx(Math.max(0, currentIdx - 5));
       }
     }
 
     // ----- レンダ -----
     const pageStyle = {
       maxWidth: 480, margin: '0 auto',
-      padding: '44px 22px 130px',  // 下部の固定コントロールバー分の余白
+      padding: '44px 22px 130px',
     };
-
-    // ヘッダ
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }
     },
-      e('button', { onClick: onBack,
+      e('button', { onClick: onBackToList,
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1, background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
-      e('div', { style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, flex: 1, lineHeight: 1.2 } },
-        'お役立ちフレーズ'),
-      e('div', { style: { fontFamily: SANS_UI, fontSize: 13, color: C.sub, fontVariantNumeric: 'tabular-nums' } },
+      e('div', { style: { fontSize: 13, color: C.sub, flex: 1 } }, 'お役立ちフレーズ'),
+      e('div', { style: { fontSize: 13, color: C.sub, fontVariantNumeric: 'tabular-nums' } },
         (currentIdx + 1) + ' / ' + phrases.length),
     );
-
-    // 進捗バー
     const progressBar = e('div', {
       style: { background: C.softer, height: 4, borderRadius: 999, marginBottom: 18, overflow: 'hidden' }
     },
@@ -19632,85 +19721,75 @@
       }),
     );
 
-    // 全セットを縦に並べる
-    const setBlocks = USEFUL_PHRASE_SETS.map((set) => {
-      // 各 item を順に描画 (section header または phrase row)
-      const rows = [];
-      let curSection = null;
-      set.items.forEach((it, i) => {
-        if (it.section) {
-          curSection = it.section;
-          rows.push(e('div', {
-            key: 'sec_' + set.id + '_' + i,
-            style: {
-              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
-              color: C.sub, letterSpacing: '0.04em',
-              margin: '14px 4px 6px',
-            }
-          }, '— ' + it.section + ' —'));
-          return;
+    // セットヘッダ
+    const header = e('div', { style: { padding: '0 4px 14px' } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 13, fontWeight: 800,
+          color: profile.color, letterSpacing: '0.06em',
         }
-        if (!it.ja || !it.en) return;
-        // この phrase の global idx を逆引き
-        const phraseInfo = phrases.find(p => p.setId === set.id && p.ja === it.ja && p.en === it.en);
-        if (!phraseInfo) return;
-        const isCurrent = phraseInfo.globalIdx === currentIdx;
-        rows.push(e('div', {
-          key: 'p_' + set.id + '_' + i,
-          ref: el => { if (el) phraseRefs.current[phraseInfo.globalIdx] = el; },
-          onClick: () => { soundTap(); setCurrentIdx(phraseInfo.globalIdx); },
-          style: {
-            cursor: 'pointer',
-            background: isCurrent ? profile.color + '14' : C.card,
-            border: '1px solid ' + (isCurrent ? profile.color + '88' : C.line),
-            borderRadius: 12,
-            padding: '12px 14px',
-            marginBottom: 8,
-            transition: 'background 200ms, border-color 200ms',
-            boxShadow: isCurrent ? '0 4px 14px ' + profile.color + '22' : 'none',
-          }
-        },
-          // 日本語
-          e('div', {
-            style: { fontSize: 15, color: C.text, fontWeight: 600, lineHeight: 1.5, marginBottom: 6 }
-          }, it.ja),
-          // 英語
-          e('div', {
-            style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5, fontWeight: isCurrent ? 700 : 600 }
-          }, it.en),
-        ));
-      });
+      }, '#' + (set.no < 10 ? '0' + set.no : set.no)),
+      e('div', {
+        style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.3, marginTop: 2 }
+      }, set.title),
+      set.subtitle && e('div', {
+        style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 }
+      }, set.subtitle),
+    );
 
-      return e('div', { key: set.id, style: { marginBottom: 28 } },
-        // セットヘッダ
-        e('div', {
+    // 全フレーズを section 区切り含めて並べる
+    const rows = [];
+    let curSection = null;
+    items.forEach((it, i) => {
+      if (it.section) {
+        curSection = it.section;
+        rows.push(e('div', {
+          key: 'sec_' + i,
           style: {
-            fontFamily: SANS_UI, fontSize: 13, fontWeight: 800,
-            color: profile.color, letterSpacing: '0.06em',
-            padding: '10px 12px', marginBottom: 4,
-            background: profile.color + '0E',
-            borderLeft: '4px solid ' + profile.color,
-            borderRadius: 6,
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+            color: C.sub, letterSpacing: '0.04em',
+            margin: '14px 4px 6px',
           }
-        }, '#' + (set.no < 10 ? '0' + set.no : set.no) + '  ' + set.title),
-        set.subtitle && e('div', {
-          style: { fontSize: 12, color: C.sub, lineHeight: 1.6, padding: '0 12px', marginBottom: 10 }
-        }, set.subtitle),
-        rows,
-      );
+        }, '— ' + it.section + ' —'));
+        return;
+      }
+      if (!it.ja || !it.en) return;
+      const phraseInfo = phrases.find(p => p.ja === it.ja && p.en === it.en);
+      if (!phraseInfo) return;
+      const isCurrent = phraseInfo.globalIdx === currentIdx;
+      rows.push(e('div', {
+        key: 'p_' + i,
+        ref: el => { if (el) phraseRefs.current[phraseInfo.globalIdx] = el; },
+        onClick: () => { soundTap(); setCurrentIdx(phraseInfo.globalIdx); setPlaying(true); setReachedEnd(false); },
+        style: {
+          cursor: 'pointer',
+          background: isCurrent ? profile.color + '14' : C.card,
+          border: '1px solid ' + (isCurrent ? profile.color + '88' : C.line),
+          borderRadius: 12,
+          padding: '12px 14px',
+          marginBottom: 8,
+          transition: 'background 200ms, border-color 200ms',
+          boxShadow: isCurrent ? '0 4px 14px ' + profile.color + '22' : 'none',
+        }
+      },
+        e('div', {
+          style: { fontSize: 15, color: C.text, fontWeight: 600, lineHeight: 1.5, marginBottom: 6 }
+        }, it.ja),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5, fontWeight: isCurrent ? 700 : 600 }
+        }, it.en),
+      ));
     });
 
-    // 制御ボタンの共通スタイル
+    // 制御バー (4 ボタン)
     const ctrlBtn = (extra) => Object.assign({
       width: 52, height: 52, borderRadius: 999,
       background: '#fff', border: '1px solid ' + C.line,
-      color: C.text, fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
+      color: C.text, fontFamily: SANS_UI, fontWeight: 700,
       cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       boxShadow: '0 2px 6px rgba(42,37,32,0.06)',
     }, extra || {});
-
-    // 下部固定コントロールバー (4 ボタン)
     const controlBar = e('div', {
       style: {
         position: 'fixed', bottom: 0, left: 0, right: 0,
@@ -19721,16 +19800,10 @@
         zIndex: 50,
       }
     },
-      // 逆戻り (前のセットへ)
-      e('button', {
-        onClick: skipBack,
-        style: ctrlBtn(),
-        'aria-label': '逆戻り',
-      },
+      e('button', { onClick: skipBack, style: ctrlBtn(), 'aria-label': '逆戻り' },
         e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '⟪'),
         e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '戻る'),
       ),
-      // 停止 / 再生
       e('button', {
         onClick: togglePlay,
         style: ctrlBtn({
@@ -19745,21 +19818,11 @@
         e('div', { style: { fontSize: 9, color: '#fff', opacity: 0.85, marginTop: 2 } },
           playing ? '停止' : '再生'),
       ),
-      // 次へ (1 フレーズ進む)
-      e('button', {
-        onClick: goNext,
-        style: ctrlBtn(),
-        'aria-label': '次へ',
-      },
+      e('button', { onClick: goNext, style: ctrlBtn(), 'aria-label': '次へ' },
         e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '›'),
         e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '次へ'),
       ),
-      // 早送り (次のセットへ)
-      e('button', {
-        onClick: skipForward,
-        style: ctrlBtn(),
-        'aria-label': '早送り',
-      },
+      e('button', { onClick: skipForward, style: ctrlBtn(), 'aria-label': '早送り' },
         e('div', { style: { fontSize: 18, lineHeight: 1, fontWeight: 800 } }, '⟫'),
         e('div', { style: { fontSize: 9, color: C.sub, marginTop: 2 } }, '早送り'),
       ),
@@ -19769,12 +19832,12 @@
       e('div', { style: pageStyle },
         topBar,
         progressBar,
-        setBlocks,
+        header,
+        rows,
       ),
       controlBar,
     );
   }
-
 
   // ---------- Daily Phrases (簡単英語) ----------
   // Scene-tagged phrasebook with a Daily20-style practice flow.
