@@ -20784,6 +20784,10 @@
     const [error, setError]   = useState('');
     const [hasKey] = useState(() => !!loadApiKey());
     const [saved, setSaved]   = useState(false);
+    // 「他の言い方」を押すたびに追加で 1 つ取得して並べていく追加候補。
+    const [extras, setExtras] = useState([]);
+    const [extraBusy, setExtraBusy] = useState(false);
+    const [extraError, setExtraError] = useState('');
     // Translation direction picker. 'auto' (the default) detects which
     // language the user typed and translates to the other one — the
     // family's most common case. 'ja2en' / 'en2ja' force a direction
@@ -20813,6 +20817,7 @@
       const text = (input || '').trim();
       if (!text || busy) return;
       setBusy(true); setError(''); setResult(null); setSaved(false);
+      setExtras([]); setExtraError('');
       try {
         const raw = await callClaudeText(buildTranslatePrompt(text, direction), TRANSLATE_SYSTEM);
         const obj = parseTranslateJSON(raw);
@@ -20841,6 +20846,7 @@
     async function handlePhoto(file) {
       if (!file || busy) return;
       setBusy(true); setError(''); setResult(null); setSaved(false);
+      setExtras([]); setExtraError('');
       try {
         const dataUrl = await compressImageToDataUrl(file, 1400, 0.85);
         const m = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.*)$/);
@@ -20869,6 +20875,46 @@
         setBusy(false);
         if (cameraRef.current)  cameraRef.current.value  = '';
         if (libraryRef.current) libraryRef.current.value = '';
+      }
+    }
+
+    // 「他の言い方を見せて」 — main / casual / formal / 既出 extras と被らない
+    // 自然な英語表現を 1 つ Claude にもらう。タップするごとに 1 つ追加。
+    async function fetchOneMoreAlternative() {
+      if (!result || extraBusy) return;
+      // 出力言語: 元が日本語なら英語、元が英語なら日本語
+      const targetIsEn = (result.srcLang || 'ja') === 'ja';
+      const targetLabel = targetIsEn ? '英語' : '日本語';
+      const shown = [result.main, result.casual, result.formal]
+        .concat(extras)
+        .filter(s => typeof s === 'string' && s.trim().length > 0);
+      const shownList = shown.map((s, i) => '  ' + (i + 1) + '. 「' + s + '」').join('\n');
+      const prompt =
+        '元の文: 「' + (result.src || '') + '」\n\n' +
+        '上の文の自然な ' + targetLabel + ' 訳が以下です:\n' + shownList + '\n\n' +
+        '上のいずれとも違う、自然な ' + targetLabel + ' での「もう一つの言い方」を 1 つだけ ' +
+        '出してください。意味は同じだが、語彙・構文・トーンを変えたものが望ましい。' +
+        '余計な前置きは要りません。例文の本文だけを 1 行で返してください。';
+      setExtraBusy(true); setExtraError('');
+      try {
+        const raw = await callClaudeText(prompt, TRANSLATE_SYSTEM);
+        // 1 行目だけ採用 (引用符や前置きをトリム)
+        let line = (raw || '').trim().split('\n')[0] || '';
+        line = line.replace(/^[「『"']+/, '').replace(/[」』"'。]+$/, '').trim();
+        if (!line) {
+          setExtraError('別の言い方が取得できませんでした。');
+          return;
+        }
+        // 重複チェック
+        if (shown.some(s => s.trim() === line.trim())) {
+          setExtraError('同じ表現しか出ませんでした。もう一度試してください。');
+          return;
+        }
+        setExtras(prev => prev.concat([line]));
+      } catch (err) {
+        setExtraError((err && err.message) || String(err));
+      } finally {
+        setExtraBusy(false);
       }
     }
 
@@ -21352,6 +21398,63 @@
             style: { fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5 }
           }, result.formal),
         ),
+      ),
+
+      // 「他の言い方を見せて」ボタン + 取得した追加候補のリスト
+      result.main && e('div', {
+        style: {
+          marginTop: 14, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+          display: 'flex', flexDirection: 'column', gap: 10,
+        }
+      },
+        // 追加候補のリスト (取得済みのみ表示)
+        extras.length > 0 && e('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: 12 }
+        },
+          e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+              letterSpacing: '0.16em', color: C.sub,
+            }
+          }, 'OTHER WAYS · 他の言い方'),
+          extras.map((alt, i) => e('div', {
+            key: 'extra_' + i,
+            style: {
+              background: profile.color + '0E',
+              border: '1px solid ' + profile.color + '33',
+              borderRadius: 12, padding: '10px 14px',
+            }
+          },
+            e('div', {
+              style: { display: 'flex', alignItems: 'flex-start', gap: 10 }
+            },
+              e('div', {
+                style: { flex: 1, fontFamily: SERIF, fontSize: 17, color: C.text, lineHeight: 1.5 }
+              }, alt),
+              e(SpeakerBtn, { onClick: () => speak(alt), color: profile.color, size: 28 }),
+            ),
+          )),
+        ),
+        // 「他の言い方を見せて」ボタン
+        e('button', {
+          onClick: () => { soundTap(); hapticTap(); fetchOneMoreAlternative(); },
+          disabled: extraBusy,
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 12,
+            background: extraBusy ? C.softer : 'transparent',
+            border: '1px dashed ' + profile.color + '66',
+            color: profile.color,
+            fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+            cursor: extraBusy ? 'default' : 'pointer',
+            opacity: extraBusy ? 0.6 : 1,
+          }
+        }, extraBusy
+            ? '取得中…'
+            : (extras.length === 0 ? '他の言い方を見せて' : 'もう 1 つ別の言い方を見せて')),
+        extraError && e('div', {
+          style: { fontSize: 13, color: C.danger, fontFamily: SANS_UI }
+        }, extraError),
       ),
 
       // Vocab list — always shown when present
