@@ -21176,6 +21176,8 @@
             }, error),
             result && e(TranslateResult, {
               result, profile, saved, onToggleSave: toggleSave,
+              extras, extraBusy, extraError,
+              onFetchAlt: fetchOneMoreAlternative,
             }),
 
             // Inline "蓄積中" list — newest saved entries on this device,
@@ -21302,7 +21304,9 @@
   // result object and stacks them in a single card with thin dividers. The
   // "more" expressions (casual/formal/example) are collapsible so the
   // card stays scannable on first view.
-  function TranslateResult({ result, profile, saved, onToggleSave }) {
+  function TranslateResult({ result, profile, saved, onToggleSave,
+                             extras, extraBusy, extraError, onFetchAlt }) {
+    extras = extras || [];
     const [showMore, setShowMore] = useState(false);
     if (!result) return null;
     const tgtLang = result.srcLang === 'ja' ? 'en' : 'ja';
@@ -21438,7 +21442,7 @@
         ),
         // 「他の言い方を見せて」ボタン
         e('button', {
-          onClick: () => { soundTap(); hapticTap(); fetchOneMoreAlternative(); },
+          onClick: () => { soundTap(); hapticTap(); if (onFetchAlt) onFetchAlt(); },
           disabled: extraBusy,
           style: {
             width: '100%', padding: '12px 16px', borderRadius: 12,
