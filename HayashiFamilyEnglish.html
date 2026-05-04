@@ -17355,16 +17355,24 @@
     opts = opts || {};
     // Build a unified pool of SENTENCES + DAILY_PHRASES tagged with kind, so
     // recordPhrase / recordSentence can be dispatched cleanly at answer time.
+    // Anything the parent has tapped × on (scope: 'composition') is filtered
+    // out so the family curation sticks across every device.
     const pool = [];
-    SENTENCES.forEach(s => pool.push({
-      kind: 'sentence',
-      id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
-    }));
-    DAILY_PHRASES.forEach(p => pool.push({
-      kind: 'phrase',
-      id: p.id, level: 2, ja: p.ja, en: p.en,
-      grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
-    }));
+    SENTENCES.forEach(s => {
+      if (isItemHidden('composition', s.id)) return;
+      pool.push({
+        kind: 'sentence',
+        id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
+      });
+    });
+    DAILY_PHRASES.forEach(p => {
+      if (isItemHidden('composition', p.id)) return;
+      pool.push({
+        kind: 'phrase',
+        id: p.id, level: 2, ja: p.ja, en: p.en,
+        grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
+      });
+    });
     // Selection rules (priority):
     //   1. If opts.level is a number (1-5): exact level only
     //   2. Else if profile.maxLevel set: strict <= maxLevel
@@ -17699,6 +17707,48 @@
 
     // ============ STUDY ============
     if (!current) return null;
+
+    // Drop the current sentence/phrase from future 瞬間英作文 sessions
+    // (family-wide). Same UX as the shadowing × — confirm, mark hidden,
+    // advance. Keeps the gathered results so a half-finished session
+    // still records what was answered.
+    function hideCurrentItem() {
+      if (!current) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      hideItem('composition', current.id);
+      // Advance, or end the session early if this was the last one.
+      if (index + 1 >= total) {
+        const correctCount = results.filter(r => r.isCorrect).length;
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        if (results.length > 0) {
+          try {
+            db.recordTurn(profile.id, 'composition');
+            db.pushEvent(profile.id, {
+              kind: 'composition',
+              total: results.length,
+              correct: correctCount,
+              direction,
+              durationMs,
+            });
+            adjustComfortFromMastery(profile.id, 'composition');
+            markPathStepDone(profile, direction === 'ja2en' ? 'composition_ja2en' : 'composition_en2ja');
+          } catch {}
+          setPhase('done');
+        } else {
+          setPhase('intro');
+        }
+        return;
+      }
+      setIndex(index + 1);
+      setRevealed(false);
+    }
+
     return e('div', { style: pageStyle },
       topBar,
       // Progress bar
@@ -17718,12 +17768,28 @@
       // Card
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
           borderRadius: 24, padding: '24px 22px', marginBottom: 18,
           boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
           minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
         }
       },
+        // 「これいらない」 — small dim × top-right that drops this question
+        // from every family member's pool. Subtle on purpose.
+        e('button', {
+          onClick: hideCurrentItem,
+          'aria-label': 'この問題を今後の出題から外す',
+          title: 'この問題を今後の出題から外す',
+          style: {
+            position: 'absolute', top: 10, right: 10,
+            width: 28, height: 28, borderRadius: 999,
+            background: 'transparent', border: '1px solid ' + C.line,
+            color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+          }
+        }, '×'),
         // Chips
         e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           e('span', {
@@ -18704,9 +18770,10 @@
       return () => window.removeEventListener('hfe:family-hydrated', onHydrated);
     }, []);
     const all = loadHiddenItems();
-    const shadowingCount = Object.keys(all.shadowing || {}).length;
-    const compTestCount  = Object.keys(all.comp_test  || {}).length;
-    const total = shadowingCount + compTestCount;
+    const shadowingCount   = Object.keys(all.shadowing   || {}).length;
+    const compTestCount    = Object.keys(all.comp_test   || {}).length;
+    const compositionCount = Object.keys(all.composition || {}).length;
+    const total = shadowingCount + compTestCount + compositionCount;
     return e('div', { style: { marginTop: 32 } },
       e('div', {
         style: {
@@ -18737,6 +18804,10 @@
             e('span', null, 'シャドーイング'),
             e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
               shadowingCount + ' 件')),
+          compositionCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, '瞬間英作文'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              compositionCount + ' 件')),
           compTestCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
             e('span', null, 'AI英作文テスト'),
             e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
