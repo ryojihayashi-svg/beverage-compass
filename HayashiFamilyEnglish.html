@@ -13532,6 +13532,7 @@
       photos:  loadFamilyPhotos(),
       names:   loadDisplayNames(),
       avatars: loadAvatars(),
+      hiddenItems: loadHiddenItems(),
       _localUpdatedAt: new Date().toISOString(),
     };
     // Mirror the Anthropic API key through this same shared row (gated to
@@ -13576,10 +13577,14 @@
       const avatars = loadAvatars();
       const photos  = loadFamilyPhotos();
       const key     = loadApiKey();
+      const hidden  = loadHiddenItems();
+      let hiddenCount = 0;
+      for (const k of Object.keys(hidden || {})) hiddenCount += Object.keys(hidden[k] || {}).length;
       return Object.keys(names || {}).length   === 0
           && Object.keys(avatars || {}).length === 0
           && (photos || []).length             === 0
-          && !key;
+          && !key
+          && hiddenCount                       === 0;
     } catch { return true; }
   }
   // Same idea as isMemberStateEmptyish — does the REMOTE row look
@@ -13591,7 +13596,13 @@
     const names   = d.names   ? Object.keys(d.names).length   : 0;
     const avatars = d.avatars ? Object.keys(d.avatars).length : 0;
     const key     = typeof d.apiKey === 'string' ? d.apiKey : '';
-    return photos === 0 && names === 0 && avatars === 0 && !key;
+    let hiddenCount = 0;
+    if (d.hiddenItems && typeof d.hiddenItems === 'object') {
+      for (const k of Object.keys(d.hiddenItems)) {
+        hiddenCount += Object.keys(d.hiddenItems[k] || {}).length;
+      }
+    }
+    return photos === 0 && names === 0 && avatars === 0 && !key && hiddenCount === 0;
   }
   // ---------- Family-shared merge ----------
   // names / avatars / photos / apiKey. Per-key merge so two devices
@@ -13677,6 +13688,18 @@
     const mergedNames   = mergeKeyValueLocalWins(localNames,   (d.names   && typeof d.names   === 'object') ? d.names   : {});
     const mergedAvatars = mergeKeyValueLocalWins(localAvatars, (d.avatars && typeof d.avatars === 'object') ? d.avatars : {});
     const mergedApiKey  = localApiKey || (typeof d.apiKey === 'string' ? d.apiKey : '');
+    // Hidden items (parent's content curation): UNION across devices.
+    // Once a parent says "this question is out", every device should drop
+    // it. Restoring is a deliberate single-button action in Settings.
+    const localHidden  = loadHiddenItems();
+    const remoteHidden = (d.hiddenItems && typeof d.hiddenItems === 'object') ? d.hiddenItems : {};
+    const mergedHidden = {};
+    const hiddenScopes = new Set([...Object.keys(localHidden), ...Object.keys(remoteHidden)]);
+    for (const scope of hiddenScopes) {
+      mergedHidden[scope] = Object.assign({},
+        remoteHidden[scope] || {},
+        localHidden[scope]  || {});
+    }
 
     let changed = false;
     function writeIfDifferent(key, jsonValue) {
@@ -13689,6 +13712,7 @@
     writeIfDifferent(FAMILY_PHOTOS_KEY, mergedPhotos);
     writeIfDifferent(NAMES_KEY,         mergedNames);
     writeIfDifferent(AVATARS_KEY,       mergedAvatars);
+    writeIfDifferent(HIDDEN_ITEMS_KEY,  mergedHidden);
     // apiKey is a plain string, not JSON-encoded.
     const curKey = localStorage.getItem(AI_KEY_STORAGE) || '';
     if (curKey !== mergedApiKey) {
@@ -13708,6 +13732,43 @@
     familySharedHydrationDone = true;
     pushFamilySharedState();
     return changed;
+  }
+
+  // ---------- Hidden items (parent-curated removal) ----------
+  // 「このしゃべらせ文／問題は要らない」と思ったときに右上の × で外す。
+  // 物理削除はせず、id を集合に入れて出題側で除外する。
+  // family-shared 行に同梱して同期するので、お父さんが iPad で外せば
+  // お子さんの端末にも次のハイドレートで反映される。
+  //
+  // 構造: { [scope]: { [id]: true } }
+  //   scope: 'shadowing' | 'comp_test'  (将来 'sentence' なども追加可)
+  const HIDDEN_ITEMS_KEY = 'hfe_hidden_items_v1';
+  function loadHiddenItems() {
+    try { return JSON.parse(localStorage.getItem(HIDDEN_ITEMS_KEY) || '{}') || {}; }
+    catch { return {}; }
+  }
+  function saveHiddenItemsLocal(obj) {
+    try { localStorage.setItem(HIDDEN_ITEMS_KEY, JSON.stringify(obj || {})); } catch {}
+  }
+  function isItemHidden(scope, id) {
+    if (!scope || !id) return false;
+    const all = loadHiddenItems();
+    return !!(all[scope] && all[scope][id]);
+  }
+  function hideItem(scope, id) {
+    if (!scope || !id) return;
+    const all = loadHiddenItems();
+    if (!all[scope]) all[scope] = {};
+    if (all[scope][id]) return;        // already hidden
+    all[scope][id] = true;
+    saveHiddenItemsLocal(all);
+    stampFamilySharedLocal();
+    pushFamilySharedState();
+  }
+  function unhideAllItems() {
+    saveHiddenItemsLocal({});
+    stampFamilySharedLocal();
+    pushFamilySharedState();
   }
 
   // ---------- Encouragement messages (bilingual, surfaced on session done) ----------
@@ -17874,7 +17935,11 @@
     const inputRef = useRef(null);
 
     function pickBatch(lv, count) {
-      const pool = COMPOSITION_TEST_POOL.filter(p => p.level === lv);
+      // Filter through the family-curated hidden set so anything the
+      // parent has tapped × on stays out of every test on every device.
+      const pool = COMPOSITION_TEST_POOL.filter(p =>
+        p.level === lv && !isItemHidden('comp_test', p.id)
+      );
       if (pool.length === 0) return [];
       const fresh = pool.filter(p => !usedIdsRef.current.has(p.id));
       // If we've exhausted fresh items at this level, reset the used-set
@@ -17948,6 +18013,57 @@
       } finally {
         setBusy(false);
       }
+    }
+
+    // Drop the current question from future tests (family-wide).
+    // Used by the small × in the study card. Same UX as shadowing: confirm,
+    // mark hidden, advance — or end the session if it was the last one.
+    function hideCurrentItem() {
+      const c = queue[index];
+      if (!c) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      hideItem('comp_test', c.id);
+      // Walk forward without adding a result row (the user didn't answer).
+      // If this was the last item, end the session early; otherwise just
+      // advance to the next question.
+      if (index + 1 >= queue.length) {
+        if (results.length > 0) {
+          // Some answered, some skipped — log a session event for what
+          // was actually answered so today's progress isn't lost.
+          const correct = results.filter(r => r.score >= 1).length;
+          const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+          sessionStartRef.current = null;
+          try {
+            db.recordTurn(profile.id, 'composition');
+            db.pushEvent(profile.id, {
+              kind: 'composition',
+              total: results.length,
+              correct,
+              direction: 'ja2en',
+              label: 'AIテスト',
+              durationMs,
+            });
+            adjustComfortFromMastery(profile.id, 'composition');
+            markPathStepDone(profile, 'composition_ja2en');
+          } catch {}
+          setPhase('done');
+        } else {
+          // Nothing answered yet — just bail back to intro.
+          sessionStartRef.current = null;
+          setPhase('intro');
+        }
+        return;
+      }
+      setIndex(i => i + 1);
+      setUserInput('');
+      setGrading(null);
+      setError('');
+      setPhase('study');
     }
 
     function nextOrFinish() {
@@ -18044,7 +18160,11 @@
         },
           [1, 2, 3, 4, 5].map(lv => {
             const isActive = level === lv;
-            const count = COMPOSITION_TEST_POOL.filter(p => p.level === lv).length;
+            // Reflect parent-curated hidden items so the level pill's
+            // disabled state and count match what テスト will actually serve.
+            const count = COMPOSITION_TEST_POOL.filter(p =>
+              p.level === lv && !isItemHidden('comp_test', p.id)
+            ).length;
             return e('button', {
               key: 'lv_' + lv,
               onClick: () => setLevel(lv),
@@ -18104,10 +18224,27 @@
         topBar,
         e('div', {
           style: {
+            position: 'relative',
             background: C.card, border: '1px solid ' + C.line,
             borderRadius: 16, padding: '20px 18px', marginBottom: 14,
           }
         },
+          // 「これいらない」 — small dim × that drops this question from
+          // every family member's pool. Subtle on purpose so it doesn't
+          // tempt accidental taps.
+          e('button', {
+            onClick: hideCurrentItem,
+            'aria-label': 'この問題を今後の出題から外す',
+            title: 'この問題を今後の出題から外す',
+            style: {
+              position: 'absolute', top: 8, right: 8,
+              width: 28, height: 28, borderRadius: 999,
+              background: 'transparent', border: '1px solid ' + C.line,
+              color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+            }
+          }, '×'),
           e('div', {
             style: {
               fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
@@ -18502,6 +18639,75 @@
             background: C.danger + '0F', borderRadius: 8, border: '1px solid ' + C.danger + '33',
           }
         }, s.lastError),
+      ),
+    );
+  }
+
+  // ---------- Hidden-items restoration panel ----------
+  // Surfaces how many problems the parent has × out, with one button to
+  // bring them all back. Sits next to the Cloud Sync panel because that's
+  // where shared family-curation lives.
+  function HiddenItemsPanel() {
+    const [tick, setTick] = useState(0);
+    useEffect(() => {
+      // Re-render after another device pulls a new hiddenItems set down
+      // (same event the Cloud Sync panel listens to).
+      function onHydrated() { setTick(t => t + 1); }
+      window.addEventListener('hfe:family-hydrated', onHydrated);
+      return () => window.removeEventListener('hfe:family-hydrated', onHydrated);
+    }, []);
+    const all = loadHiddenItems();
+    const shadowingCount = Object.keys(all.shadowing || {}).length;
+    const compTestCount  = Object.keys(all.comp_test  || {}).length;
+    const total = shadowingCount + compTestCount;
+    return e('div', { style: { marginTop: 32 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 10, paddingLeft: 4,
+        }
+      }, '外した問題'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px',
+        }
+      },
+        e('div', {
+          style: { fontSize: 12.5, color: C.sub, lineHeight: 1.6, marginBottom: total > 0 ? 12 : 0 }
+        },
+          total === 0
+            ? '練習中に右上の × を押すと、その問題を家族全員の出題から外せます。'
+            : '練習中に右上の × で外した問題は、家族全員の端末で出題されません。'),
+        total > 0 && e('div', {
+          style: {
+            display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12,
+            fontSize: 12.5, color: C.text,
+          }
+        },
+          shadowingCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, 'シャドーイング'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              shadowingCount + ' 件')),
+          compTestCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, 'AI英作文テスト'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              compTestCount + ' 件')),
+        ),
+        total > 0 && e('button', {
+          onClick: () => {
+            if (!window.confirm('外した ' + total + ' 件をすべて元に戻しますか？')) return;
+            unhideAllItems();
+            setTick(t => t + 1);
+          },
+          style: {
+            padding: '8px 14px', borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 12.5, fontWeight: 600, color: C.text, fontFamily: SANS_UI,
+            cursor: 'pointer',
+          }
+        }, '全部戻す'),
       ),
     );
   }
@@ -19227,6 +19433,9 @@
 
       // ----- Cloud sync (Supabase) -----
       e(CloudStatusPanel),
+
+      // ----- 外した問題（× で出題から外したもの）の復元 -----
+      e(HiddenItemsPanel),
 
       // ----- Family photo gallery -----
       e('div', { style: { marginTop: 32 } },
@@ -22299,16 +22508,31 @@
     return out;
   })();
 
+  // Filtered views — drop anything the parent has hidden via × in the
+  // practice screen. For Q+A groups, hiding either half drops the whole
+  // pair (the partner alone wouldn't make sense).
+  function getActiveShadowingQA() {
+    return SHADOWING_QA.filter(s => !isItemHidden('shadowing', s.id));
+  }
+  function getActiveShadowingGroups() {
+    return SHADOWING_GROUPS.filter(g =>
+      (g.items || []).every(it => !isItemHidden('shadowing', it.id))
+    );
+  }
+
   // How many sentences live at a level (or total for 'auto').
   // 'auto' only counts the LV1-5 progression — 'others' is a side bucket
   // (online-lesson script) that the おまかせ picker never draws from.
   // 'quotes' filters by tag, since quote entries also carry a numeric
   // level so they appear naturally in the LV1-5 routine too.
+  // Pulled from the active (post-hidden) view so the count pills reflect
+  // what the user will actually see during practice.
   function shadowLevelSize(lv) {
-    if (lv === 'auto')   return SHADOWING_QA.filter(s => typeof s.level === 'number').length;
-    if (lv === 'quotes') return SHADOWING_QA.filter(s => s.tag === 'quote').length;
-    if (lv === 'daily')  return SHADOWING_QA.filter(s => s.tag === 'daily').length;
-    return SHADOWING_QA.filter(s => s.level === lv).length;
+    const active = getActiveShadowingQA();
+    if (lv === 'auto')   return active.filter(s => typeof s.level === 'number').length;
+    if (lv === 'quotes') return active.filter(s => s.tag === 'quote').length;
+    if (lv === 'daily')  return active.filter(s => s.tag === 'daily').length;
+    return active.filter(s => s.level === lv).length;
   }
 
   // 「英会話」タブ専用の進捗カーソル。LV1-5 がランダムなのに対し、
@@ -22450,6 +22674,11 @@
       unlockAudioForBluetooth();
       const queueOut = [];
 
+      // All draws use the post-hidden view so anything the parent's
+      // tapped × on stays out of every future session, on every device.
+      const activeQA     = getActiveShadowingQA();
+      const activeGroups = getActiveShadowingGroups();
+
       if (selectedLevel === 'auto') {
         // おまかせ: pick a level via pickLevelForProfile per slot, then
         // pull a random unused group at that level. Same per-profile
@@ -22464,17 +22693,17 @@
           // recognition / passive understanding.
           let lv = pickLevelForProfile(profile, { track: 'vocab' });
           // Find candidates at this level; if empty, walk down then up.
-          let candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+          let candidates = activeGroups.map((g, idx) => ({ g, idx }))
             .filter(x => x.g.level === lv && !used.has(x.idx));
           if (candidates.length === 0) {
             for (let dlv = lv - 1; dlv >= 1 && candidates.length === 0; dlv--) {
-              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+              candidates = activeGroups.map((g, idx) => ({ g, idx }))
                 .filter(x => x.g.level === dlv && !used.has(x.idx));
             }
           }
           if (candidates.length === 0) {
             for (let ulv = lv + 1; ulv <= 5 && candidates.length === 0; ulv++) {
-              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+              candidates = activeGroups.map((g, idx) => ({ g, idx }))
                 .filter(x => x.g.level === ulv && !used.has(x.idx));
             }
           }
@@ -22488,7 +22717,7 @@
       } else if (selectedLevel === 'others') {
         // 英会話 (lesson-prep): play in DEFINED order, 10 at a time, then
         // continue from where we left off next session. Wrap at the end.
-        const items = SHADOWING_QA.filter(s => s.level === 'others');
+        const items = activeQA.filter(s => s.level === 'others');
         if (items.length > 0) {
           let cursor = getOthersCursor(profile.id) % items.length;
           for (let i = 0; i < SHADOW_SESSION_COUNT && i < items.length; i++) {
@@ -22501,7 +22730,7 @@
         // numeric level) and take 10. Quotes also live in their numeric
         // LV bucket so they appear in LV1-5 routines too — this tab is
         // the dedicated way to drill the famous-quote set in isolation.
-        const items = SHADOWING_QA.filter(s => s.tag === 'quote');
+        const items = activeQA.filter(s => s.tag === 'quote');
         const arr = items.slice();
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -22514,7 +22743,7 @@
         // 必修デイリー: 100 phrases of "must-know" daily English.
         // Shuffle and take 10. Same dual-existence pattern as quotes:
         // they also have numeric levels so they appear in LV1-5 too.
-        const items = SHADOWING_QA.filter(s => s.tag === 'daily');
+        const items = activeQA.filter(s => s.tag === 'daily');
         const arr = items.slice();
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -22525,7 +22754,7 @@
         }
       } else {
         // Specific LV: shuffle that level's groups and take.
-        const filtered = SHADOWING_GROUPS.filter(g => g.level === selectedLevel).slice();
+        const filtered = activeGroups.filter(g => g.level === selectedLevel).slice();
         for (let i = filtered.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           const t = filtered[i]; filtered[i] = filtered[j]; filtered[j] = t;
@@ -22582,6 +22811,39 @@
     function skipSentence() {
       // Cancel anything playing, then jump.
       try { window.speechSynthesis.cancel(); } catch {}
+      if (index + 1 >= queue.length) {
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        try {
+          db.recordTurn(profile.id, 'shadowing');
+          db.pushEvent(profile.id, {
+            kind: 'shadowing', total: queue.length, durationMs,
+          });
+          markPathStepDone(profile, 'shadowing');
+        } catch {}
+        sessionStartRef.current = null;
+        setPhase('done');
+      } else {
+        setIndex(i => i + 1);
+        setRepNumber(1);
+      }
+    }
+    // Drop the current sentence from future sessions (family-wide).
+    // Used by the small × in the top-right of the practice card so the
+    // parent can prune phrases they don't want the kids drilling. Sync
+    // happens via the family-shared Supabase row, so a single tap on
+    // Dad's iPad takes effect on every device after the next hydrate.
+    function hideCurrentItem() {
+      if (!current || current.isPassage) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      try { window.speechSynthesis.cancel(); } catch {}
+      hideItem('shadowing', current.id);
+      // Behave like skipSentence: advance, or end the session if this
+      // was the last item.
       if (index + 1 >= queue.length) {
         const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
         try {
@@ -23109,12 +23371,29 @@
       // Big sentence card with the speaker indicator + rep dots
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
           borderRadius: 16, padding: '24px 20px 20px', marginBottom: 18,
           textAlign: 'center', minHeight: 200,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14,
         }
       },
+        // 「これいらない」 — small dim × in the top-right that drops the
+        // current sentence from every family member's pool. Hidden in
+        // long-passage mode (whole speeches aren't single-sentence prunes).
+        !current.isPassage && e('button', {
+          onClick: hideCurrentItem,
+          'aria-label': 'この問題を今後の出題から外す',
+          title: 'この問題を今後の出題から外す',
+          style: {
+            position: 'absolute', top: 8, right: 8,
+            width: 28, height: 28, borderRadius: 999,
+            background: 'transparent', border: '1px solid ' + C.line,
+            color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+          }
+        }, '×'),
         e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
