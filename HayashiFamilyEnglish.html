@@ -17806,19 +17806,20 @@
           minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
         }
       },
-        // 「これいらない」 — small dim × top-right that drops this question
-        // from every family member's pool. Subtle on purpose.
+        // 「これいらない」 — small × top-right that drops this question
+        // from every family member's pool. Now styled with a touch of
+        // danger color so it's clearly a delete action and findable.
         e('button', {
           onClick: hideCurrentItem,
           'aria-label': 'この問題を今後の出題から外す',
           title: 'この問題を今後の出題から外す',
           style: {
             position: 'absolute', top: 10, right: 10,
-            width: 28, height: 28, borderRadius: 999,
-            background: 'transparent', border: '1px solid ' + C.line,
-            color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+            width: 30, height: 30, borderRadius: 999,
+            background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+            color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+            cursor: 'pointer', fontFamily: SANS_UI,
           }
         }, '×'),
         // Chips
@@ -18375,18 +18376,20 @@
         },
           // 「これいらない」 — small dim × that drops this question from
           // every family member's pool. Subtle on purpose so it doesn't
-          // tempt accidental taps.
+          // 「これいらない」 — small × that drops this question from every
+          // family member's pool. Tinted with the danger color so it's
+          // clearly recognisable as a delete action.
           e('button', {
             onClick: hideCurrentItem,
             'aria-label': 'この問題を今後の出題から外す',
             title: 'この問題を今後の出題から外す',
             style: {
               position: 'absolute', top: 8, right: 8,
-              width: 28, height: 28, borderRadius: 999,
-              background: 'transparent', border: '1px solid ' + C.line,
-              color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+              width: 30, height: 30, borderRadius: 999,
+              background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+              color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+              cursor: 'pointer', fontFamily: SANS_UI,
             }
           }, '×'),
           e('div', {
@@ -23544,8 +23547,9 @@
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14,
         }
       },
-        // 「これいらない」 — small dim × in the top-right that drops the
-        // current sentence from every family member's pool. Hidden in
+        // 「これいらない」 — small × in the top-right that drops the
+        // current sentence from every family member's pool. Tinted with
+        // the danger color so the action reads at a glance. Hidden in
         // long-passage mode (whole speeches aren't single-sentence prunes).
         !current.isPassage && e('button', {
           onClick: hideCurrentItem,
@@ -23553,11 +23557,11 @@
           title: 'この問題を今後の出題から外す',
           style: {
             position: 'absolute', top: 8, right: 8,
-            width: 28, height: 28, borderRadius: 999,
-            background: 'transparent', border: '1px solid ' + C.line,
-            color: C.sub, fontSize: 14, fontWeight: 700, lineHeight: 1,
+            width: 30, height: 30, borderRadius: 999,
+            background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+            color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', opacity: 0.55, fontFamily: SANS_UI,
+            cursor: 'pointer', fontFamily: SANS_UI,
           }
         }, '×'),
         e('div', {
