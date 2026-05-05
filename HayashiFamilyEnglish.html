@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 228;
+  const APP_VERSION = 229;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -23661,27 +23661,36 @@
         // English text. Long passages get a smaller font, left-
         // aligned, and a max-height with scroll so the whole thing
         // sits inside the card without blowing it up.
+        // 老眼でも読みやすいよう、長文モードのフォントは少し大きめ
+        // (17 → 19) に。
         e('div', {
           style: current.isPassage
             ? {
-                fontFamily: SERIF, fontSize: 17, fontWeight: 600,
+                fontFamily: SERIF, fontSize: 19, fontWeight: 600,
                 color: C.text, lineHeight: 1.7, textAlign: 'left',
-                maxHeight: 240, overflowY: 'auto', padding: '4px 4px',
+                maxHeight: 280, overflowY: 'auto', padding: '4px 4px',
               }
             : {
                 fontFamily: SERIF, fontSize: 26, fontWeight: 700,
                 color: C.text, lineHeight: 1.45,
               },
         }, current.en),
-        // Japanese hint — small and dim. Not meant to be read out loud,
-        // just there for context so the kid knows what they're saying.
+        // Japanese hint — for short sentences, small and dim (just
+        // context). For long passages, match the English size and use
+        // the main text color so it's actually readable for older
+        // eyes (老眼対応).
         e('div', {
-          style: {
-            fontSize: 12, color: C.sub, lineHeight: 1.6, marginTop: 4,
-            textAlign: current.isPassage ? 'left' : 'center',
-            maxHeight: current.isPassage ? 160 : 'none',
-            overflowY: current.isPassage ? 'auto' : 'visible',
-          }
+          style: current.isPassage
+            ? {
+                fontSize: 18, color: C.text, lineHeight: 1.7,
+                fontWeight: 500, marginTop: 10,
+                textAlign: 'left', maxHeight: 220, overflowY: 'auto',
+                padding: '4px 4px',
+              }
+            : {
+                fontSize: 12, color: C.sub, lineHeight: 1.6, marginTop: 4,
+                textAlign: 'center',
+              },
         }, current.ja),
         repDots,
       ),
