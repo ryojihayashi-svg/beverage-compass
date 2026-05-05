@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 226;
+  const APP_VERSION = 227;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -26042,11 +26042,25 @@
   // Also wires the update-available event used by UpdateBanner.
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then((reg) => {
+      // updateViaCache: 'none' — sw.js は HTTP キャッシュを経由せず必ず
+      // ネットワークから取りに行く。ブラウザのデフォルト 24h キャッシュ
+      // で「sw.js が古いまま発見されない」事故 (= 何度リロードしても新
+      // バージョンに切り替わらない症状) を防ぐ。
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
         if (!reg) return;
+        // 新しいワーカーが入ったら自動でスワップする小ヘルパー。
+        // controllerchange でページが自動リロード → 最新バージョンが
+        // 即座に画面に反映される。バナー / リロードボタンを待たずに
+        // 進むので「古い殻が消えない」状態を抜けやすくなる。
+        function autoSwap() {
+          if (reg.waiting) {
+            try { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); } catch {}
+          }
+        }
         // If a new SW is already waiting from a previous load, raise the flag.
         if (reg.waiting && navigator.serviceWorker.controller) {
           window.dispatchEvent(new CustomEvent('hfe:update-available'));
+          autoSwap();
         }
         // Listen for new SW installs.
         reg.addEventListener('updatefound', () => {
@@ -26055,6 +26069,7 @@
           nw.addEventListener('statechange', () => {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
               window.dispatchEvent(new CustomEvent('hfe:update-available'));
+              autoSwap();
             }
           });
         });
