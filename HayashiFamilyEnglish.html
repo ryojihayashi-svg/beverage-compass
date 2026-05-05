@@ -59,6 +59,13 @@
   const e = React.createElement;
   const { useState, useEffect, useMemo, useRef } = React;
 
+  // ---------- App version ----------
+  // バージョンが上がるたびにここを +1 する。Service Worker の
+  // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
+  // 「v226」のように表示されるので、新しいバージョンが入ったかを
+  // 端末側で確認できる。
+  const APP_VERSION = 226;
+
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
   // text, restrained gold for premium accents, subtle borders, mincho/serif
@@ -14314,6 +14321,16 @@
         position: 'relative',
       }
     },
+      // 右上のバージョン表示。アップデートが本当に効いたかを目視で
+      // 確認できるよう、APP_VERSION をそのまま小さく表示する。
+      e('div', {
+        style: {
+          position: 'absolute', top: 8, right: 14,
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+          letterSpacing: '0.08em', color: C.sub, opacity: 0.55,
+          fontVariantNumeric: 'tabular-nums',
+        }
+      }, 'v' + APP_VERSION),
       // Header — quiet, elegant Cormorant Garamond. Smaller than before so
       // the type feels refined rather than billboard-loud. Both lines in
       // English with restrained letter-spacing.
@@ -14365,7 +14382,7 @@
           marginTop: 10, textAlign: 'center', fontSize: 12.5,
           color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
         }
-      }, 'v0.1 — プロトタイプ'),
+      }, 'v' + APP_VERSION + ' — プロトタイプ'),
     );
   }
 
