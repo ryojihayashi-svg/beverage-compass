@@ -59,6 +59,13 @@
   const e = React.createElement;
   const { useState, useEffect, useMemo, useRef } = React;
 
+  // ---------- App version ----------
+  // バージョンが上がるたびにここを +1 する。Service Worker の
+  // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
+  // 「v226」のように表示されるので、新しいバージョンが入ったかを
+  // 端末側で確認できる。
+  const APP_VERSION = 227;
+
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
   // text, restrained gold for premium accents, subtle borders, mincho/serif
@@ -5378,6 +5385,33 @@
   ];
   const PHRASE_BY_ID = Object.fromEntries(DAILY_PHRASES.map(p => [p.id, p]));
 
+  // ---------- DAILY_PHRASES → シャドーイング LV 振り分け表 ----------
+  // Daily English のフレーズは scene (場面) で括られているが、シャドー
+  // イングは LV1-5 のおまかせ / LV別 で出すので、ここで各フレーズに英検
+  // 換算の難易度を 1 / 2 / 3 で割り当てる。
+  // pullDailyPhrasesIntoShadowing() がこの表を見て SHADOWING_QA に追加し、
+  // SHADOWING_GROUPS が組まれる前のタイミングで取り込まれる。
+  const DAILY_PHRASE_LEVELS = {
+    // school
+    p001: 2, p002: 1, p003: 2, p004: 2, p005: 2, p006: 2, p007: 1,
+    p008: 1, p009: 2, p010: 2, p011: 1, p012: 2, p013: 1, p014: 1,
+    p015: 1, p016: 2, p017: 1,
+    // cafeteria
+    p019: 1, p020: 2, p021: 1, p022: 2, p023: 2, p024: 1, p025: 1,
+    p026: 1, p027: 2, p028: 2, p029: 2, p030: 2, p031: 1, p032: 1,
+    p033: 2,
+    // friends / shopping
+    p034: 2, p035: 2, p036: 1, p037: 3, p038: 2, p039: 1, p040: 2,
+    p041: 1, p042: 1, p043: 2, p044: 2, p045: 1, p046: 2, p047: 2,
+    p048: 1, p049: 1, p050: 2, p051: 3, p052: 1, p053: 3, p054: 2, p055: 1,
+    // Yoshinari-specific
+    p056: 2, p057: 2, p058: 2, p059: 1, p060: 2,
+    // greetings / responses
+    p061: 1, p062: 1, p063: 1, p064: 1, p065: 1, p066: 1, p067: 1,
+    p068: 2, p069: 1, p070: 1, p071: 1, p072: 2, p073: 1, p074: 1,
+    p075: 1, p076: 1, p077: 2, p078: 2, p079: 2, p080: 1,
+  };
+
   // ---------- お役立ち英語フレーズ (Repeat After Me) ----------
   // 順番通りに「日本語 → 英語」とテンポよく流す音読練習用データ。
   // section: で見出しを挟むと、その後ろのフレーズ群がそのセクションに属する。
@@ -5604,95 +5638,95 @@
     {
       id: 'phrases_10',
       no: 10,
-      title: '家族 (OREO 例 + 質問)',
+      title: '家族 (質問 + OREO 例)',
       subtitle: '家族について話すときの定型',
       items: [
+        { section: '質問' },
+        { ja: '1. 家族は何人ですか？',                                     en: 'How many members do you have in your family?' },
+        { ja: '2. 家族と何をするのが好きですか？',                         en: 'What do you like to do with your family?' },
+        { ja: '3. なぜそれが好きなのですか？',                             en: 'Why do you like it?' },
+        { ja: '4. 家族とはうまくやっていますか？',                         en: 'Are you getting along with your family?' },
+        { ja: '5. うまくやっていく秘訣は何ですか？',                       en: 'What is the secret to get along with your family?' },
         { section: 'OREO の例' },
         { ja: 'O: あなたは家族と一緒に夕飯を食べるのが好きです。',         en: 'You like having dinner with your family.' },
         { ja: 'R: なぜなら、それがあなたにとって、とても楽しいからです。', en: "Because it's very fun for you." },
         { ja: 'E: 実際、あなたは家族とうまくいっています。',                en: 'Actually, you are getting along with your family.' },
         { ja: 'O: そういう訳で、あなたは家族を愛しています。',             en: "That's why, you love your family." },
-        { section: '質問' },
-        { ja: '家族は何人ですか？',                                        en: 'How many members do you have in your family?' },
-        { ja: '家族と何をするのが好きですか？',                            en: 'What do you like to do with your family?' },
-        { ja: 'なぜそれが好きなのですか？',                                en: 'Why do you like it?' },
-        { ja: '家族とはうまくやっていますか？',                            en: 'Are you getting along with your family?' },
-        { ja: 'うまくやっていく秘訣は何ですか？',                          en: 'What is the secret to get along with your family?' },
       ],
     },
     {
       id: 'phrases_11',
       no: 11,
-      title: '仕事 (OREO 例 + 質問)',
+      title: '仕事 (質問 + OREO 例)',
       subtitle: '仕事について話すときの定型',
       items: [
+        { section: '質問' },
+        { ja: '1. あなたの仕事は何ですか？',                               en: 'What do you do (for living)?' },
+        { ja: '2. これはあなたの本業ですか？',                             en: 'Is this your main job?' },
+        { ja: '3. なぜこの仕事を選んだのですか？',                         en: 'Why did you choose this job?' },
+        { ja: '4. なぜそう思うのですか？',                                 en: 'Why do you think so?' },
+        { ja: '5. この仕事の何が好きですか？',                             en: 'What do you like about this job?' },
         { section: 'OREO の例' },
         { ja: 'O: これはあなたの本業です。',                                en: 'This is your main job.' },
         { ja: "R: なぜなら、在宅で働けることは都合が良いからです。",       en: "Because it's convenient to work from home." },
         { ja: 'E: 特に、あなたはたくさんの人と話せることが好きです。',     en: 'Especially, you like talking to many people.' },
         { ja: 'O: そういう訳で、あなたは良い仕事を見つけることができて幸運です。', en: "That's why, you are very lucky to find a good job." },
-        { section: '質問' },
-        { ja: 'あなたの仕事は何ですか？',                                  en: 'What do you do (for living)?' },
-        { ja: 'これはあなたの本業ですか？',                                en: 'Is this your main job?' },
-        { ja: 'なぜこの仕事を選んだのですか？',                            en: 'Why did you choose this job?' },
-        { ja: 'なぜそう思うのですか？',                                    en: 'Why do you think so?' },
-        { ja: 'この仕事の何が好きですか？',                                en: 'What do you like about this job?' },
       ],
     },
     {
       id: 'phrases_12',
       no: 12,
-      title: '夢 (OREO 例 + 質問)',
+      title: '夢 (質問 + OREO 例)',
       subtitle: '夢・目標について話すときの定型',
       items: [
+        { section: '質問' },
+        { ja: '1. あなたの夢は何ですか？',                                 en: 'What is your dream?' },
+        { ja: '2. (「ない」と言われた場合) あなたの今年の目標は何ですか？', en: 'What is your goal for this year?' },
+        { ja: '3. なぜ ○○ したいのですか？',                              en: 'Why do you wanna ○○?' },
+        { ja: '4. なぜそう思うのですか？',                                 en: 'Why do you think so?' },
+        { ja: '5. そのように思うようになったキッカケは何ですか？',         en: 'What made you think so?' },
         { section: 'OREO の例' },
         { ja: 'O: あなたの夢の 1 つは、自分自身のビジネスを持つことです。', en: 'One of your dreams is to have your own business.' },
         { ja: "R: なぜなら、財政的に安定したいからです。",                  en: 'Because you wanna have a financially stable life.' },
         { ja: 'E: 特に、あなたは子供たちに十分な教育を与えたいと思っています。', en: 'Especially, you wanna give your child a good education.' },
         { ja: 'O: そういう訳で、あなたは夢を叶えるためにとても頑張っています。', en: "That's why, you are working so hard to realize your dream." },
-        { section: '質問' },
-        { ja: 'あなたの夢は何ですか？',                                    en: 'What is your dream?' },
-        { ja: 'あなたの今年の目標は何ですか？',                            en: 'What is your goal for this year?' },
-        { ja: 'なぜそれをしたいのですか？',                                en: 'Why do you wanna do it?' },
-        { ja: 'なぜそう思うのですか？',                                    en: 'Why do you think so?' },
-        { ja: 'そのように思うようになったキッカケは何ですか？',            en: 'What made you think so?' },
       ],
     },
     {
       id: 'phrases_13',
       no: 13,
-      title: '社会問題 (OREO 例 + 質問)',
+      title: '社会問題 (質問 + OREO 例)',
       subtitle: '社会問題について話すときの定型',
       items: [
+        { section: '質問' },
+        { ja: '1. あなたの国の主な社会問題は何ですか？',                   en: 'What is the major social problem in your country?' },
+        { ja: '2. なぜそれに苦しんでいるのですか？',                       en: 'Why are you suffering from it?' },
+        { ja: '3. それの根本原因は何だと思いますか？',                     en: 'What do you think is the root cause?' },
+        { ja: '4. それに対する政府の対応はどう思いますか？',               en: 'What do you think of the government response about it?' },
         { section: 'OREO の例' },
-        { ja: 'O: あなたの国の主要な社会問題の 1 つは貧困です。',           en: 'One of your major social problems is poverty.' },
+        { ja: 'O: あなたの国の主な社会問題の 1 つは貧困です。',             en: 'One of your major social problems is poverty.' },
         { ja: "R: なぜなら、教育と仕事が不足しているからです。",           en: 'Because there is a lack of education and work.' },
         { ja: 'E: 実は、政府があまり教育に投資していません。',              en: "Actually, the government doesn't invest in education well." },
         { ja: 'O: そういう訳で、国を変えるために何か新しいことをすべきだと思っています。', en: "That's why, you think you have to do something new to change your country." },
-        { section: '質問' },
-        { ja: 'あなたの国の主要な社会問題は何ですか？',                    en: 'What is the major social problem in your country?' },
-        { ja: 'なぜそれに苦しんでいるのですか？',                          en: 'Why are you suffering from it?' },
-        { ja: 'それの根本原因は何だと思いますか？',                        en: 'What do you think is the root cause?' },
-        { ja: 'それに対する政府の対応はどう思いますか？',                  en: 'What do you think of the government response about it?' },
       ],
     },
     {
       id: 'phrases_14',
       no: 14,
-      title: '後悔 (OREO 例 + 質問)',
+      title: '後悔 (質問 + OREO 例)',
       subtitle: '人生の後悔について話すときの定型',
       items: [
+        { section: '質問' },
+        { ja: '1. 難しく聞こえるかもしれないけれど…',                     en: 'This may sound difficult, though...' },
+        { ja: '2. あなたの人生最大の後悔は何ですか？',                     en: 'What is the biggest regret in your life?' },
+        { ja: '3. なぜそれを後悔しているのですか？',                       en: 'Why do you regret it?' },
+        { ja: '4. そんな経験から何を学びましたか？',                       en: 'What did you learn from such an experience?' },
+        { ja: '5. ○○ しなかったことで、何かポジティブな側面はありましたか？', en: 'Did you have any positive aspect by not ○○?' },
         { section: 'OREO の例' },
         { ja: 'O: あなたの人生最大の後悔は、大学に行かなかったことです。', en: 'Your biggest regret in your life is not going to college.' },
         { ja: "R: なぜなら、大人になってから高収入の仕事に就くのが難しいからです。", en: 'Because it is difficult to get a high-paying job as an adult.' },
         { ja: 'E: しかしそのお陰で、今の奥さんと出会い、可愛い子供たちにも恵まれました。', en: 'But, thanks to that, you were able to meet your wife and you have cute children.' },
         { ja: 'O: そういう訳で、あなたは今、愛に溢れた毎日を過ごしてとても幸せです。', en: "That's why, you are very happy because you're living a life full of love." },
-        { section: '質問' },
-        { ja: '難しく聞こえるかもしれないけれど…',                        en: 'This may sound difficult, though...' },
-        { ja: 'あなたの人生最大の後悔は何ですか？',                        en: 'What is the biggest regret in your life?' },
-        { ja: 'なぜそれを後悔しているのですか？',                          en: 'Why do you regret it?' },
-        { ja: 'そんな経験から何を学びましたか？',                          en: 'What did you learn from such an experience?' },
-        { ja: 'そうしなかったことで、何かポジティブな側面はありましたか？', en: 'Did you have any positive aspect by not doing that?' },
       ],
     },
     {
@@ -6326,6 +6360,26 @@
       };
       SENTENCES.push(entry);
       SENTENCE_BY_ID[entry.id] = entry;
+    }
+  })();
+
+  // ---------- Pull DAILY_PHRASES into shadowing LV1-5 ----------
+  // Daily English の 80 フレーズを、難易度 (DAILY_PHRASE_LEVELS) に従って
+  // SHADOWING_QA に流し込む。 'daily' タグは付けないので、必修タブには
+  // 出ないが、おまかせ / LV1-5 の通常ルートで自然と混ざる。
+  // この時点では SHADOWING_GROUPS はまだ構築されていない (line 22287
+  // 付近で IIFE 実行) ので、ここで push すれば自動的にグループ化される。
+  // ID は 'dp_<元ID>' で衝突を避ける。
+  (function pullDailyPhrasesIntoShadowing() {
+    for (const p of DAILY_PHRASES) {
+      const lv = DAILY_PHRASE_LEVELS[p.id];
+      if (!lv || !p.en || !p.ja) continue;
+      SHADOWING_QA.push({
+        id: 'dp_' + p.id,
+        level: lv,
+        ja: p.ja,
+        en: p.en,
+      });
     }
   })();
 
@@ -12941,9 +12995,40 @@
         window.removeEventListener('hfe:update-available', fn);
       };
     }, []);
-    function go() {
+    // Tap = "give me the latest version, now". The previous implementation
+    // only did a hardReload(), which left any waiting Service Worker in the
+    // 'waiting' state forever — so a kid would keep seeing the old shell
+    // even after several reloads. Now we proactively:
+    //   1) reg.update() — re-check the server for a fresher sw.js
+    //   2) SKIP_WAITING any waiting worker (the controllerchange listener
+    //      in the SW registration block reloads the page once it activates)
+    //   3) Fall back to hardReload() if there was nothing to swap
+    async function go() {
       if (spinning) return;
       setSpinning(true);
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg) {
+            // Force a freshness check on sw.js. Triggers updatefound +
+            // installs any newer SW into the waiting state.
+            try { await reg.update(); } catch {}
+            // If a worker is now waiting, ask it to take over. Once it
+            // becomes the controller, controllerchange fires and the page
+            // reloads automatically.
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+              // Don't hardReload here — controllerchange will reload us
+              // cleanly once the SW activates. If for some reason it
+              // doesn't fire within 1s, we still hardReload as a safety
+              // net so the spinner doesn't get stuck.
+              setTimeout(hardReload, 1000);
+              return;
+            }
+          }
+        }
+      } catch {}
+      // No waiting worker (or no SW support) — just hard reload.
       setTimeout(() => { hardReload(); }, 120);
     }
     const showDot = _hfeUpdateAvailable;
@@ -13532,6 +13617,7 @@
       photos:  loadFamilyPhotos(),
       names:   loadDisplayNames(),
       avatars: loadAvatars(),
+      hiddenItems: loadHiddenItems(),
       _localUpdatedAt: new Date().toISOString(),
     };
     // Mirror the Anthropic API key through this same shared row (gated to
@@ -13576,10 +13662,14 @@
       const avatars = loadAvatars();
       const photos  = loadFamilyPhotos();
       const key     = loadApiKey();
+      const hidden  = loadHiddenItems();
+      let hiddenCount = 0;
+      for (const k of Object.keys(hidden || {})) hiddenCount += Object.keys(hidden[k] || {}).length;
       return Object.keys(names || {}).length   === 0
           && Object.keys(avatars || {}).length === 0
           && (photos || []).length             === 0
-          && !key;
+          && !key
+          && hiddenCount                       === 0;
     } catch { return true; }
   }
   // Same idea as isMemberStateEmptyish — does the REMOTE row look
@@ -13591,7 +13681,13 @@
     const names   = d.names   ? Object.keys(d.names).length   : 0;
     const avatars = d.avatars ? Object.keys(d.avatars).length : 0;
     const key     = typeof d.apiKey === 'string' ? d.apiKey : '';
-    return photos === 0 && names === 0 && avatars === 0 && !key;
+    let hiddenCount = 0;
+    if (d.hiddenItems && typeof d.hiddenItems === 'object') {
+      for (const k of Object.keys(d.hiddenItems)) {
+        hiddenCount += Object.keys(d.hiddenItems[k] || {}).length;
+      }
+    }
+    return photos === 0 && names === 0 && avatars === 0 && !key && hiddenCount === 0;
   }
   // ---------- Family-shared merge ----------
   // names / avatars / photos / apiKey. Per-key merge so two devices
@@ -13677,6 +13773,18 @@
     const mergedNames   = mergeKeyValueLocalWins(localNames,   (d.names   && typeof d.names   === 'object') ? d.names   : {});
     const mergedAvatars = mergeKeyValueLocalWins(localAvatars, (d.avatars && typeof d.avatars === 'object') ? d.avatars : {});
     const mergedApiKey  = localApiKey || (typeof d.apiKey === 'string' ? d.apiKey : '');
+    // Hidden items (parent's content curation): UNION across devices.
+    // Once a parent says "this question is out", every device should drop
+    // it. Restoring is a deliberate single-button action in Settings.
+    const localHidden  = loadHiddenItems();
+    const remoteHidden = (d.hiddenItems && typeof d.hiddenItems === 'object') ? d.hiddenItems : {};
+    const mergedHidden = {};
+    const hiddenScopes = new Set([...Object.keys(localHidden), ...Object.keys(remoteHidden)]);
+    for (const scope of hiddenScopes) {
+      mergedHidden[scope] = Object.assign({},
+        remoteHidden[scope] || {},
+        localHidden[scope]  || {});
+    }
 
     let changed = false;
     function writeIfDifferent(key, jsonValue) {
@@ -13689,6 +13797,7 @@
     writeIfDifferent(FAMILY_PHOTOS_KEY, mergedPhotos);
     writeIfDifferent(NAMES_KEY,         mergedNames);
     writeIfDifferent(AVATARS_KEY,       mergedAvatars);
+    writeIfDifferent(HIDDEN_ITEMS_KEY,  mergedHidden);
     // apiKey is a plain string, not JSON-encoded.
     const curKey = localStorage.getItem(AI_KEY_STORAGE) || '';
     if (curKey !== mergedApiKey) {
@@ -13708,6 +13817,43 @@
     familySharedHydrationDone = true;
     pushFamilySharedState();
     return changed;
+  }
+
+  // ---------- Hidden items (parent-curated removal) ----------
+  // 「このしゃべらせ文／問題は要らない」と思ったときに右上の × で外す。
+  // 物理削除はせず、id を集合に入れて出題側で除外する。
+  // family-shared 行に同梱して同期するので、お父さんが iPad で外せば
+  // お子さんの端末にも次のハイドレートで反映される。
+  //
+  // 構造: { [scope]: { [id]: true } }
+  //   scope: 'shadowing' | 'comp_test'  (将来 'sentence' なども追加可)
+  const HIDDEN_ITEMS_KEY = 'hfe_hidden_items_v1';
+  function loadHiddenItems() {
+    try { return JSON.parse(localStorage.getItem(HIDDEN_ITEMS_KEY) || '{}') || {}; }
+    catch { return {}; }
+  }
+  function saveHiddenItemsLocal(obj) {
+    try { localStorage.setItem(HIDDEN_ITEMS_KEY, JSON.stringify(obj || {})); } catch {}
+  }
+  function isItemHidden(scope, id) {
+    if (!scope || !id) return false;
+    const all = loadHiddenItems();
+    return !!(all[scope] && all[scope][id]);
+  }
+  function hideItem(scope, id) {
+    if (!scope || !id) return;
+    const all = loadHiddenItems();
+    if (!all[scope]) all[scope] = {};
+    if (all[scope][id]) return;        // already hidden
+    all[scope][id] = true;
+    saveHiddenItemsLocal(all);
+    stampFamilySharedLocal();
+    pushFamilySharedState();
+  }
+  function unhideAllItems() {
+    saveHiddenItemsLocal({});
+    stampFamilySharedLocal();
+    pushFamilySharedState();
   }
 
   // ---------- Encouragement messages (bilingual, surfaced on session done) ----------
@@ -14175,6 +14321,16 @@
         position: 'relative',
       }
     },
+      // 右上のバージョン表示。アップデートが本当に効いたかを目視で
+      // 確認できるよう、APP_VERSION をそのまま小さく表示する。
+      e('div', {
+        style: {
+          position: 'absolute', top: 8, right: 14,
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+          letterSpacing: '0.08em', color: C.sub, opacity: 0.55,
+          fontVariantNumeric: 'tabular-nums',
+        }
+      }, 'v' + APP_VERSION),
       // Header — quiet, elegant Cormorant Garamond. Smaller than before so
       // the type feels refined rather than billboard-loud. Both lines in
       // English with restrained letter-spacing.
@@ -14226,7 +14382,7 @@
           marginTop: 10, textAlign: 'center', fontSize: 12.5,
           color: C.sub, letterSpacing: '0.08em', opacity: 0.7,
         }
-      }, 'v0.1 — プロトタイプ'),
+      }, 'v' + APP_VERSION + ' — プロトタイプ'),
     );
   }
 
@@ -17247,16 +17403,24 @@
     opts = opts || {};
     // Build a unified pool of SENTENCES + DAILY_PHRASES tagged with kind, so
     // recordPhrase / recordSentence can be dispatched cleanly at answer time.
+    // Anything the parent has tapped × on (scope: 'composition') is filtered
+    // out so the family curation sticks across every device.
     const pool = [];
-    SENTENCES.forEach(s => pool.push({
-      kind: 'sentence',
-      id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
-    }));
-    DAILY_PHRASES.forEach(p => pool.push({
-      kind: 'phrase',
-      id: p.id, level: 2, ja: p.ja, en: p.en,
-      grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
-    }));
+    SENTENCES.forEach(s => {
+      if (isItemHidden('composition', s.id)) return;
+      pool.push({
+        kind: 'sentence',
+        id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
+      });
+    });
+    DAILY_PHRASES.forEach(p => {
+      if (isItemHidden('composition', p.id)) return;
+      pool.push({
+        kind: 'phrase',
+        id: p.id, level: 2, ja: p.ja, en: p.en,
+        grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
+      });
+    });
     // Selection rules (priority):
     //   1. If opts.level is a number (1-5): exact level only
     //   2. Else if profile.maxLevel set: strict <= maxLevel
@@ -17591,6 +17755,48 @@
 
     // ============ STUDY ============
     if (!current) return null;
+
+    // Drop the current sentence/phrase from future 瞬間英作文 sessions
+    // (family-wide). Same UX as the shadowing × — confirm, mark hidden,
+    // advance. Keeps the gathered results so a half-finished session
+    // still records what was answered.
+    function hideCurrentItem() {
+      if (!current) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      hideItem('composition', current.id);
+      // Advance, or end the session early if this was the last one.
+      if (index + 1 >= total) {
+        const correctCount = results.filter(r => r.isCorrect).length;
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        sessionStartRef.current = null;
+        if (results.length > 0) {
+          try {
+            db.recordTurn(profile.id, 'composition');
+            db.pushEvent(profile.id, {
+              kind: 'composition',
+              total: results.length,
+              correct: correctCount,
+              direction,
+              durationMs,
+            });
+            adjustComfortFromMastery(profile.id, 'composition');
+            markPathStepDone(profile, direction === 'ja2en' ? 'composition_ja2en' : 'composition_en2ja');
+          } catch {}
+          setPhase('done');
+        } else {
+          setPhase('intro');
+        }
+        return;
+      }
+      setIndex(index + 1);
+      setRevealed(false);
+    }
+
     return e('div', { style: pageStyle },
       topBar,
       // Progress bar
@@ -17610,12 +17816,29 @@
       // Card
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
           borderRadius: 24, padding: '24px 22px', marginBottom: 18,
           boxShadow: '0 10px 26px rgba(42,37,32,0.06)',
           minHeight: 320, display: 'flex', flexDirection: 'column', gap: 18,
         }
       },
+        // 「これいらない」 — small × top-right that drops this question
+        // from every family member's pool. Now styled with a touch of
+        // danger color so it's clearly a delete action and findable.
+        e('button', {
+          onClick: hideCurrentItem,
+          'aria-label': 'この問題を今後の出題から外す',
+          title: 'この問題を今後の出題から外す',
+          style: {
+            position: 'absolute', top: 10, right: 10,
+            width: 30, height: 30, borderRadius: 999,
+            background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+            color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', fontFamily: SANS_UI,
+          }
+        }, '×'),
         // Chips
         e('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           e('span', {
@@ -17874,7 +18097,11 @@
     const inputRef = useRef(null);
 
     function pickBatch(lv, count) {
-      const pool = COMPOSITION_TEST_POOL.filter(p => p.level === lv);
+      // Filter through the family-curated hidden set so anything the
+      // parent has tapped × on stays out of every test on every device.
+      const pool = COMPOSITION_TEST_POOL.filter(p =>
+        p.level === lv && !isItemHidden('comp_test', p.id)
+      );
       if (pool.length === 0) return [];
       const fresh = pool.filter(p => !usedIdsRef.current.has(p.id));
       // If we've exhausted fresh items at this level, reset the used-set
@@ -17948,6 +18175,57 @@
       } finally {
         setBusy(false);
       }
+    }
+
+    // Drop the current question from future tests (family-wide).
+    // Used by the small × in the study card. Same UX as shadowing: confirm,
+    // mark hidden, advance — or end the session if it was the last one.
+    function hideCurrentItem() {
+      const c = queue[index];
+      if (!c) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      hideItem('comp_test', c.id);
+      // Walk forward without adding a result row (the user didn't answer).
+      // If this was the last item, end the session early; otherwise just
+      // advance to the next question.
+      if (index + 1 >= queue.length) {
+        if (results.length > 0) {
+          // Some answered, some skipped — log a session event for what
+          // was actually answered so today's progress isn't lost.
+          const correct = results.filter(r => r.score >= 1).length;
+          const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+          sessionStartRef.current = null;
+          try {
+            db.recordTurn(profile.id, 'composition');
+            db.pushEvent(profile.id, {
+              kind: 'composition',
+              total: results.length,
+              correct,
+              direction: 'ja2en',
+              label: 'AIテスト',
+              durationMs,
+            });
+            adjustComfortFromMastery(profile.id, 'composition');
+            markPathStepDone(profile, 'composition_ja2en');
+          } catch {}
+          setPhase('done');
+        } else {
+          // Nothing answered yet — just bail back to intro.
+          sessionStartRef.current = null;
+          setPhase('intro');
+        }
+        return;
+      }
+      setIndex(i => i + 1);
+      setUserInput('');
+      setGrading(null);
+      setError('');
+      setPhase('study');
     }
 
     function nextOrFinish() {
@@ -18044,7 +18322,11 @@
         },
           [1, 2, 3, 4, 5].map(lv => {
             const isActive = level === lv;
-            const count = COMPOSITION_TEST_POOL.filter(p => p.level === lv).length;
+            // Reflect parent-curated hidden items so the level pill's
+            // disabled state and count match what テスト will actually serve.
+            const count = COMPOSITION_TEST_POOL.filter(p =>
+              p.level === lv && !isItemHidden('comp_test', p.id)
+            ).length;
             return e('button', {
               key: 'lv_' + lv,
               onClick: () => setLevel(lv),
@@ -18104,10 +18386,29 @@
         topBar,
         e('div', {
           style: {
+            position: 'relative',
             background: C.card, border: '1px solid ' + C.line,
             borderRadius: 16, padding: '20px 18px', marginBottom: 14,
           }
         },
+          // 「これいらない」 — small dim × that drops this question from
+          // every family member's pool. Subtle on purpose so it doesn't
+          // 「これいらない」 — small × that drops this question from every
+          // family member's pool. Tinted with the danger color so it's
+          // clearly recognisable as a delete action.
+          e('button', {
+            onClick: hideCurrentItem,
+            'aria-label': 'この問題を今後の出題から外す',
+            title: 'この問題を今後の出題から外す',
+            style: {
+              position: 'absolute', top: 8, right: 8,
+              width: 30, height: 30, borderRadius: 999,
+              background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+              color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontFamily: SANS_UI,
+            }
+          }, '×'),
           e('div', {
             style: {
               fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
@@ -18502,6 +18803,80 @@
             background: C.danger + '0F', borderRadius: 8, border: '1px solid ' + C.danger + '33',
           }
         }, s.lastError),
+      ),
+    );
+  }
+
+  // ---------- Hidden-items restoration panel ----------
+  // Surfaces how many problems the parent has × out, with one button to
+  // bring them all back. Sits next to the Cloud Sync panel because that's
+  // where shared family-curation lives.
+  function HiddenItemsPanel() {
+    const [tick, setTick] = useState(0);
+    useEffect(() => {
+      // Re-render after another device pulls a new hiddenItems set down
+      // (same event the Cloud Sync panel listens to).
+      function onHydrated() { setTick(t => t + 1); }
+      window.addEventListener('hfe:family-hydrated', onHydrated);
+      return () => window.removeEventListener('hfe:family-hydrated', onHydrated);
+    }, []);
+    const all = loadHiddenItems();
+    const shadowingCount   = Object.keys(all.shadowing   || {}).length;
+    const compTestCount    = Object.keys(all.comp_test   || {}).length;
+    const compositionCount = Object.keys(all.composition || {}).length;
+    const total = shadowingCount + compTestCount + compositionCount;
+    return e('div', { style: { marginTop: 32 } },
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 10, paddingLeft: 4,
+        }
+      }, '外した問題'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px',
+        }
+      },
+        e('div', {
+          style: { fontSize: 12.5, color: C.sub, lineHeight: 1.6, marginBottom: total > 0 ? 12 : 0 }
+        },
+          total === 0
+            ? '練習中に右上の × を押すと、その問題を家族全員の出題から外せます。'
+            : '練習中に右上の × で外した問題は、家族全員の端末で出題されません。'),
+        total > 0 && e('div', {
+          style: {
+            display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12,
+            fontSize: 12.5, color: C.text,
+          }
+        },
+          shadowingCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, 'シャドーイング'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              shadowingCount + ' 件')),
+          compositionCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, '瞬間英作文'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              compositionCount + ' 件')),
+          compTestCount > 0 && e('div', { style: { display: 'flex', justifyContent: 'space-between' } },
+            e('span', null, 'AI英作文テスト'),
+            e('span', { style: { fontFamily: SANS_UI, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } },
+              compTestCount + ' 件')),
+        ),
+        total > 0 && e('button', {
+          onClick: () => {
+            if (!window.confirm('外した ' + total + ' 件をすべて元に戻しますか？')) return;
+            unhideAllItems();
+            setTick(t => t + 1);
+          },
+          style: {
+            padding: '8px 14px', borderRadius: 999,
+            background: C.softer, border: '1px solid ' + C.line,
+            fontSize: 12.5, fontWeight: 600, color: C.text, fontFamily: SANS_UI,
+            cursor: 'pointer',
+          }
+        }, '全部戻す'),
       ),
     );
   }
@@ -19227,6 +19602,9 @@
 
       // ----- Cloud sync (Supabase) -----
       e(CloudStatusPanel),
+
+      // ----- 外した問題（× で出題から外したもの）の復元 -----
+      e(HiddenItemsPanel),
 
       // ----- Family photo gallery -----
       e('div', { style: { marginTop: 32 } },
@@ -20159,14 +20537,31 @@
     items.forEach((it, i) => {
       if (it.section) {
         curSection = it.section;
+        // Pronounced section divider — a colored chip + a hairline so the
+        // user can clearly tell "OREO の例" and "質問" are separate parts
+        // of the same set. Without this, the questions list looked merged
+        // into the OREO content and parents couldn't see it was there.
         rows.push(e('div', {
           key: 'sec_' + i,
           style: {
-            fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
-            color: C.sub, letterSpacing: '0.04em',
-            margin: '14px 4px 6px',
+            display: 'flex', alignItems: 'center', gap: 10,
+            margin: '20px 0 10px', padding: '0 4px',
           }
-        }, '— ' + it.section + ' —'));
+        },
+          e('span', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 800,
+              letterSpacing: '0.16em',
+              color: '#fff', background: profile.color,
+              padding: '4px 10px', borderRadius: 999,
+            }
+          }, it.section),
+          e('span', {
+            style: {
+              flex: 1, height: 1, background: C.line,
+            }
+          }),
+        ));
         return;
       }
       if (!it.ja || !it.en) return;
@@ -22299,16 +22694,31 @@
     return out;
   })();
 
+  // Filtered views — drop anything the parent has hidden via × in the
+  // practice screen. For Q+A groups, hiding either half drops the whole
+  // pair (the partner alone wouldn't make sense).
+  function getActiveShadowingQA() {
+    return SHADOWING_QA.filter(s => !isItemHidden('shadowing', s.id));
+  }
+  function getActiveShadowingGroups() {
+    return SHADOWING_GROUPS.filter(g =>
+      (g.items || []).every(it => !isItemHidden('shadowing', it.id))
+    );
+  }
+
   // How many sentences live at a level (or total for 'auto').
   // 'auto' only counts the LV1-5 progression — 'others' is a side bucket
   // (online-lesson script) that the おまかせ picker never draws from.
   // 'quotes' filters by tag, since quote entries also carry a numeric
   // level so they appear naturally in the LV1-5 routine too.
+  // Pulled from the active (post-hidden) view so the count pills reflect
+  // what the user will actually see during practice.
   function shadowLevelSize(lv) {
-    if (lv === 'auto')   return SHADOWING_QA.filter(s => typeof s.level === 'number').length;
-    if (lv === 'quotes') return SHADOWING_QA.filter(s => s.tag === 'quote').length;
-    if (lv === 'daily')  return SHADOWING_QA.filter(s => s.tag === 'daily').length;
-    return SHADOWING_QA.filter(s => s.level === lv).length;
+    const active = getActiveShadowingQA();
+    if (lv === 'auto')   return active.filter(s => typeof s.level === 'number').length;
+    if (lv === 'quotes') return active.filter(s => s.tag === 'quote').length;
+    if (lv === 'daily')  return active.filter(s => s.tag === 'daily').length;
+    return active.filter(s => s.level === lv).length;
   }
 
   // 「英会話」タブ専用の進捗カーソル。LV1-5 がランダムなのに対し、
@@ -22450,6 +22860,11 @@
       unlockAudioForBluetooth();
       const queueOut = [];
 
+      // All draws use the post-hidden view so anything the parent's
+      // tapped × on stays out of every future session, on every device.
+      const activeQA     = getActiveShadowingQA();
+      const activeGroups = getActiveShadowingGroups();
+
       if (selectedLevel === 'auto') {
         // おまかせ: pick a level via pickLevelForProfile per slot, then
         // pull a random unused group at that level. Same per-profile
@@ -22464,17 +22879,17 @@
           // recognition / passive understanding.
           let lv = pickLevelForProfile(profile, { track: 'vocab' });
           // Find candidates at this level; if empty, walk down then up.
-          let candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+          let candidates = activeGroups.map((g, idx) => ({ g, idx }))
             .filter(x => x.g.level === lv && !used.has(x.idx));
           if (candidates.length === 0) {
             for (let dlv = lv - 1; dlv >= 1 && candidates.length === 0; dlv--) {
-              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+              candidates = activeGroups.map((g, idx) => ({ g, idx }))
                 .filter(x => x.g.level === dlv && !used.has(x.idx));
             }
           }
           if (candidates.length === 0) {
             for (let ulv = lv + 1; ulv <= 5 && candidates.length === 0; ulv++) {
-              candidates = SHADOWING_GROUPS.map((g, idx) => ({ g, idx }))
+              candidates = activeGroups.map((g, idx) => ({ g, idx }))
                 .filter(x => x.g.level === ulv && !used.has(x.idx));
             }
           }
@@ -22488,7 +22903,7 @@
       } else if (selectedLevel === 'others') {
         // 英会話 (lesson-prep): play in DEFINED order, 10 at a time, then
         // continue from where we left off next session. Wrap at the end.
-        const items = SHADOWING_QA.filter(s => s.level === 'others');
+        const items = activeQA.filter(s => s.level === 'others');
         if (items.length > 0) {
           let cursor = getOthersCursor(profile.id) % items.length;
           for (let i = 0; i < SHADOW_SESSION_COUNT && i < items.length; i++) {
@@ -22501,7 +22916,7 @@
         // numeric level) and take 10. Quotes also live in their numeric
         // LV bucket so they appear in LV1-5 routines too — this tab is
         // the dedicated way to drill the famous-quote set in isolation.
-        const items = SHADOWING_QA.filter(s => s.tag === 'quote');
+        const items = activeQA.filter(s => s.tag === 'quote');
         const arr = items.slice();
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -22514,7 +22929,7 @@
         // 必修デイリー: 100 phrases of "must-know" daily English.
         // Shuffle and take 10. Same dual-existence pattern as quotes:
         // they also have numeric levels so they appear in LV1-5 too.
-        const items = SHADOWING_QA.filter(s => s.tag === 'daily');
+        const items = activeQA.filter(s => s.tag === 'daily');
         const arr = items.slice();
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -22525,7 +22940,7 @@
         }
       } else {
         // Specific LV: shuffle that level's groups and take.
-        const filtered = SHADOWING_GROUPS.filter(g => g.level === selectedLevel).slice();
+        const filtered = activeGroups.filter(g => g.level === selectedLevel).slice();
         for (let i = filtered.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           const t = filtered[i]; filtered[i] = filtered[j]; filtered[j] = t;
@@ -22582,6 +22997,39 @@
     function skipSentence() {
       // Cancel anything playing, then jump.
       try { window.speechSynthesis.cancel(); } catch {}
+      if (index + 1 >= queue.length) {
+        const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
+        try {
+          db.recordTurn(profile.id, 'shadowing');
+          db.pushEvent(profile.id, {
+            kind: 'shadowing', total: queue.length, durationMs,
+          });
+          markPathStepDone(profile, 'shadowing');
+        } catch {}
+        sessionStartRef.current = null;
+        setPhase('done');
+      } else {
+        setIndex(i => i + 1);
+        setRepNumber(1);
+      }
+    }
+    // Drop the current sentence from future sessions (family-wide).
+    // Used by the small × in the top-right of the practice card so the
+    // parent can prune phrases they don't want the kids drilling. Sync
+    // happens via the family-shared Supabase row, so a single tap on
+    // Dad's iPad takes effect on every device after the next hydrate.
+    function hideCurrentItem() {
+      if (!current || current.isPassage) return;
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      try { window.speechSynthesis.cancel(); } catch {}
+      hideItem('shadowing', current.id);
+      // Behave like skipSentence: advance, or end the session if this
+      // was the last item.
       if (index + 1 >= queue.length) {
         const durationMs = sessionStartRef.current ? Date.now() - sessionStartRef.current : null;
         try {
@@ -23109,12 +23557,30 @@
       // Big sentence card with the speaker indicator + rep dots
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
           borderRadius: 16, padding: '24px 20px 20px', marginBottom: 18,
           textAlign: 'center', minHeight: 200,
           display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14,
         }
       },
+        // 「これいらない」 — small × in the top-right that drops the
+        // current sentence from every family member's pool. Tinted with
+        // the danger color so the action reads at a glance. Hidden in
+        // long-passage mode (whole speeches aren't single-sentence prunes).
+        !current.isPassage && e('button', {
+          onClick: hideCurrentItem,
+          'aria-label': 'この問題を今後の出題から外す',
+          title: 'この問題を今後の出題から外す',
+          style: {
+            position: 'absolute', top: 8, right: 8,
+            width: 30, height: 30, borderRadius: 999,
+            background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+            color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', fontFamily: SANS_UI,
+          }
+        }, '×'),
         e('div', {
           style: {
             fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
@@ -25576,11 +26042,25 @@
   // Also wires the update-available event used by UpdateBanner.
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then((reg) => {
+      // updateViaCache: 'none' — sw.js は HTTP キャッシュを経由せず必ず
+      // ネットワークから取りに行く。ブラウザのデフォルト 24h キャッシュ
+      // で「sw.js が古いまま発見されない」事故 (= 何度リロードしても新
+      // バージョンに切り替わらない症状) を防ぐ。
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
         if (!reg) return;
+        // 新しいワーカーが入ったら自動でスワップする小ヘルパー。
+        // controllerchange でページが自動リロード → 最新バージョンが
+        // 即座に画面に反映される。バナー / リロードボタンを待たずに
+        // 進むので「古い殻が消えない」状態を抜けやすくなる。
+        function autoSwap() {
+          if (reg.waiting) {
+            try { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); } catch {}
+          }
+        }
         // If a new SW is already waiting from a previous load, raise the flag.
         if (reg.waiting && navigator.serviceWorker.controller) {
           window.dispatchEvent(new CustomEvent('hfe:update-available'));
+          autoSwap();
         }
         // Listen for new SW installs.
         reg.addEventListener('updatefound', () => {
@@ -25589,6 +26069,7 @@
           nw.addEventListener('statechange', () => {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
               window.dispatchEvent(new CustomEvent('hfe:update-available'));
+              autoSwap();
             }
           });
         });
