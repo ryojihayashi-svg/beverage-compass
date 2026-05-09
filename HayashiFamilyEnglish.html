@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 267;
+  const APP_VERSION = 268;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -942,27 +942,27 @@
     { id:'advantage',   en:'advantage',   ja:'利点',                     pos:'noun', level:3, cat:'general', exEn:'It has many advantages.',                   exJa:'多くの利点がある。', exEn2:'Don\'t take advantage of him.', exJa2:'彼の善意につけ込まないで。' },
     { id:'argument',    en:'argument',    ja:'議論',                     pos:'noun', level:3, cat:'general', exEn:'They had a small argument.',                exJa:'彼らは小さな議論をした。', exEn2:'I see your argument.', exJa2:'あなたの主張は理解できます。' },
     { id:'attention',   en:'attention',   ja:'注意',                     pos:'noun', level:3, cat:'general', exEn:'Pay attention, please.',                    exJa:'注意してください。', exEn2:'I appreciate your attention to detail.', exJa2:'細部への配慮に感謝します。' },
-    { id:'attitude',    en:'attitude',    ja:'態度',                     pos:'noun', level:3, cat:'general', exEn:'I like your positive attitude.',            exJa:'あなたの前向きな態度が好きだ。' },
-    { id:'beauty',      en:'beauty',      ja:'美',                       pos:'noun', level:3, cat:'general', exEn:'Beauty is everywhere.',                     exJa:'美はどこにでもある。' },
-    { id:'comment',     en:'comment',     ja:'コメント',                 pos:'noun', level:3, cat:'general', exEn:'Any comments on this?',                     exJa:'これについてコメントは？' },
-    { id:'courage',     en:'courage',     ja:'勇気',                     pos:'noun', level:3, cat:'general', exEn:'It takes courage to speak up.',             exJa:'声を上げるには勇気がいる。' },
-    { id:'demand',      en:'demand',      ja:'要求',                     pos:'noun', level:3, cat:'general', exEn:"There's a high demand.",                    exJa:'高い需要がある。' },
-    { id:'effect',      en:'effect',      ja:'効果',                     pos:'noun', level:3, cat:'general', exEn:'The medicine had an effect.',               exJa:'薬は効果があった。' },
-    { id:'effort',      en:'effort',      ja:'努力',                     pos:'noun', level:3, cat:'general', exEn:'Make an effort to learn.',                  exJa:'学ぶ努力をしなさい。' },
-    { id:'expression',  en:'expression',  ja:'表現',                     pos:'noun', level:3, cat:'general', exEn:'What a strange expression!',                exJa:'なんて奇妙な表現！' },
-    { id:'freedom',     en:'freedom',     ja:'自由',                     pos:'noun', level:3, cat:'general', exEn:'Freedom is precious.',                      exJa:'自由は貴重だ。' },
-    { id:'nature',      en:'nature',      ja:'自然',                     pos:'noun', level:3, cat:'general', exEn:'Nature heals the soul.',                    exJa:'自然は魂を癒す。' },
+    { id:'attitude',    en:'attitude',    ja:'態度',                     pos:'noun', level:3, cat:'general', exEn:'I like your positive attitude.',            exJa:'あなたの前向きな態度が好きだ。', exEn2:'You need a better attitude at work.', exJa2:'仕事ではもっといい態度が必要だ。' },
+    { id:'beauty',      en:'beauty',      ja:'美',                       pos:'noun', level:3, cat:'general', exEn:'Beauty is everywhere.',                     exJa:'美はどこにでもある。', exEn2:'Beauty is in the eye of the beholder.', exJa2:'美しさは見る人によって違う。' },
+    { id:'comment',     en:'comment',     ja:'コメント',                 pos:'noun', level:3, cat:'general', exEn:'Any comments on this?',                     exJa:'これについてコメントは？', exEn2:'No comment.', exJa2:'コメントは差し控えます。' },
+    { id:'courage',     en:'courage',     ja:'勇気',                     pos:'noun', level:3, cat:'general', exEn:'It takes courage to speak up.',             exJa:'声を上げるには勇気がいる。', exEn2:'She had the courage to start over.', exJa2:'彼女には一からやり直す勇気があった。' },
+    { id:'demand',      en:'demand',      ja:'要求',                     pos:'noun', level:3, cat:'general', exEn:"There's a high demand.",                    exJa:'高い需要がある。', exEn2:'I demand a refund.', exJa2:'返金を要求します。' },
+    { id:'effect',      en:'effect',      ja:'効果',                     pos:'noun', level:3, cat:'general', exEn:'The medicine had an effect.',               exJa:'薬は効果があった。', exEn2:'It will take effect tomorrow.', exJa2:'明日から効力が生じる。' },
+    { id:'effort',      en:'effort',      ja:'努力',                     pos:'noun', level:3, cat:'general', exEn:'Make an effort to learn.',                  exJa:'学ぶ努力をしなさい。', exEn2:'It wasn\'t worth the effort.', exJa2:'労力に見合わなかった。' },
+    { id:'expression',  en:'expression',  ja:'表現',                     pos:'noun', level:3, cat:'general', exEn:'What a strange expression!',                exJa:'なんて奇妙な表現！', exEn2:'I saw the expression on her face.', exJa2:'彼女の顔の表情が見えた。' },
+    { id:'freedom',     en:'freedom',     ja:'自由',                     pos:'noun', level:3, cat:'general', exEn:'Freedom is precious.',                      exJa:'自由は貴重だ。', exEn2:'I have the freedom to choose.', exJa2:'私には選ぶ自由がある。' },
+    { id:'nature',      en:'nature',      ja:'自然',                     pos:'noun', level:3, cat:'general', exEn:'Nature heals the soul.',                    exJa:'自然は魂を癒す。', exEn2:'It\'s not in his nature to lie.', exJa2:'彼は嘘をつく性分ではない。' },
     // L3 (continued) — adjectives
-    { id:'attractive',  en:'attractive',  ja:'魅力的な',                 pos:'adj',  level:3, cat:'general', exEn:'She has an attractive smile.',              exJa:'彼女は魅力的な笑顔を持つ。' },
-    { id:'available',   en:'available',   ja:'利用可能な',               pos:'adj',  level:3, cat:'general', exEn:'Are you available tomorrow?',               exJa:'明日空いていますか？' },
-    { id:'curious',     en:'curious',     ja:'好奇心旺盛な',             pos:'adj',  level:3, cat:'general', exEn:'Children are curious.',                     exJa:'子供は好奇心旺盛だ。' },
-    { id:'delicious',   en:'delicious',   ja:'おいしい',                 pos:'adj',  level:3, cat:'daily',   exEn:'This soup is delicious.',                   exJa:'このスープは美味しい。' },
-    { id:'eager',       en:'eager',       ja:'熱心な',                   pos:'adj',  level:3, cat:'general', exEn:"He's eager to learn.",                      exJa:'彼は学ぶことに熱心だ。' },
-    { id:'grateful',    en:'grateful',    ja:'感謝している',             pos:'adj',  level:3, cat:'general', exEn:"I'm grateful for your help.",               exJa:'あなたの助けに感謝している。' },
-    { id:'peaceful',    en:'peaceful',    ja:'平和な',                   pos:'adj',  level:3, cat:'general', exEn:'It was a peaceful evening.',                exJa:'平和な夕方だった。' },
-    { id:'powerful',    en:'powerful',    ja:'強力な',                   pos:'adj',  level:3, cat:'general', exEn:'Words are powerful.',                       exJa:'言葉は強力だ。' },
-    { id:'serious',     en:'serious',     ja:'真剣な・重大な',           pos:'adj',  level:3, cat:'general', exEn:"It's a serious problem.",                   exJa:'重大な問題だ。' },
-    { id:'terrible',    en:'terrible',    ja:'ひどい',                   pos:'adj',  level:3, cat:'general', exEn:'The weather is terrible.',                  exJa:'天気がひどい。' },
+    { id:'attractive',  en:'attractive',  ja:'魅力的な',                 pos:'adj',  level:3, cat:'general', exEn:'She has an attractive smile.',              exJa:'彼女は魅力的な笑顔を持つ。', exEn2:'The offer is attractive.', exJa2:'その提案は魅力的だ。' },
+    { id:'available',   en:'available',   ja:'利用可能な',               pos:'adj',  level:3, cat:'general', exEn:'Are you available tomorrow?',               exJa:'明日空いていますか？', exEn2:'These shoes are available in three colours.', exJa2:'この靴は 3 色から選べます。' },
+    { id:'curious',     en:'curious',     ja:'好奇心旺盛な',             pos:'adj',  level:3, cat:'general', exEn:'Children are curious.',                     exJa:'子供は好奇心旺盛だ。', exEn2:'I\'m curious to know what happened.', exJa2:'何があったのか知りたい。' },
+    { id:'delicious',   en:'delicious',   ja:'おいしい',                 pos:'adj',  level:3, cat:'daily',   exEn:'This soup is delicious.',                   exJa:'このスープは美味しい。', exEn2:'Mum\'s curry is absolutely delicious.', exJa2:'母のカレーは絶品だ。' },
+    { id:'eager',       en:'eager',       ja:'熱心な',                   pos:'adj',  level:3, cat:'general', exEn:"He's eager to learn.",                      exJa:'彼は学ぶことに熱心だ。', exEn2:'She\'s eager to start her new job.', exJa2:'彼女は新しい仕事を始めるのが楽しみだ。' },
+    { id:'grateful',    en:'grateful',    ja:'感謝している',             pos:'adj',  level:3, cat:'general', exEn:"I'm grateful for your help.",               exJa:'あなたの助けに感謝している。', exEn2:'I\'m forever grateful to my parents.', exJa2:'両親には一生感謝している。' },
+    { id:'peaceful',    en:'peaceful',    ja:'平和な',                   pos:'adj',  level:3, cat:'general', exEn:'It was a peaceful evening.',                exJa:'平和な夕方だった。', exEn2:'I want to live in a peaceful place.', exJa2:'静かな場所で暮らしたい。' },
+    { id:'powerful',    en:'powerful',    ja:'強力な',                   pos:'adj',  level:3, cat:'general', exEn:'Words are powerful.',                       exJa:'言葉は強力だ。', exEn2:'A powerful storm hit the coast.', exJa2:'強い嵐が海岸を襲った。' },
+    { id:'serious',     en:'serious',     ja:'真剣な・重大な',           pos:'adj',  level:3, cat:'general', exEn:"It's a serious problem.",                   exJa:'重大な問題だ。', exEn2:'Are you serious?', exJa2:'本気で言ってる？' },
+    { id:'terrible',    en:'terrible',    ja:'ひどい',                   pos:'adj',  level:3, cat:'general', exEn:'The weather is terrible.',                  exJa:'天気がひどい。', exEn2:'I had a terrible dream last night.', exJa2:'昨夜ひどい夢を見た。' },
     // L4 — high school standard
     { id:'although',    en:'although',    ja:'〜だけれども',              pos:'conj', level:4, cat:'general', exEn:'Although it rained, we went out.',          exJa:'雨が降ったけれども、私たちは出かけました。' },
     { id:'acquire',     en:'acquire',     ja:'習得する・取得する',         pos:'verb', level:4, cat:'general', exEn:'She acquired new skills quickly.',          exJa:'彼女は新しい技能を素早く習得しました。' },
@@ -1274,9 +1274,9 @@
     { id:'luggage',      en:'luggage',      ja:'手荷物',                   pos:'noun', level:2, cat:'general', exEn:'Where can I leave my luggage?',             exJa:'荷物はどこに置けますか？', exEn2:'How many pieces of luggage do you have?', exJa2:'荷物はいくつありますか？',
       syn:['baggage','bags'] },
     { id:'flight',       en:'flight',       ja:'飛行 (機の便)',            pos:'noun', level:2, cat:'general', exEn:'My flight leaves at 10 a.m.',               exJa:'私の便は午前10時に出発します。', exEn2:'The flight was delayed by two hours.', exJa2:'フライトは 2 時間遅れた。' },
-    { id:'journey',      en:'journey',      ja:'旅・道のり',               pos:'noun', level:3, cat:'general', exEn:'It was a long journey.',                    exJa:'長い旅でした。',
+    { id:'journey',      en:'journey',      ja:'旅・道のり',               pos:'noun', level:3, cat:'general', exEn:'It was a long journey.',                    exJa:'長い旅でした。', exEn2:'Life is a journey, not a destination.', exJa2:'人生は旅であり、目的地ではない。',
       syn:['trip','travel','voyage'] },
-    { id:'depart',       en:'depart',       ja:'出発する',                 pos:'verb', level:3, cat:'general', exEn:'The train departs at noon.',                exJa:'列車は正午に出発します。',
+    { id:'depart',       en:'depart',       ja:'出発する',                 pos:'verb', level:3, cat:'general', exEn:'The train departs at noon.',                exJa:'列車は正午に出発します。', exEn2:'She departs from her usual style.', exJa2:'彼女はいつものスタイルから外れている。',
       syn:['leave','set off','take off'] },
 
     // Restaurant / food (Dad's world)
@@ -1285,12 +1285,12 @@
     { id:'recipe',       en:'recipe',       ja:'レシピ',                   pos:'noun', level:2, cat:'food',    exEn:'This recipe is from my mum.',               exJa:'このレシピは母直伝です。', exEn2:'I found a great recipe online.', exJa2:'ネットで素晴らしいレシピを見つけた。' },
     { id:'ingredient',   en:'ingredient',   ja:'材料・食材',               pos:'noun', level:2, cat:'food',    exEn:'We need fresh ingredients.',                exJa:'私たちは新鮮な食材が必要です。', exEn2:'Salt is the secret ingredient.', exJa2:'塩が隠し味だ。',
       syn:['component'] },
-    { id:'flavor',       en:'flavor',       ja:'味・風味',                 pos:'noun', level:3, cat:'food',    exEn:'I love the flavor of this soup.',           exJa:'このスープの味が大好きです。',
+    { id:'flavor',       en:'flavor',       ja:'味・風味',                 pos:'noun', level:3, cat:'food',    exEn:'I love the flavor of this soup.',           exJa:'このスープの味が大好きです。', exEn2:'Add some lemon for extra flavour.', exJa2:'レモンを足して風味を加えて。',
       syn:['taste'] },
     { id:'spicy',        en:'spicy',        ja:'辛い',                     pos:'adj',  level:2, cat:'food',    exEn:'This curry is too spicy for me.',           exJa:'このカレーは辛すぎます。', exEn2:'I love spicy Korean food.', exJa2:'私は辛い韓国料理が大好きだ。',
       syn:['hot'] },
     { id:'salty',        en:'salty',        ja:'しょっぱい',               pos:'adj',  level:2, cat:'food',    exEn:'The soup is a little salty.',               exJa:'スープが少ししょっぱい。', exEn2:'I prefer salty snacks to sweet ones.', exJa2:'私は甘いお菓子よりしょっぱいお菓子が好きだ。' },
-    { id:'bitter',       en:'bitter',       ja:'苦い',                     pos:'adj',  level:3, cat:'food',    exEn:'This coffee is bitter.',                    exJa:'このコーヒーは苦い。' },
+    { id:'bitter',       en:'bitter',       ja:'苦い',                     pos:'adj',  level:3, cat:'food',    exEn:'This coffee is bitter.',                    exJa:'このコーヒーは苦い。', exEn2:'They had a bitter argument.', exJa2:'激しい口論になった。' },
 
     // School / study
     { id:'exam',         en:'exam',         ja:'試験',                     pos:'noun', level:2, cat:'school',  exEn:'I have an English exam tomorrow.',          exJa:'明日、英語の試験があります。', exEn2:'Don\'t worry — you\'ll pass the exam.', exJa2:'心配しないで、試験は受かるよ。',
@@ -1298,7 +1298,7 @@
     { id:'textbook',     en:'textbook',     ja:'教科書',                   pos:'noun', level:2, cat:'school',  exEn:'Open your textbook to page 20.',            exJa:'教科書の20ページを開いて。', exEn2:'I left my textbook at home.', exJa2:'教科書を家に忘れてきた。' },
     { id:'dictionary',   en:'dictionary',   ja:'辞書',                     pos:'noun', level:2, cat:'school',  exEn:'I look up new words in the dictionary.',    exJa:'私は新しい単語を辞書で調べます。', exEn2:'My uncle gave me an English dictionary.', exJa2:'叔父が英語辞書をくれた。' },
     { id:'uniform',      en:'uniform',      ja:'制服',                     pos:'noun', level:2, cat:'school',  exEn:'We wear a uniform at school.',              exJa:'学校では制服を着ます。', exEn2:'The new school uniform looks nice.', exJa2:'新しい制服は素敵だ。' },
-    { id:'principal',    en:'principal',    ja:'校長',                     pos:'noun', level:3, cat:'school',  exEn:'The principal gave a speech.',              exJa:'校長先生がスピーチをした。',
+    { id:'principal',    en:'principal',    ja:'校長',                     pos:'noun', level:3, cat:'school',  exEn:'The principal gave a speech.',              exJa:'校長先生がスピーチをした。', exEn2:'My principal concern is safety.', exJa2:'私の主な関心事は安全だ。',
       syn:['head teacher'] },
 
     // Sports / soccer
@@ -1307,9 +1307,9 @@
       syn:['practice','workout'] },
     { id:'stadium',      en:'stadium',      ja:'スタジアム',               pos:'noun', level:2, cat:'soccer',  exEn:'The stadium was full of fans.',             exJa:'スタジアムはファンで満員だった。', exEn2:'They built a new stadium for the World Cup.', exJa2:'ワールドカップのために新しいスタジアムを建てた。',
       syn:['arena'] },
-    { id:'victory',      en:'victory',      ja:'勝利',                     pos:'noun', level:3, cat:'soccer',  exEn:'It was a great victory.',                   exJa:'素晴らしい勝利だった。',
+    { id:'victory',      en:'victory',      ja:'勝利',                     pos:'noun', level:3, cat:'soccer',  exEn:'It was a great victory.',                   exJa:'素晴らしい勝利だった。', exEn2:'Victory tastes sweet.', exJa2:'勝利の味は格別だ。',
       syn:['win','triumph'] },
-    { id:'defeat',       en:'defeat',       ja:'敗北・打ち負かす',         pos:'noun', level:3, cat:'soccer',  exEn:'We accepted the defeat.',                   exJa:'私たちは敗北を受け入れた。',
+    { id:'defeat',       en:'defeat',       ja:'敗北・打ち負かす',         pos:'noun', level:3, cat:'soccer',  exEn:'We accepted the defeat.',                   exJa:'私たちは敗北を受け入れた。', exEn2:'Don\'t admit defeat too easily.', exJa2:'すぐに敗北を認めないで。',
       syn:['loss'] },
     { id:'player',       en:'player',       ja:'選手',                     pos:'noun', level:2, cat:'soccer',  exEn:'He is the best player on the team.',        exJa:'彼はチームで一番の選手です。', exEn2:'I am a casual chess player.', exJa2:'私は気軽にチェスをする人だ。',
       syn:['athlete'] },
@@ -1327,13 +1327,13 @@
       syn:['anxious','concerned'] },
     { id:'calm',         en:'calm',         ja:'落ち着いた',               pos:'adj',  level:2, cat:'general', exEn:'Stay calm and try again.',                  exJa:'落ち着いてもう一度やってみよう。', exEn2:'The sea is calm today.', exJa2:'今日は海が穏やかだ。',
       syn:['relaxed','peaceful'] },
-    { id:'jealous',      en:'jealous',      ja:'嫉妬している',             pos:'adj',  level:3, cat:'general', exEn:'He gets jealous easily.',                   exJa:'彼はすぐ嫉妬する。',
+    { id:'jealous',      en:'jealous',      ja:'嫉妬している',             pos:'adj',  level:3, cat:'general', exEn:'He gets jealous easily.',                   exJa:'彼はすぐ嫉妬する。', exEn2:'I\'m jealous of your skills.', exJa2:'あなたの腕がうらやましい。',
       syn:['envious'] },
-    { id:'embarrassed',  en:'embarrassed',  ja:'恥ずかしい',               pos:'adj',  level:3, cat:'general', exEn:'I was embarrassed in front of everyone.',   exJa:'みんなの前で恥ずかしかった。',
+    { id:'embarrassed',  en:'embarrassed',  ja:'恥ずかしい',               pos:'adj',  level:3, cat:'general', exEn:'I was embarrassed in front of everyone.',   exJa:'みんなの前で恥ずかしかった。', exEn2:'I\'m embarrassed to ask, but...', exJa2:'聞きにくいんだけど…',
       syn:['ashamed'] },
 
     // Abstract / academic
-    { id:'accomplish',   en:'accomplish',   ja:'成し遂げる',               pos:'verb', level:3, cat:'general', exEn:'You can accomplish anything.',              exJa:'あなたは何でも成し遂げられます。',
+    { id:'accomplish',   en:'accomplish',   ja:'成し遂げる',               pos:'verb', level:3, cat:'general', exEn:'You can accomplish anything.',              exJa:'あなたは何でも成し遂げられます。', exEn2:'What did you accomplish today?', exJa2:'今日は何を成し遂げた？',
       syn:['achieve','complete','attain'] },
 
     // ----- L1 batch — body / food / room / direction / verb basics -----
@@ -1392,9 +1392,9 @@
     { id:'hospital',     en:'hospital',     ja:'病院',                     pos:'noun', level:2, cat:'daily',   exEn:'My mum works at a hospital.',               exJa:'母は病院で働いています。', exEn2:'He was in hospital for a week.', exJa2:'彼は 1 週間入院していた。' },
 
     // ----- L3 batch — abstract verbs and nouns -----
-    { id:'admire',       en:'admire',       ja:'尊敬する',                 pos:'verb', level:3, cat:'general', exEn:'I admire my teacher.',                      exJa:'私は先生を尊敬しています。',  syn:['respect','look up to'] },
-    { id:'promise',      en:'promise',      ja:'約束する',                 pos:'verb', level:3, cat:'family',  exEn:'I promise to do my best.',                  exJa:'私は最善を尽くすと約束します。',syn:['vow','pledge'] },
-    { id:'doubt',        en:'doubt',        ja:'疑う',                     pos:'verb', level:3, cat:'general', exEn:"I doubt that's true.",                      exJa:'それが本当だとは思えない。' },
+    { id:'admire',       en:'admire',       ja:'尊敬する',                 pos:'verb', level:3, cat:'general', exEn:'I admire my teacher.',                      exJa:'私は先生を尊敬しています。', exEn2:'I admire your patience.', exJa2:'あなたの忍耐力を尊敬します。',  syn:['respect','look up to'] },
+    { id:'promise',      en:'promise',      ja:'約束する',                 pos:'verb', level:3, cat:'family',  exEn:'I promise to do my best.',                  exJa:'私は最善を尽くすと約束します。', exEn2:'A promise is a promise.', exJa2:'約束は約束だ。',syn:['vow','pledge'] },
+    { id:'doubt',        en:'doubt',        ja:'疑う',                     pos:'verb', level:3, cat:'general', exEn:"I doubt that's true.",                      exJa:'それが本当だとは思えない。', exEn2:'There\'s no doubt about it.', exJa2:'それについては疑いようがない。' },
     { id:'forgive',      en:'forgive',      ja:'許す',                     pos:'verb', level:3, cat:'family',  exEn:'Please forgive me.',                        exJa:'どうか許してください。',  syn:['pardon','excuse'] },
     { id:'trust',        en:'trust',        ja:'信用する',                 pos:'verb', level:3, cat:'family',  exEn:'I trust my brother.',                       exJa:'兄を信頼しています。',    syn:['believe in','rely on'] },
     { id:'protect',      en:'protect',      ja:'守る',                     pos:'verb', level:3, cat:'general', exEn:'Parents protect their children.',           exJa:'親は子供を守ります。',    syn:['defend','guard','shield'] },
