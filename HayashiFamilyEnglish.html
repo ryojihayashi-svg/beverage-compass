@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 236;
+  const APP_VERSION = 237;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -221,43 +221,43 @@
     { id:'mouth',       en:'mouth',       ja:'口',                       pos:'noun', level:1, cat:'general', exEn:'Open your mouth.',                          exJa:'口を開けて。', exEn2:'Don\'t talk with your mouth full.', exJa2:'口に物を入れたまましゃべらないで。' },
     { id:'ear',         en:'ear',         ja:'耳',                       pos:'noun', level:1, cat:'general', exEn:'Rabbits have long ears.',                   exJa:'うさぎは長い耳を持っています。', exEn2:'I have an ear infection.', exJa2:'耳が炎症を起こしている。' },
     { id:'leg',         en:'leg',         ja:'脚',                       pos:'noun', level:1, cat:'general', exEn:'My legs are tired.',                        exJa:'脚が疲れました。', exEn2:'The table has four legs.', exJa2:'そのテーブルには 4 本の脚がある。' },
-    { id:'arm',         en:'arm',         ja:'腕',                       pos:'noun', level:1, cat:'general', exEn:'He hurt his arm.',                          exJa:'彼は腕をけがしました。' },
+    { id:'arm',         en:'arm',         ja:'腕',                       pos:'noun', level:1, cat:'general', exEn:'He hurt his arm.',                          exJa:'彼は腕をけがしました。', exEn2:'She held the baby in her arms.', exJa2:'彼女は赤ちゃんを腕に抱いた。' },
     // L1 (continued) — food/drink
-    { id:'milk',        en:'milk',        ja:'牛乳',                     pos:'noun', level:1, cat:'daily',   exEn:'I drink milk every morning.',               exJa:'私は毎朝牛乳を飲みます。' },
-    { id:'cake',        en:'cake',        ja:'ケーキ',                   pos:'noun', level:1, cat:'daily',   exEn:'This cake is sweet.',                       exJa:'このケーキは甘いです。' },
-    { id:'egg',         en:'egg',         ja:'卵',                       pos:'noun', level:1, cat:'daily',   exEn:'I want two eggs, please.',                  exJa:'私は卵を2つほしいです。' },
-    { id:'banana',      en:'banana',      ja:'バナナ',                   pos:'noun', level:1, cat:'daily',   exEn:'Bananas are yellow.',                       exJa:'バナナは黄色いです。' },
-    { id:'tea',         en:'tea',         ja:'お茶',                     pos:'noun', level:1, cat:'daily',   exEn:'Would you like some tea?',                  exJa:'お茶はいかがですか？' },
+    { id:'milk',        en:'milk',        ja:'牛乳',                     pos:'noun', level:1, cat:'daily',   exEn:'I drink milk every morning.',               exJa:'私は毎朝牛乳を飲みます。', exEn2:'Add milk to your coffee.', exJa2:'コーヒーにミルクを入れてください。' },
+    { id:'cake',        en:'cake',        ja:'ケーキ',                   pos:'noun', level:1, cat:'daily',   exEn:'This cake is sweet.',                       exJa:'このケーキは甘いです。', exEn2:'She bought a birthday cake.', exJa2:'彼女は誕生日ケーキを買った。' },
+    { id:'egg',         en:'egg',         ja:'卵',                       pos:'noun', level:1, cat:'daily',   exEn:'I want two eggs, please.',                  exJa:'私は卵を2つほしいです。', exEn2:'I had eggs for breakfast.', exJa2:'朝食に卵を食べた。' },
+    { id:'banana',      en:'banana',      ja:'バナナ',                   pos:'noun', level:1, cat:'daily',   exEn:'Bananas are yellow.',                       exJa:'バナナは黄色いです。', exEn2:'Monkeys love bananas.', exJa2:'猿はバナナが大好きだ。' },
+    { id:'tea',         en:'tea',         ja:'お茶',                     pos:'noun', level:1, cat:'daily',   exEn:'Would you like some tea?',                  exJa:'お茶はいかがですか？', exEn2:'I drink green tea every day.', exJa2:'私は毎日緑茶を飲む。' },
     // L1 (continued) — common verbs
-    { id:'stop',        en:'stop',        ja:'止まる・止める',           pos:'verb', level:1, cat:'daily',   exEn:'Please stop here.',                         exJa:'ここで止まってください。' },
-    { id:'sit',         en:'sit',         ja:'座る',                     pos:'verb', level:1, cat:'daily',   exEn:'Please sit down.',                          exJa:'座ってください。' },
-    { id:'stand',       en:'stand',       ja:'立つ',                     pos:'verb', level:1, cat:'daily',   exEn:'Stand up, please.',                         exJa:'立ってください。' },
-    { id:'open',        en:'open',        ja:'開ける',                   pos:'verb', level:1, cat:'daily',   exEn:'Open the door, please.',                    exJa:'ドアを開けてください。' },
-    { id:'close',       en:'close',       ja:'閉める',                   pos:'verb', level:1, cat:'daily',   exEn:'Close your books.',                         exJa:'本を閉じてください。' },
-    { id:'make',        en:'make',        ja:'作る',                     pos:'verb', level:1, cat:'daily',   exEn:"Let's make dinner together.",               exJa:'一緒に夕食を作ろう。' },
-    { id:'give',        en:'give',        ja:'与える',                   pos:'verb', level:1, cat:'daily',   exEn:'Please give me the salt.',                  exJa:'塩を取ってください。' },
+    { id:'stop',        en:'stop',        ja:'止まる・止める',           pos:'verb', level:1, cat:'daily',   exEn:'Please stop here.',                         exJa:'ここで止まってください。', exEn2:'The rain finally stopped.', exJa2:'ようやく雨がやんだ。' },
+    { id:'sit',         en:'sit',         ja:'座る',                     pos:'verb', level:1, cat:'daily',   exEn:'Please sit down.',                          exJa:'座ってください。', exEn2:'I sit by the window.', exJa2:'私は窓のそばに座る。' },
+    { id:'stand',       en:'stand',       ja:'立つ',                     pos:'verb', level:1, cat:'daily',   exEn:'Stand up, please.',                         exJa:'立ってください。', exEn2:'Please stand in line.', exJa2:'列に並んで立ってください。' },
+    { id:'open',        en:'open',        ja:'開ける',                   pos:'verb', level:1, cat:'daily',   exEn:'Open the door, please.',                    exJa:'ドアを開けてください。', exEn2:'The shop opens at nine.', exJa2:'その店は 9 時に開く。' },
+    { id:'close',       en:'close',       ja:'閉める',                   pos:'verb', level:1, cat:'daily',   exEn:'Close your books.',                         exJa:'本を閉じてください。', exEn2:'The store closes at ten.', exJa2:'その店は 10 時に閉まる。' },
+    { id:'make',        en:'make',        ja:'作る',                     pos:'verb', level:1, cat:'daily',   exEn:"Let's make dinner together.",               exJa:'一緒に夕食を作ろう。', exEn2:'She made me a cake.', exJa2:'彼女は私にケーキを作ってくれた。' },
+    { id:'give',        en:'give',        ja:'与える',                   pos:'verb', level:1, cat:'daily',   exEn:'Please give me the salt.',                  exJa:'塩を取ってください。', exEn2:'I gave my brother a book.', exJa2:'私は弟に本をあげた。' },
     { id:'take',        en:'take',        ja:'取る・持っていく・(時間が) かかる', pos:'verb', level:1, cat:'daily',   exEn:'Take this umbrella.',                       exJa:'この傘を持っていってください。',
       exEn2:'It takes thirty minutes.',                     exJa2:'30分かかります。' },
     // L1 (continued) — adjectives
-    { id:'hot',         en:'hot',         ja:'熱い・暑い',               pos:'adj',  level:1, cat:'general', exEn:'The soup is hot.',                          exJa:'スープは熱いです。' },
-    { id:'cold',        en:'cold',        ja:'冷たい・寒い',             pos:'adj',  level:1, cat:'general', exEn:"It's cold today.",                          exJa:'今日は寒いです。' },
-    { id:'long',        en:'long',        ja:'長い',                     pos:'adj',  level:1, cat:'general', exEn:'She has long hair.',                        exJa:'彼女は長い髪をしています。' },
-    { id:'fast',        en:'fast',        ja:'速い',                     pos:'adj',  level:1, cat:'general', exEn:'He runs fast.',                             exJa:'彼は速く走ります。' },
-    { id:'slow',        en:'slow',        ja:'遅い',                     pos:'adj',  level:1, cat:'general', exEn:'The bus is slow today.',                    exJa:'今日のバスは遅いです。' },
+    { id:'hot',         en:'hot',         ja:'熱い・暑い',               pos:'adj',  level:1, cat:'general', exEn:'The soup is hot.',                          exJa:'スープは熱いです。', exEn2:'Today is very hot.', exJa2:'今日はとても暑い。' },
+    { id:'cold',        en:'cold',        ja:'冷たい・寒い',             pos:'adj',  level:1, cat:'general', exEn:"It's cold today.",                          exJa:'今日は寒いです。', exEn2:'I have a cold.', exJa2:'風邪をひいている。' },
+    { id:'long',        en:'long',        ja:'長い',                     pos:'adj',  level:1, cat:'general', exEn:'She has long hair.',                        exJa:'彼女は長い髪をしています。', exEn2:'It\'s a long way home.', exJa2:'家まで遠い道のりだ。' },
+    { id:'fast',        en:'fast',        ja:'速い',                     pos:'adj',  level:1, cat:'general', exEn:'He runs fast.',                             exJa:'彼は速く走ります。', exEn2:'This train is very fast.', exJa2:'この電車はとても速い。' },
+    { id:'slow',        en:'slow',        ja:'遅い',                     pos:'adj',  level:1, cat:'general', exEn:'The bus is slow today.',                    exJa:'今日のバスは遅いです。', exEn2:'He is a slow eater.', exJa2:'彼は食べるのが遅い。' },
     // L1 (continued) — common nouns
-    { id:'door',        en:'door',        ja:'ドア',                     pos:'noun', level:1, cat:'daily',   exEn:'Please close the door.',                    exJa:'ドアを閉めてください。' },
-    { id:'window',      en:'window',      ja:'窓',                       pos:'noun', level:1, cat:'daily',   exEn:'Open the window.',                          exJa:'窓を開けて。' },
-    { id:'kitchen',     en:'kitchen',     ja:'台所',                     pos:'noun', level:1, cat:'daily',   exEn:'Mum is in the kitchen.',                    exJa:'母は台所にいます。' },
-    { id:'room',        en:'room',        ja:'部屋',                     pos:'noun', level:1, cat:'daily',   exEn:'My room is small.',                         exJa:'私の部屋は小さいです。' },
-    { id:'park',        en:'park',        ja:'公園',                     pos:'noun', level:1, cat:'daily',   exEn:"Let's go to the park.",                     exJa:'公園に行こう。' },
-    { id:'road',        en:'road',        ja:'道',                       pos:'noun', level:1, cat:'general', exEn:'This is a long road.',                      exJa:'これは長い道です。' },
-    { id:'street',      en:'street',      ja:'通り',                     pos:'noun', level:1, cat:'general', exEn:"Don't play in the street.",                 exJa:'通りで遊ばないで。' },
-    { id:'city',        en:'city',        ja:'都市',                     pos:'noun', level:1, cat:'general', exEn:'Tokyo is a big city.',                      exJa:'東京は大きな都市です。' },
+    { id:'door',        en:'door',        ja:'ドア',                     pos:'noun', level:1, cat:'daily',   exEn:'Please close the door.',                    exJa:'ドアを閉めてください。', exEn2:'Someone is at the door.', exJa2:'誰かが玄関に来ている。' },
+    { id:'window',      en:'window',      ja:'窓',                       pos:'noun', level:1, cat:'daily',   exEn:'Open the window.',                          exJa:'窓を開けて。', exEn2:'I look out the window.', exJa2:'窓の外を見る。' },
+    { id:'kitchen',     en:'kitchen',     ja:'台所',                     pos:'noun', level:1, cat:'daily',   exEn:'Mum is in the kitchen.',                    exJa:'母は台所にいます。', exEn2:'Our kitchen is small but clean.', exJa2:'うちの台所は小さいが清潔だ。' },
+    { id:'room',        en:'room',        ja:'部屋',                     pos:'noun', level:1, cat:'daily',   exEn:'My room is small.',                         exJa:'私の部屋は小さいです。', exEn2:'Is there a room available?', exJa2:'空いている部屋はありますか？' },
+    { id:'park',        en:'park',        ja:'公園',                     pos:'noun', level:1, cat:'daily',   exEn:"Let's go to the park.",                     exJa:'公園に行こう。', exEn2:'I park my car here every day.', exJa2:'毎日ここに車をとめる。' },
+    { id:'road',        en:'road',        ja:'道',                       pos:'noun', level:1, cat:'general', exEn:'This is a long road.',                      exJa:'これは長い道です。', exEn2:'Drive carefully on this road.', exJa2:'この道は気をつけて運転して。' },
+    { id:'street',      en:'street',      ja:'通り',                     pos:'noun', level:1, cat:'general', exEn:"Don't play in the street.",                 exJa:'通りで遊ばないで。', exEn2:'I live on a quiet street.', exJa2:'私は静かな通りに住んでいる。' },
+    { id:'city',        en:'city',        ja:'都市',                     pos:'noun', level:1, cat:'general', exEn:'Tokyo is a big city.',                      exJa:'東京は大きな都市です。', exEn2:'I love this city.', exJa2:'私はこの街が好きだ。' },
     // L1 (continued) — weather
-    { id:'sun',         en:'sun',         ja:'太陽',                     pos:'noun', level:1, cat:'general', exEn:'The sun is bright.',                        exJa:'太陽は明るいです。' },
-    { id:'rain',        en:'rain',        ja:'雨',                       pos:'noun', level:1, cat:'general', exEn:"It's going to rain.",                       exJa:'雨が降りそうです。' },
-    { id:'snow',        en:'snow',        ja:'雪',                       pos:'noun', level:1, cat:'general', exEn:'Snow is white.',                            exJa:'雪は白いです。' },
-    { id:'wind',        en:'wind',        ja:'風',                       pos:'noun', level:1, cat:'general', exEn:'The wind is strong today.',                 exJa:'今日は風が強いです。' },
+    { id:'sun',         en:'sun',         ja:'太陽',                     pos:'noun', level:1, cat:'general', exEn:'The sun is bright.',                        exJa:'太陽は明るいです。', exEn2:'I sat in the sun.', exJa2:'日なたに座った。' },
+    { id:'rain',        en:'rain',        ja:'雨',                       pos:'noun', level:1, cat:'general', exEn:"It's going to rain.",                       exJa:'雨が降りそうです。', exEn2:'We had heavy rain last night.', exJa2:'昨夜は大雨だった。' },
+    { id:'snow',        en:'snow',        ja:'雪',                       pos:'noun', level:1, cat:'general', exEn:'Snow is white.',                            exJa:'雪は白いです。', exEn2:'It snows a lot in winter.', exJa2:'冬は雪がたくさん降る。' },
+    { id:'wind',        en:'wind',        ja:'風',                       pos:'noun', level:1, cat:'general', exEn:'The wind is strong today.',                 exJa:'今日は風が強いです。', exEn2:'There is a soft wind.', exJa2:'そよ風が吹いている。' },
     // L1 (continued) — family/people
     { id:'family',      en:'family',      ja:'家族',                     pos:'noun', level:1, cat:'family',  exEn:'I love my family.',                         exJa:'私は家族を愛しています。' },
     { id:'baby',        en:'baby',        ja:'赤ちゃん',                 pos:'noun', level:1, cat:'family',  exEn:'The baby is sleeping.',                     exJa:'赤ちゃんは寝ています。' },
