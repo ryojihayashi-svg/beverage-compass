@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 251;
+  const APP_VERSION = 252;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -587,19 +587,19 @@
     // L2 (continued) — body actions
     { id:'cry',         en:'cry',         ja:'泣く',                     pos:'verb', level:2, cat:'daily',   exEn:"Don't cry, it's okay.",                     exJa:'泣かないで、大丈夫だよ。', exEn2:'The film made me cry.', exJa2:'その映画で泣いた。' },
     { id:'laugh',       en:'laugh',       ja:'笑う',                     pos:'verb', level:2, cat:'daily',   exEn:'We laughed a lot.',                         exJa:'私たちはたくさん笑いました。', exEn2:'You make me laugh!', exJa2:'笑わせるね！' },
-    { id:'smile',       en:'smile',       ja:'ほほえむ',                 pos:'verb', level:2, cat:'daily',   exEn:'She smiled at me.',                         exJa:'彼女は私にほほえみました。' },
-    { id:'jump',        en:'jump',        ja:'跳ぶ',                     pos:'verb', level:2, cat:'daily',   exEn:'He can jump very high.',                    exJa:'彼はとても高く跳べます。' },
-    { id:'dance',       en:'dance',       ja:'踊る',                     pos:'verb', level:2, cat:'daily',   exEn:"Let's dance together.",                     exJa:'一緒に踊ろう。' },
-    { id:'sing',        en:'sing',        ja:'歌う',                     pos:'verb', level:2, cat:'daily',   exEn:'I love to sing.',                           exJa:'私は歌うのが大好きです。' },
+    { id:'smile',       en:'smile',       ja:'ほほえむ',                 pos:'verb', level:2, cat:'daily',   exEn:'She smiled at me.',                         exJa:'彼女は私にほほえみました。', exEn2:'A smile is the best gift.', exJa2:'笑顔は最高の贈り物だ。' },
+    { id:'jump',        en:'jump',        ja:'跳ぶ',                     pos:'verb', level:2, cat:'daily',   exEn:'He can jump very high.',                    exJa:'彼はとても高く跳べます。', exEn2:'My heart jumped when I saw her.', exJa2:'彼女を見て心臓がドキッとした。' },
+    { id:'dance',       en:'dance',       ja:'踊る',                     pos:'verb', level:2, cat:'daily',   exEn:"Let's dance together.",                     exJa:'一緒に踊ろう。', exEn2:'They danced all night.', exJa2:'彼らは一晩中踊った。' },
+    { id:'sing',        en:'sing',        ja:'歌う',                     pos:'verb', level:2, cat:'daily',   exEn:'I love to sing.',                           exJa:'私は歌うのが大好きです。', exEn2:'Birds sing in the morning.', exJa2:'鳥は朝に鳴く。' },
     // L2 (continued) — adjectives
-    { id:'clean',       en:'clean',       ja:'きれいな',                 pos:'adj',  level:2, cat:'general', exEn:'Keep your room clean.',                     exJa:'部屋をきれいに保ってね。' },
-    { id:'dirty',       en:'dirty',       ja:'汚い',                     pos:'adj',  level:2, cat:'general', exEn:"Don't wear dirty shoes.",                   exJa:'汚い靴を履かないで。' },
-    { id:'dark',        en:'dark',        ja:'暗い',                     pos:'adj',  level:2, cat:'general', exEn:"It's dark outside.",                        exJa:'外は暗いです。' },
-    { id:'bright',      en:'bright',      ja:'明るい',                   pos:'adj',  level:2, cat:'general', exEn:'The room is bright.',                       exJa:'部屋は明るいです。' },
-    { id:'soft',        en:'soft',        ja:'やわらかい',               pos:'adj',  level:2, cat:'general', exEn:'This pillow is soft.',                      exJa:'この枕はやわらかいです。' },
+    { id:'clean',       en:'clean',       ja:'きれいな',                 pos:'adj',  level:2, cat:'general', exEn:'Keep your room clean.',                     exJa:'部屋をきれいに保ってね。', exEn2:'I cleaned the kitchen this morning.', exJa2:'今朝、台所を掃除した。' },
+    { id:'dirty',       en:'dirty',       ja:'汚い',                     pos:'adj',  level:2, cat:'general', exEn:"Don't wear dirty shoes.",                   exJa:'汚い靴を履かないで。', exEn2:'My shoes got dirty in the rain.', exJa2:'雨で靴が汚れた。' },
+    { id:'dark',        en:'dark',        ja:'暗い',                     pos:'adj',  level:2, cat:'general', exEn:"It's dark outside.",                        exJa:'外は暗いです。', exEn2:'I prefer dark chocolate.', exJa2:'私はビターチョコレートが好き。' },
+    { id:'bright',      en:'bright',      ja:'明るい',                   pos:'adj',  level:2, cat:'general', exEn:'The room is bright.',                       exJa:'部屋は明るいです。', exEn2:'She\'s a bright student.', exJa2:'彼女は頭のいい生徒だ。' },
+    { id:'soft',        en:'soft',        ja:'やわらかい',               pos:'adj',  level:2, cat:'general', exEn:'This pillow is soft.',                      exJa:'この枕はやわらかいです。', exEn2:'Could you speak in a softer voice?', exJa2:'もう少し小さな声で話してもらえますか？' },
     { id:'hard',        en:'hard',        ja:'硬い・難しい・一生懸命',   pos:'adj',  level:2, cat:'general', exEn:'The bread is hard.',                        exJa:'パンが硬いです。',
       exEn2:'This problem is hard to solve.',               exJa2:'この問題は解くのが難しい。' },
-    { id:'heavy',       en:'heavy',       ja:'重い',                     pos:'adj',  level:2, cat:'general', exEn:'This box is too heavy.',                    exJa:'この箱は重すぎます。' },
+    { id:'heavy',       en:'heavy',       ja:'重い',                     pos:'adj',  level:2, cat:'general', exEn:'This box is too heavy.',                    exJa:'この箱は重すぎます。', exEn2:'Heavy rain is expected tonight.', exJa2:'今夜は激しい雨になる見込みだ。' },
     { id:'free',        en:'free',        ja:'自由な・無料の・暇な',     pos:'adj',  level:2, cat:'general', exEn:'Are you free tomorrow?',                    exJa:'明日は暇ですか？',
       exEn2:'Admission is free for children.',           exJa2:'子供は入場無料です。' },
     // L1 question words (re-leveled from L2 — these are 英検5級 basics)
@@ -608,27 +608,27 @@
     { id:'why',         en:'why',         ja:'なぜ',                     pos:'adv',  level:1, cat:'general', exEn:'Why are you sad?',                          exJa:'なぜ悲しいのですか？', exEn2:'Why don\'t we go for a walk?', exJa2:'散歩でも行きませんか？' },
     { id:'how',         en:'how',         ja:'どうやって',               pos:'adv',  level:1, cat:'general', exEn:'How do you go to school?',                  exJa:'どうやって学校に行きますか？', exEn2:'How are you doing today?', exJa2:'今日はどう？' },
     // L2 (continued) — nature
-    { id:'ocean',       en:'ocean',       ja:'海・大洋',                 pos:'noun', level:2, cat:'general', exEn:'I love swimming in the ocean.',             exJa:'海で泳ぐのが大好きです。' },
-    { id:'mountain',    en:'mountain',    ja:'山',                       pos:'noun', level:2, cat:'general', exEn:'Mt. Fuji is a beautiful mountain.',         exJa:'富士山は美しい山です。' },
-    { id:'river',       en:'river',       ja:'川',                       pos:'noun', level:2, cat:'general', exEn:'The river is wide.',                        exJa:'川は広いです。' },
-    { id:'flower',      en:'flower',      ja:'花',                       pos:'noun', level:2, cat:'general', exEn:'These flowers are pretty.',                 exJa:'これらの花はかわいいです。' },
+    { id:'ocean',       en:'ocean',       ja:'海・大洋',                 pos:'noun', level:2, cat:'general', exEn:'I love swimming in the ocean.',             exJa:'海で泳ぐのが大好きです。', exEn2:'The Pacific Ocean is huge.', exJa2:'太平洋はとても広い。' },
+    { id:'mountain',    en:'mountain',    ja:'山',                       pos:'noun', level:2, cat:'general', exEn:'Mt. Fuji is a beautiful mountain.',         exJa:'富士山は美しい山です。', exEn2:'We hiked up a small mountain.', exJa2:'小さな山に登った。' },
+    { id:'river',       en:'river',       ja:'川',                       pos:'noun', level:2, cat:'general', exEn:'The river is wide.',                        exJa:'川は広いです。', exEn2:'Don\'t swim in this river — it\'s dangerous.', exJa2:'この川では泳がないで、危ないから。' },
+    { id:'flower',      en:'flower',      ja:'花',                       pos:'noun', level:2, cat:'general', exEn:'These flowers are pretty.',                 exJa:'これらの花はかわいいです。', exEn2:'I bought flowers for my wife.', exJa2:'妻に花を買ってきた。' },
     // L2 (continued) — sports
-    { id:'tennis',      en:'tennis',      ja:'テニス',                   pos:'noun', level:2, cat:'soccer',  exEn:"Let's play tennis.",                        exJa:'テニスをしよう。' },
-    { id:'basketball',  en:'basketball',  ja:'バスケットボール',         pos:'noun', level:2, cat:'soccer',  exEn:'He plays basketball every day.',            exJa:'彼は毎日バスケットボールをします。' },
-    { id:'baseball',    en:'baseball',    ja:'野球',                     pos:'noun', level:2, cat:'soccer',  exEn:'Baseball is popular in Japan.',             exJa:'野球は日本で人気です。' },
-    { id:'volleyball',  en:'volleyball',  ja:'バレーボール',             pos:'noun', level:2, cat:'soccer',  exEn:'She is good at volleyball.',                exJa:'彼女はバレーボールが上手です。' },
-    { id:'swim',        en:'swim',        ja:'泳ぐ',                     pos:'verb', level:2, cat:'soccer',  exEn:'I can swim very well.',                     exJa:'私はとても上手に泳げます。' },
-    { id:'race',        en:'race',        ja:'競争・レース',             pos:'noun', level:2, cat:'soccer',  exEn:'He won the race.',                          exJa:'彼はレースに勝ちました。' },
+    { id:'tennis',      en:'tennis',      ja:'テニス',                   pos:'noun', level:2, cat:'soccer',  exEn:"Let's play tennis.",                        exJa:'テニスをしよう。', exEn2:'Tennis is good exercise.', exJa2:'テニスはいい運動になる。' },
+    { id:'basketball',  en:'basketball',  ja:'バスケットボール',         pos:'noun', level:2, cat:'soccer',  exEn:'He plays basketball every day.',            exJa:'彼は毎日バスケットボールをします。', exEn2:'My son joined the basketball club.', exJa2:'息子はバスケ部に入った。' },
+    { id:'baseball',    en:'baseball',    ja:'野球',                     pos:'noun', level:2, cat:'soccer',  exEn:'Baseball is popular in Japan.',             exJa:'野球は日本で人気です。', exEn2:'I watched a baseball game on TV.', exJa2:'テレビで野球の試合を見た。' },
+    { id:'volleyball',  en:'volleyball',  ja:'バレーボール',             pos:'noun', level:2, cat:'soccer',  exEn:'She is good at volleyball.',                exJa:'彼女はバレーボールが上手です。', exEn2:'We played beach volleyball in summer.', exJa2:'夏にビーチバレーをした。' },
+    { id:'swim',        en:'swim',        ja:'泳ぐ',                     pos:'verb', level:2, cat:'soccer',  exEn:'I can swim very well.',                     exJa:'私はとても上手に泳げます。', exEn2:'I swim twice a week.', exJa2:'週に 2 回水泳をする。' },
+    { id:'race',        en:'race',        ja:'競争・レース',             pos:'noun', level:2, cat:'soccer',  exEn:'He won the race.',                          exJa:'彼はレースに勝ちました。', exEn2:'Don\'t race down the stairs.', exJa2:'階段を駆け下りないで。' },
     // L2 (continued) — school subjects
-    { id:'physics',     en:'physics',     ja:'物理',                     pos:'noun', level:2, cat:'school',  exEn:'Physics is difficult for me.',              exJa:'物理は私には難しいです。' },
-    { id:'chemistry',   en:'chemistry',   ja:'化学',                     pos:'noun', level:2, cat:'school',  exEn:'We do experiments in chemistry.',           exJa:'私たちは化学で実験をします。' },
-    { id:'biology',     en:'biology',     ja:'生物',                     pos:'noun', level:2, cat:'school',  exEn:'Biology is about living things.',           exJa:'生物は生き物についてです。' },
-    { id:'geography',   en:'geography',   ja:'地理',                     pos:'noun', level:2, cat:'school',  exEn:'I learned about Japan in geography.',       exJa:'私は地理で日本について学びました。' },
+    { id:'physics',     en:'physics',     ja:'物理',                     pos:'noun', level:2, cat:'school',  exEn:'Physics is difficult for me.',              exJa:'物理は私には難しいです。', exEn2:'Einstein changed physics forever.', exJa2:'アインシュタインは物理学を一変させた。' },
+    { id:'chemistry',   en:'chemistry',   ja:'化学',                     pos:'noun', level:2, cat:'school',  exEn:'We do experiments in chemistry.',           exJa:'私たちは化学で実験をします。', exEn2:'They have great chemistry on stage.', exJa2:'彼らはステージ上で息がぴったりだ。' },
+    { id:'biology',     en:'biology',     ja:'生物',                     pos:'noun', level:2, cat:'school',  exEn:'Biology is about living things.',           exJa:'生物は生き物についてです。', exEn2:'My daughter loves biology class.', exJa2:'娘は生物の授業が大好きだ。' },
+    { id:'geography',   en:'geography',   ja:'地理',                     pos:'noun', level:2, cat:'school',  exEn:'I learned about Japan in geography.',       exJa:'私は地理で日本について学びました。', exEn2:'I\'m not good at geography.', exJa2:'私は地理が苦手だ。' },
     // L2 (continued) — home / places
-    { id:'bedroom',     en:'bedroom',     ja:'寝室',                     pos:'noun', level:2, cat:'daily',   exEn:'My bedroom is on the second floor.',        exJa:'私の寝室は2階にあります。' },
-    { id:'bathroom',    en:'bathroom',    ja:'浴室・お手洗い',           pos:'noun', level:2, cat:'daily',   exEn:'Where is the bathroom?',                    exJa:'お手洗いはどこですか？' },
-    { id:'garden',      en:'garden',      ja:'庭',                       pos:'noun', level:2, cat:'daily',   exEn:'Our garden is full of flowers.',            exJa:'私たちの庭は花でいっぱいです。' },
-    { id:'yard',        en:'yard',        ja:'庭・敷地',                 pos:'noun', level:2, cat:'daily',   exEn:'The kids are playing in the yard.',         exJa:'子供たちが庭で遊んでいます。' },
+    { id:'bedroom',     en:'bedroom',     ja:'寝室',                     pos:'noun', level:2, cat:'daily',   exEn:'My bedroom is on the second floor.',        exJa:'私の寝室は2階にあります。', exEn2:'The hotel has two bedrooms.', exJa2:'そのホテルは寝室が 2 つある。' },
+    { id:'bathroom',    en:'bathroom',    ja:'浴室・お手洗い',           pos:'noun', level:2, cat:'daily',   exEn:'Where is the bathroom?',                    exJa:'お手洗いはどこですか？', exEn2:'The bathroom is being cleaned now.', exJa2:'今、お手洗いを清掃中です。' },
+    { id:'garden',      en:'garden',      ja:'庭',                       pos:'noun', level:2, cat:'daily',   exEn:'Our garden is full of flowers.',            exJa:'私たちの庭は花でいっぱいです。', exEn2:'My grandmother grew vegetables in her garden.', exJa2:'祖母は庭で野菜を育てていた。' },
+    { id:'yard',        en:'yard',        ja:'庭・敷地',                 pos:'noun', level:2, cat:'daily',   exEn:'The kids are playing in the yard.',         exJa:'子供たちが庭で遊んでいます。', exEn2:'They have a small back yard.', exJa2:'彼らの家には小さな裏庭がある。' },
     { id:'office',      en:'office',      ja:'事務所',                   pos:'noun', level:2, cat:'general', exEn:'He works in a small office.',               exJa:'彼は小さな事務所で働いています。' },
     // L2 (continued) — cooking
     { id:'cook',        en:'cook',        ja:'料理する',                 pos:'verb', level:2, cat:'daily',   exEn:'My mother cooks dinner.',                   exJa:'母は夕食を作ります。' },
