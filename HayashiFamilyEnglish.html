@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 269;
+  const APP_VERSION = 270;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1609,23 +1609,23 @@
 
     // ----- L3 batch 2 — abstract nouns / verbs / adjectives -----
     { id:'emotion',        en:'emotion',        ja:'感情',               pos:'noun', level:3, cat:'general', exEn:'She showed her emotions.',                   exJa:'彼女は感情を見せた。', exEn2:'I struggled to control my emotions.', exJa2:'感情を抑えるのに苦労した。' },
-    { id:'behaviour',      en:'behaviour',      ja:'行動',               pos:'noun', level:3, cat:'general', exEn:'His behaviour was strange.',                 exJa:'彼の行動は奇妙だった。' },
-    { id:'achievement',    en:'achievement',    ja:'達成・業績',         pos:'noun', level:3, cat:'general', exEn:'It was a great achievement.',                exJa:'それは素晴らしい達成だった。' },
-    { id:'difficulty',     en:'difficulty',     ja:'困難',               pos:'noun', level:3, cat:'general', exEn:'I had some difficulty.',                     exJa:'私は少し困難を抱えた。' },
-    { id:'friendship',     en:'friendship',     ja:'友情',               pos:'noun', level:3, cat:'general', exEn:'Our friendship is strong.',                  exJa:'私たちの友情は強い。' },
-    { id:'wisdom',         en:'wisdom',         ja:'知恵',               pos:'noun', level:3, cat:'general', exEn:'Wisdom comes with age.',                     exJa:'知恵は年齢とともに来る。' },
-    { id:'fear',           en:'fear',           ja:'恐怖',               pos:'noun', level:3, cat:'general', exEn:"Don't show your fear.",                      exJa:'恐怖を見せないで。' },
-    { id:'joy',            en:'joy',            ja:'喜び',               pos:'noun', level:3, cat:'general', exEn:'Tears of joy.',                              exJa:'喜びの涙。' },
-    { id:'anger',          en:'anger',          ja:'怒り',               pos:'noun', level:3, cat:'general', exEn:'Control your anger.',                        exJa:'怒りを抑えて。' },
-    { id:'memory',         en:'memory',         ja:'記憶・思い出',       pos:'noun', level:3, cat:'general', exEn:'I have good memories.',                      exJa:'私には良い思い出がある。' },
-    { id:'imagination',    en:'imagination',    ja:'想像力',             pos:'noun', level:3, cat:'general', exEn:'Use your imagination.',                      exJa:'想像力を使って。' },
-    { id:'creativity',     en:'creativity',     ja:'創造性',             pos:'noun', level:3, cat:'general', exEn:'She has creativity.',                        exJa:'彼女には創造性がある。' },
-    { id:'kindness',       en:'kindness',       ja:'親切',               pos:'noun', level:3, cat:'general', exEn:'Thank you for your kindness.',               exJa:'親切にしてくれてありがとう。' },
-    { id:'honesty',        en:'honesty',        ja:'正直さ',             pos:'noun', level:3, cat:'general', exEn:'Honesty is important.',                      exJa:'正直さは大事だ。' },
-    { id:'deserve',        en:'deserve',        ja:'値する',             pos:'verb', level:3, cat:'general', exEn:'You deserve a break.',                       exJa:'あなたは休憩に値する。' },
-    { id:'recommend',      en:'recommend',      ja:'推薦する',           pos:'verb', level:3, cat:'general', exEn:'I recommend this book.',                     exJa:'私はこの本を勧める。' },
-    { id:'various',        en:'various',        ja:'さまざまな',         pos:'adj',  level:3, cat:'general', exEn:'Various people came.',                       exJa:'さまざまな人が来た。' },
-    { id:'particular',     en:'particular',     ja:'特定の',             pos:'adj',  level:3, cat:'general', exEn:'I have no particular reason.',               exJa:'特に理由はない。' },
+    { id:'behaviour',      en:'behaviour',      ja:'行動',               pos:'noun', level:3, cat:'general', exEn:'His behaviour was strange.',                 exJa:'彼の行動は奇妙だった。', exEn2:'I expect good behaviour from my children.', exJa2:'子供たちにはきちんとした行動を期待している。' },
+    { id:'achievement',    en:'achievement',    ja:'達成・業績',         pos:'noun', level:3, cat:'general', exEn:'It was a great achievement.',                exJa:'それは素晴らしい達成だった。', exEn2:'Climbing Mt. Fuji was a real achievement.', exJa2:'富士山登頂は本当の達成だった。' },
+    { id:'difficulty',     en:'difficulty',     ja:'困難',               pos:'noun', level:3, cat:'general', exEn:'I had some difficulty.',                     exJa:'私は少し困難を抱えた。', exEn2:'I had difficulty understanding him.', exJa2:'彼の言うことが理解しにくかった。' },
+    { id:'friendship',     en:'friendship',     ja:'友情',               pos:'noun', level:3, cat:'general', exEn:'Our friendship is strong.',                  exJa:'私たちの友情は強い。', exEn2:'Our friendship has lasted 20 years.', exJa2:'私たちの友情は 20 年続いている。' },
+    { id:'wisdom',         en:'wisdom',         ja:'知恵',               pos:'noun', level:3, cat:'general', exEn:'Wisdom comes with age.',                     exJa:'知恵は年齢とともに来る。', exEn2:'Listen to the wisdom of your elders.', exJa2:'年長者の知恵に耳を傾けなさい。' },
+    { id:'fear',           en:'fear',           ja:'恐怖',               pos:'noun', level:3, cat:'general', exEn:"Don't show your fear.",                      exJa:'恐怖を見せないで。', exEn2:'I fear I might be late.', exJa2:'遅れるんじゃないかと心配だ。' },
+    { id:'joy',            en:'joy',            ja:'喜び',               pos:'noun', level:3, cat:'general', exEn:'Tears of joy.',                              exJa:'喜びの涙。', exEn2:'My grandkids bring me joy.', exJa2:'孫たちは私に喜びをもたらす。' },
+    { id:'anger',          en:'anger',          ja:'怒り',               pos:'noun', level:3, cat:'general', exEn:'Control your anger.',                        exJa:'怒りを抑えて。', exEn2:'He spoke in anger and regretted it.', exJa2:'彼は怒りに任せて話して後悔した。' },
+    { id:'memory',         en:'memory',         ja:'記憶・思い出',       pos:'noun', level:3, cat:'general', exEn:'I have good memories.',                      exJa:'私には良い思い出がある。', exEn2:'My memory is getting worse.', exJa2:'記憶力が落ちてきている。' },
+    { id:'imagination',    en:'imagination',    ja:'想像力',             pos:'noun', level:3, cat:'general', exEn:'Use your imagination.',                      exJa:'想像力を使って。', exEn2:'It\'s just your imagination.', exJa2:'ただの気のせいだよ。' },
+    { id:'creativity',     en:'creativity',     ja:'創造性',             pos:'noun', level:3, cat:'general', exEn:'She has creativity.',                        exJa:'彼女には創造性がある。', exEn2:'Music boosts my creativity.', exJa2:'音楽は創造力を高めてくれる。' },
+    { id:'kindness',       en:'kindness',       ja:'親切',               pos:'noun', level:3, cat:'general', exEn:'Thank you for your kindness.',               exJa:'親切にしてくれてありがとう。', exEn2:'Random acts of kindness make the world better.', exJa2:'何気ない親切が世界を良くする。' },
+    { id:'honesty',        en:'honesty',        ja:'正直さ',             pos:'noun', level:3, cat:'general', exEn:'Honesty is important.',                      exJa:'正直さは大事だ。', exEn2:'Honesty is the best policy.', exJa2:'正直は最良の策。' },
+    { id:'deserve',        en:'deserve',        ja:'値する',             pos:'verb', level:3, cat:'general', exEn:'You deserve a break.',                       exJa:'あなたは休憩に値する。', exEn2:'He didn\'t deserve that treatment.', exJa2:'彼はそんな扱いを受けるべきじゃなかった。' },
+    { id:'recommend',      en:'recommend',      ja:'推薦する',           pos:'verb', level:3, cat:'general', exEn:'I recommend this book.',                     exJa:'私はこの本を勧める。', exEn2:'What would you recommend on the menu?', exJa2:'メニューでお勧めは何ですか？' },
+    { id:'various',        en:'various',        ja:'さまざまな',         pos:'adj',  level:3, cat:'general', exEn:'Various people came.',                       exJa:'さまざまな人が来た。', exEn2:'For various reasons, I declined.', exJa2:'さまざまな理由でお断りした。' },
+    { id:'particular',     en:'particular',     ja:'特定の',             pos:'adj',  level:3, cat:'general', exEn:'I have no particular reason.',               exJa:'特に理由はない。', exEn2:'She\'s very particular about her coffee.', exJa2:'彼女はコーヒーにはとてもこだわる。' },
 
     // ============ L4 (slightly advanced) ============
     { id:'promote',        en:'promote',        ja:'促進する・昇進させる', pos:'verb', level:4, cat:'general', exEn:'They promoted her to manager.',              exJa:'彼女はマネージャーに昇進した。' },
@@ -1693,22 +1693,22 @@
     { id:'profoundly',     en:'profoundly',     ja:'深く・大いに',       pos:'adv',  level:5, cat:'general', exEn:'I am profoundly grateful for your help.',     exJa:'あなたの助けに深く感謝している。' },
 
     // ============ Target 1200 不足語 (Round 1) → LV3 ============
-    { id:'activity',     en:'activity',     ja:'活動',         pos:'noun', level:3, cat:'general', exEn:'After-school activities are popular here.', exJa:'放課後の活動はここでは人気だ。' },
-    { id:'affect',       en:'affect',       ja:'影響する',     pos:'verb', level:3, cat:'general', exEn:'The weather affects my mood.',              exJa:'天気は私の気分に影響する。' },
-    { id:'appear',       en:'appear',       ja:'現れる・〜に見える', pos:'verb', level:3, cat:'general', exEn:'She appears tired today.',          exJa:'彼女は今日疲れているように見える。' },
-    { id:'communicate',  en:'communicate',  ja:'意思を伝える', pos:'verb', level:3, cat:'general', exEn:'We communicate by email.',                  exJa:'私たちはメールで連絡を取る。' },
-    { id:'community',    en:'community',    ja:'地域社会',     pos:'noun', level:3, cat:'general', exEn:'This is a friendly community.',             exJa:'ここは親しみやすい地域社会だ。' },
-    { id:'contain',      en:'contain',      ja:'含む',         pos:'verb', level:3, cat:'general', exEn:'This drink contains sugar.',                exJa:'この飲み物は砂糖を含む。' },
-    { id:'degree',       en:'degree',       ja:'程度・学位',   pos:'noun', level:3, cat:'general', exEn:'She has a degree in physics.',              exJa:'彼女は物理学の学位を持つ。' },
-    { id:'difference',   en:'difference',   ja:'違い',         pos:'noun', level:3, cat:'general', exEn:'There is a big difference.',                exJa:'大きな違いがある。' },
-    { id:'economy',      en:'economy',      ja:'経済',         pos:'noun', level:3, cat:'general', exEn:'The economy is recovering.',                exJa:'経済は回復している。' },
-    { id:'exist',        en:'exist',        ja:'存在する',     pos:'verb', level:3, cat:'general', exEn:'Ghosts do not really exist.',               exJa:'幽霊は本当は存在しない。' },
-    { id:'express',      en:'express',      ja:'表現する',     pos:'verb', level:3, cat:'general', exEn:'It is hard to express my feelings.',        exJa:'気持ちを表現するのは難しい。' },
-    { id:'figure',       en:'figure',       ja:'人物・数字',   pos:'noun', level:3, cat:'general', exEn:'She is a public figure.',                   exJa:'彼女は公人だ。' },
-    { id:'form',         en:'form',         ja:'形・形作る',   pos:'noun', level:3, cat:'general', exEn:'Please fill out this form.',                exJa:'この書式に記入してください。' },
-    { id:'health',       en:'health',       ja:'健康',         pos:'noun', level:3, cat:'general', exEn:'Take care of your health.',                 exJa:'健康に気をつけて。' },
-    { id:'human',        en:'human',        ja:'人間',         pos:'noun', level:3, cat:'general', exEn:'Humans need water to live.',                exJa:'人間は生きるのに水が必要だ。' },
-    { id:'involve',      en:'involve',      ja:'関係する・含む', pos:'verb', level:3, cat:'general', exEn:'The job involves travel.',                exJa:'その仕事には出張が含まれる。' },
+    { id:'activity',     en:'activity',     ja:'活動',         pos:'noun', level:3, cat:'general', exEn:'After-school activities are popular here.', exJa:'放課後の活動はここでは人気だ。', exEn2:'Walking is my favourite activity.', exJa2:'ウォーキングは私のお気に入りの活動だ。' },
+    { id:'affect',       en:'affect',       ja:'影響する',     pos:'verb', level:3, cat:'general', exEn:'The weather affects my mood.',              exJa:'天気は私の気分に影響する。', exEn2:'It deeply affected me.', exJa2:'それは私に深く影響した。' },
+    { id:'appear',       en:'appear',       ja:'現れる・〜に見える', pos:'verb', level:3, cat:'general', exEn:'She appears tired today.',          exJa:'彼女は今日疲れているように見える。', exEn2:'A new restaurant has appeared on the corner.', exJa2:'角に新しいレストランができた。' },
+    { id:'communicate',  en:'communicate',  ja:'意思を伝える', pos:'verb', level:3, cat:'general', exEn:'We communicate by email.',                  exJa:'私たちはメールで連絡を取る。', exEn2:'Babies communicate through cries.', exJa2:'赤ちゃんは泣くことで意思を伝える。' },
+    { id:'community',    en:'community',    ja:'地域社会',     pos:'noun', level:3, cat:'general', exEn:'This is a friendly community.',             exJa:'ここは親しみやすい地域社会だ。', exEn2:'I want to give back to my community.', exJa2:'地域社会に恩返ししたい。' },
+    { id:'contain',      en:'contain',      ja:'含む',         pos:'verb', level:3, cat:'general', exEn:'This drink contains sugar.',                exJa:'この飲み物は砂糖を含む。', exEn2:'I couldn\'t contain my excitement.', exJa2:'興奮を抑えきれなかった。' },
+    { id:'degree',       en:'degree',       ja:'程度・学位',   pos:'noun', level:3, cat:'general', exEn:'She has a degree in physics.',              exJa:'彼女は物理学の学位を持つ。', exEn2:'It\'s 30 degrees outside today.', exJa2:'今日は外気温が 30 度だ。' },
+    { id:'difference',   en:'difference',   ja:'違い',         pos:'noun', level:3, cat:'general', exEn:'There is a big difference.',                exJa:'大きな違いがある。', exEn2:'It makes no difference to me.', exJa2:'私にはどうでもいい。' },
+    { id:'economy',      en:'economy',      ja:'経済',         pos:'noun', level:3, cat:'general', exEn:'The economy is recovering.',                exJa:'経済は回復している。', exEn2:'I bought it on the economy line.', exJa2:'お得な路線で買いました。' },
+    { id:'exist',        en:'exist',        ja:'存在する',     pos:'verb', level:3, cat:'general', exEn:'Ghosts do not really exist.',               exJa:'幽霊は本当は存在しない。', exEn2:'I can\'t exist without coffee.', exJa2:'コーヒーなしでは生きていけない。' },
+    { id:'express',      en:'express',      ja:'表現する',     pos:'verb', level:3, cat:'general', exEn:'It is hard to express my feelings.',        exJa:'気持ちを表現するのは難しい。', exEn2:'Take the express train, it\'s faster.', exJa2:'急行に乗った方が速いよ。' },
+    { id:'figure',       en:'figure',       ja:'人物・数字',   pos:'noun', level:3, cat:'general', exEn:'She is a public figure.',                   exJa:'彼女は公人だ。', exEn2:'I can\'t figure out this puzzle.', exJa2:'このパズルが解けない。' },
+    { id:'form',         en:'form',         ja:'形・形作る',   pos:'noun', level:3, cat:'general', exEn:'Please fill out this form.',                exJa:'この書式に記入してください。', exEn2:'Bad habits form easily.', exJa2:'悪い習慣は身につきやすい。' },
+    { id:'health',       en:'health',       ja:'健康',         pos:'noun', level:3, cat:'general', exEn:'Take care of your health.',                 exJa:'健康に気をつけて。', exEn2:'A toast to your health!', exJa2:'あなたの健康に乾杯！' },
+    { id:'human',        en:'human',        ja:'人間',         pos:'noun', level:3, cat:'general', exEn:'Humans need water to live.',                exJa:'人間は生きるのに水が必要だ。', exEn2:'To err is human.', exJa2:'人間は間違えるものだ。' },
+    { id:'involve',      en:'involve',      ja:'関係する・含む', pos:'verb', level:3, cat:'general', exEn:'The job involves travel.',                exJa:'その仕事には出張が含まれる。', exEn2:'Don\'t involve me in your fight.', exJa2:'私を君らの喧嘩に巻き込まないで。' },
     { id:'issue',        en:'issue',        ja:'問題・発行',   pos:'noun', level:3, cat:'general', exEn:'This is an important issue.',               exJa:'これは重要な問題だ。' },
     { id:'language',     en:'language',     ja:'言語',         pos:'noun', level:3, cat:'general', exEn:'English is a global language.',             exJa:'英語は世界の言語だ。' },
     { id:'law',          en:'law',          ja:'法律',         pos:'noun', level:3, cat:'general', exEn:'Everyone must obey the law.',               exJa:'誰もが法律を守らねばならない。' },
