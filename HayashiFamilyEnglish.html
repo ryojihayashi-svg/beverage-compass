@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 256;
+  const APP_VERSION = 257;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1385,11 +1385,11 @@
     { id:'anxious',      en:'anxious',      ja:'不安な',                   pos:'adj',  level:2, cat:'general', exEn:'I feel anxious before exams.',              exJa:'私は試験前は不安になる。', exEn2:'She is anxious to start her new job.', exJa2:'彼女は新しい仕事を始めるのを心待ちにしている。',    syn:['worried','nervous'] },
     { id:'relieved',     en:'relieved',     ja:'安心した',                 pos:'adj',  level:2, cat:'general', exEn:"I'm relieved you're safe.",                 exJa:'無事でよかった、安心した。', exEn2:'I was relieved when the test ended.', exJa2:'テストが終わってほっとした。' },
     { id:'shocked',      en:'shocked',      ja:'ショックを受けた',         pos:'adj',  level:2, cat:'general', exEn:'I was shocked by the news.',                exJa:'そのニュースにショックを受けた。', exEn2:'Everyone was shocked by his sudden death.', exJa2:'彼の突然の死に皆ショックを受けた。', syn:['stunned','surprised'] },
-    { id:'invitation',   en:'invitation',   ja:'招待',                     pos:'noun', level:2, cat:'daily',   exEn:'Thank you for the invitation.',             exJa:'お招きありがとうございます。' },
-    { id:'anniversary',  en:'anniversary',  ja:'記念日',                   pos:'noun', level:2, cat:'family',  exEn:"Today is our wedding anniversary.",         exJa:'今日は結婚記念日です。' },
-    { id:'ceremony',     en:'ceremony',     ja:'式・儀式',                 pos:'noun', level:2, cat:'general', exEn:'The graduation ceremony was beautiful.',    exJa:'卒業式は素敵でした。' },
-    { id:'pharmacy',     en:'pharmacy',     ja:'薬局',                     pos:'noun', level:2, cat:'daily',   exEn:'The pharmacy is next to the hospital.',     exJa:'薬局は病院の隣です。',    syn:['drugstore','chemist'] },
-    { id:'hospital',     en:'hospital',     ja:'病院',                     pos:'noun', level:2, cat:'daily',   exEn:'My mum works at a hospital.',               exJa:'母は病院で働いています。' },
+    { id:'invitation',   en:'invitation',   ja:'招待',                     pos:'noun', level:2, cat:'daily',   exEn:'Thank you for the invitation.',             exJa:'お招きありがとうございます。', exEn2:'I sent invitations to all my friends.', exJa2:'友達みんなに招待状を送った。' },
+    { id:'anniversary',  en:'anniversary',  ja:'記念日',                   pos:'noun', level:2, cat:'family',  exEn:"Today is our wedding anniversary.",         exJa:'今日は結婚記念日です。', exEn2:'They celebrated their 25th anniversary.', exJa2:'彼らは結婚 25 周年を祝った。' },
+    { id:'ceremony',     en:'ceremony',     ja:'式・儀式',                 pos:'noun', level:2, cat:'general', exEn:'The graduation ceremony was beautiful.',    exJa:'卒業式は素敵でした。', exEn2:'The ceremony lasted two hours.', exJa2:'式典は 2 時間続いた。' },
+    { id:'pharmacy',     en:'pharmacy',     ja:'薬局',                     pos:'noun', level:2, cat:'daily',   exEn:'The pharmacy is next to the hospital.',     exJa:'薬局は病院の隣です。', exEn2:'I\'ll stop by the pharmacy after work.', exJa2:'仕事のあと薬局に寄ります。',    syn:['drugstore','chemist'] },
+    { id:'hospital',     en:'hospital',     ja:'病院',                     pos:'noun', level:2, cat:'daily',   exEn:'My mum works at a hospital.',               exJa:'母は病院で働いています。', exEn2:'He was in hospital for a week.', exJa2:'彼は 1 週間入院していた。' },
 
     // ----- L3 batch — abstract verbs and nouns -----
     { id:'admire',       en:'admire',       ja:'尊敬する',                 pos:'verb', level:3, cat:'general', exEn:'I admire my teacher.',                      exJa:'私は先生を尊敬しています。',  syn:['respect','look up to'] },
@@ -1458,30 +1458,30 @@
     { id:'warm',           en:'warm',           ja:'暖かい',             pos:'adj',  level:1, cat:'general', exEn:'The soup is warm.',                          exJa:'スープは温かい。', exEn2:'Wear a warm coat outside.', exJa2:'外では暖かいコートを着て。' },
     { id:'cool',           en:'cool',           ja:'涼しい',             pos:'adj',  level:1, cat:'general', exEn:'The wind feels cool.',                       exJa:'風が涼しく感じる。', exEn2:'That bike looks really cool.', exJa2:'そのバイクは本当にかっこいい。' },
     { id:'sick',           en:'sick',           ja:'病気の・気分が悪い', pos:'adj',  level:1, cat:'general', exEn:'I feel sick today.',                         exJa:'今日は気分が悪い。', exEn2:'My son was sick last week.', exJa2:'先週、息子が病気だった。',     syn:['ill','unwell'] },
-    { id:'ill',            en:'ill',            ja:'病気の',             pos:'adj',  level:2, cat:'general', exEn:'My grandfather is ill.',                     exJa:'祖父は病気です。',       syn:['sick','unwell'] },
+    { id:'ill',            en:'ill',            ja:'病気の',             pos:'adj',  level:2, cat:'general', exEn:'My grandfather is ill.',                     exJa:'祖父は病気です。', exEn2:'She has been ill for a few days.', exJa2:'彼女は数日体調を崩している。',       syn:['sick','unwell'] },
 
     // ----- L2 batch (英検4級) — school / health / clothing / house / jobs / transport / nature / money -----
-    { id:'gym',            en:'gym',            ja:'体育館',             pos:'noun', level:2, cat:'school',  exEn:'We have PE in the gym.',                     exJa:'体育館で体育をする。' },
-    { id:'cafeteria',      en:'cafeteria',      ja:'食堂',               pos:'noun', level:2, cat:'school',  exEn:'Lunch is in the cafeteria.',                 exJa:'食堂で昼食を食べる。' },
-    { id:'blackboard',     en:'blackboard',     ja:'黒板',               pos:'noun', level:2, cat:'school',  exEn:'The teacher writes on the blackboard.',      exJa:'先生は黒板に書く。' },
-    { id:'playground',     en:'playground',     ja:'校庭・遊び場',       pos:'noun', level:2, cat:'school',  exEn:'Kids play in the playground.',               exJa:'子供は校庭で遊ぶ。' },
-    { id:'medicine',       en:'medicine',       ja:'薬',                 pos:'noun', level:2, cat:'general', exEn:'Take this medicine.',                        exJa:'この薬を飲んで。' },
-    { id:'dentist',        en:'dentist',        ja:'歯医者',             pos:'noun', level:2, cat:'general', exEn:'I go to the dentist.',                       exJa:'歯医者に行く。' },
-    { id:'fever',          en:'fever',          ja:'熱',                 pos:'noun', level:2, cat:'general', exEn:'I have a fever.',                            exJa:'熱がある。' },
-    { id:'headache',       en:'headache',       ja:'頭痛',               pos:'noun', level:2, cat:'general', exEn:'I have a headache.',                         exJa:'頭が痛い。' },
-    { id:'cough',          en:'cough',          ja:'咳',                 pos:'noun', level:2, cat:'general', exEn:'I have a bad cough.',                        exJa:'私はひどい咳が出る。' },
-    { id:'pain',           en:'pain',           ja:'痛み',               pos:'noun', level:2, cat:'general', exEn:'I feel pain in my leg.',                     exJa:'脚に痛みがある。' },
-    { id:'hurt',           en:'hurt',           ja:'痛む',               pos:'verb', level:2, cat:'general', exEn:'My back hurts.',                             exJa:'背中が痛い。' },
-    { id:'trousers',       en:'trousers',       ja:'ズボン',             pos:'noun', level:2, cat:'general', exEn:'I bought new trousers.',                     exJa:'新しいズボンを買った。' },
-    { id:'coat',           en:'coat',           ja:'コート',             pos:'noun', level:2, cat:'general', exEn:'Wear your coat.',                            exJa:'コートを着て。' },
-    { id:'skirt',          en:'skirt',          ja:'スカート',           pos:'noun', level:2, cat:'general', exEn:'Her skirt is short.',                        exJa:'彼女のスカートは短い。' },
-    { id:'cap',            en:'cap',            ja:'帽子',               pos:'noun', level:2, cat:'general', exEn:'He wears a cap.',                            exJa:'彼は帽子をかぶっている。' },
-    { id:'sweater',        en:'sweater',        ja:'セーター',           pos:'noun', level:2, cat:'general', exEn:'This sweater is warm.',                      exJa:'このセーターは暖かい。' },
-    { id:'jeans',          en:'jeans',          ja:'ジーンズ',           pos:'noun', level:2, cat:'general', exEn:'I like wearing jeans.',                      exJa:'私はジーンズが好きだ。' },
-    { id:'gloves',         en:'gloves',         ja:'手袋',               pos:'noun', level:2, cat:'general', exEn:'Wear gloves in winter.',                     exJa:'冬は手袋をしなさい。' },
-    { id:'garage',         en:'garage',         ja:'車庫',               pos:'noun', level:2, cat:'general', exEn:'The car is in the garage.',                  exJa:'車はガレージにある。' },
-    { id:'roof',           en:'roof',           ja:'屋根',               pos:'noun', level:2, cat:'general', exEn:"There's a cat on the roof.",                 exJa:'屋根に猫がいる。' },
-    { id:'stairs',         en:'stairs',         ja:'階段',               pos:'noun', level:2, cat:'general', exEn:'Walk up the stairs.',                        exJa:'階段を上って。' },
+    { id:'gym',            en:'gym',            ja:'体育館',             pos:'noun', level:2, cat:'school',  exEn:'We have PE in the gym.',                     exJa:'体育館で体育をする。', exEn2:'I go to the gym three times a week.', exJa2:'私はジムに週 3 回通っている。' },
+    { id:'cafeteria',      en:'cafeteria',      ja:'食堂',               pos:'noun', level:2, cat:'school',  exEn:'Lunch is in the cafeteria.',                 exJa:'食堂で昼食を食べる。', exEn2:'Their cafeteria has great food.', exJa2:'そこの社員食堂は料理が美味しい。' },
+    { id:'blackboard',     en:'blackboard',     ja:'黒板',               pos:'noun', level:2, cat:'school',  exEn:'The teacher writes on the blackboard.',      exJa:'先生は黒板に書く。', exEn2:'I can\'t read what\'s on the blackboard.', exJa2:'黒板に書いてあるのが読めない。' },
+    { id:'playground',     en:'playground',     ja:'校庭・遊び場',       pos:'noun', level:2, cat:'school',  exEn:'Kids play in the playground.',               exJa:'子供は校庭で遊ぶ。', exEn2:'The school built a new playground.', exJa2:'学校が新しい遊び場を作った。' },
+    { id:'medicine',       en:'medicine',       ja:'薬',                 pos:'noun', level:2, cat:'general', exEn:'Take this medicine.',                        exJa:'この薬を飲んで。', exEn2:'My uncle studied medicine.', exJa2:'叔父は医学を学んだ。' },
+    { id:'dentist',        en:'dentist',        ja:'歯医者',             pos:'noun', level:2, cat:'general', exEn:'I go to the dentist.',                       exJa:'歯医者に行く。', exEn2:'I\'m afraid of the dentist.', exJa2:'私は歯医者が怖い。' },
+    { id:'fever',          en:'fever',          ja:'熱',                 pos:'noun', level:2, cat:'general', exEn:'I have a fever.',                            exJa:'熱がある。', exEn2:'World Cup fever has spread everywhere.', exJa2:'ワールドカップ熱が至るところに広がっている。' },
+    { id:'headache',       en:'headache',       ja:'頭痛',               pos:'noun', level:2, cat:'general', exEn:'I have a headache.',                         exJa:'頭が痛い。', exEn2:'This problem is a headache.', exJa2:'この問題は頭の痛い課題だ。' },
+    { id:'cough',          en:'cough',          ja:'咳',                 pos:'noun', level:2, cat:'general', exEn:'I have a bad cough.',                        exJa:'私はひどい咳が出る。', exEn2:'She coughed loudly during the lecture.', exJa2:'彼女は講義中に大きく咳をした。' },
+    { id:'pain',           en:'pain',           ja:'痛み',               pos:'noun', level:2, cat:'general', exEn:'I feel pain in my leg.',                     exJa:'脚に痛みがある。', exEn2:'It is a pain to do every day.', exJa2:'毎日やるのは面倒だ。' },
+    { id:'hurt',           en:'hurt',           ja:'痛む',               pos:'verb', level:2, cat:'general', exEn:'My back hurts.',                             exJa:'背中が痛い。', exEn2:'I didn\'t mean to hurt your feelings.', exJa2:'気を悪くさせるつもりはなかった。' },
+    { id:'trousers',       en:'trousers',       ja:'ズボン',             pos:'noun', level:2, cat:'general', exEn:'I bought new trousers.',                     exJa:'新しいズボンを買った。', exEn2:'My old trousers don\'t fit anymore.', exJa2:'昔のズボンがもう入らない。' },
+    { id:'coat',           en:'coat',           ja:'コート',             pos:'noun', level:2, cat:'general', exEn:'Wear your coat.',                            exJa:'コートを着て。', exEn2:'A coat of paint will fix it.', exJa2:'ペンキを一塗りすれば直るよ。' },
+    { id:'skirt',          en:'skirt',          ja:'スカート',           pos:'noun', level:2, cat:'general', exEn:'Her skirt is short.',                        exJa:'彼女のスカートは短い。', exEn2:'I prefer skirts to trousers.', exJa2:'私はズボンよりスカート派だ。' },
+    { id:'cap',            en:'cap',            ja:'帽子',               pos:'noun', level:2, cat:'general', exEn:'He wears a cap.',                            exJa:'彼は帽子をかぶっている。', exEn2:'Take off your cap indoors.', exJa2:'室内では帽子を脱ぎなさい。' },
+    { id:'sweater',        en:'sweater',        ja:'セーター',           pos:'noun', level:2, cat:'general', exEn:'This sweater is warm.',                      exJa:'このセーターは暖かい。', exEn2:'My grandmother knitted me a sweater.', exJa2:'祖母がセーターを編んでくれた。' },
+    { id:'jeans',          en:'jeans',          ja:'ジーンズ',           pos:'noun', level:2, cat:'general', exEn:'I like wearing jeans.',                      exJa:'私はジーンズが好きだ。', exEn2:'These jeans are too tight.', exJa2:'このジーンズはきつすぎる。' },
+    { id:'gloves',         en:'gloves',         ja:'手袋',               pos:'noun', level:2, cat:'general', exEn:'Wear gloves in winter.',                     exJa:'冬は手袋をしなさい。', exEn2:'Doctors wear rubber gloves.', exJa2:'医者はゴム手袋をする。' },
+    { id:'garage',         en:'garage',         ja:'車庫',               pos:'noun', level:2, cat:'general', exEn:'The car is in the garage.',                  exJa:'車はガレージにある。', exEn2:'The garage is full of old boxes.', exJa2:'ガレージは古い箱でいっぱいだ。' },
+    { id:'roof',           en:'roof',           ja:'屋根',               pos:'noun', level:2, cat:'general', exEn:"There's a cat on the roof.",                 exJa:'屋根に猫がいる。', exEn2:'The rain leaks through the roof.', exJa2:'屋根から雨が漏る。' },
+    { id:'stairs',         en:'stairs',         ja:'階段',               pos:'noun', level:2, cat:'general', exEn:'Walk up the stairs.',                        exJa:'階段を上って。', exEn2:'I took the stairs instead of the lift.', exJa2:'エレベーターではなく階段を使った。' },
     { id:'sofa',           en:'sofa',           ja:'ソファ',             pos:'noun', level:2, cat:'general', exEn:'Sit on the sofa.',                           exJa:'ソファに座って。' },
     { id:'fridge',         en:'fridge',         ja:'冷蔵庫',             pos:'noun', level:2, cat:'general', exEn:'The milk is in the fridge.',                 exJa:'牛乳は冷蔵庫にある。' },
     { id:'toilet',         en:'toilet',         ja:'トイレ',             pos:'noun', level:2, cat:'general', exEn:'Where is the toilet?',                       exJa:'トイレはどこですか？' },
