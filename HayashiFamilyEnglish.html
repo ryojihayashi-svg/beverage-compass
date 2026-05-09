@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 253;
+  const APP_VERSION = 254;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -662,36 +662,36 @@
     // L2 (continued) — common nouns
     { id:'idea',        en:'idea',        ja:'考え・アイデア',           pos:'noun', level:2, cat:'general', exEn:"That's a great idea.",                      exJa:'それは素晴らしいアイデアです。', exEn2:'I have no idea what he meant.', exJa2:'彼が何を言いたかったか全然わからない。' },
     { id:'dream',       en:'dream',       ja:'夢',                       pos:'noun', level:2, cat:'general', exEn:'My dream is to travel.',                    exJa:'私の夢は旅をすることです。', exEn2:'I had a strange dream last night.', exJa2:'昨夜、変な夢を見た。' },
-    { id:'name',        en:'name',        ja:'名前',                     pos:'noun', level:2, cat:'daily',   exEn:"What's your name?",                         exJa:'お名前は何ですか？' },
-    { id:'age',         en:'age',         ja:'年齢',                     pos:'noun', level:2, cat:'general', exEn:'What is your age?',                         exJa:'何歳ですか？' },
-    { id:'job',         en:'job',         ja:'仕事',                     pos:'noun', level:2, cat:'general', exEn:'I have a new job.',                         exJa:'私は新しい仕事があります。' },
+    { id:'name',        en:'name',        ja:'名前',                     pos:'noun', level:2, cat:'daily',   exEn:"What's your name?",                         exJa:'お名前は何ですか？', exEn2:'I named my cat Mochi.', exJa2:'私は猫を「もち」と名付けた。' },
+    { id:'age',         en:'age',         ja:'年齢',                     pos:'noun', level:2, cat:'general', exEn:'What is your age?',                         exJa:'何歳ですか？', exEn2:'He started running at the age of 50.', exJa2:'彼は 50 歳で走り始めた。' },
+    { id:'job',         en:'job',         ja:'仕事',                     pos:'noun', level:2, cat:'general', exEn:'I have a new job.',                         exJa:'私は新しい仕事があります。', exEn2:'You did a great job today.', exJa2:'今日はよくやったね。' },
     // L2 (continued) — adjectives
-    { id:'special',     en:'special',     ja:'特別な',                   pos:'adj',  level:2, cat:'general', exEn:'Today is a special day.',                   exJa:'今日は特別な日です。' },
-    { id:'similar',     en:'similar',     ja:'似ている',                 pos:'adj',  level:2, cat:'general', exEn:'These two are similar.',                    exJa:'これら2つは似ています。' },
-    { id:'certain',     en:'certain',     ja:'確かな',                   pos:'adj',  level:2, cat:'general', exEn:"I'm not certain about it.",                 exJa:'それについては確信がありません。' },
-    { id:'sure',        en:'sure',        ja:'確信して',                 pos:'adj',  level:2, cat:'general', exEn:'Are you sure?',                             exJa:'確かですか？' },
-    { id:'true',        en:'true',        ja:'本当の',                   pos:'adj',  level:2, cat:'general', exEn:'Is that story true?',                       exJa:'その話は本当ですか？' },
+    { id:'special',     en:'special',     ja:'特別な',                   pos:'adj',  level:2, cat:'general', exEn:'Today is a special day.',                   exJa:'今日は特別な日です。', exEn2:'Tonight is something special.', exJa2:'今夜は特別な夜だ。' },
+    { id:'similar',     en:'similar',     ja:'似ている',                 pos:'adj',  level:2, cat:'general', exEn:'These two are similar.',                    exJa:'これら2つは似ています。', exEn2:'My answer was similar to hers.', exJa2:'私の答えは彼女のと似ていた。' },
+    { id:'certain',     en:'certain',     ja:'確かな',                   pos:'adj',  level:2, cat:'general', exEn:"I'm not certain about it.",                 exJa:'それについては確信がありません。', exEn2:'A certain person told me about you.', exJa2:'ある人があなたのことを話してくれた。' },
+    { id:'sure',        en:'sure',        ja:'確信して',                 pos:'adj',  level:2, cat:'general', exEn:'Are you sure?',                             exJa:'確かですか？', exEn2:'Make sure to lock the door.', exJa2:'必ずドアに鍵をかけて。' },
+    { id:'true',        en:'true',        ja:'本当の',                   pos:'adj',  level:2, cat:'general', exEn:'Is that story true?',                       exJa:'その話は本当ですか？', exEn2:'Be true to yourself.', exJa2:'自分に正直でいなさい。' },
     // L2 (continued) — daily verbs
-    { id:'hold',        en:'hold',        ja:'持つ・抱える',             pos:'verb', level:2, cat:'daily',   exEn:'Hold this bag, please.',                    exJa:'このかばんを持ってください。' },
-    { id:'fix',         en:'fix',         ja:'直す・固定する',           pos:'verb', level:2, cat:'daily',   exEn:'Can you fix this clock?',                   exJa:'この時計を直せますか？' },
-    { id:'solve',       en:'solve',       ja:'解く',                     pos:'verb', level:2, cat:'general', exEn:"Let's solve this puzzle.",                  exJa:'このパズルを解こう。' },
-    { id:'put',         en:'put',         ja:'置く',                     pos:'verb', level:2, cat:'daily',   exEn:'Put the book on the desk.',                 exJa:'本を机に置いて。' },
-    { id:'pick',        en:'pick',        ja:'選ぶ・拾う',               pos:'verb', level:2, cat:'daily',   exEn:'Pick a card.',                              exJa:'カードを1枚選んで。' },
-    { id:'drop',        en:'drop',        ja:'落とす',                   pos:'verb', level:2, cat:'daily',   exEn:"Don't drop the cup.",                       exJa:'カップを落とさないで。' },
-    { id:'throw',       en:'throw',       ja:'投げる',                   pos:'verb', level:2, cat:'soccer',  exEn:'Throw the ball to me.',                     exJa:'ボールを私に投げて。' },
-    { id:'hit',         en:'hit',         ja:'打つ',                     pos:'verb', level:2, cat:'soccer',  exEn:'Hit the ball hard.',                        exJa:'ボールを強く打って。' },
-    { id:'push',        en:'push',        ja:'押す',                     pos:'verb', level:2, cat:'daily',   exEn:'Push the door open.',                       exJa:'ドアを押して開けて。' },
-    { id:'pull',        en:'pull',        ja:'引く',                     pos:'verb', level:2, cat:'daily',   exEn:'Pull the rope.',                            exJa:'ロープを引いて。' },
-    { id:'climb',       en:'climb',       ja:'登る',                     pos:'verb', level:2, cat:'daily',   exEn:"Let's climb the mountain.",                 exJa:'山に登ろう。' },
-    { id:'hide',        en:'hide',        ja:'隠す',                     pos:'verb', level:2, cat:'daily',   exEn:'Hide behind the tree.',                     exJa:'木の後ろに隠れて。' },
-    { id:'shake',       en:'shake',       ja:'振る',                     pos:'verb', level:2, cat:'daily',   exEn:'Shake the bottle well.',                    exJa:'瓶をよく振って。' },
-    { id:'count',       en:'count',       ja:'数える',                   pos:'verb', level:2, cat:'general', exEn:'Count to ten.',                             exJa:'10まで数えて。' },
-    { id:'wear',        en:'wear',        ja:'着る',                     pos:'verb', level:2, cat:'daily',   exEn:'Wear your jacket.',                         exJa:'ジャケットを着て。' },
+    { id:'hold',        en:'hold',        ja:'持つ・抱える',             pos:'verb', level:2, cat:'daily',   exEn:'Hold this bag, please.',                    exJa:'このかばんを持ってください。', exEn2:'Please hold on a moment.', exJa2:'少々お待ちください (電話)。' },
+    { id:'fix',         en:'fix',         ja:'直す・固定する',           pos:'verb', level:2, cat:'daily',   exEn:'Can you fix this clock?',                   exJa:'この時計を直せますか？', exEn2:'They fixed the price at $50.', exJa2:'彼らは値段を 50 ドルに固定した。' },
+    { id:'solve',       en:'solve',       ja:'解く',                     pos:'verb', level:2, cat:'general', exEn:"Let's solve this puzzle.",                  exJa:'このパズルを解こう。', exEn2:'We need to solve this problem.', exJa2:'この問題を解決する必要がある。' },
+    { id:'put',         en:'put',         ja:'置く',                     pos:'verb', level:2, cat:'daily',   exEn:'Put the book on the desk.',                 exJa:'本を机に置いて。', exEn2:'Put on your jacket.', exJa2:'ジャケットを着なさい。' },
+    { id:'pick',        en:'pick',        ja:'選ぶ・拾う',               pos:'verb', level:2, cat:'daily',   exEn:'Pick a card.',                              exJa:'カードを1枚選んで。', exEn2:'I\'ll pick you up at six.', exJa2:'6 時に迎えに行きます。' },
+    { id:'drop',        en:'drop',        ja:'落とす',                   pos:'verb', level:2, cat:'daily',   exEn:"Don't drop the cup.",                       exJa:'カップを落とさないで。', exEn2:'Could you drop me off here?', exJa2:'ここで降ろしてもらえますか？' },
+    { id:'throw',       en:'throw',       ja:'投げる',                   pos:'verb', level:2, cat:'soccer',  exEn:'Throw the ball to me.',                     exJa:'ボールを私に投げて。', exEn2:'Don\'t throw away that letter.', exJa2:'その手紙、捨てないで。' },
+    { id:'hit',         en:'hit',         ja:'打つ',                     pos:'verb', level:2, cat:'soccer',  exEn:'Hit the ball hard.',                        exJa:'ボールを強く打って。', exEn2:'The film was a big hit.', exJa2:'その映画は大ヒットした。' },
+    { id:'push',        en:'push',        ja:'押す',                     pos:'verb', level:2, cat:'daily',   exEn:'Push the door open.',                       exJa:'ドアを押して開けて。', exEn2:'Don\'t push your luck.', exJa2:'調子に乗らないで。' },
+    { id:'pull',        en:'pull',        ja:'引く',                     pos:'verb', level:2, cat:'daily',   exEn:'Pull the rope.',                            exJa:'ロープを引いて。', exEn2:'She pulled out her phone.', exJa2:'彼女は電話を取り出した。' },
+    { id:'climb',       en:'climb',       ja:'登る',                     pos:'verb', level:2, cat:'daily',   exEn:"Let's climb the mountain.",                 exJa:'山に登ろう。', exEn2:'Prices are climbing every year.', exJa2:'物価が毎年上がっている。' },
+    { id:'hide',        en:'hide',        ja:'隠す',                     pos:'verb', level:2, cat:'daily',   exEn:'Hide behind the tree.',                     exJa:'木の後ろに隠れて。', exEn2:'He\'s hiding something from us.', exJa2:'彼は私たちに何か隠している。' },
+    { id:'shake',       en:'shake',       ja:'振る',                     pos:'verb', level:2, cat:'daily',   exEn:'Shake the bottle well.',                    exJa:'瓶をよく振って。', exEn2:'They shook hands warmly.', exJa2:'彼らは温かく握手した。' },
+    { id:'count',       en:'count',       ja:'数える',                   pos:'verb', level:2, cat:'general', exEn:'Count to ten.',                             exJa:'10まで数えて。', exEn2:'You can count on me.', exJa2:'私を頼っていいよ。' },
+    { id:'wear',        en:'wear',        ja:'着る',                     pos:'verb', level:2, cat:'daily',   exEn:'Wear your jacket.',                         exJa:'ジャケットを着て。', exEn2:'I\'m wearing glasses today.', exJa2:'今日はメガネをかけている。' },
     // L2 (continued) — events / places nouns
-    { id:'party',       en:'party',       ja:'パーティー',               pos:'noun', level:2, cat:'daily',   exEn:'I went to a party.',                        exJa:'私はパーティーに行った。' },
-    { id:'concert',     en:'concert',     ja:'コンサート',               pos:'noun', level:2, cat:'daily',   exEn:'The concert was great.',                    exJa:'コンサートは素晴らしかった。' },
-    { id:'movie',       en:'movie',       ja:'映画',                     pos:'noun', level:2, cat:'daily',   exEn:"Let's watch a movie.",                      exJa:'映画を見よう。' },
-    { id:'festival',    en:'festival',    ja:'祭り',                     pos:'noun', level:2, cat:'daily',   exEn:'The summer festival is fun.',               exJa:'夏祭りは楽しい。' },
+    { id:'party',       en:'party',       ja:'パーティー',               pos:'noun', level:2, cat:'daily',   exEn:'I went to a party.',                        exJa:'私はパーティーに行った。', exEn2:'A political party is forming a new policy.', exJa2:'ある政党が新しい政策をまとめている。' },
+    { id:'concert',     en:'concert',     ja:'コンサート',               pos:'noun', level:2, cat:'daily',   exEn:'The concert was great.',                    exJa:'コンサートは素晴らしかった。', exEn2:'I bought tickets for the concert.', exJa2:'コンサートのチケットを買った。' },
+    { id:'movie',       en:'movie',       ja:'映画',                     pos:'noun', level:2, cat:'daily',   exEn:"Let's watch a movie.",                      exJa:'映画を見よう。', exEn2:'My favourite movie is about football.', exJa2:'私の好きな映画はサッカーが題材だ。' },
+    { id:'festival',    en:'festival',    ja:'祭り',                     pos:'noun', level:2, cat:'daily',   exEn:'The summer festival is fun.',               exJa:'夏祭りは楽しい。', exEn2:'They hold a film festival every spring.', exJa2:'毎年春に映画祭が開かれる。' },
     { id:'tradition',   en:'tradition',   ja:'伝統',                     pos:'noun', level:2, cat:'general', exEn:"It's a family tradition.",                  exJa:'それは家族の伝統だ。' },
     { id:'holiday',     en:'holiday',     ja:'休日',                     pos:'noun', level:2, cat:'daily',   exEn:'Happy holidays!',                           exJa:'良い休日を！' },
     { id:'birthday',    en:'birthday',    ja:'誕生日',                   pos:'noun', level:2, cat:'family',  exEn:'Happy birthday!',                           exJa:'お誕生日おめでとう！' },
