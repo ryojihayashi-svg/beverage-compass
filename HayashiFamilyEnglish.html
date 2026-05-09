@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 268;
+  const APP_VERSION = 269;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1395,14 +1395,14 @@
     { id:'admire',       en:'admire',       ja:'尊敬する',                 pos:'verb', level:3, cat:'general', exEn:'I admire my teacher.',                      exJa:'私は先生を尊敬しています。', exEn2:'I admire your patience.', exJa2:'あなたの忍耐力を尊敬します。',  syn:['respect','look up to'] },
     { id:'promise',      en:'promise',      ja:'約束する',                 pos:'verb', level:3, cat:'family',  exEn:'I promise to do my best.',                  exJa:'私は最善を尽くすと約束します。', exEn2:'A promise is a promise.', exJa2:'約束は約束だ。',syn:['vow','pledge'] },
     { id:'doubt',        en:'doubt',        ja:'疑う',                     pos:'verb', level:3, cat:'general', exEn:"I doubt that's true.",                      exJa:'それが本当だとは思えない。', exEn2:'There\'s no doubt about it.', exJa2:'それについては疑いようがない。' },
-    { id:'forgive',      en:'forgive',      ja:'許す',                     pos:'verb', level:3, cat:'family',  exEn:'Please forgive me.',                        exJa:'どうか許してください。',  syn:['pardon','excuse'] },
-    { id:'trust',        en:'trust',        ja:'信用する',                 pos:'verb', level:3, cat:'family',  exEn:'I trust my brother.',                       exJa:'兄を信頼しています。',    syn:['believe in','rely on'] },
-    { id:'protect',      en:'protect',      ja:'守る',                     pos:'verb', level:3, cat:'general', exEn:'Parents protect their children.',           exJa:'親は子供を守ります。',    syn:['defend','guard','shield'] },
-    { id:'progress',     en:'progress',     ja:'進歩・上達',               pos:'noun', level:3, cat:'general', exEn:'Her English is making progress.',           exJa:'彼女の英語は上達しています。', syn:['improvement','growth'] },
-    { id:'patience',     en:'patience',     ja:'忍耐',                     pos:'noun', level:3, cat:'general', exEn:'Learning a language takes patience.',       exJa:'言語学習には忍耐が必要です。', syn:['endurance','perseverance'] },
-    { id:'confidence',   en:'confidence',   ja:'自信',                     pos:'noun', level:3, cat:'general', exEn:'Speak with confidence.',                    exJa:'自信を持って話そう。',    syn:['self-assurance'] },
-    { id:'responsibility', en:'responsibility', ja:'責任',                 pos:'noun', level:3, cat:'general', exEn:"It's my responsibility.",                   exJa:'それは私の責任です。',    syn:['duty','obligation'] },
-    { id:'reaction',     en:'reaction',     ja:'反応',                     pos:'noun', level:3, cat:'general', exEn:'His reaction surprised me.',                exJa:'彼の反応に驚いた。',      syn:['response'] },
+    { id:'forgive',      en:'forgive',      ja:'許す',                     pos:'verb', level:3, cat:'family',  exEn:'Please forgive me.',                        exJa:'どうか許してください。', exEn2:'Forgive and forget.', exJa2:'許して忘れよう。',  syn:['pardon','excuse'] },
+    { id:'trust',        en:'trust',        ja:'信用する',                 pos:'verb', level:3, cat:'family',  exEn:'I trust my brother.',                       exJa:'兄を信頼しています。', exEn2:'Don\'t trust strangers.', exJa2:'知らない人を信用しないで。',    syn:['believe in','rely on'] },
+    { id:'protect',      en:'protect',      ja:'守る',                     pos:'verb', level:3, cat:'general', exEn:'Parents protect their children.',           exJa:'親は子供を守ります。', exEn2:'Wear sunscreen to protect your skin.', exJa2:'肌を守るために日焼け止めを塗って。',    syn:['defend','guard','shield'] },
+    { id:'progress',     en:'progress',     ja:'進歩・上達',               pos:'noun', level:3, cat:'general', exEn:'Her English is making progress.',           exJa:'彼女の英語は上達しています。', exEn2:'The project is in progress.', exJa2:'そのプロジェクトは進行中だ。', syn:['improvement','growth'] },
+    { id:'patience',     en:'patience',     ja:'忍耐',                     pos:'noun', level:3, cat:'general', exEn:'Learning a language takes patience.',       exJa:'言語学習には忍耐が必要です。', exEn2:'My patience is running thin.', exJa2:'私の忍耐が切れかけている。', syn:['endurance','perseverance'] },
+    { id:'confidence',   en:'confidence',   ja:'自信',                     pos:'noun', level:3, cat:'general', exEn:'Speak with confidence.',                    exJa:'自信を持って話そう。', exEn2:'In confidence, I disagree.', exJa2:'ここだけの話、賛成できません。',    syn:['self-assurance'] },
+    { id:'responsibility', en:'responsibility', ja:'責任',                 pos:'noun', level:3, cat:'general', exEn:"It's my responsibility.",                   exJa:'それは私の責任です。', exEn2:'I take full responsibility.', exJa2:'全責任を負います。',    syn:['duty','obligation'] },
+    { id:'reaction',     en:'reaction',     ja:'反応',                     pos:'noun', level:3, cat:'general', exEn:'His reaction surprised me.',                exJa:'彼の反応に驚いた。', exEn2:'It\'s a chemical reaction.', exJa2:'化学反応だ。',      syn:['response'] },
 
     // ============================================================
     // 英検対策の単語拡充バッチ
@@ -1512,30 +1512,30 @@
     { id:'lightning',      en:'lightning',      ja:'稲妻',               pos:'noun', level:2, cat:'general', exEn:'Lightning is dangerous.',                    exJa:'稲妻は危険だ。', exEn2:'He\'s quick as lightning.', exJa2:'彼は稲妻のように素早い。' },
 
     // ----- L3 batch (英検3級) — abstract / school / verbs / adjectives / building / society -----
-    { id:'subject',        en:'subject',        ja:'科目',               pos:'noun', level:3, cat:'school',  exEn:"What's your favourite subject?",             exJa:'好きな科目は何ですか？' },
-    { id:'assignment',     en:'assignment',     ja:'課題',               pos:'noun', level:3, cat:'school',  exEn:'I finished the assignment.',                 exJa:'課題を終えた。' },
-    { id:'grade',          en:'grade',          ja:'成績',               pos:'noun', level:3, cat:'school',  exEn:'I got a good grade.',                        exJa:'良い成績だった。' },
-    { id:'professor',      en:'professor',      ja:'教授',               pos:'noun', level:3, cat:'school',  exEn:'My professor is kind.',                      exJa:'教授は親切だ。' },
-    { id:'cafe',           en:'cafe',           ja:'カフェ',             pos:'noun', level:3, cat:'general', exEn:"Let's go to a cafe.",                        exJa:'カフェに行こう。' },
-    { id:'museum',         en:'museum',         ja:'博物館',             pos:'noun', level:3, cat:'general', exEn:'The museum is huge.',                        exJa:'博物館は巨大だ。' },
-    { id:'zoo',            en:'zoo',            ja:'動物園',             pos:'noun', level:3, cat:'general', exEn:'I love going to the zoo.',                   exJa:'動物園に行くのが大好き。' },
-    { id:'aquarium',       en:'aquarium',       ja:'水族館',             pos:'noun', level:3, cat:'general', exEn:'The aquarium has many fish.',                exJa:'水族館には魚がたくさんいる。' },
-    { id:'church',         en:'church',         ja:'教会',               pos:'noun', level:3, cat:'general', exEn:'They go to church on Sunday.',               exJa:'日曜は教会に行く。' },
-    { id:'factory',        en:'factory',        ja:'工場',               pos:'noun', level:3, cat:'general', exEn:'My uncle works at a factory.',               exJa:'叔父は工場で働く。' },
-    { id:'university',     en:'university',     ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'She goes to university in London.',          exJa:'彼女はロンドンの大学に通う。' },
-    { id:'college',        en:'college',        ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'I want to go to college.',                   exJa:'大学に行きたい。' },
-    { id:'injury',         en:'injury',         ja:'けが',               pos:'noun', level:3, cat:'general', exEn:'He has a knee injury.',                      exJa:'彼は膝にけがをしている。' },
-    { id:'disease',        en:'disease',        ja:'病気',               pos:'noun', level:3, cat:'general', exEn:"It's a serious disease.",                    exJa:'それは深刻な病気だ。',    syn:['illness','sickness'] },
-    { id:'tourist',        en:'tourist',        ja:'観光客',             pos:'noun', level:3, cat:'general', exEn:'Many tourists visit Kyoto.',                 exJa:'多くの観光客が京都を訪れる。' },
-    { id:'souvenir',       en:'souvenir',       ja:'お土産',             pos:'noun', level:3, cat:'general', exEn:'I bought a souvenir.',                       exJa:'お土産を買った。' },
-    { id:'offer',          en:'offer',          ja:'申し出る',           pos:'verb', level:3, cat:'general', exEn:'They offered me a job.',                     exJa:'彼らは私に仕事を提供してくれた。' },
-    { id:'include',        en:'include',        ja:'含む',               pos:'verb', level:3, cat:'general', exEn:'The price includes tax.',                    exJa:'価格には税が含まれる。' },
-    { id:'strange',        en:'strange',        ja:'奇妙な',             pos:'adj',  level:3, cat:'general', exEn:'That sounds strange.',                       exJa:'それは奇妙に聞こえる。' },
-    { id:'boring',         en:'boring',         ja:'退屈な',             pos:'adj',  level:3, cat:'general', exEn:'The film was boring.',                       exJa:'映画はつまらなかった。' },
-    { id:'recent',         en:'recent',         ja:'最近の',             pos:'adj',  level:3, cat:'general', exEn:'I read a recent book.',                      exJa:'私は最近の本を読んだ。' },
-    { id:'relationship',   en:'relationship',   ja:'関係',               pos:'noun', level:3, cat:'general', exEn:'They have a good relationship.',             exJa:'彼らは良い関係だ。' },
-    { id:'nearly',         en:'nearly',         ja:'もう少しで',         pos:'adv',  level:3, cat:'general', exEn:"I'm nearly finished.",                       exJa:'もうすぐ終わる。' },
-    { id:'exactly',        en:'exactly',        ja:'まさに',             pos:'adv',  level:3, cat:'general', exEn:"That's exactly right.",                      exJa:'まさにその通り。' },
+    { id:'subject',        en:'subject',        ja:'科目',               pos:'noun', level:3, cat:'school',  exEn:"What's your favourite subject?",             exJa:'好きな科目は何ですか？', exEn2:'Let\'s change the subject.', exJa2:'話題を変えよう。' },
+    { id:'assignment',     en:'assignment',     ja:'課題',               pos:'noun', level:3, cat:'school',  exEn:'I finished the assignment.',                 exJa:'課題を終えた。', exEn2:'Her new assignment is in Paris.', exJa2:'彼女の新しい任地はパリだ。' },
+    { id:'grade',          en:'grade',          ja:'成績',               pos:'noun', level:3, cat:'school',  exEn:'I got a good grade.',                        exJa:'良い成績だった。', exEn2:'My son is in third grade.', exJa2:'息子は小 3 だ。' },
+    { id:'professor',      en:'professor',      ja:'教授',               pos:'noun', level:3, cat:'school',  exEn:'My professor is kind.',                      exJa:'教授は親切だ。', exEn2:'A visiting professor is teaching the course.', exJa2:'客員教授が授業を担当している。' },
+    { id:'cafe',           en:'cafe',           ja:'カフェ',             pos:'noun', level:3, cat:'general', exEn:"Let's go to a cafe.",                        exJa:'カフェに行こう。', exEn2:'There\'s a small cafe on the corner.', exJa2:'角に小さなカフェがある。' },
+    { id:'museum',         en:'museum',         ja:'博物館',             pos:'noun', level:3, cat:'general', exEn:'The museum is huge.',                        exJa:'博物館は巨大だ。', exEn2:'I visited the British Museum in London.', exJa2:'ロンドンで大英博物館に行った。' },
+    { id:'zoo',            en:'zoo',            ja:'動物園',             pos:'noun', level:3, cat:'general', exEn:'I love going to the zoo.',                   exJa:'動物園に行くのが大好き。', exEn2:'The zoo got a new panda.', exJa2:'動物園に新しいパンダが来た。' },
+    { id:'aquarium',       en:'aquarium',       ja:'水族館',             pos:'noun', level:3, cat:'general', exEn:'The aquarium has many fish.',                exJa:'水族館には魚がたくさんいる。', exEn2:'My daughter loves the aquarium.', exJa2:'娘は水族館が大好きだ。' },
+    { id:'church',         en:'church',         ja:'教会',               pos:'noun', level:3, cat:'general', exEn:'They go to church on Sunday.',               exJa:'日曜は教会に行く。', exEn2:'The church bells rang at six.', exJa2:'教会の鐘が 6 時に鳴った。' },
+    { id:'factory',        en:'factory',        ja:'工場',               pos:'noun', level:3, cat:'general', exEn:'My uncle works at a factory.',               exJa:'叔父は工場で働く。', exEn2:'The factory closed last year.', exJa2:'その工場は去年閉鎖した。' },
+    { id:'university',     en:'university',     ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'She goes to university in London.',          exJa:'彼女はロンドンの大学に通う。', exEn2:'My eldest son will start university next year.', exJa2:'長男は来年大学生になる。' },
+    { id:'college',        en:'college',        ja:'大学',               pos:'noun', level:3, cat:'school',  exEn:'I want to go to college.',                   exJa:'大学に行きたい。', exEn2:'My uncle didn\'t go to college.', exJa2:'叔父は大学に行かなかった。' },
+    { id:'injury',         en:'injury',         ja:'けが',               pos:'noun', level:3, cat:'general', exEn:'He has a knee injury.',                      exJa:'彼は膝にけがをしている。', exEn2:'He recovered from a serious injury.', exJa2:'彼は重傷から回復した。' },
+    { id:'disease',        en:'disease',        ja:'病気',               pos:'noun', level:3, cat:'general', exEn:"It's a serious disease.",                    exJa:'それは深刻な病気だ。', exEn2:'Heart disease runs in my family.', exJa2:'うちの家系は心臓病が多い。',    syn:['illness','sickness'] },
+    { id:'tourist',        en:'tourist',        ja:'観光客',             pos:'noun', level:3, cat:'general', exEn:'Many tourists visit Kyoto.',                 exJa:'多くの観光客が京都を訪れる。', exEn2:'Tourists are flooding the city.', exJa2:'観光客がこの街にあふれている。' },
+    { id:'souvenir',       en:'souvenir',       ja:'お土産',             pos:'noun', level:3, cat:'general', exEn:'I bought a souvenir.',                       exJa:'お土産を買った。', exEn2:'I keep this stone as a souvenir of Greece.', exJa2:'ギリシャの記念にこの石を取ってある。' },
+    { id:'offer',          en:'offer',          ja:'申し出る',           pos:'verb', level:3, cat:'general', exEn:'They offered me a job.',                     exJa:'彼らは私に仕事を提供してくれた。', exEn2:'I made him an offer he couldn\'t refuse.', exJa2:'彼が断れない条件で申し出た。' },
+    { id:'include',        en:'include',        ja:'含む',               pos:'verb', level:3, cat:'general', exEn:'The price includes tax.',                    exJa:'価格には税が含まれる。', exEn2:'Breakfast is included in the price.', exJa2:'朝食は料金に含まれている。' },
+    { id:'strange',        en:'strange',        ja:'奇妙な',             pos:'adj',  level:3, cat:'general', exEn:'That sounds strange.',                       exJa:'それは奇妙に聞こえる。', exEn2:'It\'s strange but true.', exJa2:'奇妙だが本当だ。' },
+    { id:'boring',         en:'boring',         ja:'退屈な',             pos:'adj',  level:3, cat:'general', exEn:'The film was boring.',                       exJa:'映画はつまらなかった。', exEn2:'I\'m bored of doing the same thing.', exJa2:'同じことばかりで飽きた。' },
+    { id:'recent',         en:'recent',         ja:'最近の',             pos:'adj',  level:3, cat:'general', exEn:'I read a recent book.',                      exJa:'私は最近の本を読んだ。', exEn2:'In recent years, things have changed.', exJa2:'ここ数年で状況が変わってきた。' },
+    { id:'relationship',   en:'relationship',   ja:'関係',               pos:'noun', level:3, cat:'general', exEn:'They have a good relationship.',             exJa:'彼らは良い関係だ。', exEn2:'There\'s a relationship between sleep and health.', exJa2:'睡眠と健康には関連がある。' },
+    { id:'nearly',         en:'nearly',         ja:'もう少しで',         pos:'adv',  level:3, cat:'general', exEn:"I'm nearly finished.",                       exJa:'もうすぐ終わる。', exEn2:'I nearly missed the train.', exJa2:'電車に乗り遅れるところだった。' },
+    { id:'exactly',        en:'exactly',        ja:'まさに',             pos:'adv',  level:3, cat:'general', exEn:"That's exactly right.",                      exJa:'まさにその通り。', exEn2:'I don\'t know exactly when.', exJa2:'いつかは正確には分からない。' },
 
     // ============================================================
     // 第2弾の単語拡充
@@ -1608,7 +1608,7 @@
     { id:'noisy',          en:'noisy',          ja:'うるさい',           pos:'adj',  level:2, cat:'general', exEn:'The street is noisy.',                       exJa:'通りはうるさい。', exEn2:'My neighbours are noisy at night.', exJa2:'隣人は夜うるさい。' },
 
     // ----- L3 batch 2 — abstract nouns / verbs / adjectives -----
-    { id:'emotion',        en:'emotion',        ja:'感情',               pos:'noun', level:3, cat:'general', exEn:'She showed her emotions.',                   exJa:'彼女は感情を見せた。' },
+    { id:'emotion',        en:'emotion',        ja:'感情',               pos:'noun', level:3, cat:'general', exEn:'She showed her emotions.',                   exJa:'彼女は感情を見せた。', exEn2:'I struggled to control my emotions.', exJa2:'感情を抑えるのに苦労した。' },
     { id:'behaviour',      en:'behaviour',      ja:'行動',               pos:'noun', level:3, cat:'general', exEn:'His behaviour was strange.',                 exJa:'彼の行動は奇妙だった。' },
     { id:'achievement',    en:'achievement',    ja:'達成・業績',         pos:'noun', level:3, cat:'general', exEn:'It was a great achievement.',                exJa:'それは素晴らしい達成だった。' },
     { id:'difficulty',     en:'difficulty',     ja:'困難',               pos:'noun', level:3, cat:'general', exEn:'I had some difficulty.',                     exJa:'私は少し困難を抱えた。' },
