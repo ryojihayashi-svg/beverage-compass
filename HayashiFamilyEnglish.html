@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 258;
+  const APP_VERSION = 259;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1509,7 +1509,7 @@
     { id:'coin',           en:'coin',           ja:'硬貨',               pos:'noun', level:2, cat:'general', exEn:'I found an old coin.',                       exJa:'古い硬貨を見つけた。', exEn2:'I tossed a coin to decide.', exJa2:'コインを投げて決めた。' },
     { id:'bank',           en:'bank',           ja:'銀行',               pos:'noun', level:2, cat:'general', exEn:'I need to go to the bank.',                  exJa:'銀行に行かなければ。', exEn2:'We sat on the river bank.', exJa2:'私たちは川岸に座った。' },
     { id:'thunder',        en:'thunder',        ja:'雷',                 pos:'noun', level:2, cat:'general', exEn:'Thunder is loud.',                           exJa:'雷の音は大きい。', exEn2:'A thunder storm is coming.', exJa2:'雷雨がやって来る。' },
-    { id:'lightning',      en:'lightning',      ja:'稲妻',               pos:'noun', level:2, cat:'general', exEn:'Lightning is dangerous.',                    exJa:'稲妻は危険だ。' },
+    { id:'lightning',      en:'lightning',      ja:'稲妻',               pos:'noun', level:2, cat:'general', exEn:'Lightning is dangerous.',                    exJa:'稲妻は危険だ。', exEn2:'He\'s quick as lightning.', exJa2:'彼は稲妻のように素早い。' },
 
     // ----- L3 batch (英検3級) — abstract / school / verbs / adjectives / building / society -----
     { id:'subject',        en:'subject',        ja:'科目',               pos:'noun', level:3, cat:'school',  exEn:"What's your favourite subject?",             exJa:'好きな科目は何ですか？' },
@@ -1585,27 +1585,27 @@
     { id:'away',           en:'away',           ja:'離れて',             pos:'adv',  level:1, cat:'general', exEn:'Go away!',                                   exJa:'あっち行って！', exEn2:'The station is two minutes away.', exJa2:'駅まで 2 分の距離だ。' },
 
     // ----- L2 batch 2 — furniture / food / body / verbs / adj -----
-    { id:'shelf',          en:'shelf',          ja:'棚',                 pos:'noun', level:2, cat:'general', exEn:'The book is on the shelf.',                  exJa:'本は棚にある。' },
-    { id:'drawer',         en:'drawer',         ja:'引き出し',           pos:'noun', level:2, cat:'general', exEn:'Open the drawer.',                           exJa:'引き出しを開けて。' },
-    { id:'pillow',         en:'pillow',         ja:'枕',                 pos:'noun', level:2, cat:'general', exEn:'My pillow is soft.',                         exJa:'私の枕は柔らかい。' },
-    { id:'blanket',        en:'blanket',        ja:'毛布',               pos:'noun', level:2, cat:'general', exEn:'The blanket is warm.',                       exJa:'毛布は暖かい。' },
-    { id:'sheet',          en:'sheet',          ja:'シーツ',             pos:'noun', level:2, cat:'general', exEn:'Wash the sheets.',                           exJa:'シーツを洗って。' },
-    { id:'towel',          en:'towel',          ja:'タオル',             pos:'noun', level:2, cat:'general', exEn:'Pass me a towel.',                           exJa:'タオルを取って。' },
-    { id:'biscuit',        en:'biscuit',        ja:'ビスケット',         pos:'noun', level:2, cat:'food',    exEn:'I love biscuits.',                           exJa:'私はビスケットが大好き。' },
-    { id:'chocolate',      en:'chocolate',      ja:'チョコレート',       pos:'noun', level:2, cat:'food',    exEn:'I want chocolate.',                          exJa:'私はチョコレートが欲しい。' },
-    { id:'dessert',        en:'dessert',        ja:'デザート',           pos:'noun', level:2, cat:'food',    exEn:'Dessert is delicious.',                      exJa:'デザートは美味しい。' },
-    { id:'pepper',         en:'pepper',         ja:'こしょう',           pos:'noun', level:2, cat:'food',    exEn:'Pass me the pepper.',                        exJa:'こしょうを取って。' },
-    { id:'oil',            en:'oil',            ja:'油',                 pos:'noun', level:2, cat:'food',    exEn:'Add some oil.',                              exJa:'油を少し加えて。' },
-    { id:'garlic',         en:'garlic',         ja:'ニンニク',           pos:'noun', level:2, cat:'food',    exEn:'I cooked with garlic.',                      exJa:'私はニンニクで料理した。' },
-    { id:'basket',         en:'basket',         ja:'かご',               pos:'noun', level:2, cat:'general', exEn:'Put it in the basket.',                      exJa:'かごに入れて。' },
-    { id:'jar',            en:'jar',            ja:'瓶',                 pos:'noun', level:2, cat:'general', exEn:'The jar is full of jam.',                    exJa:'瓶はジャムでいっぱいだ。' },
-    { id:'tin',            en:'tin',            ja:'缶',                 pos:'noun', level:2, cat:'general', exEn:'Open the tin.',                              exJa:'缶を開けて。' },
-    { id:'ankle',          en:'ankle',          ja:'足首',               pos:'noun', level:2, cat:'body',    exEn:'I hurt my ankle.',                           exJa:'私は足首をひねった。' },
-    { id:'elbow',          en:'elbow',          ja:'肘',                 pos:'noun', level:2, cat:'body',    exEn:"Don't put your elbow on the table.",         exJa:'テーブルに肘をつかないで。' },
-    { id:'wrist',          en:'wrist',          ja:'手首',               pos:'noun', level:2, cat:'body',    exEn:'I wear a watch on my wrist.',                exJa:'私は手首に時計をしている。' },
-    { id:'chest',          en:'chest',          ja:'胸',                 pos:'noun', level:2, cat:'body',    exEn:'He has a strong chest.',                     exJa:'彼は胸板が厚い。' },
-    { id:'bored',          en:'bored',          ja:'退屈した',           pos:'adj',  level:2, cat:'general', exEn:'I am bored.',                                exJa:'私は退屈している。' },
-    { id:'noisy',          en:'noisy',          ja:'うるさい',           pos:'adj',  level:2, cat:'general', exEn:'The street is noisy.',                       exJa:'通りはうるさい。' },
+    { id:'shelf',          en:'shelf',          ja:'棚',                 pos:'noun', level:2, cat:'general', exEn:'The book is on the shelf.',                  exJa:'本は棚にある。', exEn2:'I built a wooden shelf for the kitchen.', exJa2:'台所に木の棚を作った。' },
+    { id:'drawer',         en:'drawer',         ja:'引き出し',           pos:'noun', level:2, cat:'general', exEn:'Open the drawer.',                           exJa:'引き出しを開けて。', exEn2:'Important papers are in the top drawer.', exJa2:'大切な書類は一番上の引き出しにある。' },
+    { id:'pillow',         en:'pillow',         ja:'枕',                 pos:'noun', level:2, cat:'general', exEn:'My pillow is soft.',                         exJa:'私の枕は柔らかい。', exEn2:'I sleep with two pillows.', exJa2:'私は枕を 2 つ使って寝る。' },
+    { id:'blanket',        en:'blanket',        ja:'毛布',               pos:'noun', level:2, cat:'general', exEn:'The blanket is warm.',                       exJa:'毛布は暖かい。', exEn2:'A blanket of snow covered the town.', exJa2:'街は雪に覆われていた。' },
+    { id:'sheet',          en:'sheet',          ja:'シーツ',             pos:'noun', level:2, cat:'general', exEn:'Wash the sheets.',                           exJa:'シーツを洗って。', exEn2:'Could I have a sheet of paper?', exJa2:'紙を一枚もらえますか？' },
+    { id:'towel',          en:'towel',          ja:'タオル',             pos:'noun', level:2, cat:'general', exEn:'Pass me a towel.',                           exJa:'タオルを取って。', exEn2:'Could I get a clean towel, please?', exJa2:'きれいなタオルをいただけますか？' },
+    { id:'biscuit',        en:'biscuit',        ja:'ビスケット',         pos:'noun', level:2, cat:'food',    exEn:'I love biscuits.',                           exJa:'私はビスケットが大好き。', exEn2:'Have a biscuit with your tea.', exJa2:'お茶と一緒にビスケットをどうぞ。' },
+    { id:'chocolate',      en:'chocolate',      ja:'チョコレート',       pos:'noun', level:2, cat:'food',    exEn:'I want chocolate.',                          exJa:'私はチョコレートが欲しい。', exEn2:'Dark chocolate is good for you.', exJa2:'ビターチョコは体に良い。' },
+    { id:'dessert',        en:'dessert',        ja:'デザート',           pos:'noun', level:2, cat:'food',    exEn:'Dessert is delicious.',                      exJa:'デザートは美味しい。', exEn2:'What\'s for dessert tonight?', exJa2:'今夜のデザートは何？' },
+    { id:'pepper',         en:'pepper',         ja:'こしょう',           pos:'noun', level:2, cat:'food',    exEn:'Pass me the pepper.',                        exJa:'こしょうを取って。', exEn2:'I bought a red pepper at the market.', exJa2:'市場で赤ピーマンを買った。' },
+    { id:'oil',            en:'oil',            ja:'油',                 pos:'noun', level:2, cat:'food',    exEn:'Add some oil.',                              exJa:'油を少し加えて。', exEn2:'Olive oil is healthy.', exJa2:'オリーブオイルは健康的だ。' },
+    { id:'garlic',         en:'garlic',         ja:'ニンニク',           pos:'noun', level:2, cat:'food',    exEn:'I cooked with garlic.',                      exJa:'私はニンニクで料理した。', exEn2:'Garlic gives the soup a strong flavour.', exJa2:'ニンニクがスープに強い風味を加える。' },
+    { id:'basket',         en:'basket',         ja:'かご',               pos:'noun', level:2, cat:'general', exEn:'Put it in the basket.',                      exJa:'かごに入れて。', exEn2:'I put a basket of fruit on the table.', exJa2:'テーブルに果物のかごを置いた。' },
+    { id:'jar',            en:'jar',            ja:'瓶',                 pos:'noun', level:2, cat:'general', exEn:'The jar is full of jam.',                    exJa:'瓶はジャムでいっぱいだ。', exEn2:'My grandmother gave me a jar of honey.', exJa2:'祖母がはちみつの瓶をくれた。' },
+    { id:'tin',            en:'tin',            ja:'缶',                 pos:'noun', level:2, cat:'general', exEn:'Open the tin.',                              exJa:'缶を開けて。', exEn2:'Tin is a soft metal.', exJa2:'スズは柔らかい金属だ。' },
+    { id:'ankle',          en:'ankle',          ja:'足首',               pos:'noun', level:2, cat:'body',    exEn:'I hurt my ankle.',                           exJa:'私は足首をひねった。', exEn2:'She twisted her ankle while running.', exJa2:'彼女は走っていて足首を捻った。' },
+    { id:'elbow',          en:'elbow',          ja:'肘',                 pos:'noun', level:2, cat:'body',    exEn:"Don't put your elbow on the table.",         exJa:'テーブルに肘をつかないで。', exEn2:'I bumped my elbow against the door.', exJa2:'ドアに肘をぶつけた。' },
+    { id:'wrist',          en:'wrist',          ja:'手首',               pos:'noun', level:2, cat:'body',    exEn:'I wear a watch on my wrist.',                exJa:'私は手首に時計をしている。', exEn2:'My wrist hurts from typing.', exJa2:'タイピングで手首が痛い。' },
+    { id:'chest',          en:'chest',          ja:'胸',                 pos:'noun', level:2, cat:'body',    exEn:'He has a strong chest.',                     exJa:'彼は胸板が厚い。', exEn2:'I keep my old letters in this chest.', exJa2:'この箱に古い手紙をしまっている。' },
+    { id:'bored',          en:'bored',          ja:'退屈した',           pos:'adj',  level:2, cat:'general', exEn:'I am bored.',                                exJa:'私は退屈している。', exEn2:'The film bored everyone.', exJa2:'その映画はみんなを退屈させた。' },
+    { id:'noisy',          en:'noisy',          ja:'うるさい',           pos:'adj',  level:2, cat:'general', exEn:'The street is noisy.',                       exJa:'通りはうるさい。', exEn2:'My neighbours are noisy at night.', exJa2:'隣人は夜うるさい。' },
 
     // ----- L3 batch 2 — abstract nouns / verbs / adjectives -----
     { id:'emotion',        en:'emotion',        ja:'感情',               pos:'noun', level:3, cat:'general', exEn:'She showed her emotions.',                   exJa:'彼女は感情を見せた。' },
@@ -2182,11 +2182,11 @@
 
     // ============ 副詞拡充 (50 → 106 +56) ============
     // LV2 — 日常で頻出
-    { id:'easily',       en:'easily',       ja:'簡単に',           pos:'adv', level:2, cat:'general', exEn:'You can easily learn it.',           exJa:'簡単に覚えられるよ。' },
-    { id:'quietly',      en:'quietly',      ja:'静かに',           pos:'adv', level:2, cat:'general', exEn:'Please walk quietly.',                exJa:'静かに歩いてください。' },
-    { id:'softly',       en:'softly',       ja:'柔らかく・静かに', pos:'adv', level:2, cat:'general', exEn:'She spoke softly.',                   exJa:'彼女は静かに話した。' },
-    { id:'loudly',       en:'loudly',       ja:'大きな声で',       pos:'adv', level:2, cat:'general', exEn:'Please don\'t speak too loudly.',     exJa:'あまり大声で話さないで。' },
-    { id:'nicely',       en:'nicely',       ja:'うまく・きれいに', pos:'adv', level:2, cat:'general', exEn:'The meeting went nicely.',            exJa:'会議はうまく進んだ。' },
+    { id:'easily',       en:'easily',       ja:'簡単に',           pos:'adv', level:2, cat:'general', exEn:'You can easily learn it.',           exJa:'簡単に覚えられるよ。', exEn2:'He gives up too easily.', exJa2:'彼はあきらめが早すぎる。' },
+    { id:'quietly',      en:'quietly',      ja:'静かに',           pos:'adv', level:2, cat:'general', exEn:'Please walk quietly.',                exJa:'静かに歩いてください。', exEn2:'She closed the door quietly.', exJa2:'彼女は静かにドアを閉めた。' },
+    { id:'softly',       en:'softly',       ja:'柔らかく・静かに', pos:'adv', level:2, cat:'general', exEn:'She spoke softly.',                   exJa:'彼女は静かに話した。', exEn2:'The mother sang softly to her baby.', exJa2:'母親は赤ちゃんに優しく歌いかけた。' },
+    { id:'loudly',       en:'loudly',       ja:'大きな声で',       pos:'adv', level:2, cat:'general', exEn:'Please don\'t speak too loudly.',     exJa:'あまり大声で話さないで。', exEn2:'The crowd cheered loudly.', exJa2:'観客は大きな声で歓声を上げた。' },
+    { id:'nicely',       en:'nicely',       ja:'うまく・きれいに', pos:'adv', level:2, cat:'general', exEn:'The meeting went nicely.',            exJa:'会議はうまく進んだ。', exEn2:'The kids played nicely together.', exJa2:'子供たちは仲良く遊んだ。' },
     { id:'happily',      en:'happily',      ja:'幸せに・喜んで',   pos:'adv', level:2, cat:'general', exEn:'They lived happily ever after.',      exJa:'彼らはその後幸せに暮らした。' },
     { id:'sadly',        en:'sadly',        ja:'悲しく・残念ながら', pos:'adv', level:2, cat:'general', exEn:'Sadly, the weather was bad.',       exJa:'残念ながら天気が悪かった。' },
     { id:'angrily',      en:'angrily',      ja:'怒って',           pos:'adv', level:2, cat:'general', exEn:'He shouted angrily.',                 exJa:'彼は怒って叫んだ。' },
