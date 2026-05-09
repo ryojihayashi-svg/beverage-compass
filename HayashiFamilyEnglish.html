@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 242;
+  const APP_VERSION = 243;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -431,13 +431,13 @@
     { id:'clap',        en:'clap',        ja:'拍手する',                 pos:'verb', level:1, cat:'daily',   exEn:'Everyone, clap your hands.',                exJa:'みなさん、拍手して。', exEn2:'The crowd clapped loudly.', exJa2:'観客が大きな拍手を送った。' },
     // L1 (continued) — adjectives
     { id:'pretty',      en:'pretty',      ja:'きれいな',                 pos:'adj',  level:1, cat:'general', exEn:'The flower is pretty.',                     exJa:'花がきれいだ。', exEn2:'She\'s pretty good at tennis.', exJa2:'彼女はテニスがかなり上手い。' },
-    { id:'wet',         en:'wet',         ja:'濡れた',                   pos:'adj',  level:1, cat:'general', exEn:'My clothes are wet.',                       exJa:'服が濡れている。' },
-    { id:'clear',       en:'clear',       ja:'澄んだ',                   pos:'adj',  level:1, cat:'general', exEn:'The water is clear.',                       exJa:'水が澄んでいる。' },
-    { id:'round',       en:'round',       ja:'丸い',                     pos:'adj',  level:1, cat:'general', exEn:'The ball is round.',                        exJa:'ボールは丸い。' },
-    { id:'empty',       en:'empty',       ja:'空の',                     pos:'adj',  level:1, cat:'general', exEn:'The cup is empty.',                         exJa:'コップは空だ。' },
-    { id:'full',        en:'full',        ja:'いっぱいの',               pos:'adj',  level:1, cat:'general', exEn:'The box is full.',                          exJa:'箱はいっぱいだ。' },
-    { id:'fresh',       en:'fresh',       ja:'新鮮な',                   pos:'adj',  level:1, cat:'daily',   exEn:'Fresh fruit is delicious.',                 exJa:'新鮮な果物は美味しい。' },
-    { id:'tasty',       en:'tasty',       ja:'おいしい',                 pos:'adj',  level:1, cat:'daily',   exEn:'This pizza is tasty.',                      exJa:'このピザは美味しい。' },
+    { id:'wet',         en:'wet',         ja:'濡れた',                   pos:'adj',  level:1, cat:'general', exEn:'My clothes are wet.',                       exJa:'服が濡れている。', exEn2:'The streets are wet after the rain.', exJa2:'雨の後、道が濡れている。' },
+    { id:'clear',       en:'clear',       ja:'澄んだ',                   pos:'adj',  level:1, cat:'general', exEn:'The water is clear.',                       exJa:'水が澄んでいる。', exEn2:'I made my point clear.', exJa2:'私の主張をはっきりさせた。' },
+    { id:'round',       en:'round',       ja:'丸い',                     pos:'adj',  level:1, cat:'general', exEn:'The ball is round.',                        exJa:'ボールは丸い。', exEn2:'We sat at a round table.', exJa2:'私たちは丸テーブルに座った。' },
+    { id:'empty',       en:'empty',       ja:'空の',                     pos:'adj',  level:1, cat:'general', exEn:'The cup is empty.',                         exJa:'コップは空だ。', exEn2:'The streets are empty at midnight.', exJa2:'深夜の通りは人がいない。' },
+    { id:'full',        en:'full',        ja:'いっぱいの',               pos:'adj',  level:1, cat:'general', exEn:'The box is full.',                          exJa:'箱はいっぱいだ。', exEn2:'I\'m full, thank you.', exJa2:'もうお腹いっぱいです、ありがとう。' },
+    { id:'fresh',       en:'fresh',       ja:'新鮮な',                   pos:'adj',  level:1, cat:'daily',   exEn:'Fresh fruit is delicious.',                 exJa:'新鮮な果物は美味しい。', exEn2:'I want some fresh air.', exJa2:'新鮮な空気を吸いたい。' },
+    { id:'tasty',       en:'tasty',       ja:'おいしい',                 pos:'adj',  level:1, cat:'daily',   exEn:'This pizza is tasty.',                      exJa:'このピザは美味しい。', exEn2:'Mum makes tasty curry.', exJa2:'母は美味しいカレーを作る。' },
     // L2 — middle school basic
     { id:'play',        en:'play',        ja:'(スポーツを)する・(楽器を)演奏する', pos:'verb', level:2, cat:'soccer',  exEn:'I play football with my friends.',            exJa:'私は友達とサッカーをします。',
       exEn2:'She plays the piano beautifully.',           exJa2:'彼女はピアノを美しく演奏する。' },
@@ -603,10 +603,10 @@
     { id:'free',        en:'free',        ja:'自由な・無料の・暇な',     pos:'adj',  level:2, cat:'general', exEn:'Are you free tomorrow?',                    exJa:'明日は暇ですか？',
       exEn2:'Admission is free for children.',           exJa2:'子供は入場無料です。' },
     // L1 question words (re-leveled from L2 — these are 英検5級 basics)
-    { id:'when',        en:'when',        ja:'いつ',                     pos:'adv',  level:1, cat:'general', exEn:'When does the movie start?',                exJa:'映画はいつ始まりますか？' },
-    { id:'where',       en:'where',       ja:'どこで',                   pos:'adv',  level:1, cat:'general', exEn:'Where is the station?',                     exJa:'駅はどこですか？' },
-    { id:'why',         en:'why',         ja:'なぜ',                     pos:'adv',  level:1, cat:'general', exEn:'Why are you sad?',                          exJa:'なぜ悲しいのですか？' },
-    { id:'how',         en:'how',         ja:'どうやって',               pos:'adv',  level:1, cat:'general', exEn:'How do you go to school?',                  exJa:'どうやって学校に行きますか？' },
+    { id:'when',        en:'when',        ja:'いつ',                     pos:'adv',  level:1, cat:'general', exEn:'When does the movie start?',                exJa:'映画はいつ始まりますか？', exEn2:'I\'ll let you know when I arrive.', exJa2:'着いたら知らせるよ。' },
+    { id:'where',       en:'where',       ja:'どこで',                   pos:'adv',  level:1, cat:'general', exEn:'Where is the station?',                     exJa:'駅はどこですか？', exEn2:'I forgot where I parked the car.', exJa2:'どこに車をとめたか忘れた。' },
+    { id:'why',         en:'why',         ja:'なぜ',                     pos:'adv',  level:1, cat:'general', exEn:'Why are you sad?',                          exJa:'なぜ悲しいのですか？', exEn2:'Why don\'t we go for a walk?', exJa2:'散歩でも行きませんか？' },
+    { id:'how',         en:'how',         ja:'どうやって',               pos:'adv',  level:1, cat:'general', exEn:'How do you go to school?',                  exJa:'どうやって学校に行きますか？', exEn2:'How are you doing today?', exJa2:'今日はどう？' },
     // L2 (continued) — nature
     { id:'ocean',       en:'ocean',       ja:'海・大洋',                 pos:'noun', level:2, cat:'general', exEn:'I love swimming in the ocean.',             exJa:'海で泳ぐのが大好きです。' },
     { id:'mountain',    en:'mountain',    ja:'山',                       pos:'noun', level:2, cat:'general', exEn:'Mt. Fuji is a beautiful mountain.',         exJa:'富士山は美しい山です。' },
@@ -1337,27 +1337,27 @@
       syn:['achieve','complete','attain'] },
 
     // ----- L1 batch — body / food / room / direction / verb basics -----
-    { id:'knee',         en:'knee',         ja:'ひざ',                     pos:'noun', level:1, cat:'general', exEn:'My knee hurts.',                            exJa:'ひざが痛い。' },
-    { id:'shoulder',     en:'shoulder',     ja:'肩',                       pos:'noun', level:1, cat:'general', exEn:'My shoulder is sore.',                      exJa:'肩が痛い。' },
-    { id:'face',         en:'face',         ja:'顔',                       pos:'noun', level:1, cat:'general', exEn:'Wash your face.',                           exJa:'顔を洗いなさい。' },
-    { id:'stomach',      en:'stomach',      ja:'お腹',                     pos:'noun', level:1, cat:'general', exEn:'My stomach is full.',                       exJa:'お腹いっぱいです。',     syn:['belly'] },
-    { id:'skin',         en:'skin',         ja:'肌',                       pos:'noun', level:1, cat:'general', exEn:'Her skin is soft.',                         exJa:'彼女の肌は柔らかい。' },
-    { id:'butter',       en:'butter',       ja:'バター',                   pos:'noun', level:1, cat:'food',    exEn:'Pass me the butter, please.',               exJa:'バターを取って。' },
-    { id:'tomato',       en:'tomato',       ja:'トマト',                   pos:'noun', level:1, cat:'food',    exEn:'I like fresh tomatoes.',                    exJa:'私は新鮮なトマトが好きです。' },
-    { id:'potato',       en:'potato',       ja:'じゃがいも',               pos:'noun', level:1, cat:'food',    exEn:'I love mashed potatoes.',                   exJa:'私はマッシュポテトが大好き。' },
-    { id:'beef',         en:'beef',         ja:'牛肉',                     pos:'noun', level:1, cat:'food',    exEn:'We had beef for dinner.',                   exJa:'私たちは夕食は牛肉でした。' },
-    { id:'pork',         en:'pork',         ja:'豚肉',                     pos:'noun', level:1, cat:'food',    exEn:'Pork ramen is delicious.',                  exJa:'豚骨ラーメンは美味しい。' },
-    { id:'grape',        en:'grape',        ja:'ぶどう',                   pos:'noun', level:1, cat:'food',    exEn:'These grapes are sweet.',                   exJa:'このぶどうは甘い。' },
-    { id:'pencil',       en:'pencil',       ja:'鉛筆',                     pos:'noun', level:1, cat:'school',  exEn:'May I borrow your pencil?',                 exJa:'鉛筆を借りてもいい？' },
+    { id:'knee',         en:'knee',         ja:'ひざ',                     pos:'noun', level:1, cat:'general', exEn:'My knee hurts.',                            exJa:'ひざが痛い。', exEn2:'She fell and hurt her knee.', exJa2:'彼女は転んでひざをけがした。' },
+    { id:'shoulder',     en:'shoulder',     ja:'肩',                       pos:'noun', level:1, cat:'general', exEn:'My shoulder is sore.',                      exJa:'肩が痛い。', exEn2:'He carried the bag on his shoulder.', exJa2:'彼はかばんを肩にかけて運んだ。' },
+    { id:'face',         en:'face',         ja:'顔',                       pos:'noun', level:1, cat:'general', exEn:'Wash your face.',                           exJa:'顔を洗いなさい。', exEn2:'Her face turned red.', exJa2:'彼女の顔が赤くなった。' },
+    { id:'stomach',      en:'stomach',      ja:'お腹',                     pos:'noun', level:1, cat:'general', exEn:'My stomach is full.',                       exJa:'お腹いっぱいです。', exEn2:'I have a stomach ache.', exJa2:'お腹が痛い。',     syn:['belly'] },
+    { id:'skin',         en:'skin',         ja:'肌',                       pos:'noun', level:1, cat:'general', exEn:'Her skin is soft.',                         exJa:'彼女の肌は柔らかい。', exEn2:'I have sensitive skin.', exJa2:'私は敏感肌だ。' },
+    { id:'butter',       en:'butter',       ja:'バター',                   pos:'noun', level:1, cat:'food',    exEn:'Pass me the butter, please.',               exJa:'バターを取って。', exEn2:'I spread butter on the bread.', exJa2:'パンにバターを塗った。' },
+    { id:'tomato',       en:'tomato',       ja:'トマト',                   pos:'noun', level:1, cat:'food',    exEn:'I like fresh tomatoes.',                    exJa:'私は新鮮なトマトが好きです。', exEn2:'Add some tomatoes to the salad.', exJa2:'サラダにトマトを加えて。' },
+    { id:'potato',       en:'potato',       ja:'じゃがいも',               pos:'noun', level:1, cat:'food',    exEn:'I love mashed potatoes.',                   exJa:'私はマッシュポテトが大好き。', exEn2:'We had baked potatoes for dinner.', exJa2:'夕食にベイクドポテトを食べた。' },
+    { id:'beef',         en:'beef',         ja:'牛肉',                     pos:'noun', level:1, cat:'food',    exEn:'We had beef for dinner.',                   exJa:'私たちは夕食は牛肉でした。', exEn2:'Japanese beef is famous.', exJa2:'日本の牛肉は有名だ。' },
+    { id:'pork',         en:'pork',         ja:'豚肉',                     pos:'noun', level:1, cat:'food',    exEn:'Pork ramen is delicious.',                  exJa:'豚骨ラーメンは美味しい。', exEn2:'I prefer pork to chicken.', exJa2:'私は鶏肉より豚肉が好きだ。' },
+    { id:'grape',        en:'grape',        ja:'ぶどう',                   pos:'noun', level:1, cat:'food',    exEn:'These grapes are sweet.',                   exJa:'このぶどうは甘い。', exEn2:'Wine is made from grapes.', exJa2:'ワインはぶどうから作られる。' },
+    { id:'pencil',       en:'pencil',       ja:'鉛筆',                     pos:'noun', level:1, cat:'school',  exEn:'May I borrow your pencil?',                 exJa:'鉛筆を借りてもいい？', exEn2:'Please write in pencil, not pen.', exJa2:'ペンではなく鉛筆で書いてください。' },
     { id:'light',        en:'light',        ja:'電気・光・軽い',           pos:'noun', level:1, cat:'general', exEn:'Please turn on the light.',                 exJa:'電気をつけて。',          syn:['lamp'],
       exEn2:'This bag is very light.',                      exJa2:'このカバンはとても軽い。' },
-    { id:'glasses',      en:'glasses',      ja:'メガネ',                   pos:'noun', level:1, cat:'general', exEn:"I can't find my glasses.",                  exJa:'メガネが見つからない。' },
-    { id:'seat',         en:'seat',         ja:'席',                       pos:'noun', level:1, cat:'general', exEn:'Please take a seat.',                       exJa:'お座りください。',        syn:['chair'] },
-    { id:'gift',         en:'gift',         ja:'プレゼント',               pos:'noun', level:1, cat:'general', exEn:'I have a gift for you.',                    exJa:'あなたへのプレゼントがある。', syn:['present'] },
-    { id:'hear',         en:'hear',         ja:'聞こえる',                 pos:'verb', level:1, cat:'daily',   exEn:'I can hear the rain.',                      exJa:'雨の音が聞こえる。' },
-    { id:'build',        en:'build',        ja:'建てる・作る',             pos:'verb', level:1, cat:'general', exEn:'Dad wants to build a new restaurant.',      exJa:'父は新しいレストランを建てたい。', syn:['construct','make'] },
-    { id:'fall',         en:'fall',         ja:'落ちる・転ぶ',             pos:'verb', level:1, cat:'daily',   exEn:'Be careful not to fall.',                   exJa:'転ばないように気をつけて。', syn:['drop','tumble'] },
-    { id:'left',         en:'left',         ja:'左',                       pos:'noun', level:1, cat:'general', exEn:'Turn left at the corner.',                  exJa:'角を左に曲がって。' },
+    { id:'glasses',      en:'glasses',      ja:'メガネ',                   pos:'noun', level:1, cat:'general', exEn:"I can't find my glasses.",                  exJa:'メガネが見つからない。', exEn2:'I need to clean my glasses.', exJa2:'メガネを拭かないと。' },
+    { id:'seat',         en:'seat',         ja:'席',                       pos:'noun', level:1, cat:'general', exEn:'Please take a seat.',                       exJa:'お座りください。', exEn2:'There are no seats left.', exJa2:'空いている席がない。',        syn:['chair'] },
+    { id:'gift',         en:'gift',         ja:'プレゼント',               pos:'noun', level:1, cat:'general', exEn:'I have a gift for you.',                    exJa:'あなたへのプレゼントがある。', exEn2:'I bought a birthday gift.', exJa2:'誕生日プレゼントを買った。', syn:['present'] },
+    { id:'hear',         en:'hear',         ja:'聞こえる',                 pos:'verb', level:1, cat:'daily',   exEn:'I can hear the rain.',                      exJa:'雨の音が聞こえる。', exEn2:'Did you hear the news?', exJa2:'そのニュースを聞いた？' },
+    { id:'build',        en:'build',        ja:'建てる・作る',             pos:'verb', level:1, cat:'general', exEn:'Dad wants to build a new restaurant.',      exJa:'父は新しいレストランを建てたい。', exEn2:'They are building a new station.', exJa2:'新しい駅を建設している。', syn:['construct','make'] },
+    { id:'fall',         en:'fall',         ja:'落ちる・転ぶ',             pos:'verb', level:1, cat:'daily',   exEn:'Be careful not to fall.',                   exJa:'転ばないように気をつけて。', exEn2:'Leaves fall in autumn.', exJa2:'秋には葉が落ちる。', syn:['drop','tumble'] },
+    { id:'left',         en:'left',         ja:'左',                       pos:'noun', level:1, cat:'general', exEn:'Turn left at the corner.',                  exJa:'角を左に曲がって。', exEn2:'There is some pizza left.', exJa2:'ピザがまだ少し残っている。' },
     { id:'right',        en:'right',        ja:'右・正しい',               pos:'noun', level:1, cat:'general', exEn:'My house is on the right.',                 exJa:'家は右側にあります。',
       exEn2:'You are right.',                               exJa2:'あなたが正しい。' },
     { id:'top',          en:'top',          ja:'一番上',                   pos:'noun', level:1, cat:'general', exEn:'The book is on top.',                       exJa:'本は一番上にあります。' },
