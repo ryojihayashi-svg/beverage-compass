@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 240;
+  const APP_VERSION = 241;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -362,39 +362,39 @@
     { id:'sweet',       en:'sweet',       ja:'甘い',                     pos:'adj',  level:1, cat:'daily',   exEn:'Cake is sweet.',                            exJa:'ケーキは甘い。', exEn2:'She has a sweet smile.', exJa2:'彼女は優しい笑顔をしている。' },
     { id:'sour',        en:'sour',        ja:'酸っぱい',                 pos:'adj',  level:1, cat:'daily',   exEn:'Lemons are sour.',                          exJa:'レモンは酸っぱい。', exEn2:'This milk has gone sour.', exJa2:'この牛乳はすっぱくなっている。' },
     { id:'cute',        en:'cute',        ja:'かわいい',                 pos:'adj',  level:1, cat:'daily',   exEn:'The puppy is so cute.',                     exJa:'子犬はとてもかわいい。', exEn2:'She wore a cute dress.', exJa2:'彼女はかわいいドレスを着ていた。' },
-    { id:'lazy',        en:'lazy',        ja:'怠け者の',                 pos:'adj',  level:1, cat:'general', exEn:"I'm a bit lazy today.",                     exJa:'今日は少し怠けている。' },
-    { id:'funny',       en:'funny',       ja:'面白い',                   pos:'adj',  level:1, cat:'daily',   exEn:'That joke is funny.',                       exJa:'そのジョークは面白い。' },
+    { id:'lazy',        en:'lazy',        ja:'怠け者の',                 pos:'adj',  level:1, cat:'general', exEn:"I'm a bit lazy today.",                     exJa:'今日は少し怠けている。', exEn2:'Don\'t be lazy with your homework.', exJa2:'宿題で怠けないで。' },
+    { id:'funny',       en:'funny',       ja:'面白い',                   pos:'adj',  level:1, cat:'daily',   exEn:'That joke is funny.',                       exJa:'そのジョークは面白い。', exEn2:'My uncle is a funny person.', exJa2:'うちの叔父は面白い人だ。' },
     // L1 (continued) — common nouns
-    { id:'man',         en:'man',         ja:'男性',                     pos:'noun', level:1, cat:'general', exEn:'That man is my uncle.',                     exJa:'その男性は私のおじだ。' },
-    { id:'woman',       en:'woman',       ja:'女性',                     pos:'noun', level:1, cat:'general', exEn:'She is a kind woman.',                      exJa:'彼女は親切な女性だ。' },
-    { id:'person',      en:'person',      ja:'人',                       pos:'noun', level:1, cat:'general', exEn:'He is a nice person.',                      exJa:'彼はいい人だ。' },
-    { id:'afternoon',   en:'afternoon',   ja:'午後',                     pos:'noun', level:1, cat:'daily',   exEn:'Good afternoon!',                           exJa:'こんにちは！' },
-    { id:'evening',     en:'evening',     ja:'夕方',                     pos:'noun', level:1, cat:'daily',   exEn:'Good evening, everyone.',                   exJa:'皆さん、こんばんは。' },
-    { id:'paper',       en:'paper',       ja:'紙',                       pos:'noun', level:1, cat:'school',  exEn:'I need some paper.',                        exJa:'私は紙が必要だ。' },
-    { id:'key',         en:'key',         ja:'鍵',                       pos:'noun', level:1, cat:'daily',   exEn:'Where is my key?',                          exJa:'私の鍵はどこ？' },
-    { id:'watch',       en:'watch',       ja:'腕時計',                   pos:'noun', level:1, cat:'daily',   exEn:'Nice watch!',                               exJa:'すてきな腕時計！' },
-    { id:'table',       en:'table',       ja:'テーブル',                 pos:'noun', level:1, cat:'daily',   exEn:'Put it on the table.',                      exJa:'テーブルに置いて。' },
-    { id:'bed',         en:'bed',         ja:'ベッド',                   pos:'noun', level:1, cat:'daily',   exEn:'Go to bed early.',                          exJa:'早くベッドに行きなさい。' },
+    { id:'man',         en:'man',         ja:'男性',                     pos:'noun', level:1, cat:'general', exEn:'That man is my uncle.',                     exJa:'その男性は私のおじだ。', exEn2:'A tall man came in.', exJa2:'背の高い男性が入ってきた。' },
+    { id:'woman',       en:'woman',       ja:'女性',                     pos:'noun', level:1, cat:'general', exEn:'She is a kind woman.',                      exJa:'彼女は親切な女性だ。', exEn2:'The woman next to me smiled.', exJa2:'隣の女性が微笑んでくれた。' },
+    { id:'person',      en:'person',      ja:'人',                       pos:'noun', level:1, cat:'general', exEn:'He is a nice person.',                      exJa:'彼はいい人だ。', exEn2:'Each person gets one ticket.', exJa2:'一人につきチケット 1 枚です。' },
+    { id:'afternoon',   en:'afternoon',   ja:'午後',                     pos:'noun', level:1, cat:'daily',   exEn:'Good afternoon!',                           exJa:'こんにちは！', exEn2:'I have a meeting this afternoon.', exJa2:'今日の午後、会議があります。' },
+    { id:'evening',     en:'evening',     ja:'夕方',                     pos:'noun', level:1, cat:'daily',   exEn:'Good evening, everyone.',                   exJa:'皆さん、こんばんは。', exEn2:'We had dinner in the evening.', exJa2:'夕方に夕食を食べました。' },
+    { id:'paper',       en:'paper',       ja:'紙',                       pos:'noun', level:1, cat:'school',  exEn:'I need some paper.',                        exJa:'私は紙が必要だ。', exEn2:'I read the morning paper every day.', exJa2:'毎日朝刊を読みます。' },
+    { id:'key',         en:'key',         ja:'鍵',                       pos:'noun', level:1, cat:'daily',   exEn:'Where is my key?',                          exJa:'私の鍵はどこ？', exEn2:'Practice is the key to success.', exJa2:'練習こそ成功の鍵だ。' },
+    { id:'watch',       en:'watch',       ja:'腕時計',                   pos:'noun', level:1, cat:'daily',   exEn:'Nice watch!',                               exJa:'すてきな腕時計！', exEn2:'I watch TV after dinner.', exJa2:'夕食後にテレビを見る。' },
+    { id:'table',       en:'table',       ja:'テーブル',                 pos:'noun', level:1, cat:'daily',   exEn:'Put it on the table.',                      exJa:'テーブルに置いて。', exEn2:'Reserve a table for four, please.', exJa2:'4 人席を予約してください。' },
+    { id:'bed',         en:'bed',         ja:'ベッド',                   pos:'noun', level:1, cat:'daily',   exEn:'Go to bed early.',                          exJa:'早くベッドに行きなさい。', exEn2:'My cat is sleeping on the bed.', exJa2:'私の猫がベッドの上で眠っている。' },
     // L1 (continued) — more animals
-    { id:'butterfly',   en:'butterfly',   ja:'蝶',                       pos:'noun', level:1, cat:'daily',   exEn:'A butterfly flew by.',                      exJa:'蝶が飛んでいった。' },
-    { id:'frog',        en:'frog',        ja:'カエル',                   pos:'noun', level:1, cat:'daily',   exEn:'The frog is green.',                        exJa:'そのカエルは緑色だ。' },
-    { id:'duck',        en:'duck',        ja:'アヒル',                   pos:'noun', level:1, cat:'daily',   exEn:'Ducks swim in ponds.',                      exJa:'アヒルは池で泳ぐ。' },
-    { id:'chicken',     en:'chicken',     ja:'鶏',                       pos:'noun', level:1, cat:'daily',   exEn:'Chickens lay eggs.',                        exJa:'鶏は卵を産む。' },
-    { id:'ant',         en:'ant',         ja:'蟻',                       pos:'noun', level:1, cat:'daily',   exEn:'Ants are very small.',                      exJa:'蟻はとても小さい。' },
+    { id:'butterfly',   en:'butterfly',   ja:'蝶',                       pos:'noun', level:1, cat:'daily',   exEn:'A butterfly flew by.',                      exJa:'蝶が飛んでいった。', exEn2:'There are many butterflies in the garden.', exJa2:'庭にたくさんの蝶がいる。' },
+    { id:'frog',        en:'frog',        ja:'カエル',                   pos:'noun', level:1, cat:'daily',   exEn:'The frog is green.',                        exJa:'そのカエルは緑色だ。', exEn2:'The frog jumped into the pond.', exJa2:'カエルが池に飛び込んだ。' },
+    { id:'duck',        en:'duck',        ja:'アヒル',                   pos:'noun', level:1, cat:'daily',   exEn:'Ducks swim in ponds.',                      exJa:'アヒルは池で泳ぐ。', exEn2:'I fed the ducks at the park.', exJa2:'公園でアヒルに餌をあげた。' },
+    { id:'chicken',     en:'chicken',     ja:'鶏',                       pos:'noun', level:1, cat:'daily',   exEn:'Chickens lay eggs.',                        exJa:'鶏は卵を産む。', exEn2:'I had chicken for lunch.', exJa2:'昼食に鶏肉を食べた。' },
+    { id:'ant',         en:'ant',         ja:'蟻',                       pos:'noun', level:1, cat:'daily',   exEn:'Ants are very small.',                      exJa:'蟻はとても小さい。', exEn2:'Ants are working hard.', exJa2:'蟻は一生懸命働いている。' },
     // L1 (continued) — greetings & expressions
-    { id:'hello',       en:'hello',       ja:'こんにちは',               pos:'noun', level:1, cat:'daily',   exEn:'Hello, how are you?',                       exJa:'こんにちは、元気ですか？' },
-    { id:'goodbye',     en:'goodbye',     ja:'さようなら',               pos:'noun', level:1, cat:'daily',   exEn:'Goodbye, see you tomorrow.',                exJa:'さようなら、また明日。' },
-    { id:'yes',         en:'yes',         ja:'はい',                     pos:'adv',  level:1, cat:'daily',   exEn:'Yes, I agree.',                             exJa:'はい、同意します。' },
-    { id:'no',          en:'no',          ja:'いいえ',                   pos:'adv',  level:1, cat:'daily',   exEn:'No, thank you.',                            exJa:'いいえ、結構です。' },
-    { id:'please',      en:'please',      ja:'お願い',                   pos:'adv',  level:1, cat:'daily',   exEn:'Could you help me, please?',                exJa:'手伝ってください。' },
-    { id:'sorry',       en:'sorry',       ja:'ごめんなさい',             pos:'adj',  level:1, cat:'daily',   exEn:"I'm sorry for being late.",                 exJa:'遅れてごめんなさい。' },
-    { id:'thanks',      en:'thanks',      ja:'ありがとう',               pos:'noun', level:1, cat:'daily',   exEn:'Thanks for your help.',                     exJa:'助けてくれてありがとう。' },
-    { id:'welcome',     en:'welcome',     ja:'ようこそ',                 pos:'adj',  level:1, cat:'daily',   exEn:"You're welcome!",                           exJa:'どういたしまして！' },
+    { id:'hello',       en:'hello',       ja:'こんにちは',               pos:'noun', level:1, cat:'daily',   exEn:'Hello, how are you?',                       exJa:'こんにちは、元気ですか？', exEn2:'Say hello to your mum for me.', exJa2:'お母さんによろしく言っといて。' },
+    { id:'goodbye',     en:'goodbye',     ja:'さようなら',               pos:'noun', level:1, cat:'daily',   exEn:'Goodbye, see you tomorrow.',                exJa:'さようなら、また明日。', exEn2:'It\'s hard to say goodbye.', exJa2:'さようならを言うのはつらい。' },
+    { id:'yes',         en:'yes',         ja:'はい',                     pos:'adv',  level:1, cat:'daily',   exEn:'Yes, I agree.',                             exJa:'はい、同意します。', exEn2:'Yes, that\'s right.', exJa2:'はい、その通りです。' },
+    { id:'no',          en:'no',          ja:'いいえ',                   pos:'adv',  level:1, cat:'daily',   exEn:'No, thank you.',                            exJa:'いいえ、結構です。', exEn2:'No, I disagree.', exJa2:'いいえ、反対です。' },
+    { id:'please',      en:'please',      ja:'お願い',                   pos:'adv',  level:1, cat:'daily',   exEn:'Could you help me, please?',                exJa:'手伝ってください。', exEn2:'A coffee, please.', exJa2:'コーヒーをお願いします。' },
+    { id:'sorry',       en:'sorry',       ja:'ごめんなさい',             pos:'adj',  level:1, cat:'daily',   exEn:"I'm sorry for being late.",                 exJa:'遅れてごめんなさい。', exEn2:'Sorry, I missed your call.', exJa2:'ごめん、電話に出られなかった。' },
+    { id:'thanks',      en:'thanks',      ja:'ありがとう',               pos:'noun', level:1, cat:'daily',   exEn:'Thanks for your help.',                     exJa:'助けてくれてありがとう。', exEn2:'Thanks a lot!', exJa2:'本当にありがとう！' },
+    { id:'welcome',     en:'welcome',     ja:'ようこそ',                 pos:'adj',  level:1, cat:'daily',   exEn:"You're welcome!",                           exJa:'どういたしまして！', exEn2:'Welcome to Tokyo!', exJa2:'東京へようこそ！' },
     // L1 (continued) — extended family
-    { id:'grandfather', en:'grandfather', ja:'祖父',                     pos:'noun', level:1, cat:'family',  exEn:'My grandfather is 80.',                     exJa:'祖父は80歳だ。' },
-    { id:'grandmother', en:'grandmother', ja:'祖母',                     pos:'noun', level:1, cat:'family',  exEn:'Grandmother bakes biscuits.',                exJa:'祖母はクッキーを焼く。' },
-    { id:'aunt',        en:'aunt',        ja:'叔母',                     pos:'noun', level:1, cat:'family',  exEn:'My aunt visited us.',                       exJa:'叔母が訪ねてきた。' },
-    { id:'uncle',       en:'uncle',       ja:'叔父',                     pos:'noun', level:1, cat:'family',  exEn:'Uncle taught me to swim.',                  exJa:'叔父が泳ぎを教えてくれた。' },
+    { id:'grandfather', en:'grandfather', ja:'祖父',                     pos:'noun', level:1, cat:'family',  exEn:'My grandfather is 80.',                     exJa:'祖父は80歳だ。', exEn2:'My grandfather lives in Shimane.', exJa2:'祖父は島根に住んでいる。' },
+    { id:'grandmother', en:'grandmother', ja:'祖母',                     pos:'noun', level:1, cat:'family',  exEn:'Grandmother bakes biscuits.',                exJa:'祖母はクッキーを焼く。', exEn2:'I love my grandmother very much.', exJa2:'祖母が大好きだ。' },
+    { id:'aunt',        en:'aunt',        ja:'叔母',                     pos:'noun', level:1, cat:'family',  exEn:'My aunt visited us.',                       exJa:'叔母が訪ねてきた。', exEn2:'My aunt is a teacher.', exJa2:'叔母は教師をしている。' },
+    { id:'uncle',       en:'uncle',       ja:'叔父',                     pos:'noun', level:1, cat:'family',  exEn:'Uncle taught me to swim.',                  exJa:'叔父が泳ぎを教えてくれた。', exEn2:'My uncle works in Osaka.', exJa2:'叔父は大阪で働いている。' },
     // L1 (continued) — food
     { id:'pizza',       en:'pizza',       ja:'ピザ',                     pos:'noun', level:1, cat:'daily',   exEn:"Let's order pizza.",                        exJa:'ピザを注文しよう。' },
     { id:'hamburger',   en:'hamburger',   ja:'ハンバーガー',             pos:'noun', level:1, cat:'daily',   exEn:'I want a hamburger.',                       exJa:'私はハンバーガーが欲しい。' },
