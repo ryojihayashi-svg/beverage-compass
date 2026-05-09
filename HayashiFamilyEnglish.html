@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 243;
+  const APP_VERSION = 244;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1360,16 +1360,16 @@
     { id:'left',         en:'left',         ja:'左',                       pos:'noun', level:1, cat:'general', exEn:'Turn left at the corner.',                  exJa:'角を左に曲がって。', exEn2:'There is some pizza left.', exJa2:'ピザがまだ少し残っている。' },
     { id:'right',        en:'right',        ja:'右・正しい',               pos:'noun', level:1, cat:'general', exEn:'My house is on the right.',                 exJa:'家は右側にあります。',
       exEn2:'You are right.',                               exJa2:'あなたが正しい。' },
-    { id:'top',          en:'top',          ja:'一番上',                   pos:'noun', level:1, cat:'general', exEn:'The book is on top.',                       exJa:'本は一番上にあります。' },
-    { id:'bottom',       en:'bottom',       ja:'底・一番下',               pos:'noun', level:1, cat:'general', exEn:'My keys are at the bottom of the bag.',     exJa:'鍵がカバンの底にある。' },
-    { id:'inside',       en:'inside',       ja:'中',                       pos:'prep', level:1, cat:'general', exEn:'The cat is inside the box.',                exJa:'猫は箱の中にいます。' },
-    { id:'outside',      en:'outside',      ja:'外',                       pos:'prep', level:1, cat:'general', exEn:'Let’s play outside.',                       exJa:'外で遊ぼう。' },
-    { id:'store',        en:'store',        ja:'店',                       pos:'noun', level:1, cat:'daily',   exEn:'The store opens at nine.',                  exJa:'店は9時に開きます。',      syn:['shop'] },
-    { id:'building',     en:'building',     ja:'建物',                     pos:'noun', level:1, cat:'general', exEn:'That building is very tall.',               exJa:'あの建物はとても高い。' },
-    { id:'truck',        en:'truck',        ja:'トラック',                 pos:'noun', level:1, cat:'general', exEn:'The truck is heavy.',                       exJa:'トラックは重い。' },
-    { id:'boat',         en:'boat',         ja:'船',                       pos:'noun', level:1, cat:'general', exEn:'We took a small boat.',                     exJa:'私たちは小さな船に乗った。', syn:['ship'] },
-    { id:'airplane',     en:'airplane',     ja:'飛行機',                   pos:'noun', level:1, cat:'general', exEn:"That's a big airplane.",                    exJa:'あれは大きな飛行機だ。',  syn:['plane','aircraft'] },
-    { id:'moon_night',   en:'tonight',      ja:'今夜',                     pos:'noun', level:1, cat:'daily',   exEn:"Let's watch a film tonight.",               exJa:'今夜は映画を見よう。' },
+    { id:'top',          en:'top',          ja:'一番上',                   pos:'noun', level:1, cat:'general', exEn:'The book is on top.',                       exJa:'本は一番上にあります。', exEn2:'Climb to the top of the hill.', exJa2:'丘の頂上まで登って。' },
+    { id:'bottom',       en:'bottom',       ja:'底・一番下',               pos:'noun', level:1, cat:'general', exEn:'My keys are at the bottom of the bag.',     exJa:'鍵がカバンの底にある。', exEn2:'My name is at the bottom of the list.', exJa2:'私の名前はリストの一番下にある。' },
+    { id:'inside',       en:'inside',       ja:'中',                       pos:'prep', level:1, cat:'general', exEn:'The cat is inside the box.',                exJa:'猫は箱の中にいます。', exEn2:'It\'s warm inside the house.', exJa2:'家の中は暖かい。' },
+    { id:'outside',      en:'outside',      ja:'外',                       pos:'prep', level:1, cat:'general', exEn:'Let’s play outside.',                       exJa:'外で遊ぼう。', exEn2:'It\'s cold outside today.', exJa2:'今日は外が寒い。' },
+    { id:'store',        en:'store',        ja:'店',                       pos:'noun', level:1, cat:'daily',   exEn:'The store opens at nine.',                  exJa:'店は9時に開きます。', exEn2:'I work at a small store.', exJa2:'小さな店で働いている。',      syn:['shop'] },
+    { id:'building',     en:'building',     ja:'建物',                     pos:'noun', level:1, cat:'general', exEn:'That building is very tall.',               exJa:'あの建物はとても高い。', exEn2:'They are painting the building.', exJa2:'彼らは建物を塗っている。' },
+    { id:'truck',        en:'truck',        ja:'トラック',                 pos:'noun', level:1, cat:'general', exEn:'The truck is heavy.',                       exJa:'トラックは重い。', exEn2:'He drives a truck for a living.', exJa2:'彼はトラック運転手で生計を立てている。' },
+    { id:'boat',         en:'boat',         ja:'船',                       pos:'noun', level:1, cat:'general', exEn:'We took a small boat.',                     exJa:'私たちは小さな船に乗った。', exEn2:'A boat is sailing on the lake.', exJa2:'湖を船が進んでいる。', syn:['ship'] },
+    { id:'airplane',     en:'airplane',     ja:'飛行機',                   pos:'noun', level:1, cat:'general', exEn:"That's a big airplane.",                    exJa:'あれは大きな飛行機だ。', exEn2:'Children love paper airplanes.', exJa2:'子供は紙飛行機が大好きだ。',  syn:['plane','aircraft'] },
+    { id:'moon_night',   en:'tonight',      ja:'今夜',                     pos:'noun', level:1, cat:'daily',   exEn:"Let's watch a film tonight.",               exJa:'今夜は映画を見よう。', exEn2:'I\'ll call you tonight.', exJa2:'今夜電話します。' },
 
     // ----- L2 batch — food / cooking / verbs / emotions / places -----
     { id:'relax',        en:'relax',        ja:'リラックスする',           pos:'verb', level:2, cat:'daily',   exEn:'Take a deep breath and relax.',             exJa:'深呼吸してリラックスしよう。', syn:['rest','unwind','calm down'] },
@@ -1413,25 +1413,25 @@
     // ============================================================
 
     // ----- L1 batch (英検5級) — body / family / weather / animals / colours / food / basic adj -----
-    { id:'heart',          en:'heart',          ja:'心臓・心',           pos:'noun', level:1, cat:'body',    exEn:'My heart is beating fast.',                  exJa:'心臓がドキドキしている。' },
-    { id:'tongue',         en:'tongue',         ja:'舌',                 pos:'noun', level:1, cat:'body',    exEn:'Stick out your tongue.',                     exJa:'舌を出して。' },
-    { id:'lip',            en:'lip',            ja:'唇',                 pos:'noun', level:1, cat:'body',    exEn:'Her lips are red.',                          exJa:'彼女の唇は赤い。' },
-    { id:'bone',           en:'bone',           ja:'骨',                 pos:'noun', level:1, cat:'body',    exEn:'The dog likes bones.',                       exJa:'犬は骨が好きだ。' },
-    { id:'son',            en:'son',            ja:'息子',               pos:'noun', level:1, cat:'family',  exEn:'He is my son.',                              exJa:'彼は私の息子です。' },
-    { id:'daughter',       en:'daughter',       ja:'娘',                 pos:'noun', level:1, cat:'family',  exEn:'She is my daughter.',                        exJa:'彼女は私の娘です。' },
-    { id:'husband',        en:'husband',        ja:'夫',                 pos:'noun', level:1, cat:'family',  exEn:'He is her husband.',                         exJa:'彼は彼女の夫です。' },
-    { id:'wife',           en:'wife',           ja:'妻',                 pos:'noun', level:1, cat:'family',  exEn:'She is his wife.',                           exJa:'彼女は彼の妻です。' },
-    { id:'tomorrow',       en:'tomorrow',       ja:'明日',               pos:'noun', level:1, cat:'daily',   exEn:'See you tomorrow.',                          exJa:'また明日。' },
-    { id:'yesterday',      en:'yesterday',      ja:'昨日',               pos:'noun', level:1, cat:'daily',   exEn:'I went there yesterday.',                    exJa:'昨日そこへ行った。' },
-    { id:'month',          en:'month',          ja:'月',                 pos:'noun', level:1, cat:'daily',   exEn:'This month is May.',                         exJa:'今月は5月だ。' },
-    { id:'noon',           en:'noon',           ja:'正午',               pos:'noun', level:1, cat:'daily',   exEn:"Let's meet at noon.",                        exJa:'正午に会おう。' },
-    { id:'sunny',          en:'sunny',          ja:'晴れた',             pos:'adj',  level:1, cat:'general', exEn:'It is sunny today.',                         exJa:'今日は晴れだ。' },
-    { id:'cloudy',         en:'cloudy',         ja:'曇った',             pos:'adj',  level:1, cat:'general', exEn:'It is cloudy today.',                        exJa:'今日は曇っている。' },
-    { id:'rainy',          en:'rainy',          ja:'雨の',               pos:'adj',  level:1, cat:'general', exEn:'It was a rainy day.',                        exJa:'雨の日だった。' },
-    { id:'snowy',          en:'snowy',          ja:'雪の',               pos:'adj',  level:1, cat:'general', exEn:'It is snowy in winter.',                     exJa:'冬は雪が多い。' },
-    { id:'windy',          en:'windy',          ja:'風の強い',           pos:'adj',  level:1, cat:'general', exEn:'It is windy outside.',                       exJa:'外は風が強い。' },
-    { id:'rainbow',        en:'rainbow',        ja:'虹',                 pos:'noun', level:1, cat:'general', exEn:"There's a rainbow in the sky.",              exJa:'空に虹がある。' },
-    { id:'storm',          en:'storm',          ja:'嵐',                 pos:'noun', level:1, cat:'general', exEn:'A big storm is coming.',                     exJa:'大きな嵐が来る。' },
+    { id:'heart',          en:'heart',          ja:'心臓・心',           pos:'noun', level:1, cat:'body',    exEn:'My heart is beating fast.',                  exJa:'心臓がドキドキしている。', exEn2:'Don\'t break her heart.', exJa2:'彼女の心を傷つけないで。' },
+    { id:'tongue',         en:'tongue',         ja:'舌',                 pos:'noun', level:1, cat:'body',    exEn:'Stick out your tongue.',                     exJa:'舌を出して。', exEn2:'Be careful with your tongue.', exJa2:'言葉に気をつけなさい。' },
+    { id:'lip',            en:'lip',            ja:'唇',                 pos:'noun', level:1, cat:'body',    exEn:'Her lips are red.',                          exJa:'彼女の唇は赤い。', exEn2:'Bite your lip if you want to stay quiet.', exJa2:'黙っていたいなら唇をかみなさい。' },
+    { id:'bone',           en:'bone',           ja:'骨',                 pos:'noun', level:1, cat:'body',    exEn:'The dog likes bones.',                       exJa:'犬は骨が好きだ。', exEn2:'I broke a bone in my hand.', exJa2:'手の骨を折った。' },
+    { id:'son',            en:'son',            ja:'息子',               pos:'noun', level:1, cat:'family',  exEn:'He is my son.',                              exJa:'彼は私の息子です。', exEn2:'My eldest son is in high school.', exJa2:'長男は高校生だ。' },
+    { id:'daughter',       en:'daughter',       ja:'娘',                 pos:'noun', level:1, cat:'family',  exEn:'She is my daughter.',                        exJa:'彼女は私の娘です。', exEn2:'They have one daughter.', exJa2:'彼らには娘が一人いる。' },
+    { id:'husband',        en:'husband',        ja:'夫',                 pos:'noun', level:1, cat:'family',  exEn:'He is her husband.',                         exJa:'彼は彼女の夫です。', exEn2:'My husband cooks every weekend.', exJa2:'夫は週末に料理をする。' },
+    { id:'wife',           en:'wife',           ja:'妻',                 pos:'noun', level:1, cat:'family',  exEn:'She is his wife.',                           exJa:'彼女は彼の妻です。', exEn2:'My wife works in marketing.', exJa2:'妻はマーケティングの仕事をしている。' },
+    { id:'tomorrow',       en:'tomorrow',       ja:'明日',               pos:'noun', level:1, cat:'daily',   exEn:'See you tomorrow.',                          exJa:'また明日。', exEn2:'I\'ll do it tomorrow.', exJa2:'明日やります。' },
+    { id:'yesterday',      en:'yesterday',      ja:'昨日',               pos:'noun', level:1, cat:'daily',   exEn:'I went there yesterday.',                    exJa:'昨日そこへ行った。', exEn2:'It rained heavily yesterday.', exJa2:'昨日は大雨だった。' },
+    { id:'month',          en:'month',          ja:'月',                 pos:'noun', level:1, cat:'daily',   exEn:'This month is May.',                         exJa:'今月は5月だ。', exEn2:'I visit my parents once a month.', exJa2:'月に一度両親を訪ねる。' },
+    { id:'noon',           en:'noon',           ja:'正午',               pos:'noun', level:1, cat:'daily',   exEn:"Let's meet at noon.",                        exJa:'正午に会おう。', exEn2:'The sun is high at noon.', exJa2:'正午は太陽が高い。' },
+    { id:'sunny',          en:'sunny',          ja:'晴れた',             pos:'adj',  level:1, cat:'general', exEn:'It is sunny today.',                         exJa:'今日は晴れだ。', exEn2:'I love sunny days.', exJa2:'晴れた日が好きだ。' },
+    { id:'cloudy',         en:'cloudy',         ja:'曇った',             pos:'adj',  level:1, cat:'general', exEn:'It is cloudy today.',                        exJa:'今日は曇っている。', exEn2:'It\'s cloudy and a bit cold.', exJa2:'曇っていて少し寒い。' },
+    { id:'rainy',          en:'rainy',          ja:'雨の',               pos:'adj',  level:1, cat:'general', exEn:'It was a rainy day.',                        exJa:'雨の日だった。', exEn2:'I prefer rainy days for reading.', exJa2:'読書には雨の日がいい。' },
+    { id:'snowy',          en:'snowy',          ja:'雪の',               pos:'adj',  level:1, cat:'general', exEn:'It is snowy in winter.',                     exJa:'冬は雪が多い。', exEn2:'It\'s a snowy morning.', exJa2:'雪の朝だ。' },
+    { id:'windy',          en:'windy',          ja:'風の強い',           pos:'adj',  level:1, cat:'general', exEn:'It is windy outside.',                       exJa:'外は風が強い。', exEn2:'It got windy in the afternoon.', exJa2:'午後から風が強くなった。' },
+    { id:'rainbow',        en:'rainbow',        ja:'虹',                 pos:'noun', level:1, cat:'general', exEn:"There's a rainbow in the sky.",              exJa:'空に虹がある。', exEn2:'We saw a rainbow after the rain.', exJa2:'雨の後に虹を見た。' },
+    { id:'storm',          en:'storm',          ja:'嵐',                 pos:'noun', level:1, cat:'general', exEn:'A big storm is coming.',                     exJa:'大きな嵐が来る。', exEn2:'The storm lasted all night.', exJa2:'嵐は一晩中続いた。' },
     { id:'bear',           en:'bear',           ja:'クマ',               pos:'noun', level:1, cat:'general', exEn:'Bears love honey.',                          exJa:'クマははちみつが好きだ。' },
     { id:'fox',            en:'fox',            ja:'キツネ',             pos:'noun', level:1, cat:'general', exEn:'The fox is clever.',                         exJa:'キツネは賢い。' },
     { id:'wolf',           en:'wolf',           ja:'オオカミ',           pos:'noun', level:1, cat:'general', exEn:'Wolves live in groups.',                     exJa:'オオカミは群れで暮らす。' },
