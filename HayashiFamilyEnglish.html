@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 277;
+  const APP_VERSION = 278;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -20823,7 +20823,117 @@
   // 構造: { id, pattern, ja_pattern, items: [{ ja, en }, ...] }
   // 例文は 1 パターン 3 つ持たせて、同じ構文の手触りを覚えるまで繰り返す。
   const CONVO_PATTERNS = [
-    // (Phase 2 で順次追加する)
+    // ============ 魔法の型・基本編 ============
+    {
+      id: 'cp001',
+      pattern: "I'm having trouble ...ing",
+      ja_pattern: '〜するのに苦労している',
+      category: '基本',
+      items: [
+        { ja: '日本語の漢字を覚えるのに苦労している。',     en: "I'm having trouble remembering Japanese kanji." },
+        { ja: '夜寝つきが悪くて困っている。',                 en: "I'm having trouble sleeping at night." },
+        { ja: 'うちの息子は宿題に集中するのに苦労している。', en: "My son is having trouble focusing on his homework." },
+      ],
+    },
+    {
+      id: 'cp002',
+      pattern: "I didn't mean to ...",
+      ja_pattern: '〜するつもりじゃなかった',
+      category: '基本',
+      items: [
+        { ja: 'あなたを傷つけるつもりじゃなかった。',           en: "I didn't mean to hurt you." },
+        { ja: 'こんなに長く待たせるつもりじゃなかった。',       en: "I didn't mean to keep you waiting so long." },
+        { ja: '電話を切るつもりはなかったんだ、ごめん。',       en: "I didn't mean to hang up on you, sorry." },
+      ],
+    },
+    {
+      id: 'cp003',
+      pattern: "I'm about to ...",
+      ja_pattern: '今ちょうど〜するところだ',
+      category: '基本',
+      items: [
+        { ja: 'ちょうど家を出るところだ。',                       en: "I'm about to leave the house." },
+        { ja: 'まさに同じことを言おうとしていた。',               en: "I was about to say the same thing." },
+        { ja: 'もう寝るところだから、明日電話するね。',           en: "I'm about to go to bed, so I'll call you tomorrow." },
+      ],
+    },
+    {
+      id: 'cp004',
+      pattern: "It's no wonder that ...",
+      ja_pattern: '〜なのも不思議ではない / 当然だ',
+      category: '基本',
+      items: [
+        { ja: '彼が疲れているのも当然だよ、一晩中働いていたから。', en: "It's no wonder that he's tired — he worked all night." },
+        { ja: 'みんな彼女を好きなのも当然だ。',                     en: "It's no wonder that everyone likes her." },
+        { ja: 'この街が観光客で人気なのも頷ける。',                 en: "It's no wonder that this city is popular with tourists." },
+      ],
+    },
+    {
+      id: 'cp005',
+      pattern: "I can't afford to ...",
+      ja_pattern: '〜する余裕がない',
+      category: '基本',
+      items: [
+        { ja: '今は新しい車を買う余裕がない。',                   en: "I can't afford to buy a new car right now." },
+        { ja: 'もう一回失敗する余裕はない。',                     en: "I can't afford to fail again." },
+        { ja: '今週はもう外食する余裕がない。',                   en: "I can't afford to eat out again this week." },
+      ],
+    },
+    {
+      id: 'cp006',
+      pattern: "I'm willing to ...",
+      ja_pattern: '喜んで〜する / 〜する気がある',
+      category: '基本',
+      items: [
+        { ja: '良い仕事のためなら喜んで残業する。',                       en: "I'm willing to work overtime for a good project." },
+        { ja: 'よく分からない料理でも試してみる気はあるよ。',                 en: "I'm willing to try food I've never heard of." },
+        { ja: '新しい街に引っ越すのも厭わないよ、いいチャンスなら。',         en: "I'm willing to move to a new city for the right opportunity." },
+      ],
+    },
+    {
+      id: 'cp007',
+      pattern: "I'm supposed to ...",
+      ja_pattern: '〜することになっている / はずだ',
+      category: '基本',
+      items: [
+        { ja: '5時に空港で彼に会うことになっている。',                   en: "I'm supposed to meet him at the airport at five." },
+        { ja: '本当はこれ、人に話しちゃいけないんだけど。',                 en: "I'm not supposed to tell anyone, but..." },
+        { ja: 'もう寝てる時間のはずなのに、まだ宿題やってる。',             en: "I'm supposed to be asleep, but I'm still doing homework." },
+      ],
+    },
+    {
+      id: 'cp008',
+      pattern: "I'm used to ...ing",
+      ja_pattern: '〜するのに慣れている',
+      category: '基本',
+      items: [
+        { ja: '毎日早起きするのに慣れている。',                           en: "I'm used to getting up early every day." },
+        { ja: '東京で運転することにはもう慣れた。',                       en: "I'm used to driving in Tokyo now." },
+        { ja: '辛い料理にはもう慣れている。',                             en: "I'm used to eating spicy food." },
+      ],
+    },
+    {
+      id: 'cp009',
+      pattern: "It's likely that ...",
+      ja_pattern: 'おそらく〜だろう',
+      category: '基本',
+      items: [
+        { ja: '彼女はおそらく今夜電話をくれるだろう。',                   en: "It's likely that she'll call tonight." },
+        { ja: 'ピーク時間帯はおそらく混むだろう。',                       en: "It's likely that the restaurant will be busy at peak hours." },
+        { ja: '明日はおそらく雨だろう。',                                 en: "It's likely that it will rain tomorrow." },
+      ],
+    },
+    {
+      id: 'cp010',
+      pattern: "I'm looking forward to ...ing",
+      ja_pattern: '〜するのを楽しみにしている',
+      category: '基本',
+      items: [
+        { ja: 'また会えるのを楽しみにしています。',                       en: "I'm looking forward to seeing you again." },
+        { ja: '長い1日のあとの夕食が楽しみだ。',                           en: "I'm looking forward to dinner after a long day." },
+        { ja: '夏休みが楽しみだ。',                                       en: "I'm looking forward to the summer holidays." },
+      ],
+    },
   ];
 
   function ConvoPatterns({ profile, onBack }) {
