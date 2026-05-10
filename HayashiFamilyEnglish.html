@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 279;
+  const APP_VERSION = 280;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21098,6 +21098,172 @@
         { ja: '了解です、すぐとりかかります。',                           en: "Sure, I'll get right on it." },
         { ja: 'メール、すぐ書くね。',                                     en: "I'll get right on the email." },
         { ja: '修理、すぐとりかかります。',                               en: "I'll get right on the repair." },
+      ],
+    },
+    {
+      id: 'cp026',
+      pattern: "It's out of my hands.",
+      ja_pattern: '私の手には負えない / どうしようもない',
+      category: '実践',
+      items: [
+        { ja: '結果は私の手には負えない、社長次第だ。',                   en: "It's out of my hands now — it's up to the boss." },
+        { ja: '判決はもう私の手の届かないところにある。',                 en: "The decision is out of my hands at this point." },
+        { ja: 'ごめん、これ以上は私にはどうしようもない。',               en: "Sorry, but this is out of my hands." },
+      ],
+    },
+    {
+      id: 'cp027',
+      pattern: 'Keep me in the loop.',
+      ja_pattern: '状況を教えておいてね',
+      category: '実践',
+      items: [
+        { ja: '進捗があれば随時教えて。',                                 en: 'Please keep me in the loop on this project.' },
+        { ja: '何か変更があれば連絡してね。',                             en: 'Keep me in the loop if anything changes.' },
+        { ja: '次の会議の予定、共有しておいてね。',                       en: 'Keep me in the loop about the next meeting.' },
+      ],
+    },
+    {
+      id: 'cp028',
+      pattern: "Let's call it a day.",
+      ja_pattern: '今日はこの辺で終わりにしよう',
+      category: '実践',
+      items: [
+        { ja: 'もう 8 時か、今日はこの辺にしよう。',                       en: "It's already eight. Let's call it a day." },
+        { ja: 'みんな疲れただろう、今日はここで終わりにしよう。',         en: "Everyone looks tired. Let's call it a day." },
+        { ja: 'これだけ進めば十分、今日はおしまい。',                     en: "We've done enough. Let's call it a day." },
+      ],
+    },
+    {
+      id: 'cp029',
+      pattern: 'That makes sense.',
+      ja_pattern: 'なるほど / 道理にかなってるね',
+      category: '実践',
+      items: [
+        { ja: 'なるほど、確かにその通りだ。',                             en: 'That makes sense, you have a good point.' },
+        { ja: '言われてみれば、それは筋が通っているね。',                 en: 'Now that you explain it, that makes sense.' },
+        { ja: '彼の説明はちゃんと筋が通っている。',                       en: 'His explanation makes complete sense.' },
+      ],
+    },
+    {
+      id: 'cp030',
+      pattern: "I'm on the same page.",
+      ja_pattern: '同感です / 同じ考えです',
+      category: '実践',
+      items: [
+        { ja: '私もまったく同じ考えだ。',                                 en: "I'm on the same page with you." },
+        { ja: 'チーム全員、認識は揃っていますか？',                       en: 'Are we all on the same page?' },
+        { ja: '計画の方針について、私は彼と同感だ。',                     en: "I'm on the same page as him on this plan." },
+      ],
+    },
+    // ============ 応用編 ============
+    {
+      id: 'cp031',
+      pattern: "I'm convinced that ...",
+      ja_pattern: '〜だと確信している',
+      category: '応用',
+      items: [
+        { ja: '彼が一番ふさわしい候補者だと確信している。',               en: "I'm convinced that he is the best candidate." },
+        { ja: 'もうそろそろ起業のタイミングだと確信している。',           en: "I'm convinced that now is the time to start a business." },
+        { ja: 'この計画はうまくいくと確信している。',                     en: "I'm convinced that this plan will work." },
+      ],
+    },
+    {
+      id: 'cp032',
+      pattern: "It occurs to me that ...",
+      ja_pattern: '〜ということがふと頭に浮かんだ',
+      category: '応用',
+      items: [
+        { ja: '彼の名前を聞き忘れたことに気づいた。',                     en: "It occurs to me that I never asked his name." },
+        { ja: '今日が彼女の誕生日だと、ふと気づいた。',                   en: "It occurs to me that today is her birthday." },
+        { ja: 'もしかして、私の方が間違っていたかもと、ふと思う。',       en: "It occurs to me that I might have been wrong." },
+      ],
+    },
+    {
+      id: 'cp033',
+      pattern: "I'm not in a position to ...",
+      ja_pattern: '〜できる立場にない',
+      category: '応用',
+      items: [
+        { ja: 'コメントできる立場ではありません。',                       en: "I'm not in a position to comment." },
+        { ja: 'お金を貸せる立場じゃない。',                               en: "I'm not in a position to lend you money." },
+        { ja: 'その決定をする立場にはない。',                             en: "I'm not in a position to make that decision." },
+      ],
+    },
+    {
+      id: 'cp034',
+      pattern: "It's no use crying over spilt milk.",
+      ja_pattern: '済んだことを悔やんでも無駄だ',
+      category: '応用',
+      items: [
+        { ja: '済んだことを悔やんでも仕方ない、次へ進もう。',             en: "It's no use crying over spilt milk — let's move on." },
+        { ja: 'もうやってしまったことだ、後悔しても始まらない。',         en: "What's done is done. It's no use crying over spilt milk." },
+        { ja: '結果は変わらない、嘆いても無駄だよ。',                     en: "It's no use crying over spilt milk now." },
+      ],
+    },
+    {
+      id: 'cp035',
+      pattern: "I'm supposed to have done ...",
+      ja_pattern: '〜したはずだった / 〜することになっていた',
+      category: '応用',
+      items: [
+        { ja: '昨日までにレポートを提出するはずだった。',                 en: "I'm supposed to have submitted the report by yesterday." },
+        { ja: '先週の会議に出るはずだった。',                             en: "I'm supposed to have attended the meeting last week." },
+        { ja: 'もう銀行に行ったはずなんだけど、忘れてた。',               en: "I'm supposed to have gone to the bank, but I forgot." },
+      ],
+    },
+    {
+      id: 'cp036',
+      pattern: "It's well worth the effort to ...",
+      ja_pattern: '〜するだけの価値は十分にある',
+      category: '応用',
+      items: [
+        { ja: '英語を学ぶのは、苦労する価値が十分にある。',               en: "It's well worth the effort to learn English." },
+        { ja: '健康に気をつかうのは、努力する価値がある。',               en: "It's well worth the effort to take care of your health." },
+        { ja: '良い人間関係を築くのは、努力する価値がある。',             en: "It's well worth the effort to build good relationships." },
+      ],
+    },
+    {
+      id: 'cp037',
+      pattern: "I'm on the point of ...ing",
+      ja_pattern: '今まさに〜しようとしている',
+      category: '応用',
+      items: [
+        { ja: 'ちょうど寝ようとしていたところだ。',                       en: "I'm on the point of going to bed." },
+        { ja: 'まさに諦めようとしていたとき、答えが浮かんだ。',           en: "I was on the point of giving up when the answer came." },
+        { ja: 'もう泣きそうなところまで来ていた。',                       en: "I was on the point of tears." },
+      ],
+    },
+    {
+      id: 'cp038',
+      pattern: "It's hard to imagine ...",
+      ja_pattern: '〜を想像するのは難しい',
+      category: '応用',
+      items: [
+        { ja: '昔の人がスマホなしでどう暮らしていたか、想像し難い。',     en: "It's hard to imagine life without smartphones." },
+        { ja: '彼が怒っているところは想像できない。',                     en: "It's hard to imagine him being angry." },
+        { ja: '冬がそんなに寒いなんて、想像し難い。',                     en: "It's hard to imagine winters being that cold." },
+      ],
+    },
+    {
+      id: 'cp039',
+      pattern: "I'm hesitant about ...ing",
+      ja_pattern: '〜することにためらいを感じる',
+      category: '応用',
+      items: [
+        { ja: '転職することにためらいを感じている。',                     en: "I'm hesitant about changing jobs." },
+        { ja: 'お金を借りることにはためらいがある。',                     en: "I'm hesitant about borrowing money." },
+        { ja: 'みんなの前でスピーチをすることに気が引ける。',             en: "I'm hesitant about speaking in front of everyone." },
+      ],
+    },
+    {
+      id: 'cp040',
+      pattern: "It's widely believed that ...",
+      ja_pattern: '〜だと広く信じられている',
+      category: '応用',
+      items: [
+        { ja: ' 8 時間睡眠は健康に良いと広く信じられている。',             en: "It's widely believed that eight hours of sleep is healthy." },
+        { ja: '日本のシェフは細部にこだわると広く信じられている。',       en: "It's widely believed that Japanese chefs care about every detail." },
+        { ja: '練習が完璧を作ると広く信じられている。',                   en: "It's widely believed that practice makes perfect." },
       ],
     },
   ];
