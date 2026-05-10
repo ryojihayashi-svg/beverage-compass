@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 281;
+  const APP_VERSION = 282;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21430,6 +21430,172 @@
         { ja: 'スケジュールに間に合わせるのに苦戦している。',             en: "I'm struggling to keep up with the schedule." },
         { ja: '今日は集中するのに苦戦している。',                         en: "I'm struggling to stay focused today." },
         { ja: '禁煙しようと頑張っているけど、なかなかうまくいかない。',   en: "I'm struggling to quit smoking." },
+      ],
+    },
+    {
+      id: 'cp056',
+      pattern: "It's mandatory to ...",
+      ja_pattern: '〜することは義務だ / 必須だ',
+      category: '強化',
+      items: [
+        { ja: '会議に出席することは必須だ。',                             en: "It's mandatory to attend the meeting." },
+        { ja: 'ヘルメット着用は義務だ。',                                 en: "It's mandatory to wear a helmet." },
+        { ja: 'この書類への署名は必須です。',                             en: "It's mandatory to sign this document." },
+      ],
+    },
+    {
+      id: 'cp057',
+      pattern: "I'm optimistic about ...",
+      ja_pattern: '〜について楽観的だ',
+      category: '強化',
+      items: [
+        { ja: 'うちの会社の将来については楽観的だ。',                     en: "I'm optimistic about our company's future." },
+        { ja: '彼の回復については楽観的だ。',                             en: "I'm optimistic about his recovery." },
+        { ja: '今度の試験はいい感じになりそうだ。',                       en: "I'm optimistic about the upcoming exam." },
+      ],
+    },
+    {
+      id: 'cp058',
+      pattern: "It's helpful to ...",
+      ja_pattern: '〜するのが役立つ',
+      category: '強化',
+      items: [
+        { ja: '日記をつけるのは役に立つよ。',                             en: "It's helpful to keep a journal." },
+        { ja: '質問するのはいいことだ、恥ずかしがらないで。',             en: "It's helpful to ask questions when you're not sure." },
+        { ja: '前もって準備しておくと役に立つ。',                         en: "It's helpful to prepare in advance." },
+      ],
+    },
+    {
+      id: 'cp059',
+      pattern: "I'm indifferent to ...",
+      ja_pattern: '〜に無関心だ',
+      category: '強化',
+      items: [
+        { ja: '政治には正直あまり関心がない。',                           en: "I'm indifferent to politics." },
+        { ja: '何を食べるかは特にこだわりがない。',                       en: "I'm indifferent to what we eat." },
+        { ja: '結果はどっちでもいい。',                                   en: "I'm indifferent to the outcome." },
+      ],
+    },
+    {
+      id: 'cp060',
+      pattern: "It's evident that ...",
+      ja_pattern: '〜なのは明らかだ',
+      category: '強化',
+      items: [
+        { ja: '彼が一生懸命やっているのは明らかだ。',                     en: "It's evident that he is working hard." },
+        { ja: '彼女が緊張しているのは明らかだ。',                         en: "It's evident that she is nervous." },
+        { ja: 'チームに練習が必要なのは明らかだ。',                       en: "It's evident that the team needs more practice." },
+      ],
+    },
+    // ============ 上級編 ============
+    {
+      id: 'cp061',
+      pattern: "I'm on my way to ...",
+      ja_pattern: '〜に向かっている途中だ',
+      category: '上級',
+      items: [
+        { ja: '今、駅に向かっている途中だよ。',                           en: "I'm on my way to the station now." },
+        { ja: 'ちょうど今、向かっています。',                             en: "I'm on my way." },
+        { ja: 'ちょうど食料品店に行く途中だよ。',                         en: "I'm on my way to the grocery store." },
+      ],
+    },
+    {
+      id: 'cp062',
+      pattern: "It's about time to ...",
+      ja_pattern: 'そろそろ〜する時間だ',
+      category: '上級',
+      items: [
+        { ja: 'そろそろ寝る時間だよ。',                                   en: "It's about time to go to bed." },
+        { ja: 'そろそろ家を出ないと。',                                   en: "It's about time to leave the house." },
+        { ja: 'そろそろ本気で勉強するべき頃だ。',                         en: "It's about time to start studying seriously." },
+      ],
+    },
+    {
+      id: 'cp063',
+      pattern: "I'm struggling with ...",
+      ja_pattern: '〜に苦戦している',
+      category: '上級',
+      items: [
+        { ja: 'この数学の問題に苦戦している。',                           en: "I'm struggling with this maths problem." },
+        { ja: '時差ボケで参っている。',                                   en: "I'm struggling with jet lag." },
+        { ja: 'やる気の維持に苦戦している。',                             en: "I'm struggling with staying motivated." },
+      ],
+    },
+    {
+      id: 'cp064',
+      pattern: "I've decided to ...",
+      ja_pattern: '〜することに決めた',
+      category: '上級',
+      items: [
+        { ja: 'もう一度ロンドンに行くことにした。',                       en: "I've decided to visit London again." },
+        { ja: 'タバコをやめることに決めた。',                             en: "I've decided to quit smoking." },
+        { ja: '自分のレストランを始めることに決めた。',                   en: "I've decided to start my own restaurant." },
+      ],
+    },
+    {
+      id: 'cp065',
+      pattern: "I'm confident that ...",
+      ja_pattern: '〜だと確信している',
+      category: '上級',
+      items: [
+        { ja: '私たちが勝つと確信している。',                             en: "I'm confident that we will win." },
+        { ja: '彼ならうまくやってくれると信じている。',                   en: "I'm confident that he can handle it." },
+        { ja: 'すべてうまくいくと確信している。',                         en: "I'm confident that everything will work out." },
+      ],
+    },
+    {
+      id: 'cp066',
+      pattern: "It's common for someone to ...",
+      ja_pattern: '(人が) 〜するのはよくあることだ',
+      category: '上級',
+      items: [
+        { ja: '初めは緊張するのは誰でもよくあることだ。',                 en: "It's common for people to feel nervous at first." },
+        { ja: '高校生が遅くまで起きているのはよくあることだ。',           en: "It's common for high schoolers to stay up late." },
+        { ja: '小さな子供が何度も同じ質問をするのはよくあることだ。',     en: "It's common for small children to ask the same question over and over." },
+      ],
+    },
+    {
+      id: 'cp067',
+      pattern: "I'm under the impression that ...",
+      ja_pattern: '〜という印象を持っている',
+      category: '上級',
+      items: [
+        { ja: '会議は明日と聞いていたんだけど。',                         en: "I was under the impression that the meeting was tomorrow." },
+        { ja: 'もうこの件は片付いたと思っていた。',                       en: "I'm under the impression that this was already settled." },
+        { ja: 'あなたはもう知っていると思っていた。',                     en: "I was under the impression that you already knew." },
+      ],
+    },
+    {
+      id: 'cp068',
+      pattern: "I'm torn between A and B.",
+      ja_pattern: 'A と B の間で迷っている',
+      category: '上級',
+      items: [
+        { ja: '泊まるか帰るかで迷っている。',                             en: "I'm torn between staying and leaving." },
+        { ja: 'パスタとピザのどっちにするか迷う。',                       en: "I'm torn between the pasta and the pizza." },
+        { ja: '東京と京都、どっちに住むか迷っている。',                   en: "I'm torn between living in Tokyo and Kyoto." },
+      ],
+    },
+    {
+      id: 'cp069',
+      pattern: "I'm committed to ...ing",
+      ja_pattern: '〜することに全力を尽くしている',
+      category: '上級',
+      items: [
+        { ja: '英語を上達させることに本気で取り組んでいる。',             en: "I'm committed to improving my English." },
+        { ja: 'お客様への最高のサービスを大切にしています。',             en: "I'm committed to giving the best service to our customers." },
+        { ja: '自分の家族を支えることに全力を尽くす。',                   en: "I'm committed to supporting my family." },
+      ],
+    },
+    {
+      id: 'cp070',
+      pattern: "It's out of the question to ...",
+      ja_pattern: '〜するのは論外だ / ありえない',
+      category: '上級',
+      items: [
+        { ja: 'こんな大事な日に遅刻するなんてあり得ない。',               en: "It's out of the question to be late on such an important day." },
+        { ja: '今諦めるなんてあり得ない。',                               en: "It's out of the question to give up now." },
+        { ja: 'お金がないからって、品質を下げるのは論外だ。',             en: "It's out of the question to cut corners on quality." },
       ],
     },
   ];
