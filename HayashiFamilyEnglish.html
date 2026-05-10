@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 282;
+  const APP_VERSION = 283;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21596,6 +21596,196 @@
         { ja: 'こんな大事な日に遅刻するなんてあり得ない。',               en: "It's out of the question to be late on such an important day." },
         { ja: '今諦めるなんてあり得ない。',                               en: "It's out of the question to give up now." },
         { ja: 'お金がないからって、品質を下げるのは論外だ。',             en: "It's out of the question to cut corners on quality." },
+      ],
+    },
+    {
+      id: 'cp071',
+      pattern: "I'm concerned about ...",
+      ja_pattern: '〜について心配している / 懸念している',
+      category: '上級',
+      items: [
+        { ja: '父の体調が心配だ。',                                       en: "I'm concerned about my father's health." },
+        { ja: 'チームのモチベーションが懸念だ。',                         en: "I'm concerned about the team's motivation." },
+        { ja: '気候変動が心配だ。',                                       en: "I'm concerned about climate change." },
+      ],
+    },
+    {
+      id: 'cp072',
+      pattern: "I'm aware that ...",
+      ja_pattern: '〜ということを承知している',
+      category: '上級',
+      items: [
+        { ja: '時間が押しているのは承知しています。',                     en: "I'm aware that time is short." },
+        { ja: 'これは難しい話だと分かっています。',                       en: "I'm aware that this is a difficult subject." },
+        { ja: '何人かは反対しているのも分かっている。',                   en: "I'm aware that some people disagree." },
+      ],
+    },
+    {
+      id: 'cp073',
+      pattern: "It's necessary for you to ...",
+      ja_pattern: '君が〜する必要がある',
+      category: '上級',
+      items: [
+        { ja: '休息を取ることが必要だよ。',                               en: "It's necessary for you to get some rest." },
+        { ja: '毎日少しずつでも英語を練習する必要がある。',               en: "It's necessary for you to practice English every day." },
+        { ja: '〆切を守ることが必要だ。',                                 en: "It's necessary for you to meet the deadline." },
+      ],
+    },
+    {
+      id: 'cp074',
+      pattern: "I'm passionate about ...",
+      ja_pattern: '〜に情熱を注いでいる',
+      category: '上級',
+      items: [
+        { ja: 'お客様に最高の体験を届けることに情熱を注いでいる。',       en: "I'm passionate about delivering the best experience to our customers." },
+        { ja: '私は本当に料理が好きでたまらない。',                       en: "I'm passionate about cooking." },
+        { ja: '子供たちの教育には本気で力を入れている。',                 en: "I'm passionate about my children's education." },
+      ],
+    },
+    // ============ 感情・意図の型 ============
+    {
+      id: 'cp075',
+      pattern: "I'm tempted to ...",
+      ja_pattern: '〜したくてたまらない / 〜しそうだ',
+      category: '感情',
+      items: [
+        { ja: 'もう一切れ食べたくなってきちゃう。',                       en: "I'm tempted to have another slice." },
+        { ja: 'もう全部やめてしまいたい気分だ。',                         en: "I'm tempted to just give up everything." },
+        { ja: '今日は買ってしまいたくなる気持ちが強い。',                 en: "I'm tempted to buy it today." },
+      ],
+    },
+    {
+      id: 'cp076',
+      pattern: "I'm dying to ...",
+      ja_pattern: '死ぬほど〜したい',
+      category: '感情',
+      items: [
+        { ja: 'お母さんの料理が死ぬほど食べたい。',                       en: "I'm dying to eat my mum's cooking." },
+        { ja: 'その映画、死ぬほど観たい。',                               en: "I'm dying to see that movie." },
+        { ja: 'その話、めちゃくちゃ知りたい。',                           en: "I'm dying to know what happened." },
+      ],
+    },
+    {
+      id: 'cp077',
+      pattern: "I'm skeptical about ...",
+      ja_pattern: '〜を疑っている / 懐疑的だ',
+      category: '感情',
+      items: [
+        { ja: 'その商品の宣伝文句には少し懐疑的だ。',                     en: "I'm skeptical about the product's claims." },
+        { ja: 'その提案には少し疑問を感じる。',                           en: "I'm skeptical about the proposal." },
+        { ja: '本当に効くかどうか、ちょっと疑っている。',                 en: "I'm skeptical about whether it really works." },
+      ],
+    },
+    {
+      id: 'cp078',
+      pattern: "I'm not in the mood to ...",
+      ja_pattern: '〜する気分じゃない',
+      category: '感情',
+      items: [
+        { ja: '今夜は外食する気分じゃない。',                             en: "I'm not in the mood to eat out tonight." },
+        { ja: '今日はあまり話す気分じゃない。',                           en: "I'm not in the mood to talk today." },
+        { ja: 'もう議論する気分じゃない。',                               en: "I'm not in the mood to argue anymore." },
+      ],
+    },
+    {
+      id: 'cp079',
+      pattern: "I have a hard time ...ing",
+      ja_pattern: '〜するのに苦労している',
+      category: '感情',
+      items: [
+        { ja: '彼の名前を覚えるのに苦労する。',                           en: "I have a hard time remembering his name." },
+        { ja: '辛い食べ物が苦手だ。',                                     en: "I have a hard time eating spicy food." },
+        { ja: '朝早く起きるのが苦手だ。',                                 en: "I have a hard time waking up early." },
+      ],
+    },
+    // ============ 状況説明の型 ============
+    {
+      id: 'cp080',
+      pattern: "It turns out that ...",
+      ja_pattern: '結局〜だと分かった',
+      category: '状況',
+      items: [
+        { ja: '結局、それは誤報だった。',                                 en: "It turns out that the news was wrong." },
+        { ja: '結局、ボタンを押し忘れていただけだった。',                 en: "It turns out that I just forgot to press the button." },
+        { ja: '結局、彼が正しかった。',                                   en: "It turns out that he was right all along." },
+      ],
+    },
+    {
+      id: 'cp081',
+      pattern: "It's up to you.",
+      ja_pattern: 'あなた次第だ / 任せるよ',
+      category: '状況',
+      items: [
+        { ja: '行くか行かないかは、あなた次第だよ。',                     en: "Going or not — it's up to you." },
+        { ja: 'お皿は何にする？任せるよ。',                               en: "What dish? It's up to you." },
+        { ja: '決めるのは私じゃない、あなた次第だ。',                     en: "It's not my call. It's up to you." },
+      ],
+    },
+    {
+      id: 'cp082',
+      pattern: "I'm on the verge of ...",
+      ja_pattern: '今にも〜しそうだ',
+      category: '状況',
+      items: [
+        { ja: 'もう泣きそうだ。',                                         en: "I'm on the verge of tears." },
+        { ja: 'もう諦めそうだったけど、なんとか続けた。',                 en: "I was on the verge of giving up." },
+        { ja: 'もう倒れそうなくらい疲れている。',                         en: "I'm on the verge of collapsing from exhaustion." },
+      ],
+    },
+    {
+      id: 'cp083',
+      pattern: "What if ...?",
+      ja_pattern: 'もし〜だったらどうする？',
+      category: '状況',
+      items: [
+        { ja: 'もし雨が降ったらどうする？',                               en: "What if it rains?" },
+        { ja: 'もし彼が来なかったら？',                                   en: "What if he doesn't show up?" },
+        { ja: 'もしうちのレストランがミシュランを取ったら？',             en: "What if our restaurant gets a Michelin star?" },
+      ],
+    },
+    // ============ 提案・依頼の型 ============
+    {
+      id: 'cp084',
+      pattern: "Why don't we ...?",
+      ja_pattern: '〜しませんか？',
+      category: '提案',
+      items: [
+        { ja: '夕飯に出かけない？',                                       en: "Why don't we go out for dinner?" },
+        { ja: '一緒にプロジェクトをやらない？',                           en: "Why don't we work on this project together?" },
+        { ja: 'ちょっと休憩しよう？',                                     en: "Why don't we take a short break?" },
+      ],
+    },
+    {
+      id: 'cp085',
+      pattern: "How about ...ing?",
+      ja_pattern: '〜するのはどう？',
+      category: '提案',
+      items: [
+        { ja: '映画でも観に行くのはどう？',                               en: "How about going to the cinema?" },
+        { ja: 'ピザを注文するのは？',                                     en: "How about ordering pizza?" },
+        { ja: '少し早めに始めるのはどう？',                               en: "How about starting a bit earlier?" },
+      ],
+    },
+    {
+      id: 'cp086',
+      pattern: "Make sure to ...",
+      ja_pattern: '必ず〜するようにしてね',
+      category: '提案',
+      items: [
+        { ja: 'ドアをロックするの忘れないでね。',                         en: "Make sure to lock the door." },
+        { ja: '出る前に水を飲んでおくんだよ。',                           en: "Make sure to drink some water before you go." },
+        { ja: '学校に着いたら必ず連絡してね。',                           en: "Make sure to text me when you get to school." },
+      ],
+    },
+    {
+      id: 'cp087',
+      pattern: "I'd appreciate it if you could ...",
+      ja_pattern: '〜していただけると助かります',
+      category: '提案',
+      items: [
+        { ja: '今夜までにお返事いただけると助かります。',                 en: "I'd appreciate it if you could reply by tonight." },
+        { ja: 'ドアを閉めていただけると助かります。',                     en: "I'd appreciate it if you could close the door." },
+        { ja: 'もう少し小さな声で話していただけると助かります。',         en: "I'd appreciate it if you could speak a little quieter." },
       ],
     },
   ];
