@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 284;
+  const APP_VERSION = 285;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21975,6 +21975,228 @@
         { ja: 'ちょっと聞きたかったんだけど、明日空いてる？',             en: "I was wondering if you're free tomorrow." },
         { ja: '少し手伝ってもらえないかな、と思って。',                   en: "I was wondering if you could help me." },
         { ja: 'どこか間違ってないかな、と思って。',                       en: "I was wondering if I might have made a mistake." },
+      ],
+    },
+    // ============ 日常で頻出 (リアクション・気持ち) ============
+    {
+      id: 'cp105',
+      pattern: "I can't help ...ing",
+      ja_pattern: '〜せずにはいられない',
+      category: 'リアクション',
+      items: [
+        { ja: 'うちの子のことを考えずにはいられない。',                   en: "I can't help thinking about my kids." },
+        { ja: 'おかしくて笑わずにはいられなかった。',                     en: "I couldn't help laughing — it was too funny." },
+        { ja: '昔のことが懐かしくて、つい思い返してしまう。',             en: "I can't help missing the old days." },
+      ],
+    },
+    {
+      id: 'cp106',
+      pattern: "I'm sick of ...ing",
+      ja_pattern: '〜にうんざりしている',
+      category: 'リアクション',
+      items: [
+        { ja: '毎日同じことの繰り返しでもううんざりだ。',                 en: "I'm sick of doing the same thing every day." },
+        { ja: '言い訳ばかり聞かされて、もうたくさんだ。',                 en: "I'm sick of hearing excuses." },
+        { ja: 'こう寒い日が続くともううんざりだ。',                       en: "I'm sick of this cold weather." },
+      ],
+    },
+    {
+      id: 'cp107',
+      pattern: "It slipped my mind.",
+      ja_pattern: 'うっかり忘れてた',
+      category: 'リアクション',
+      items: [
+        { ja: 'ごめん、約束をうっかり忘れてた。',                         en: "Sorry, it slipped my mind." },
+        { ja: '電話するの、すっかり忘れてた。',                           en: "I meant to call, but it slipped my mind." },
+        { ja: '彼の誕生日のこと、うっかり忘れてた。',                     en: "His birthday completely slipped my mind." },
+      ],
+    },
+    {
+      id: 'cp108',
+      pattern: "No big deal.",
+      ja_pattern: '大したことない',
+      category: 'リアクション',
+      items: [
+        { ja: '気にしないで、大したことじゃないよ。',                     en: "No big deal, don't worry about it." },
+        { ja: 'ちょっと遅れたくらい、大したことじゃないよ。',             en: "A few minutes late? No big deal." },
+        { ja: 'ありがとう、でも本当に大したことじゃないんだ。',           en: "Thanks, but really, no big deal." },
+      ],
+    },
+    {
+      id: 'cp109',
+      pattern: "Take your time.",
+      ja_pattern: 'ゆっくりどうぞ',
+      category: 'リアクション',
+      items: [
+        { ja: '急がないで、ゆっくりどうぞ。',                             en: "Take your time, no rush." },
+        { ja: 'ゆっくり選んでくださいね。',                               en: "Take your time choosing." },
+        { ja: 'ちゃんと考えていいよ、急がなくていい。',                   en: "Take your time to think it through." },
+      ],
+    },
+    {
+      id: 'cp110',
+      pattern: "It is what it is.",
+      ja_pattern: '仕方ない / そういうもんだ',
+      category: 'リアクション',
+      items: [
+        { ja: 'もう変えられない、しょうがないよ。',                       en: "We can't change it now — it is what it is." },
+        { ja: '結果は出てしまった、もう仕方ない。',                       en: "The result is in. It is what it is." },
+        { ja: '色々理屈はあるけど、結局そういうもんだよ。',               en: "There are reasons for it, but it is what it is." },
+      ],
+    },
+    {
+      id: 'cp111',
+      pattern: "Make yourself at home.",
+      ja_pattern: 'くつろいでね',
+      category: 'リアクション',
+      items: [
+        { ja: 'うちみたいにくつろいでね。',                               en: "Make yourself at home." },
+        { ja: '冷蔵庫のものは何でもどうぞ、くつろいでね。',               en: "Help yourself to anything — make yourself at home." },
+        { ja: '靴は脱いで、ゆっくりしてね。',                             en: "Take off your shoes and make yourself at home." },
+      ],
+    },
+    {
+      id: 'cp112',
+      pattern: "I'm all ears.",
+      ja_pattern: 'ちゃんと聞いてるよ',
+      category: 'リアクション',
+      items: [
+        { ja: 'うん、聞いてるよ、続けて。',                               en: "Go on, I'm all ears." },
+        { ja: 'いいアイデアがあるなら、聞かせて。',                       en: "If you have a good idea, I'm all ears." },
+        { ja: '言いたいこと全部聞くから、話して。',                       en: "Tell me everything — I'm all ears." },
+      ],
+    },
+    {
+      id: 'cp113',
+      pattern: "Let me sleep on it.",
+      ja_pattern: '一晩考えさせて',
+      category: 'リアクション',
+      items: [
+        { ja: '大事な話だから、一晩考えさせて。',                         en: "Let me sleep on it before I decide." },
+        { ja: '今晩じっくり考えて、明日返事するね。',                     en: "Let me sleep on it and I'll get back to you tomorrow." },
+        { ja: '即断は危ない、一晩寝かせよう。',                           en: "Big decisions are risky — let me sleep on it." },
+      ],
+    },
+    {
+      id: 'cp114',
+      pattern: "That makes two of us.",
+      ja_pattern: '私もだよ / 同じだよ',
+      category: 'リアクション',
+      items: [
+        { ja: 'お腹空いた？私もだよ。',                                   en: "You're hungry? That makes two of us." },
+        { ja: '疲れたよね、それは私も同じ。',                             en: "Tired? That makes two of us." },
+        { ja: '彼が苦手って？私もだよ。',                                 en: "You don't like him? That makes two of us." },
+      ],
+    },
+    // ============ ビジネス / 丁寧 ============
+    {
+      id: 'cp115',
+      pattern: "I'd like to ...",
+      ja_pattern: '〜したいのですが',
+      category: 'ビジネス',
+      items: [
+        { ja: '会議の予約をしたいのですが。',                             en: "I'd like to book a meeting." },
+        { ja: 'メニューに一つ提案を加えたいのですが。',                   en: "I'd like to add a suggestion to the menu." },
+        { ja: 'お礼を申し上げたく、お電話しました。',                     en: "I'd like to thank you for everything." },
+      ],
+    },
+    {
+      id: 'cp116',
+      pattern: "I'll get back to you.",
+      ja_pattern: '後ほどご連絡します',
+      category: 'ビジネス',
+      items: [
+        { ja: '確認次第、ご連絡します。',                                 en: "I'll get back to you once I check." },
+        { ja: '今日中に折り返します。',                                   en: "I'll get back to you by the end of the day." },
+        { ja: '価格はチームと相談してから返答します。',                   en: "I'll get back to you on the price after talking to my team." },
+      ],
+    },
+    {
+      id: 'cp117',
+      pattern: "Bear with me.",
+      ja_pattern: '少しお待ちください',
+      category: 'ビジネス',
+      items: [
+        { ja: 'ちょっと待ってね、すぐ調べる。',                           en: "Bear with me — I'll check right away." },
+        { ja: '今、システムを起動中なので少々お待ちを。',                 en: "Bear with me while the system loads." },
+        { ja: '長くなりますが、最後までお付き合いください。',             en: "Please bear with me, this might take a while." },
+      ],
+    },
+    {
+      id: 'cp118',
+      pattern: "Long story short, ...",
+      ja_pattern: '要するに',
+      category: 'ビジネス',
+      items: [
+        { ja: '要するに、もうやめることにしたんだ。',                     en: "Long story short, I decided to quit." },
+        { ja: '長くなるから省くけど、結局うまくいかなかった。',           en: "Long story short, it didn't work out." },
+        { ja: '色々あったけど、結論は『行く』だ。',                       en: "Long story short, I'm going." },
+      ],
+    },
+    {
+      id: 'cp119',
+      pattern: "Just to be clear, ...",
+      ja_pattern: '念のため確認ですが',
+      category: 'ビジネス',
+      items: [
+        { ja: '念のため確認ですが、明日 10 時で合ってますか？',           en: "Just to be clear, the meeting is at 10 tomorrow, right?" },
+        { ja: '念のため、これは無料サンプルです。',                       en: "Just to be clear, this is a free sample." },
+        { ja: '誤解のないように言うと、私は反対していません。',           en: "Just to be clear, I'm not against the idea." },
+      ],
+    },
+    {
+      id: 'cp120',
+      pattern: "What do you mean by ...?",
+      ja_pattern: '〜とはどういう意味？',
+      category: '会話展開',
+      items: [
+        { ja: '「フェア」とはどういう意味ですか？',                       en: 'What do you mean by "fair"?' },
+        { ja: 'すぐとは、いつのことですか？',                             en: 'What do you mean by "soon"?' },
+        { ja: '「無理」というのは、どういう意味で？',                     en: 'What do you mean by "impossible"?' },
+      ],
+    },
+    {
+      id: 'cp121',
+      pattern: "Correct me if I'm wrong, but ...",
+      ja_pattern: '間違ってたら直して、でも〜',
+      category: '会話展開',
+      items: [
+        { ja: '間違ってたら直してほしいんだけど、〆切は金曜だよね？',     en: "Correct me if I'm wrong, but the deadline is Friday." },
+        { ja: '違っていたら言ってね、確かこのお店は日曜定休のはず。',     en: "Correct me if I'm wrong, but this shop closes on Sundays." },
+        { ja: '勘違いだったら申し訳ないけど、もう支払い済みのはずです。', en: "Correct me if I'm wrong, but I think I've already paid." },
+      ],
+    },
+    {
+      id: 'cp122',
+      pattern: "Chances are ...",
+      ja_pattern: 'おそらく〜',
+      category: '会話展開',
+      items: [
+        { ja: 'おそらく彼は今夜は来ない。',                               en: "Chances are he won't come tonight." },
+        { ja: 'おそらく明日も雨だ。',                                     en: "Chances are it will rain tomorrow too." },
+        { ja: 'たぶん同じ電車で帰ることになるよ。',                       en: "Chances are we'll be on the same train home." },
+      ],
+    },
+    {
+      id: 'cp123',
+      pattern: "All of a sudden, ...",
+      ja_pattern: '急に〜',
+      category: '会話展開',
+      items: [
+        { ja: '急に雨が降り始めた。',                                     en: "All of a sudden, it started to rain." },
+        { ja: '突然、停電になった。',                                     en: "All of a sudden, the power went out." },
+        { ja: '急に名前を呼ばれて、びっくりした。',                       en: "All of a sudden, someone called my name." },
+      ],
+    },
+    {
+      id: 'cp124',
+      pattern: "In the meantime, ...",
+      ja_pattern: 'その間に〜',
+      category: '会話展開',
+      items: [
+        { ja: 'その間に、お茶でもどうぞ。',                               en: "In the meantime, please have some tea." },
+        { ja: '料理ができるまでの間に、テーブルを準備しておいて。',       en: "In the meantime, please set the table." },
+        { ja: '彼が戻るまでの間に、メールを片付けよう。',                 en: "In the meantime, I'll clear my emails." },
       ],
     },
   ];
