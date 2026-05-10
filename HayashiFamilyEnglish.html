@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 288;
+  const APP_VERSION = 289;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -152,6 +152,9 @@
     { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false, hidden: true },
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
                                                                                           fullWidth: true, forLearner: true, forViewer: true,
+                                                                                          forProfileIds: ['father'] },
+    { id: 'convo_patterns',     label: '魔法の型',       desc: '144 構文 × 3 例 = 432 文 (SNSから収集)',
+                                                                                          fullWidth: true, forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
   ];
 
@@ -14466,6 +14469,7 @@
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
       else if (route.feature === 'useful_phrases')    body = e(UsefulPhrases,     { profile, onBack: back });
+      else if (route.feature === 'convo_patterns')    body = e(ConvoPatterns,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -22643,7 +22647,28 @@
     }
   })();
 
+  // ---------- 魔法の型ブラウザ (CONVO_PATTERNS の一覧 + 例文) ----------
+  // 144 パターンを一覧表示し、タップすると 3 例文 (EN/JA + 読み上げボタン) が
+  // インラインで展開する。検索ボックスでパターン名 (英 or 日) で絞り込める。
+  // 父 (亮治) のホームの "魔法の型" タイルから到達。瞬間英作文・シャドーイングへの
+  // 自動マージはそのまま並行稼働。
   function ConvoPatterns({ profile, onBack }) {
+    const [query, setQuery] = useState('');
+    const [openId, setOpenId] = useState(null);
+
+    const q = query.trim().toLowerCase();
+    const filtered = useMemo(() => {
+      if (!q) return CONVO_PATTERNS;
+      return CONVO_PATTERNS.filter(p => {
+        if ((p.pattern || '').toLowerCase().includes(q)) return true;
+        if ((p.ja_pattern || '').toLowerCase().includes(q)) return true;
+        if ((p.category || '').toLowerCase().includes(q)) return true;
+        return p.items.some(it =>
+          (it.en || '').toLowerCase().includes(q) ||
+          (it.ja || '').toLowerCase().includes(q));
+      });
+    }, [q]);
+
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
@@ -22652,35 +22677,141 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        '使える短い会話フレーズ'),
+        '魔法の型'),
     );
+
     return e('div', { style: pageStyle },
       topBar,
-      e('div', { style: { padding: '4px 4px 18px' } },
+      e('div', { style: { padding: '4px 4px 16px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-        }, '使える短い会話フレーズ'),
+        }, '魔法の型'),
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
         },
-          '「魔法の型」を使ってネイティブが日常で使う短いフレーズを練習する。' +
-          '各構文に 3 例文ずつ。問題形式 (日本語 → 英語) と聞き流しの 2 モード。'),
+          'Instagram / TikTok / YouTube から集めた、ネイティブが日常で連発する ',
+          e('strong', null, CONVO_PATTERNS.length + ' 構文'),
+          ' × 3 例文 = ',
+          e('strong', null, (CONVO_PATTERNS.length * 3) + ' 文'),
+          '。タップで例文を開いて、🔊 で発音再生。'),
       ),
-      e('div', {
-        style: {
-          background: C.softer, border: '1px dashed ' + C.line,
-          borderRadius: 14, padding: '24px 18px', textAlign: 'center', color: C.sub,
-          lineHeight: 1.7, fontSize: 13,
-        }
-      },
-        e('div', { style: { fontWeight: 700, color: C.text, marginBottom: 6, fontSize: 14 } },
-          '準備中'),
-        e('div', null,
-          'これから ', e('strong', null, 'お父さんが指定した約 80 パターン'),
-          ' を 3 例文ずつ追加していきます。',
-          e('br'),
-          '完成したら「問題形式」と「聞き流し」の 2 モードで練習できるようになります。'),
+
+      // 検索ボックス
+      e('div', { style: { marginBottom: 14 } },
+        e('input', {
+          type: 'search',
+          value: query,
+          onChange: (ev) => { setQuery(ev.target.value); setOpenId(null); },
+          placeholder: '型名で検索 (例: trouble, about to, 苦労)',
+          style: {
+            width: '100%', padding: '12px 14px',
+            borderRadius: 12, border: '1px solid ' + C.line,
+            background: C.card, color: C.text,
+            fontSize: 14, fontFamily: 'inherit',
+            boxSizing: 'border-box',
+          }
+        }),
+        q && e('div', {
+          style: { fontSize: 12, color: C.sub, marginTop: 6, paddingLeft: 4 }
+        }, filtered.length + ' / ' + CONVO_PATTERNS.length + ' 構文がヒット'),
       ),
+
+      // パターン一覧
+      filtered.length === 0
+        ? e('div', {
+            style: {
+              padding: '40px 20px', textAlign: 'center',
+              color: C.sub, fontSize: 14,
+              background: C.softer, borderRadius: 12,
+            }
+          }, '該当する型がありません。')
+        : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            filtered.map((p, i) => {
+              const isOpen = openId === p.id;
+              const lv = (typeof CONVO_PATTERN_LEVELS !== 'undefined' && CONVO_PATTERN_LEVELS[p.id]) || 3;
+              return e('div', {
+                key: p.id,
+                style: {
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 14, overflow: 'hidden',
+                }
+              },
+                // ヘッダー (タップで開閉)
+                e('button', {
+                  onClick: () => setOpenId(isOpen ? null : p.id),
+                  style: {
+                    width: '100%', padding: '14px 16px',
+                    background: 'transparent', border: 'none',
+                    cursor: 'pointer', textAlign: 'left',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    fontFamily: 'inherit',
+                  }
+                },
+                  e('div', {
+                    style: {
+                      flex: '0 0 auto',
+                      padding: '4px 8px', borderRadius: 8,
+                      background: profile.color + '14', color: profile.color,
+                      fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                      letterSpacing: '0.04em',
+                    }
+                  }, 'LV' + lv),
+                  e('div', { style: { flex: 1, minWidth: 0 } },
+                    e('div', {
+                      style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+                    }, p.pattern),
+                    e('div', {
+                      style: { fontSize: 12.5, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+                    }, p.ja_pattern),
+                  ),
+                  e('span', {
+                    style: {
+                      fontSize: 14, color: C.sub, opacity: 0.6,
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
+                      transition: 'transform 0.15s ease',
+                    }
+                  }, '›'),
+                ),
+                // 展開: 3 例文
+                isOpen && e('div', {
+                  style: {
+                    borderTop: '1px solid ' + C.line,
+                    background: C.softer + '55',
+                    padding: '10px 0',
+                  }
+                },
+                  p.items.map((it, idx) => e('div', {
+                    key: idx,
+                    style: {
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      padding: '10px 16px',
+                      borderTop: idx > 0 ? '1px solid ' + C.line : 'none',
+                    }
+                  },
+                    e('div', {
+                      style: {
+                        flex: '0 0 22px', textAlign: 'center',
+                        fontSize: 12, color: C.sub, fontFamily: SANS_UI,
+                        fontWeight: 700, paddingTop: 4,
+                      }
+                    }, (idx + 1) + '.'),
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('div', {
+                        style: { fontFamily: SERIF_READ, fontSize: 16, color: C.text, lineHeight: 1.5 }
+                      }, it.en),
+                      e('div', {
+                        style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+                      }, it.ja),
+                    ),
+                    e(SpeakerBtn, {
+                      onClick: () => speak(it.en),
+                      color: profile.color, size: 32,
+                    }),
+                  )),
+                ),
+              );
+            }),
+          ),
     );
   }
 
