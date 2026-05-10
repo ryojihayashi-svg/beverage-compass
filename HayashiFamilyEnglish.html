@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 291;
+  const APP_VERSION = 292;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -22689,6 +22689,8 @@
   //        Fisher-Yates でシャッフル。ただし同パターン内の 3 例文の固まりは保つ)
   // excludeMastered + composition: 既に覚えた (consecutiveCorrect>=3) ものを
   //                                除外したい場合に渡す。瞬間英作文と同じ挙動。
+  // 「× で外した文」は scope='composition' で hiddenItems に登録されるので
+  // ここで一律フィルタする。瞬間英作文と完全に同じ挙動。
   function buildConvoQueue(opts) {
     opts = opts || {};
     const order = opts.order || 'sequential';
@@ -22706,6 +22708,7 @@
         if (!it.ja || !it.en) return;
         const sId = 'cp_' + p.id + '_' + (idx + 1);
         if (composition && isSentenceMastered(composition[sId])) return;
+        if (isItemHidden('composition', sId)) return;
         out.push({
           id:         sId,
           patternId:  p.id,
@@ -22720,6 +22723,16 @@
       });
     }
     return out;
+  }
+
+  // 定型構文の文を「全機能から外す」ヘルパー。
+  // - composition スコープ: 瞬間英作文 + 定型構文の全モード
+  // - shadowing スコープ: 通常のシャドーイング (sh_ プレフィックスで保管)
+  // 家族全員に同期 (hideItem 内で stampFamilySharedLocal + pushFamilySharedState)。
+  function hideConvoSentence(cpId) {
+    if (!cpId) return;
+    hideItem('composition', cpId);
+    hideItem('shadowing', 'sh_' + cpId);
   }
 
   // ----- 一覧 (旧 ConvoPatterns 本体) -----
@@ -23041,6 +23054,34 @@
     );
   }
 
+  // ----- 「× この問題を今後の出題から外す」共通ボタン -----
+  // 瞬間英作文 / シャドーイングと同じ赤チップ風スタイル。
+  // タップ → 確認 → hideConvoSentence → 親に通知して次の問題に進ませる。
+  function ConvoDeleteBtn({ onConfirm }) {
+    const handle = () => {
+      const ok = window.confirm(
+        'この問題を今後の出題から外しますか？\n\n' +
+        '家族全員の端末で出てこなくなります。\n' +
+        '（設定 → 外した問題 から「全部戻す」で復元できます）'
+      );
+      if (!ok) return;
+      onConfirm && onConfirm();
+    };
+    return e('button', {
+      onClick: handle,
+      'aria-label': 'この問題を今後の出題から外す',
+      title: 'この問題を今後の出題から外す',
+      style: {
+        position: 'absolute', top: 10, right: 10,
+        width: 30, height: 30, borderRadius: 999,
+        background: C.danger + '14', border: '1px solid ' + C.danger + '55',
+        color: C.danger, fontSize: 16, fontWeight: 700, lineHeight: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', fontFamily: SANS_UI, padding: 0,
+      }
+    }, '×');
+  }
+
   // ----- ① 英作文形式 (日本語 → タップで英語 + 覚えた/覚えていない) -----
   // 既存の瞬間英作文と同じ仕組みで、覚えた (db.recordSentence true) /
   // 覚えていない (false) を打鍵すると、瞬間英作文の進捗・間違い復習にも
@@ -23116,11 +23157,12 @@
               '間違えると自動で復習プールに戻ります。'),
           )
         : e('div', null,
-            // 日本語
+            // 日本語 (右上に × 削除ボタン)
             e('div', {
               style: {
+                position: 'relative',
                 background: C.card, border: '1px solid ' + C.line,
-                borderRadius: 14, padding: '24px 18px', marginTop: 12,
+                borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
                 textAlign: 'center', minHeight: 88,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }
@@ -23128,6 +23170,14 @@
               e('div', {
                 style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
               }, cur.ja),
+              e(ConvoDeleteBtn, {
+                onConfirm: () => {
+                  hideConvoSentence(cur.id);
+                  setTick(t => t + 1);
+                  setRevealed(false);
+                  // queue 再生成で現在の idx は自動的に次の sentence を指す
+                }
+              }),
             ),
             // 英語 (revealed のときだけ)
             revealed && e('div', {
@@ -23223,9 +23273,13 @@
   function ConvoShadowPractice({ profile, onBack }) {
     const [order, setOrder] = useState('random');
     const [seed, setSeed]   = useState(0);
-    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed]);
+    const [tick, setTick]   = useState(0);  // × で外したあとの queue 再生成
+    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed, tick]);
     const [idx, setIdx] = useState(0);
     const [playing, setPlaying] = useState(true);
+    useEffect(() => {
+      if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
+    }, [queue.length]);
     const reorder = (o) => {
       setOrder(o);
       setSeed(s => s + 1);
@@ -23295,11 +23349,12 @@
         exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
       }),
       e(ConvoOrderToggle, { profile, order, onChange: reorder }),
-      // 英語 (常に表示) + 日本語 (下に小さく)
+      // 英語 (常に表示) + 日本語 (下に小さく) + 右上に × 削除ボタン
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '24px 18px', marginTop: 12,
+          borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
         }
       },
         e('div', {
@@ -23308,6 +23363,18 @@
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 12, textAlign: 'center', lineHeight: 1.6 }
         }, cur.ja),
+        e(ConvoDeleteBtn, {
+          onConfirm: () => {
+            // 自動再生を一度止めて、× で外して queue を再生成
+            try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+            hideConvoSentence(cur.id);
+            setPlaying(false);
+            setTick(t => t + 1);
+            // 再生成された queue で同じ idx は次の sentence を指す
+            // 短い遅延の後に再生再開 (連続削除時のチラつき防止)
+            setTimeout(() => setPlaying(true), 50);
+          }
+        }),
       ),
       // 操作ボタン
       e('div', {
@@ -23362,11 +23429,15 @@
   function ConvoThinkPractice({ profile, onBack }) {
     const [order, setOrder] = useState('sequential');
     const [seed, setSeed]   = useState(0);
-    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed]);
+    const [tick, setTick]   = useState(0);  // × で外したあとの queue 再生成
+    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed, tick]);
     const [idx, setIdx] = useState(0);
     const [playing, setPlaying] = useState(true);
     const [phase, setPhase] = useState('thinking'); // 'thinking' | 'answer'
     const [secondsLeft, setSecondsLeft] = useState(5);
+    useEffect(() => {
+      if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
+    }, [queue.length]);
     const cur = queue[idx];
     const playSeq = useRef(0);
     const reorder = (o) => {
@@ -23447,11 +23518,12 @@
         showPattern: false,
       }),
       e(ConvoOrderToggle, { profile, order, onChange: reorder }),
-      // 日本語 (常に表示)
+      // 日本語 (常に表示) + 右上に × 削除ボタン
       e('div', {
         style: {
+          position: 'relative',
           background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '24px 18px', marginTop: 12,
+          borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
           textAlign: 'center', minHeight: 88,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }
@@ -23459,6 +23531,16 @@
         e('div', {
           style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
         }, cur.ja),
+        e(ConvoDeleteBtn, {
+          onConfirm: () => {
+            try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+            hideConvoSentence(cur.id);
+            setPlaying(false);
+            setPhase('thinking');
+            setTick(t => t + 1);
+            setTimeout(() => setPlaying(true), 50);
+          }
+        }),
       ),
       // thinking フェーズ: カウントダウンを大きく
       phase === 'thinking' && e('div', {
