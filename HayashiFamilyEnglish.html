@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 285;
+  const APP_VERSION = 286;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -22197,6 +22197,227 @@
         { ja: 'その間に、お茶でもどうぞ。',                               en: "In the meantime, please have some tea." },
         { ja: '料理ができるまでの間に、テーブルを準備しておいて。',       en: "In the meantime, please set the table." },
         { ja: '彼が戻るまでの間に、メールを片付けよう。',                 en: "In the meantime, I'll clear my emails." },
+      ],
+    },
+    // ============ 自然な相槌・前置き (日常会話で頻出) ============
+    {
+      id: 'cp125',
+      pattern: "I'm running late.",
+      ja_pattern: '遅れそうだ',
+      category: '日常',
+      items: [
+        { ja: 'ごめん、ちょっと遅れそう。',                               en: "Sorry, I'm running late." },
+        { ja: '今日は朝から遅れぎみだ。',                                 en: "I've been running late all morning." },
+        { ja: '電車が遅れて、今日は会議に間に合わないかも。',             en: "The train was delayed, so I'm running late." },
+      ],
+    },
+    {
+      id: 'cp126',
+      pattern: "I'm running out of ...",
+      ja_pattern: '〜が切れそう / 尽きてきた',
+      category: '日常',
+      items: [
+        { ja: '時間がなくなってきた。',                                   en: "I'm running out of time." },
+        { ja: 'ガソリンが切れそうだ。',                                   en: "I'm running out of gas." },
+        { ja: 'もうアイデアが尽きてきた。',                               en: "I'm running out of ideas." },
+      ],
+    },
+    {
+      id: 'cp127',
+      pattern: "I owe you one.",
+      ja_pattern: '借りができたね / ありがとう',
+      category: '日常',
+      items: [
+        { ja: '助かったよ、借りができた。',                               en: "Thanks for the help — I owe you one." },
+        { ja: 'いつかお礼するよ、本当に借りた。',                         en: "I owe you one. I'll pay you back somehow." },
+        { ja: '今度は私がおごる、借りがあるからね。',                     en: "Dinner's on me — I owe you one." },
+      ],
+    },
+    {
+      id: 'cp128',
+      pattern: "I'll keep that in mind.",
+      ja_pattern: '覚えておくね',
+      category: '日常',
+      items: [
+        { ja: 'いいアドバイスだ、覚えておくよ。',                         en: "Good advice — I'll keep that in mind." },
+        { ja: 'なるほど、心に留めておきます。',                           en: "I see. I'll keep that in mind." },
+        { ja: 'ありがとう、次回に活かすよ。',                             en: "Thanks, I'll keep that in mind for next time." },
+      ],
+    },
+    {
+      id: 'cp129',
+      pattern: "That's a good point.",
+      ja_pattern: 'それは一理ある',
+      category: '日常',
+      items: [
+        { ja: 'なるほど、それは一理あるね。',                             en: "That's a good point — I hadn't thought of that." },
+        { ja: '確かにその通り、いい指摘だ。',                             en: "That's a good point. You're absolutely right." },
+        { ja: 'うん、それも考慮に入れるべきだ。',                         en: "That's a good point — we should think about that too." },
+      ],
+    },
+    {
+      id: 'cp130',
+      pattern: "Speaking of which, ...",
+      ja_pattern: 'そういえば',
+      category: '日常',
+      items: [
+        { ja: 'そういえば、その件、どうなったの？',                       en: "Speaking of which, how did that turn out?" },
+        { ja: 'そういえば、明日来るんだっけ？',                           en: "Speaking of which, are you coming tomorrow?" },
+        { ja: 'それで思い出した、メール返信したっけ？',                   en: "Speaking of which, did you reply to that email?" },
+      ],
+    },
+    {
+      id: 'cp131',
+      pattern: "By the way, ...",
+      ja_pattern: 'ところで',
+      category: '日常',
+      items: [
+        { ja: 'ところで、お母さんはお元気？',                             en: "By the way, how's your mum?" },
+        { ja: 'そういえば、傘を借りていい？',                             en: "By the way, can I borrow your umbrella?" },
+        { ja: 'ところで、新しい店、行ってみた？',                         en: "By the way, have you tried the new place?" },
+      ],
+    },
+    {
+      id: 'cp132',
+      pattern: "To be honest, ...",
+      ja_pattern: '正直に言うと',
+      category: '日常',
+      items: [
+        { ja: '正直に言うと、味はあんまりだった。',                       en: "To be honest, the food wasn't great." },
+        { ja: '正直、もうやる気が出ない。',                               en: "To be honest, I've lost my motivation." },
+        { ja: '正直なところ、行きたくない。',                             en: "To be honest, I don't really want to go." },
+      ],
+    },
+    {
+      id: 'cp133',
+      pattern: "The thing is, ...",
+      ja_pattern: '実は / 問題は',
+      category: '日常',
+      items: [
+        { ja: '実はね、もうチケットが取れないんだ。',                     en: "The thing is, the tickets are already sold out." },
+        { ja: '問題は、予算が足りないってことなんだ。',                   en: "The thing is, we don't have enough budget." },
+        { ja: '実を言うと、僕はあの人を知らないんだ。',                   en: "The thing is, I don't actually know him." },
+      ],
+    },
+    {
+      id: 'cp134',
+      pattern: "Now that you mention it, ...",
+      ja_pattern: 'そう言われてみれば',
+      category: '日常',
+      items: [
+        { ja: 'そう言われてみれば、確かに見覚えがある顔だ。',             en: "Now that you mention it, his face does look familiar." },
+        { ja: 'そう言えば、最近ちょっと疲れてるかも。',                   en: "Now that you mention it, I have been feeling tired." },
+        { ja: '言われてみると、あれは確かにおかしかった。',               en: "Now that you mention it, that was strange." },
+      ],
+    },
+    {
+      id: 'cp135',
+      pattern: "I'll see what I can do.",
+      ja_pattern: '何ができるか考えてみる',
+      category: '日常',
+      items: [
+        { ja: 'できる限りのことはやってみるよ。',                         en: "I'll see what I can do." },
+        { ja: '約束はできないけど、検討してみる。',                       en: "I can't promise, but I'll see what I can do." },
+        { ja: '上司に聞いてみて、できるだけのことをします。',             en: "I'll talk to my boss and see what I can do." },
+      ],
+    },
+    {
+      id: 'cp136',
+      pattern: "That's news to me.",
+      ja_pattern: '初耳だ',
+      category: '日常',
+      items: [
+        { ja: 'え、そんな話、初耳だよ。',                                 en: "What? That's news to me." },
+        { ja: '彼が辞めたって？それは初めて聞いた。',                     en: "He quit? That's news to me." },
+        { ja: '会議が中止？聞いてないよ。',                               en: "The meeting is cancelled? That's news to me." },
+      ],
+    },
+    {
+      id: 'cp137',
+      pattern: "Don't get your hopes up.",
+      ja_pattern: '期待しすぎないで',
+      category: '日常',
+      items: [
+        { ja: 'まだ確定じゃないから、期待しすぎないでね。',               en: "It's not confirmed yet, so don't get your hopes up." },
+        { ja: 'うちのチームは弱いから、優勝を期待しないで。',             en: "Don't get your hopes up — our team isn't very strong." },
+        { ja: 'でもあまり期待しないでね、ダメかもしれないから。',         en: "Don't get your hopes up — it might not work out." },
+      ],
+    },
+    {
+      id: 'cp138',
+      pattern: "That works for me.",
+      ja_pattern: 'それで大丈夫',
+      category: '日常',
+      items: [
+        { ja: '7時で大丈夫だよ。',                                       en: "Seven works for me." },
+        { ja: 'その案、私はOKだよ。',                                     en: "That works for me." },
+        { ja: '来週の月曜なら問題ない。',                                 en: "Next Monday works for me." },
+      ],
+    },
+    {
+      id: 'cp139',
+      pattern: "You can say that again.",
+      ja_pattern: '本当にその通り / 同感',
+      category: '日常',
+      items: [
+        { ja: '今日は本当に忙しい！「本当それな！」',                     en: '"Today is so busy!" — "You can say that again!"' },
+        { ja: '彼ってすごい！本当にね、まったく同感だ。',                 en: "He's amazing! You can say that again." },
+        { ja: 'この夏は暑いね。本当そうだよ。',                           en: '"It\'s a hot summer." — "You can say that again."' },
+      ],
+    },
+    {
+      id: 'cp140',
+      pattern: "I'm beat.",
+      ja_pattern: 'くたくただ',
+      category: '日常',
+      items: [
+        { ja: '今日は本当にくたくただよ。',                               en: "I'm beat after today." },
+        { ja: 'もう疲れて頭が回らない、寝る。',                           en: "I'm beat — I'm going to bed." },
+        { ja: '一日中ボールを蹴って、もうへとへと。',                     en: "I'm beat after kicking the ball all day." },
+      ],
+    },
+    {
+      id: 'cp141',
+      pattern: "Let's keep in touch.",
+      ja_pattern: '連絡取り合おう',
+      category: '日常',
+      items: [
+        { ja: 'これからも連絡取り合おうね。',                             en: "Let's keep in touch." },
+        { ja: 'メールでもいいから、ちゃんと連絡し続けようよ。',           en: "Let's keep in touch by email." },
+        { ja: '海外でも連絡取り合いたいな。',                             en: "Let's keep in touch even when you're abroad." },
+      ],
+    },
+    {
+      id: 'cp142',
+      pattern: "I'm getting the hang of it.",
+      ja_pattern: 'コツが掴めてきた',
+      category: '日常',
+      items: [
+        { ja: '少しずつ、コツが掴めてきた。',                             en: "I'm getting the hang of it." },
+        { ja: '新しい仕事、やっと慣れてきた。',                           en: "I'm finally getting the hang of my new job." },
+        { ja: 'やっと英語にも慣れてきたよ。',                             en: "I'm getting the hang of English." },
+      ],
+    },
+    {
+      id: 'cp143',
+      pattern: "It's on the tip of my tongue.",
+      ja_pattern: '喉まで出かかってるんだけど',
+      category: '日常',
+      items: [
+        { ja: 'あの人の名前、喉まで出かかってる…。',                     en: "His name is on the tip of my tongue..." },
+        { ja: 'あの単語、出てきそうで出てこない。',                       en: "It's on the tip of my tongue, I just can't say it." },
+        { ja: 'あのレストラン、なんて名前だっけ…喉まで出かかってる。',   en: "What was the name of that restaurant? It's on the tip of my tongue." },
+      ],
+    },
+    {
+      id: 'cp144',
+      pattern: "Sounds like a plan.",
+      ja_pattern: 'それいいね / その案で行こう',
+      category: '日常',
+      items: [
+        { ja: '7時に集合？うん、それいいね。',                           en: "Meet at seven? Sounds like a plan." },
+        { ja: 'まずカフェ、その後映画。いいね、その案で行こう。',         en: "Cafe first, then movie. Sounds like a plan." },
+        { ja: '土曜日でいい？うん、それでいこう。',                       en: "Saturday works? Sounds like a plan." },
       ],
     },
   ];
