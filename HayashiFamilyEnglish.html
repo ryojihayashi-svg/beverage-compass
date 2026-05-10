@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 289;
+  const APP_VERSION = 290;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -22652,7 +22652,60 @@
   // インラインで展開する。検索ボックスでパターン名 (英 or 日) で絞り込める。
   // 父 (亮治) のホームの "魔法の型" タイルから到達。瞬間英作文・シャドーイングへの
   // 自動マージはそのまま並行稼働。
+  // ---------- 魔法の型ブラウザ + 3 つの練習モード ----------
+  // 144 構文 × 3 例文 = 432 文をブラウズ、または 3 つの形式で連続練習する。
+  //   browse  : タップで開閉する一覧（既定）
+  //   compose : 英作文形式 (日本語表示 → タップで英語が出る)
+  //   shadow  : シャドーイング形式 (英語を 2 回再生 → 自動で次へ)
+  //   think   : 思考タメ形式 (日本語表示 → 数秒待つ → 英語を音声再生)
+  // どのモードも、3 例文をパターンごとにまとめて連続提示する設計
+  // (亮治さんの「3 つ並べた方が記憶に残る」指示に合わせて)。
   function ConvoPatterns({ profile, onBack }) {
+    const [mode, setMode] = useState('browse');
+    const onPickMode = (m) => {
+      // iOS PWA で TTS を解錠するための空発話 (シャドーイングと思考タメで必要)
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(' ');
+          u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+          window.speechSynthesis.speak(u);
+        }
+      } catch {}
+      setMode(m);
+    };
+    const goBack = () => setMode('browse');
+    if (mode === 'compose') return e(ConvoComposePractice, { profile, onBack: goBack });
+    if (mode === 'shadow')  return e(ConvoShadowPractice,  { profile, onBack: goBack });
+    if (mode === 'think')   return e(ConvoThinkPractice,   { profile, onBack: goBack });
+    return e(ConvoBrowse, { profile, onBack, onPickMode });
+  }
+
+  // 全例文を「パターン順 → 各パターン内は items の順」でフラットに並べた
+  // キュー。3 例文ずつグループ化されている (= 連続して同じパターンが
+  // 3 回続くので「繰り返しで頭に残る」)。練習モードはこのキューを舐める。
+  function buildConvoQueue() {
+    const out = [];
+    for (const p of CONVO_PATTERNS) {
+      p.items.forEach((it, idx) => {
+        if (!it.ja || !it.en) return;
+        out.push({
+          patternId:  p.id,
+          patternEn:  p.pattern,
+          patternJa:  p.ja_pattern,
+          exampleIdx: idx,
+          exampleNo:  idx + 1,
+          totalInPattern: p.items.length,
+          ja: it.ja,
+          en: it.en,
+        });
+      });
+    }
+    return out;
+  }
+
+  // ----- 一覧 (旧 ConvoPatterns 本体) -----
+  function ConvoBrowse({ profile, onBack, onPickMode }) {
     const [query, setQuery] = useState('');
     const [openId, setOpenId] = useState(null);
 
@@ -22680,9 +22733,35 @@
         '魔法の型'),
     );
 
+    const modeButtons = e('div', {
+      style: {
+        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
+        marginBottom: 18,
+      }
+    },
+      [
+        { id: 'compose', label: '英作文', desc: '日→英 タップで答え' },
+        { id: 'shadow',  label: 'シャドーイング', desc: '英×2 自動再生' },
+        { id: 'think',   label: '思考タメ', desc: '日→間→英 自動' },
+      ].map(b => e('button', {
+        key: b.id,
+        onClick: () => onPickMode(b.id),
+        style: {
+          padding: '12px 8px', borderRadius: 12,
+          background: profile.color + '12', color: profile.color,
+          border: '1px solid ' + profile.color + '33',
+          cursor: 'pointer', textAlign: 'center',
+          fontFamily: 'inherit',
+        }
+      },
+        e('div', { style: { fontSize: 14, fontWeight: 700, fontFamily: SANS_UI } }, b.label),
+        e('div', { style: { fontSize: 10.5, color: C.sub, marginTop: 4, lineHeight: 1.4 } }, b.desc),
+      )),
+    );
+
     return e('div', { style: pageStyle },
       topBar,
-      e('div', { style: { padding: '4px 4px 16px' } },
+      e('div', { style: { padding: '4px 4px 14px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
         }, '魔法の型'),
@@ -22693,8 +22772,11 @@
           e('strong', null, CONVO_PATTERNS.length + ' 構文'),
           ' × 3 例文 = ',
           e('strong', null, (CONVO_PATTERNS.length * 3) + ' 文'),
-          '。タップで例文を開いて、🔊 で発音再生。'),
+          '。'),
       ),
+
+      // 練習モード 3 つのボタン
+      modeButtons,
 
       // 検索ボックス
       e('div', { style: { marginBottom: 14 } },
@@ -22736,7 +22818,6 @@
                   borderRadius: 14, overflow: 'hidden',
                 }
               },
-                // ヘッダー (タップで開閉)
                 e('button', {
                   onClick: () => setOpenId(isOpen ? null : p.id),
                   style: {
@@ -22772,7 +22853,6 @@
                     }
                   }, '›'),
                 ),
-                // 展開: 3 例文
                 isOpen && e('div', {
                   style: {
                     borderTop: '1px solid ' + C.line,
@@ -22812,6 +22892,461 @@
               );
             }),
           ),
+    );
+  }
+
+  // ----- 練習画面共通の上部バー (← + 進捗 + モード名) -----
+  function ConvoPracticeTopBar({ profile, onBack, modeLabel, idx, total, patternEn, patternJa, exampleNo, totalInPattern }) {
+    const pct = total > 0 ? Math.round(((idx + 1) / total) * 100) : 0;
+    return e('div', { style: { marginBottom: 18 } },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '魔法の型 · ' + modeLabel),
+        e('div', {
+          style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI }
+        }, (idx + 1) + ' / ' + total),
+      ),
+      // 進捗バー
+      e('div', {
+        style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: 14 }
+      },
+        e('div', {
+          style: {
+            height: '100%', width: pct + '%',
+            background: profile.color, transition: 'width 0.25s ease',
+          }
+        }),
+      ),
+      // パターン名 (どの型を練習しているか常に見える)
+      e('div', {
+        style: {
+          background: profile.color + '0E', borderRadius: 12,
+          padding: '10px 14px',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }
+      },
+        e('div', {
+          style: {
+            flex: '0 0 auto',
+            padding: '3px 7px', borderRadius: 6,
+            background: profile.color + '20', color: profile.color,
+            fontFamily: SANS_UI, fontSize: 10.5, fontWeight: 800,
+          }
+        }, exampleNo + ' / ' + totalInPattern),
+        e('div', { style: { flex: 1, minWidth: 0 } },
+          e('div', {
+            style: { fontFamily: SERIF, fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+          }, patternEn),
+          patternJa && e('div', {
+            style: { fontSize: 11.5, color: C.sub, marginTop: 2, lineHeight: 1.5 }
+          }, patternJa),
+        ),
+      ),
+    );
+  }
+
+  // ----- ① 英作文形式 (日本語 → タップで英語) -----
+  function ConvoComposePractice({ profile, onBack }) {
+    const queue = useMemo(buildConvoQueue, []);
+    const [idx, setIdx] = useState(0);
+    const [revealed, setRevealed] = useState(false);
+    const cur = queue[idx];
+    const next = () => {
+      if (idx + 1 >= queue.length) return;
+      setIdx(idx + 1);
+      setRevealed(false);
+    };
+    const prev = () => {
+      if (idx <= 0) return;
+      setIdx(idx - 1);
+      setRevealed(false);
+    };
+    const reveal = () => {
+      setRevealed(true);
+      try { speak(cur.en); } catch {}
+    };
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    if (!cur) return null;
+    return e('div', { style: pageStyle },
+      e(ConvoPracticeTopBar, {
+        profile, onBack,
+        modeLabel: '英作文',
+        idx, total: queue.length,
+        patternEn: cur.patternEn, patternJa: cur.patternJa,
+        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+      }),
+      // 日本語
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '24px 18px', marginTop: 12,
+          textAlign: 'center', minHeight: 88,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }
+      },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
+        }, cur.ja),
+      ),
+      // 英語 (revealed のときだけ)
+      revealed && e('div', {
+        style: {
+          background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
+          borderRadius: 14, padding: '20px 18px', marginTop: 12,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }
+      },
+        e('div', {
+          style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+        }, cur.en),
+        e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+      ),
+      // ボタン群
+      e('div', {
+        style: {
+          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
+        }
+      },
+        e('button', {
+          onClick: prev, disabled: idx === 0,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx === 0 ? 'not-allowed' : 'pointer',
+            opacity: idx === 0 ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '‹ 前'),
+        revealed
+          ? e('button', {
+              onClick: next, disabled: idx + 1 >= queue.length,
+              style: {
+                padding: '14px 0', borderRadius: 12,
+                background: profile.color, color: '#fff', border: 'none',
+                cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+                opacity: idx + 1 >= queue.length ? 0.5 : 1,
+                fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+              }
+            }, idx + 1 >= queue.length ? '完了' : '次へ ›')
+          : e('button', {
+              onClick: reveal,
+              style: {
+                padding: '14px 0', borderRadius: 12,
+                background: profile.color, color: '#fff', border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+              }
+            }, '答えを表示 + 発音'),
+        e('button', {
+          onClick: next, disabled: idx + 1 >= queue.length,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+            opacity: idx + 1 >= queue.length ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, 'スキップ ›'),
+      ),
+    );
+  }
+
+  // ----- ② シャドーイング形式 (英語×2 自動再生 → 自動で次へ) -----
+  function ConvoShadowPractice({ profile, onBack }) {
+    const queue = useMemo(buildConvoQueue, []);
+    const [idx, setIdx] = useState(0);
+    const [playing, setPlaying] = useState(true);
+    const cur = queue[idx];
+    const playSeq = useRef(0);
+
+    useEffect(() => {
+      if (!playing) return;
+      const seq = ++playSeq.current;
+      let cancelled = false;
+      const timeouts = [];
+      const cur2 = queue[idx];
+      if (!cur2) return;
+      const speakOnce = (then) => {
+        if (cancelled || seq !== playSeq.current) return;
+        if (!window.speechSynthesis) { then(); return; }
+        try { window.speechSynthesis.cancel(); } catch {}
+        const u = new SpeechSynthesisUtterance(cur2.en);
+        u.lang = 'en-GB'; u.rate = 0.95; u.pitch = 1.0;
+        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (v) u.voice = v;
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) then(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
+        try { window.speechSynthesis.speak(u); } catch { then(); }
+      };
+      // 0.6s → EN → 1.5s (口を動かす時間) → EN → 0.8s → 次へ
+      timeouts.push(setTimeout(() => {
+        speakOnce(() => {
+          timeouts.push(setTimeout(() => {
+            speakOnce(() => {
+              timeouts.push(setTimeout(() => {
+                if (cancelled || seq !== playSeq.current) return;
+                if (idx + 1 >= queue.length) {
+                  setPlaying(false);
+                } else {
+                  setIdx(idx + 1);
+                }
+              }, 800));
+            });
+          }, 1500));
+        });
+      }, 600));
+      return () => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+    }, [playing, idx]);
+
+    useEffect(() => () => {
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, []);
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    if (!cur) return null;
+    const reachedEnd = !playing && idx + 1 >= queue.length;
+    return e('div', { style: pageStyle },
+      e(ConvoPracticeTopBar, {
+        profile, onBack,
+        modeLabel: 'シャドーイング',
+        idx, total: queue.length,
+        patternEn: cur.patternEn, patternJa: cur.patternJa,
+        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+      }),
+      // 英語 (常に表示) + 日本語 (下に小さく)
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '24px 18px', marginTop: 12,
+        }
+      },
+        e('div', {
+          style: { fontFamily: SERIF_READ, fontSize: 22, color: C.text, lineHeight: 1.55, textAlign: 'center' }
+        }, cur.en),
+        e('div', {
+          style: { fontSize: 14, color: C.sub, marginTop: 12, textAlign: 'center', lineHeight: 1.6 }
+        }, cur.ja),
+      ),
+      // 操作ボタン
+      e('div', {
+        style: {
+          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
+        }
+      },
+        e('button', {
+          onClick: () => { if (idx > 0) setIdx(idx - 1); setPlaying(true); },
+          disabled: idx === 0,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx === 0 ? 'not-allowed' : 'pointer',
+            opacity: idx === 0 ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '‹ 前'),
+        e('button', {
+          onClick: () => {
+            if (reachedEnd) { setIdx(0); setPlaying(true); }
+            else setPlaying(!playing);
+          },
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: profile.color, color: '#fff', border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+          }
+        }, reachedEnd ? '最初から' : (playing ? '⏸ 一時停止' : '▶ 再生')),
+        e('button', {
+          onClick: () => { if (idx + 1 < queue.length) setIdx(idx + 1); setPlaying(true); },
+          disabled: idx + 1 >= queue.length,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+            opacity: idx + 1 >= queue.length ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '次 ›'),
+      ),
+    );
+  }
+
+  // ----- ③ 思考タメ形式 (日本語 → 数秒待つ → 英語音声 → 自動で次へ) -----
+  // 英作文の頭の体操に最適。日本語を見て自分で組み立てる時間を取った後、
+  // ネイティブの音声が答え合わせとして流れる。テキストの英語は音声と
+  // 同時に表示する (聞き取れなくても文字で確認できる)。
+  function ConvoThinkPractice({ profile, onBack }) {
+    const queue = useMemo(buildConvoQueue, []);
+    const [idx, setIdx] = useState(0);
+    const [playing, setPlaying] = useState(true);
+    const [phase, setPhase] = useState('thinking'); // 'thinking' | 'answer'
+    const [secondsLeft, setSecondsLeft] = useState(5);
+    const cur = queue[idx];
+    const playSeq = useRef(0);
+
+    // 自動進行: thinking 5 秒 → answer (EN 音声 + テキスト) → 1.5 秒 → 次へ
+    useEffect(() => {
+      if (!playing) return;
+      const seq = ++playSeq.current;
+      let cancelled = false;
+      const timeouts = [];
+      setPhase('thinking');
+      setSecondsLeft(5);
+      // 1 秒ごとにカウントダウン
+      const tickId = setInterval(() => {
+        if (cancelled || seq !== playSeq.current) { clearInterval(tickId); return; }
+        setSecondsLeft(s => {
+          if (s <= 1) { clearInterval(tickId); return 0; }
+          return s - 1;
+        });
+      }, 1000);
+      // 5 秒後に answer フェーズへ
+      timeouts.push(setTimeout(() => {
+        if (cancelled || seq !== playSeq.current) return;
+        setPhase('answer');
+        // EN 音声を再生
+        if (!window.speechSynthesis) {
+          // 音声無し環境: 2 秒見せて次へ
+          timeouts.push(setTimeout(() => {
+            if (cancelled || seq !== playSeq.current) return;
+            if (idx + 1 >= queue.length) setPlaying(false);
+            else setIdx(idx + 1);
+          }, 2000));
+          return;
+        }
+        try { window.speechSynthesis.cancel(); } catch {}
+        const u = new SpeechSynthesisUtterance(queue[idx].en);
+        u.lang = 'en-GB'; u.rate = 0.95; u.pitch = 1.0;
+        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (v) u.voice = v;
+        const advance = () => {
+          timeouts.push(setTimeout(() => {
+            if (cancelled || seq !== playSeq.current) return;
+            if (idx + 1 >= queue.length) setPlaying(false);
+            else setIdx(idx + 1);
+          }, 1500));
+        };
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) advance(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) advance(); };
+        try { window.speechSynthesis.speak(u); } catch { advance(); }
+      }, 5000));
+      return () => {
+        cancelled = true;
+        clearInterval(tickId);
+        timeouts.forEach(clearTimeout);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+    }, [playing, idx]);
+
+    useEffect(() => () => {
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, []);
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    if (!cur) return null;
+    const reachedEnd = !playing && idx + 1 >= queue.length;
+
+    return e('div', { style: pageStyle },
+      e(ConvoPracticeTopBar, {
+        profile, onBack,
+        modeLabel: '思考タメ',
+        idx, total: queue.length,
+        patternEn: cur.patternEn, patternJa: cur.patternJa,
+        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+      }),
+      // 日本語 (常に表示)
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '24px 18px', marginTop: 12,
+          textAlign: 'center', minHeight: 88,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }
+      },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
+        }, cur.ja),
+      ),
+      // thinking フェーズ: カウントダウンを大きく
+      phase === 'thinking' && e('div', {
+        style: {
+          marginTop: 16, padding: '18px',
+          textAlign: 'center', color: profile.color,
+          fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+        }
+      },
+        '英語を組み立ててみよう…  ',
+        e('span', {
+          style: { fontSize: 28, fontVariantNumeric: 'tabular-nums', marginLeft: 8 }
+        }, secondsLeft + 's'),
+      ),
+      // answer フェーズ: 英語をテキストで出す (音声と同期)
+      phase === 'answer' && e('div', {
+        style: {
+          background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
+          borderRadius: 14, padding: '20px 18px', marginTop: 12,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }
+      },
+        e('div', {
+          style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+        }, cur.en),
+        e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+      ),
+      // 操作ボタン
+      e('div', {
+        style: {
+          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
+        }
+      },
+        e('button', {
+          onClick: () => { if (idx > 0) setIdx(idx - 1); setPlaying(true); },
+          disabled: idx === 0,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx === 0 ? 'not-allowed' : 'pointer',
+            opacity: idx === 0 ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '‹ 前'),
+        e('button', {
+          onClick: () => {
+            if (reachedEnd) { setIdx(0); setPlaying(true); }
+            else setPlaying(!playing);
+          },
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: profile.color, color: '#fff', border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+          }
+        }, reachedEnd ? '最初から' : (playing ? '⏸ 一時停止' : '▶ 再生')),
+        e('button', {
+          onClick: () => { if (idx + 1 < queue.length) setIdx(idx + 1); setPlaying(true); },
+          disabled: idx + 1 >= queue.length,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+            opacity: idx + 1 >= queue.length ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '次 ›'),
+      ),
     );
   }
 
