@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 278;
+  const APP_VERSION = 279;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -20932,6 +20932,172 @@
         { ja: 'また会えるのを楽しみにしています。',                       en: "I'm looking forward to seeing you again." },
         { ja: '長い1日のあとの夕食が楽しみだ。',                           en: "I'm looking forward to dinner after a long day." },
         { ja: '夏休みが楽しみだ。',                                       en: "I'm looking forward to the summer holidays." },
+      ],
+    },
+    {
+      id: 'cp011',
+      pattern: 'Feel free to ...',
+      ja_pattern: '遠慮なく〜してください',
+      category: '基本',
+      items: [
+        { ja: '何でも遠慮なく聞いてください。',                           en: 'Feel free to ask me anything.' },
+        { ja: '冷蔵庫のものは何でも食べていいよ。',                       en: 'Feel free to eat anything in the fridge.' },
+        { ja: '質問があればいつでも連絡してください。',                   en: 'Feel free to contact me anytime if you have questions.' },
+      ],
+    },
+    {
+      id: 'cp012',
+      pattern: "I'm thinking of ...ing",
+      ja_pattern: '〜しようかと思っている',
+      category: '基本',
+      items: [
+        { ja: '今度の夏に京都に行こうかと思っている。',                   en: "I'm thinking of going to Kyoto this summer." },
+        { ja: '車を売ろうかと考えている。',                               en: "I'm thinking of selling my car." },
+        { ja: 'もう少し英語を本気で勉強しようかと思っている。',           en: "I'm thinking of studying English more seriously." },
+      ],
+    },
+    {
+      id: 'cp013',
+      pattern: "That's because ...",
+      ja_pattern: 'それは〜だからだ',
+      category: '基本',
+      items: [
+        { ja: '彼が遅れるのは、いつも電車を逃すからだ。',                 en: "That's because he always misses the train." },
+        { ja: 'それは私が朝食を食べていなかったからだ。',                 en: "That's because I hadn't eaten breakfast." },
+        { ja: '冬は売上が落ちる、それは観光客が減るからだ。',             en: "That's because fewer tourists come in winter." },
+      ],
+    },
+    {
+      id: 'cp014',
+      pattern: "It depends on ...",
+      ja_pattern: '〜次第だ',
+      category: '基本',
+      items: [
+        { ja: '行けるかどうかは天気次第だ。',                             en: "It depends on the weather." },
+        { ja: '値段は注文する量によります。',                             en: "It depends on how much you order." },
+        { ja: '答えは状況によります。',                                   en: "It depends on the situation." },
+      ],
+    },
+    {
+      id: 'cp015',
+      pattern: "I'm not sure if ...",
+      ja_pattern: '〜かどうか確信がない',
+      category: '基本',
+      items: [
+        { ja: '今日彼が来るかどうかは分からない。',                       en: "I'm not sure if he's coming today." },
+        { ja: 'これがいい考えかどうか自信がない。',                       en: "I'm not sure if this is a good idea." },
+        { ja: '間に合うかどうか分からない。',                             en: "I'm not sure if I'll make it in time." },
+      ],
+    },
+    // ============ 短い英会話フレーズ (実践編) ============
+    {
+      id: 'cp016',
+      pattern: 'I have my hands full.',
+      ja_pattern: '今、手が離せない',
+      category: '実践',
+      items: [
+        { ja: '今、手が離せないんだ、あとで電話するね。',                 en: "I have my hands full right now — I'll call you back." },
+        { ja: '3 人の子育てで本当に手いっぱいだ。',                       en: 'I have my hands full raising three boys.' },
+        { ja: '12月の予約で店が手いっぱいだ。',                           en: "We have our hands full with December bookings." },
+      ],
+    },
+    {
+      id: 'cp017',
+      pattern: 'It was just a coincidence.',
+      ja_pattern: 'ただの偶然だよ',
+      category: '実践',
+      items: [
+        { ja: 'カフェであの人にばったり会ったのは、ただの偶然だった。',   en: 'Running into him at the cafe was just a coincidence.' },
+        { ja: '気にしないで、ただの偶然だよ。',                           en: "Don't read too much into it — it was just a coincidence." },
+        { ja: '私たちが同じ服を着ていたのは偶然だった。',                 en: 'It was just a coincidence that we wore the same shirt.' },
+      ],
+    },
+    {
+      id: 'cp018',
+      pattern: "I'm still working on it.",
+      ja_pattern: 'まだやってる途中だよ',
+      category: '実践',
+      items: [
+        { ja: 'レポートまだやってる途中、明日には出すよ。',               en: "I'm still working on the report — it'll be ready tomorrow." },
+        { ja: 'まだ皿を平らげてる途中、待って。',                         en: "I'm still working on my plate — give me a minute." },
+        { ja: '英語の発音はまだ練習中だよ。',                             en: "I'm still working on my English pronunciation." },
+      ],
+    },
+    {
+      id: 'cp019',
+      pattern: "I'm counting on you.",
+      ja_pattern: '頼りにしてるよ',
+      category: '実践',
+      items: [
+        { ja: '頼りにしてるよ、絶対に時間通りに来てね。',                 en: "I'm counting on you to be on time." },
+        { ja: 'これ大事な仕事だ、頼んだよ。',                             en: "This is important — I'm counting on you." },
+        { ja: 'お父さん、また君を頼りにしてるよ。',                       en: "Once again, I'm counting on you, son." },
+      ],
+    },
+    {
+      id: 'cp020',
+      pattern: "Don't get me wrong.",
+      ja_pattern: '誤解しないで',
+      category: '実践',
+      items: [
+        { ja: '誤解しないでね、君のことは好きだよ、ただ忙しいだけ。',     en: "Don't get me wrong, I like you — I'm just busy." },
+        { ja: '誤解しないでほしいんだけど、その提案には反対だ。',         en: "Don't get me wrong, but I disagree with the proposal." },
+        { ja: '誤解しないで、ジョークだよ。',                             en: "Don't get me wrong — I was just kidding." },
+      ],
+    },
+    {
+      id: 'cp021',
+      pattern: "It's still up in the air.",
+      ja_pattern: 'まだ未定だよ',
+      category: '実践',
+      items: [
+        { ja: '夏のプランはまだ未定だ。',                                 en: "Our summer plans are still up in the air." },
+        { ja: '誰がリーダーになるかはまだ決まっていない。',               en: "Who'll be the new leader is still up in the air." },
+        { ja: '会議の日程はまだ宙に浮いている。',                         en: "The meeting date is still up in the air." },
+      ],
+    },
+    {
+      id: 'cp022',
+      pattern: 'It caught me off guard.',
+      ja_pattern: '不意打ちだったよ',
+      category: '実践',
+      items: [
+        { ja: '彼の質問は不意打ちだった、答えに詰まったよ。',             en: "His question caught me off guard." },
+        { ja: '降格は完全に不意打ちだった。',                             en: 'The demotion caught me off guard completely.' },
+        { ja: '驚かせてくれてありがとう、本当に予想外だったよ。',         en: 'Thanks for the surprise — it really caught me off guard.' },
+      ],
+    },
+    {
+      id: 'cp023',
+      pattern: "I'm a bit torn.",
+      ja_pattern: 'ちょっと迷ってるんだ',
+      category: '実践',
+      items: [
+        { ja: 'どっちのオファーを受けるか、ちょっと迷ってるんだ。',       en: "I'm a bit torn between the two offers." },
+        { ja: '行くか残るか、迷ってる。',                                 en: "I'm a bit torn about whether to go or stay." },
+        { ja: 'どのワインにするか迷うなあ。',                             en: "I'm a bit torn about which wine to pick." },
+      ],
+    },
+    {
+      id: 'cp024',
+      pattern: "That's a relief.",
+      ja_pattern: 'それは安心したよ',
+      category: '実践',
+      items: [
+        { ja: '無事だったって聞いて、本当にホッとした。',                 en: "That's a relief — I was really worried." },
+        { ja: 'テストに合格したのか、よかった、安心したよ。',             en: "You passed the test? That's a relief." },
+        { ja: '雨が止んでホッとした。',                                   en: "That's a relief — the rain finally stopped." },
+      ],
+    },
+    {
+      id: 'cp025',
+      pattern: "I'll get right on it.",
+      ja_pattern: 'すぐにとりかかります',
+      category: '実践',
+      items: [
+        { ja: '了解です、すぐとりかかります。',                           en: "Sure, I'll get right on it." },
+        { ja: 'メール、すぐ書くね。',                                     en: "I'll get right on the email." },
+        { ja: '修理、すぐとりかかります。',                               en: "I'll get right on the repair." },
       ],
     },
   ];
