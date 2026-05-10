@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 283;
+  const APP_VERSION = 284;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21786,6 +21786,195 @@
         { ja: '今夜までにお返事いただけると助かります。',                 en: "I'd appreciate it if you could reply by tonight." },
         { ja: 'ドアを閉めていただけると助かります。',                     en: "I'd appreciate it if you could close the door." },
         { ja: 'もう少し小さな声で話していただけると助かります。',         en: "I'd appreciate it if you could speak a little quieter." },
+      ],
+    },
+    // ============ Misc / 日常で頻出 ============
+    {
+      id: 'cp088',
+      pattern: "It takes time to ...",
+      ja_pattern: '〜するのに時間がかかる',
+      category: 'Misc',
+      items: [
+        { ja: '新しい言語を覚えるのには時間がかかる。',                   en: "It takes time to learn a new language." },
+        { ja: '人を信じるには時間がかかる。',                             en: "It takes time to build trust." },
+        { ja: '駅まで歩いて 10 分くらいかかる。',                         en: "It takes about ten minutes to walk to the station." },
+      ],
+    },
+    {
+      id: 'cp089',
+      pattern: "I'm planning to ...",
+      ja_pattern: '〜する予定だ',
+      category: 'Misc',
+      items: [
+        { ja: '来週ロンドンに行く予定です。',                             en: "I'm planning to visit London next week." },
+        { ja: 'いつか自分のレストランを開く予定だ。',                     en: "I'm planning to open my own restaurant someday." },
+        { ja: '今夜は早めに寝る予定。',                                   en: "I'm planning to go to bed early tonight." },
+      ],
+    },
+    {
+      id: 'cp090',
+      pattern: "Do you mind if I ...?",
+      ja_pattern: '〜してもいいですか？',
+      category: 'Misc',
+      items: [
+        { ja: '隣に座ってもいいですか？',                                 en: "Do you mind if I sit next to you?" },
+        { ja: '窓を開けてもいいですか？',                                 en: "Do you mind if I open the window?" },
+        { ja: 'ちょっと先に帰ってもいい？',                               en: "Do you mind if I leave a bit early?" },
+      ],
+    },
+    {
+      id: 'cp091',
+      pattern: "It's no use ...ing",
+      ja_pattern: '〜しても無駄だ',
+      category: 'Misc',
+      items: [
+        { ja: '彼に説教しても無駄だ。',                                   en: "It's no use lecturing him." },
+        { ja: '今さら言い訳しても無駄だよ。',                             en: "It's no use making excuses now." },
+        { ja: 'もう寝た子供を起こそうとしても無駄。',                     en: "It's no use trying to wake up a sleeping baby." },
+      ],
+    },
+    {
+      id: 'cp092',
+      pattern: "As far as I know ...",
+      ja_pattern: '私の知る限りでは',
+      category: 'Misc',
+      items: [
+        { ja: '私の知る限り、彼はまだ東京に住んでいる。',                 en: "As far as I know, he still lives in Tokyo." },
+        { ja: '私の知る限り、その店は今日休みだ。',                       en: "As far as I know, the shop is closed today." },
+        { ja: '私の知る限り、誰も気づいていない。',                       en: "As far as I know, nobody noticed." },
+      ],
+    },
+    {
+      id: 'cp093',
+      pattern: "It reminds me of ...",
+      ja_pattern: '〜を思い出す',
+      category: 'Misc',
+      items: [
+        { ja: 'この匂いで祖母の家を思い出す。',                           en: "It reminds me of my grandmother's house." },
+        { ja: 'この曲を聞くと夏休みを思い出す。',                         en: "This song reminds me of summer holidays." },
+        { ja: 'あなたを見るとお父さんを思い出すよ。',                     en: "You remind me of your father." },
+      ],
+    },
+    {
+      id: 'cp094',
+      pattern: "I'm in the middle of ...",
+      ja_pattern: '〜の真っ最中だ',
+      category: 'Misc',
+      items: [
+        { ja: 'ちょうどミーティングの真っ最中だ。',                       en: "I'm in the middle of a meeting." },
+        { ja: 'ちょうど夕飯を作っているところ。',                         en: "I'm in the middle of cooking dinner." },
+        { ja: 'ちょうど勉強の真っ最中だ。',                               en: "I'm in the middle of studying." },
+      ],
+    },
+    {
+      id: 'cp095',
+      pattern: "Can you tell me how to ...?",
+      ja_pattern: '〜のやり方を教えて？',
+      category: 'Misc',
+      items: [
+        { ja: '駅までの行き方を教えてもらえますか？',                     en: "Can you tell me how to get to the station?" },
+        { ja: 'これの使い方を教えてくれる？',                             en: "Can you tell me how to use this?" },
+        { ja: 'スペルの覚え方を教えてくれる？',                           en: "Can you tell me how to remember the spelling?" },
+      ],
+    },
+    // ============ 魔法の型 (基本編・追加) ============
+    {
+      id: 'cp096',
+      pattern: "It's not like ...",
+      ja_pattern: '〜というわけじゃない',
+      category: 'Misc',
+      items: [
+        { ja: '別に怒っているわけじゃないよ、ただ疲れているだけ。',       en: "It's not like I'm angry — I'm just tired." },
+        { ja: 'お金がないわけじゃない、節約してるだけ。',                 en: "It's not like I don't have money — I'm just saving." },
+        { ja: '彼を嫌っているわけじゃない、ただ合わないだけ。',           en: "It's not like I dislike him — we just don't click." },
+      ],
+    },
+    {
+      id: 'cp097',
+      pattern: "I ended up ...ing",
+      ja_pattern: '結局〜することになった',
+      category: 'Misc',
+      items: [
+        { ja: '結局、徹夜することになった。',                             en: "I ended up staying up all night." },
+        { ja: '結局、自分でやることになった。',                           en: "I ended up doing it myself." },
+        { ja: '結局、タクシーで帰ることになった。',                       en: "I ended up taking a taxi home." },
+      ],
+    },
+    {
+      id: 'cp098',
+      pattern: "I'd rather ...",
+      ja_pattern: 'どちらかといえば〜したい',
+      category: 'Misc',
+      items: [
+        { ja: 'どちらかといえば家にいたい。',                             en: "I'd rather stay home." },
+        { ja: 'コーヒーよりお茶のほうがいいかな。',                       en: "I'd rather have tea than coffee." },
+        { ja: '今はその話はしたくない。',                                 en: "I'd rather not talk about it now." },
+      ],
+    },
+    {
+      id: 'cp099',
+      pattern: "I feel like ...",
+      ja_pattern: '〜したい気分だ',
+      category: 'Misc',
+      items: [
+        { ja: 'ピザが食べたい気分だ。',                                   en: "I feel like having pizza." },
+        { ja: '今日は誰とも話したくない気分。',                           en: "I feel like staying quiet today." },
+        { ja: '走りに行きたい気分だ。',                                   en: "I feel like going for a run." },
+      ],
+    },
+    {
+      id: 'cp100',
+      pattern: "I didn't expect ...",
+      ja_pattern: '〜するとは思わなかった',
+      category: 'Misc',
+      items: [
+        { ja: 'こんな大雨になるとは思わなかった。',                       en: "I didn't expect it to rain so heavily." },
+        { ja: '彼がそんなに早く来るとは思わなかった。',                   en: "I didn't expect him to arrive so soon." },
+        { ja: 'こんなに楽しいなんて思わなかった。',                       en: "I didn't expect it to be this fun." },
+      ],
+    },
+    {
+      id: 'cp101',
+      pattern: "There's no way ...",
+      ja_pattern: '絶対〜なはずがない',
+      category: 'Misc',
+      items: [
+        { ja: '彼が嘘をつくはずがない。',                                 en: "There's no way he would lie." },
+        { ja: '今日中に終わるはずがない。',                               en: "There's no way I can finish this today." },
+        { ja: '絶対そんなことはあり得ない。',                             en: "There's no way that's true." },
+      ],
+    },
+    {
+      id: 'cp102',
+      pattern: "It's worth ...ing",
+      ja_pattern: '〜する価値がある',
+      category: 'Misc',
+      items: [
+        { ja: 'その本は読む価値があるよ。',                               en: "It's worth reading that book." },
+        { ja: 'もう一度試してみる価値はある。',                           en: "It's worth trying again." },
+        { ja: 'お父さんの故郷は訪ねる価値がある。',                       en: "It's worth visiting my dad's hometown." },
+      ],
+    },
+    {
+      id: 'cp103',
+      pattern: "How come ...?",
+      ja_pattern: 'どうして〜なの？',
+      category: 'Misc',
+      items: [
+        { ja: 'どうして昨日来なかったの？',                               en: "How come you didn't show up yesterday?" },
+        { ja: 'どうして急にそう決めたの？',                               en: "How come you decided so suddenly?" },
+        { ja: 'どうしてみんな知らなかったの？',                           en: "How come nobody knew about this?" },
+      ],
+    },
+    {
+      id: 'cp104',
+      pattern: "I was wondering if ...",
+      ja_pattern: '〜かなあと思って',
+      category: 'Misc',
+      items: [
+        { ja: 'ちょっと聞きたかったんだけど、明日空いてる？',             en: "I was wondering if you're free tomorrow." },
+        { ja: '少し手伝ってもらえないかな、と思って。',                   en: "I was wondering if you could help me." },
+        { ja: 'どこか間違ってないかな、と思って。',                       en: "I was wondering if I might have made a mistake." },
       ],
     },
   ];
