@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 286;
+  const APP_VERSION = 287;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -140,9 +140,7 @@
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false },
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
-                                                                                          forLearner: true, forViewer: true },
-    { id: 'convo_patterns',     label: '使える短い会話フレーズ', desc: '魔法の型 · 瞬間英作文 + 聞き流し',
-                                                                                          forLearner: true, forViewer: true },
+                                                                                          fullWidth: true, forLearner: true, forViewer: true },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -14421,7 +14419,6 @@
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
       else if (route.feature === 'useful_phrases')    body = e(UsefulPhrases,     { profile, onBack: back });
-      else if (route.feature === 'convo_patterns')    body = e(ConvoPatterns,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
     }
@@ -17572,12 +17569,15 @@
     // recordPhrase / recordSentence can be dispatched cleanly at answer time.
     // Anything the parent has tapped × on (scope: 'composition') is filtered
     // out so the family curation sticks across every device.
+    // pattern_id を持つアイテム (魔法の型) はあとでセット展開するため
+    // ここで属性を残しておく。
     const pool = [];
     SENTENCES.forEach(s => {
       if (isItemHidden('composition', s.id)) return;
       pool.push({
         kind: 'sentence',
         id: s.id, level: s.level, ja: s.ja, en: s.en, grammar: s.grammar,
+        pattern_id: s.pattern_id,
       });
     });
     DAILY_PHRASES.forEach(p => {
@@ -17588,6 +17588,32 @@
         grammar: '日常英会話・' + (SCENE_LABELS[p.scene] || p.scene),
       });
     });
+    // 魔法の型: pattern_id ごとに 3 個セットを連続で出すための展開関数。
+    // queue 内の pattern_id 持ちアイテムを、その同 pattern_id の 3 個全部
+    // (内部順序はランダム) に置き換える。重複した pattern_id は 1 セット
+    // にまとめる。queue の総数が count を多少超えても 3 個セットが切れない
+    // ことを優先する。
+    function expandPatternGroups(queue) {
+      const result = [];
+      const seen = new Set();
+      for (const it of queue) {
+        if (it.pattern_id) {
+          if (seen.has(it.pattern_id)) continue;
+          seen.add(it.pattern_id);
+          const sib = pool.filter(p => p.pattern_id === it.pattern_id);
+          // shuffle the 3 internally
+          const sh = sib.slice();
+          for (let i = sh.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const t = sh[i]; sh[i] = sh[j]; sh[j] = t;
+          }
+          result.push(...sh);
+        } else {
+          result.push(it);
+        }
+      }
+      return result;
+    }
     // Selection rules (priority):
     //   1. If opts.level is a number (1-5): exact level only
     //   2. Else if profile.maxLevel set: strict <= maxLevel
@@ -17599,7 +17625,7 @@
         const j = Math.floor(Math.random() * (i + 1));
         const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
       }
-      return arr.slice(0, count);
+      return expandPatternGroups(arr.slice(0, count));
     }
     if (profile && profile.maxLevel) {
       const candidates = pool.filter(it => it.level <= profile.maxLevel);
@@ -17608,7 +17634,7 @@
         const j = Math.floor(Math.random() * (i + 1));
         const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
       }
-      return arr.slice(0, count);
+      return expandPatternGroups(arr.slice(0, count));
     }
     // Profile-weighted: each draw picks a level matching the family
     // member's distribution and grabs a random unused item from it.
@@ -17619,11 +17645,11 @@
     const yesterdayIds = profile && profile.id
       ? getYesterdayPracticedIds(profile.id, 'composition')
       : [];
-    return pickWeightedQueue(pool, profile, count, {
+    return expandPatternGroups(pickWeightedQueue(pool, profile, count, {
       direction: opts.direction,
       track: 'composition',
       yesterdayIds,
-    });
+    }));
   }
 
   function SprintComposition({ profile, onBack, forcedDirection }) {
@@ -22422,6 +22448,76 @@
     },
   ];
 
+  // ---------- 魔法の型のレベル振り (英検目安) ----------
+  // 各構文を瞬間英作文 / シャドーイング にマージするときの難易度。
+  // 2 = 中学中級 / 3 = 高校標準 / 4 = 高校発展 / 5 = 上級
+  const CONVO_PATTERN_LEVELS = {
+    cp001: 3, cp002: 2, cp003: 2, cp004: 3, cp005: 3, cp006: 3, cp007: 3, cp008: 3, cp009: 3, cp010: 2,
+    cp011: 2, cp012: 3, cp013: 3, cp014: 2, cp015: 3, cp016: 3, cp017: 3, cp018: 2, cp019: 3, cp020: 3,
+    cp021: 3, cp022: 4, cp023: 3, cp024: 2, cp025: 3, cp026: 3, cp027: 3, cp028: 3, cp029: 2, cp030: 3,
+    cp031: 4, cp032: 4, cp033: 4, cp034: 5, cp035: 4, cp036: 4, cp037: 4, cp038: 4, cp039: 4, cp040: 4,
+    cp041: 4, cp042: 4, cp043: 4, cp044: 5, cp045: 3, cp046: 4, cp047: 4, cp048: 5, cp049: 4, cp050: 4,
+    cp051: 3, cp052: 5, cp053: 5, cp054: 4, cp055: 4, cp056: 4, cp057: 4, cp058: 4, cp059: 4, cp060: 4,
+    cp061: 3, cp062: 3, cp063: 3, cp064: 3, cp065: 4, cp066: 4, cp067: 4, cp068: 4, cp069: 4, cp070: 4,
+    cp071: 4, cp072: 4, cp073: 4, cp074: 4, cp075: 4, cp076: 3, cp077: 4, cp078: 3, cp079: 3, cp080: 3,
+    cp081: 2, cp082: 4, cp083: 2, cp084: 2, cp085: 2, cp086: 2, cp087: 4, cp088: 3, cp089: 2, cp090: 2,
+    cp091: 4, cp092: 3, cp093: 3, cp094: 3, cp095: 2, cp096: 3, cp097: 3, cp098: 3, cp099: 3, cp100: 3,
+    cp101: 3, cp102: 3, cp103: 2, cp104: 3, cp105: 3, cp106: 3, cp107: 3, cp108: 2, cp109: 2, cp110: 3,
+    cp111: 3, cp112: 3, cp113: 3, cp114: 2, cp115: 2, cp116: 3, cp117: 3, cp118: 3, cp119: 3, cp120: 3,
+    cp121: 4, cp122: 4, cp123: 2, cp124: 3, cp125: 2, cp126: 3, cp127: 3, cp128: 2, cp129: 2, cp130: 2,
+    cp131: 2, cp132: 2, cp133: 3, cp134: 4, cp135: 3, cp136: 3, cp137: 3, cp138: 2, cp139: 3, cp140: 2,
+    cp141: 2, cp142: 3, cp143: 4, cp144: 2,
+  };
+
+  // ---------- CONVO_PATTERNS を瞬間英作文 + シャドーイングにマージ ----------
+  // 各パターンの 3 例文を「セット」として連続で SHADOWING_QA / SENTENCES に
+  // push する。pattern_id を持たせておくと、後で SHADOWING_GROUPS が 3 連の
+  // 同 pattern_id を 1 グループとしてまとめてくれる (= シャドーイングでは
+  // 「同じ型を 3 連続で繰り返す」が成立)。
+  // 内部の 3 個の順序はモジュール読み込み時にシャッフルしているので、アプリを
+  // 開き直すたびに違う並びになる。
+  (function pullConvoPatternsIntoTrainingPools() {
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+    for (const p of CONVO_PATTERNS) {
+      const lv = CONVO_PATTERN_LEVELS[p.id] || 3;
+      const grammar = '魔法の型 · ' + p.pattern;
+      // 同 pattern の 3 個の中で順序をシャッフル (アプリ起動ごとに変わる)
+      const items = shuffle(p.items);
+      items.forEach((it, idx) => {
+        if (!it.ja || !it.en) return;
+        const sId = 'cp_' + p.id + '_' + (idx + 1);
+        // 瞬間英作文 (SENTENCES) — pickComposition がここから抽出
+        const sEntry = {
+          id: sId,
+          level: lv,
+          ja: it.ja,
+          en: it.en,
+          grammar: grammar,
+          pattern_id: p.id,
+        };
+        SENTENCES.push(sEntry);
+        SENTENCE_BY_ID[sId] = sEntry;
+        // シャドーイング (SHADOWING_QA) — 続く SHADOWING_GROUPS が
+        // pattern_id が同じ 3 連続を 1 グループにする
+        SHADOWING_QA.push({
+          id: 'sh_' + sId,
+          level: lv,
+          ja: it.ja,
+          en: it.en,
+          pattern_id: p.id,
+          tag: 'magic_pattern',
+        });
+      });
+    }
+  })();
+
   function ConvoPatterns({ profile, onBack }) {
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
     const topBar = e('div', {
@@ -24489,13 +24585,28 @@
   };
   const SHADOW_LEVELS = [1, 2, 3, 4, 5];
 
-  // Group SHADOWING_QA into adjacent Q+A pairs (or singletons). Returns
-  // [{ level, items: [...] }, ...]. Stable across renders since the
-  // SHADOWING_QA constant is.
+  // Group SHADOWING_QA into adjacent Q+A pairs OR 3-tuples of the same
+  // pattern_id (魔法の型). Returns [{ level, items: [...] }, ...].
+  // Stable across renders since the SHADOWING_QA constant is.
+  // 3-tuple detection: 3 consecutive items with the same pattern_id are
+  // grouped together so シャドーイング では同じ構文を 3 連続で繰り返せる
+  // (= 短く繰り返して頭に染み込ませる)。
   const SHADOWING_GROUPS = (function () {
     const out = [];
     for (let i = 0; i < SHADOWING_QA.length; i++) {
       const cur = SHADOWING_QA[i];
+      // 3-tuple via pattern_id (魔法の型 セット)
+      if (cur.pattern_id) {
+        const n1 = SHADOWING_QA[i + 1];
+        const n2 = SHADOWING_QA[i + 2];
+        if (n1 && n1.pattern_id === cur.pattern_id &&
+            n2 && n2.pattern_id === cur.pattern_id) {
+          out.push({ level: cur.level, items: [cur, n1, n2], pattern_id: cur.pattern_id });
+          i += 2;
+          continue;
+        }
+      }
+      // Q+A pair (legacy)
       const nxt = SHADOWING_QA[i + 1];
       if (cur.role === 'Q' && nxt && nxt.role === 'A' && cur.level === nxt.level) {
         out.push({ level: cur.level, items: [cur, nxt] });
