@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 290;
+  const APP_VERSION = 291;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -153,7 +153,7 @@
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
                                                                                           fullWidth: true, forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
-    { id: 'convo_patterns',     label: '魔法の型',       desc: '144 構文 × 3 例 = 432 文 (SNSから収集)',
+    { id: 'convo_patterns',     label: '定型構文',       desc: '144 構文 × 3 例 = 432 文 (SNSから収集)',
                                                                                           fullWidth: true, forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
   ];
@@ -22616,7 +22616,7 @@
     }
     for (const p of CONVO_PATTERNS) {
       const lv = CONVO_PATTERN_LEVELS[p.id] || 3;
-      const grammar = '魔法の型 · ' + p.pattern;
+      const grammar = '定型構文 · ' + p.pattern;
       // 同 pattern の 3 個の中で順序をシャッフル (アプリ起動ごとに変わる)
       const items = shuffle(p.items);
       items.forEach((it, idx) => {
@@ -22684,12 +22684,30 @@
   // 全例文を「パターン順 → 各パターン内は items の順」でフラットに並べた
   // キュー。3 例文ずつグループ化されている (= 連続して同じパターンが
   // 3 回続くので「繰り返しで頭に残る」)。練習モードはこのキューを舐める。
-  function buildConvoQueue() {
+  //
+  // order: 'sequential' (CONVO_PATTERNS のまま) | 'random' (パターン順を
+  //        Fisher-Yates でシャッフル。ただし同パターン内の 3 例文の固まりは保つ)
+  // excludeMastered + composition: 既に覚えた (consecutiveCorrect>=3) ものを
+  //                                除外したい場合に渡す。瞬間英作文と同じ挙動。
+  function buildConvoQueue(opts) {
+    opts = opts || {};
+    const order = opts.order || 'sequential';
+    const composition = opts.composition || null;
+    let patterns = CONVO_PATTERNS.slice();
+    if (order === 'random') {
+      for (let i = patterns.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = patterns[i]; patterns[i] = patterns[j]; patterns[j] = t;
+      }
+    }
     const out = [];
-    for (const p of CONVO_PATTERNS) {
+    for (const p of patterns) {
       p.items.forEach((it, idx) => {
         if (!it.ja || !it.en) return;
+        const sId = 'cp_' + p.id + '_' + (idx + 1);
+        if (composition && isSentenceMastered(composition[sId])) return;
         out.push({
+          id:         sId,
           patternId:  p.id,
           patternEn:  p.pattern,
           patternJa:  p.ja_pattern,
@@ -22730,7 +22748,7 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        '魔法の型'),
+        '定型構文'),
     );
 
     const modeButtons = e('div', {
@@ -22764,7 +22782,7 @@
       e('div', { style: { padding: '4px 4px 14px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-        }, '魔法の型'),
+        }, '定型構文'),
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
         },
@@ -22895,8 +22913,12 @@
     );
   }
 
-  // ----- 練習画面共通の上部バー (← + 進捗 + モード名) -----
-  function ConvoPracticeTopBar({ profile, onBack, modeLabel, idx, total, patternEn, patternJa, exampleNo, totalInPattern }) {
+  // ----- 練習画面共通の上部バー (← + 進捗) -----
+  // 旧版は「どのパターンを練習中か」を上に大きく出していたが、
+  // 英作文 + 思考タメではパターン名 (例: "I'm having trouble ...ing") が
+  // 答えのヒントになってしまうため、パターン情報の表示は呼び出し側で制御する。
+  // showPattern が true のときだけ、上部にパターン名カードを描画する。
+  function ConvoPracticeTopBar({ profile, onBack, modeLabel, idx, total, showPattern, patternEn, patternJa, exampleNo, totalInPattern }) {
     const pct = total > 0 ? Math.round(((idx + 1) / total) * 100) : 0;
     return e('div', { style: { marginBottom: 18 } },
       e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 } },
@@ -22904,14 +22926,14 @@
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
         }, '‹'),
         e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          '魔法の型 · ' + modeLabel),
+          '定型構文 · ' + modeLabel),
         e('div', {
           style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI }
         }, (idx + 1) + ' / ' + total),
       ),
       // 進捗バー
       e('div', {
-        style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: 14 }
+        style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: showPattern ? 14 : 0 }
       },
         e('div', {
           style: {
@@ -22920,8 +22942,9 @@
           }
         }),
       ),
-      // パターン名 (どの型を練習しているか常に見える)
-      e('div', {
+      // パターン名カード (シャドーイングのみ。英作文・思考タメは
+      // 答えが出るまで隠したいので showPattern=false で渡す)
+      showPattern && e('div', {
         style: {
           background: profile.color + '0E', borderRadius: 12,
           padding: '10px 14px',
@@ -22948,13 +22971,96 @@
     );
   }
 
-  // ----- ① 英作文形式 (日本語 → タップで英語) -----
+  // ----- 練習モード共通: 順番/ランダム + リセット の操作行 -----
+  // 各練習画面の上部に置いて、セッション開始前 (idx 0 のとき) でも
+  // 途中でも順番モードを切り替えられるようにする。
+  function ConvoOrderToggle({ profile, order, onChange, extra }) {
+    const cell = (id, label) => e('button', {
+      key: id,
+      onClick: () => onChange(id),
+      style: {
+        flex: 1, padding: '8px 0',
+        background: order === id ? profile.color : 'transparent',
+        color: order === id ? '#fff' : C.sub,
+        border: 'none', cursor: 'pointer',
+        fontFamily: 'inherit', fontSize: 13, fontWeight: 700,
+      }
+    }, label);
+    return e('div', {
+      style: {
+        display: 'flex', alignItems: 'center', gap: 10,
+        marginTop: 14, marginBottom: 6,
+      }
+    },
+      e('div', {
+        style: {
+          flex: 1,
+          display: 'flex',
+          background: C.softer, border: '1px solid ' + C.line,
+          borderRadius: 10, overflow: 'hidden',
+        }
+      },
+        cell('sequential', '順番'),
+        cell('random',     'ランダム'),
+      ),
+      extra,
+    );
+  }
+
+  // ----- パターン名カード (答えの下に出す版) -----
+  // 「これは ◯◯ の構文だ」と気付かせるため、答えが出てから/思考タメの
+  // answer フェーズで下に表示する。
+  function ConvoPatternFootnote({ profile, patternEn, patternJa, exampleNo, totalInPattern }) {
+    return e('div', {
+      style: {
+        marginTop: 12,
+        background: C.softer, borderRadius: 12,
+        padding: '10px 14px',
+        display: 'flex', alignItems: 'center', gap: 10,
+      }
+    },
+      e('div', {
+        style: {
+          flex: '0 0 auto',
+          padding: '3px 7px', borderRadius: 6,
+          background: profile.color + '14', color: profile.color,
+          fontFamily: SANS_UI, fontSize: 10.5, fontWeight: 800,
+        }
+      }, exampleNo + ' / ' + totalInPattern),
+      e('div', { style: { flex: 1, minWidth: 0 } },
+        e('div', {
+          style: { fontSize: 11, color: C.sub, marginBottom: 2, fontFamily: SANS_UI, letterSpacing: '0.04em' }
+        }, '構文'),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 14, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+        }, patternEn),
+        patternJa && e('div', {
+          style: { fontSize: 11.5, color: C.sub, marginTop: 2, lineHeight: 1.5 }
+        }, patternJa),
+      ),
+    );
+  }
+
+  // ----- ① 英作文形式 (日本語 → タップで英語 + 覚えた/覚えていない) -----
+  // 既存の瞬間英作文と同じ仕組みで、覚えた (db.recordSentence true) /
+  // 覚えていない (false) を打鍵すると、瞬間英作文の進捗・間違い復習にも
+  // 反映される。連続正解 3 回でマスター扱い → 次セッション以降は出さない。
   function ConvoComposePractice({ profile, onBack }) {
-    const queue = useMemo(buildConvoQueue, []);
-    const [idx, setIdx] = useState(0);
+    const [order, setOrder] = useState('sequential');
+    const [seed, setSeed]   = useState(0);  // 'random' を再選択したときの再シャッフル
+    const [tick, setTick]   = useState(0);  // recordSentence 後の queue 再生成
+    const queue = useMemo(() => {
+      const composition = (db.load(profile.id).composition) || {};
+      return buildConvoQueue({ order, composition });
+    }, [profile.id, order, seed, tick]);
+    const [idx, setIdx]         = useState(0);
     const [revealed, setRevealed] = useState(false);
+    useEffect(() => {
+      if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
+    }, [queue.length]);
     const cur = queue[idx];
     const next = () => {
+      if (!queue.length) return;
       if (idx + 1 >= queue.length) return;
       setIdx(idx + 1);
       setRevealed(false);
@@ -22968,99 +23074,164 @@
       setRevealed(true);
       try { speak(cur.en); } catch {}
     };
+    const mark = (isCorrect) => {
+      if (!cur) return;
+      try { db.recordSentence(profile.id, cur.id, isCorrect); } catch {}
+      // queue を再生成して、正解 3 連続したものは自動的にプールから消える。
+      setTick(t => t + 1);
+      // 次の問題に進む (覚えていない = 進む、覚えた = 進む。とにかく次へ)。
+      // 再生成後 queue が縮むので idx はそのまま (= 次の sentence)。
+      setIdx(i => Math.min(i + 1, queue.length));
+      setRevealed(false);
+    };
+    const reorder = (o) => {
+      setOrder(o);
+      setSeed(s => s + 1);
+      setIdx(0);
+      setRevealed(false);
+    };
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
-    if (!cur) return null;
     return e('div', { style: pageStyle },
       e(ConvoPracticeTopBar, {
         profile, onBack,
         modeLabel: '英作文',
-        idx, total: queue.length,
-        patternEn: cur.patternEn, patternJa: cur.patternJa,
-        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+        idx: Math.min(idx, Math.max(0, queue.length - 1)), total: queue.length,
+        showPattern: false,
       }),
-      // 日本語
-      e('div', {
-        style: {
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '24px 18px', marginTop: 12,
-          textAlign: 'center', minHeight: 88,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }
-      },
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
-        }, cur.ja),
-      ),
-      // 英語 (revealed のときだけ)
-      revealed && e('div', {
-        style: {
-          background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
-          borderRadius: 14, padding: '20px 18px', marginTop: 12,
-          display: 'flex', alignItems: 'center', gap: 12,
-        }
-      },
-        e('div', {
-          style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
-        }, cur.en),
-        e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
-      ),
-      // ボタン群
-      e('div', {
-        style: {
-          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
-        }
-      },
-        e('button', {
-          onClick: prev, disabled: idx === 0,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx === 0 ? 'not-allowed' : 'pointer',
-            opacity: idx === 0 ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, '‹ 前'),
-        revealed
-          ? e('button', {
-              onClick: next, disabled: idx + 1 >= queue.length,
+      e(ConvoOrderToggle, { profile, order, onChange: reorder }),
+      // 残数 0 の場合は完走画面
+      !cur
+        ? e('div', {
+            style: {
+              marginTop: 22, padding: '40px 20px', textAlign: 'center',
+              background: C.card, border: '1px solid ' + C.line,
+              borderRadius: 14, color: C.sub, fontSize: 14, lineHeight: 1.7,
+            }
+          },
+            e('div', { style: { fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 8 } },
+              '全部「覚えた」になりました 🎉'),
+            e('div', null,
+              '432 文すべてが連続 3 回正解になっています。',
+              e('br'),
+              '間違えると自動で復習プールに戻ります。'),
+          )
+        : e('div', null,
+            // 日本語
+            e('div', {
               style: {
-                padding: '14px 0', borderRadius: 12,
-                background: profile.color, color: '#fff', border: 'none',
-                cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
-                opacity: idx + 1 >= queue.length ? 0.5 : 1,
-                fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, padding: '24px 18px', marginTop: 12,
+                textAlign: 'center', minHeight: 88,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }
-            }, idx + 1 >= queue.length ? '完了' : '次へ ›')
-          : e('button', {
-              onClick: reveal,
+            },
+              e('div', {
+                style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
+              }, cur.ja),
+            ),
+            // 英語 (revealed のときだけ)
+            revealed && e('div', {
               style: {
-                padding: '14px 0', borderRadius: 12,
-                background: profile.color, color: '#fff', border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
+                borderRadius: 14, padding: '20px 18px', marginTop: 12,
+                display: 'flex', alignItems: 'center', gap: 12,
               }
-            }, '答えを表示 + 発音'),
-        e('button', {
-          onClick: next, disabled: idx + 1 >= queue.length,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
-            opacity: idx + 1 >= queue.length ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, 'スキップ ›'),
-      ),
+            },
+              e('div', {
+                style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+              }, cur.en),
+              e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+            ),
+            // パターン名は「答えが出た後」だけ下に出す
+            revealed && e(ConvoPatternFootnote, {
+              profile,
+              patternEn: cur.patternEn, patternJa: cur.patternJa,
+              exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+            }),
+            // ボタン群
+            !revealed
+              ? e('div', {
+                  style: {
+                    marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
+                  }
+                },
+                  e('button', {
+                    onClick: prev, disabled: idx === 0,
+                    style: {
+                      padding: '14px 0', borderRadius: 12,
+                      background: C.softer, color: C.sub,
+                      border: '1px solid ' + C.line,
+                      cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                      opacity: idx === 0 ? 0.45 : 1,
+                      fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+                    }
+                  }, '‹ 前'),
+                  e('button', {
+                    onClick: reveal,
+                    style: {
+                      padding: '14px 0', borderRadius: 12,
+                      background: profile.color, color: '#fff', border: 'none',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                    }
+                  }, '答えを表示 + 発音'),
+                  e('button', {
+                    onClick: next, disabled: idx + 1 >= queue.length,
+                    style: {
+                      padding: '14px 0', borderRadius: 12,
+                      background: C.softer, color: C.sub,
+                      border: '1px solid ' + C.line,
+                      cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+                      opacity: idx + 1 >= queue.length ? 0.45 : 1,
+                      fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+                    }
+                  }, 'スキップ ›'),
+                )
+              : e('div', {
+                  style: {
+                    marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+                  }
+                },
+                  e('button', {
+                    onClick: () => mark(false),
+                    style: {
+                      padding: '16px 0', borderRadius: 12,
+                      background: C.danger + '12', color: C.danger,
+                      border: '1px solid ' + C.danger + '40',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                    }
+                  }, '覚えていない'),
+                  e('button', {
+                    onClick: () => mark(true),
+                    style: {
+                      padding: '16px 0', borderRadius: 12,
+                      background: C.success + '12', color: C.success,
+                      border: '1px solid ' + C.success + '40',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                    }
+                  }, '覚えた'),
+                ),
+          ),
     );
   }
 
   // ----- ② シャドーイング形式 (英語×2 自動再生 → 自動で次へ) -----
+  // デフォルトは「ランダム (パターン順をシャッフル、3 例文の固まりは保持)」。
+  // 同じ型を 3 連続で聞かせるリズムは維持するが、毎セッション違う順番で出る。
   function ConvoShadowPractice({ profile, onBack }) {
-    const queue = useMemo(buildConvoQueue, []);
+    const [order, setOrder] = useState('random');
+    const [seed, setSeed]   = useState(0);
+    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed]);
     const [idx, setIdx] = useState(0);
     const [playing, setPlaying] = useState(true);
+    const reorder = (o) => {
+      setOrder(o);
+      setSeed(s => s + 1);
+      setIdx(0);
+      setPlaying(true);
+    };
     const cur = queue[idx];
     const playSeq = useRef(0);
 
@@ -23119,9 +23290,11 @@
         profile, onBack,
         modeLabel: 'シャドーイング',
         idx, total: queue.length,
+        showPattern: true,
         patternEn: cur.patternEn, patternJa: cur.patternJa,
         exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
       }),
+      e(ConvoOrderToggle, { profile, order, onChange: reorder }),
       // 英語 (常に表示) + 日本語 (下に小さく)
       e('div', {
         style: {
@@ -23187,13 +23360,22 @@
   // ネイティブの音声が答え合わせとして流れる。テキストの英語は音声と
   // 同時に表示する (聞き取れなくても文字で確認できる)。
   function ConvoThinkPractice({ profile, onBack }) {
-    const queue = useMemo(buildConvoQueue, []);
+    const [order, setOrder] = useState('sequential');
+    const [seed, setSeed]   = useState(0);
+    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed]);
     const [idx, setIdx] = useState(0);
     const [playing, setPlaying] = useState(true);
     const [phase, setPhase] = useState('thinking'); // 'thinking' | 'answer'
     const [secondsLeft, setSecondsLeft] = useState(5);
     const cur = queue[idx];
     const playSeq = useRef(0);
+    const reorder = (o) => {
+      setOrder(o);
+      setSeed(s => s + 1);
+      setIdx(0);
+      setPlaying(true);
+      setPhase('thinking');
+    };
 
     // 自動進行: thinking 5 秒 → answer (EN 音声 + テキスト) → 1.5 秒 → 次へ
     useEffect(() => {
@@ -23262,9 +23444,9 @@
         profile, onBack,
         modeLabel: '思考タメ',
         idx, total: queue.length,
-        patternEn: cur.patternEn, patternJa: cur.patternJa,
-        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+        showPattern: false,
       }),
+      e(ConvoOrderToggle, { profile, order, onChange: reorder }),
       // 日本語 (常に表示)
       e('div', {
         style: {
@@ -23304,6 +23486,12 @@
         }, cur.en),
         e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
       ),
+      // パターン名は答えが出てから下に出す (ヒントになるので thinking 中は隠す)
+      phase === 'answer' && e(ConvoPatternFootnote, {
+        profile,
+        patternEn: cur.patternEn, patternJa: cur.patternJa,
+        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+      }),
       // 操作ボタン
       e('div', {
         style: {
