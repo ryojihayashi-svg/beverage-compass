@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 287;
+  const APP_VERSION = 288;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -113,22 +113,33 @@
   ];
 
   // ---------- Feature tiles for English Learning Home ----------
-  // 8 行 × 2 列 のハーフ幅タイル。
+  // 6 行 × 2 列 のハーフ幅タイル + 大人向けタイル + その他ツール。
   //   row 1: シャドーイング         | Daily English
   //   row 2: 単語学習(日→英)        | 単語学習(英→日)
-  //   row 3: 瞬間英作文(日→英)      | 瞬間英作文(英→日)
-  //   row 4: 間違い復習             | 覚えた一覧
-  //   row 5: 1分英語解説            | AI英作文テスト
-  //   row 6: リスニング理解         | リーディング理解
-  //   row 7: AI翻訳                 | 翻訳ノート
-  //   row 8: ランダムテスト         | レベル診断テスト
+  //   row 3: 瞬間英作文(日→英)      | 間違い復習
+  //   row 4: 覚えた一覧             | 1分英語解説
+  //   row 5: AI英作文テスト         | リスニング理解
+  //   row 6: リーディング理解       | AI翻訳
+  //   父親 (亮治) のみ: NativeCamp用 (フル幅)
+  //   フッター「その他のツール」: 翻訳ノート / レベル診断テスト
+  //
+  // 削除された旧タイル (機能としては残るが、ホームには出さない):
+  //   composition_en2ja … composition_ja2en の方向トグルから到達可能。シャドーイングと役割重複。
+  //   random_test       … 単語・瞬間英作文・シャドーイングの寄せ集めで重複。デイリーパス内では存続。
+  //
+  // 設定画面に格下げした旧タイル (hidden: true で grid から外し、ホーム下部のフッターからのみ到達):
+  //   saved_translate (翻訳ノート)
+  //   diagnostic       (レベル診断テスト)
+  //
+  // forProfileIds — このプロフィールでだけタイルを出す。useful_phrases は
+  // 父 (NativeCamp 受講中) のみに見せる。
   const FEATURES = [
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
     { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
     { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true  },
     { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false },
-    { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false },
+    { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false, hidden: true },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',         forLearner: true, forViewer: true  },
@@ -136,11 +147,12 @@
     { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢', forLearner: true, forViewer: false },
     { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true },
-    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true },
-    { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false },
-    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false },
+    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true,  hidden: true },
+    { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
+    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false, hidden: true },
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true },
+                                                                                          fullWidth: true, forLearner: true, forViewer: true,
+                                                                                          forProfileIds: ['father'] },
   ];
 
   const FEATURE_BY_ID = Object.fromEntries(FEATURES.map(f => [f.id, f]));
@@ -5160,67 +5172,46 @@
     { id:'s644', level:1, grammar:'はじめて 色',              ja:'りんごは赤いです。',           en:'Apples are red.' },
     { id:'s645', level:1, grammar:'はじめて there is',        ja:'机の上に本があります。',       en:'There is a book on the desk.' },
 
-    // ========== 偉人の名言 (s646-s695) — 50 quotes ==========
-    // 真面目とユーモラスを混ぜて、幅広いジャンルから。引用元は
-    // EN/JA 両方の末尾に括弧書きで付与。grammar タグで著者が
-    // 一目で見える形 (例: 名言・Helen Keller)。
-    //
-    // ----- 偉人 (15) -----
-    { id:'s646', level:4, grammar:'名言・Helen Keller',       ja:'人生は思い切った冒険か、さもなければ何でもないかのどちらかだ。(ヘレン・ケラー)',     en:'Life is either a daring adventure or nothing. (Helen Keller)' },
+    // ========== 偉人の名言 (29 quotes) ==========
+    // 「誰でも知っていて、短くて言いやすい」だけに絞った 29 文。
+    // 元の 50 文から、抽象的・皮肉・長文のものを削除した。
+    // 引用元は EN/JA の末尾に括弧書きで付与。
+
+    // ----- 偉人 -----
     { id:'s647', level:3, grammar:'名言・Anne Frank',         ja:'幸せな人は、他の人も幸せにする。(アンネ・フランク)',                                  en:'Whoever is happy will make others happy too. (Anne Frank)' },
     { id:'s648', level:3, grammar:'名言・Edison',             ja:'天才とは1パーセントのひらめきと99パーセントの努力である。(エジソン)',                  en:'Genius is one percent inspiration and ninety-nine percent perspiration. (Edison)' },
     { id:'s649', level:3, grammar:'名言・Einstein',           ja:'想像力は知識より大切だ。(アインシュタイン)',                                          en:'Imagination is more important than knowledge. (Einstein)' },
     { id:'s650', level:3, grammar:'名言・Gandhi',             ja:'世界に望む変化に、自分自身がなりなさい。(ガンジー)',                                  en:'Be the change you wish to see in the world. (Gandhi)' },
     { id:'s651', level:4, grammar:'名言・Mother Teresa',      ja:'偉大なことができないなら、小さなことを大きな愛をもってしなさい。(マザー・テレサ)',     en:'If you cannot do great things, do small things with great love. (Mother Teresa)' },
     { id:'s652', level:2, grammar:'名言・Walt Disney',        ja:'夢見ることができれば、実現できる。(ウォルト・ディズニー)',                            en:'If you can dream it, you can do it. (Walt Disney)' },
-    { id:'s653', level:4, grammar:'名言・Mark Twain',         ja:'人生で最も大切な2日は、生まれた日と、なぜ生まれたか分かった日だ。(マーク・トウェイン)', en:'The two most important days in your life are the day you are born and the day you find out why. (Mark Twain)' },
     { id:'s654', level:4, grammar:'名言・Mandela',            ja:'教育は、世界を変えるために使える最強の武器だ。(マンデラ)',                            en:'Education is the most powerful weapon you can use to change the world. (Nelson Mandela)' },
     { id:'s655', level:2, grammar:'名言・Steve Jobs',         ja:'ハングリーであれ。愚かであれ。(スティーブ・ジョブズ)',                                en:'Stay hungry, stay foolish. (Steve Jobs)' },
     { id:'s656', level:4, grammar:'名言・Confucius',          ja:'止まらない限り、どれだけゆっくり進んでも構わない。(孔子)',                            en:'It does not matter how slowly you go as long as you do not stop. (Confucius)' },
     { id:'s657', level:4, grammar:'名言・Aristotle',          ja:'卓越とは行為ではなく、習慣である。(アリストテレス)',                                  en:'Excellence is not an act, but a habit. (Aristotle)' },
     { id:'s658', level:2, grammar:'名言・Clark',              ja:'少年よ、大志を抱け。(クラーク博士)',                                                  en:'Boys, be ambitious! (William S. Clark)' },
     { id:'s659', level:3, grammar:'名言・Picasso',            ja:'子供はみな芸術家だ。(ピカソ)',                                                        en:'Every child is an artist. (Picasso)' },
-    { id:'s660', level:4, grammar:'名言・Coco Chanel',        ja:'替えのきかない存在になるには、常に違っていなければならない。(ココ・シャネル)',          en:'In order to be irreplaceable, one must always be different. (Coco Chanel)' },
 
-    // ----- サッカー選手 (8) -----
+    // ----- サッカー選手 -----
     { id:'s661', level:3, grammar:'名言・Ronaldo',            ja:'努力をしない才能は、何ものでもない。(クリスティアーノ・ロナウド)',                    en:'Talent without working hard is nothing. (Cristiano Ronaldo)' },
     { id:'s662', level:3, grammar:'名言・Messi',              ja:'何かを十分に愛しているなら、どんなことも乗り越えられる。(メッシ)',                    en:'You can overcome anything if you love something enough. (Lionel Messi)' },
     { id:'s663', level:2, grammar:'名言・Pelé',               ja:'成功は偶然ではない。(ペレ)',                                                          en:'Success is no accident. (Pelé)' },
-    { id:'s664', level:3, grammar:'名言・Maradona',           ja:'人々に愛されることが、最大の報酬だ。(マラドーナ)',                                    en:'When the people love you, that is the biggest reward. (Maradona)' },
-    { id:'s665', level:3, grammar:'名言・Ibrahimović',        ja:'自分があまりに完璧で、笑わずにはいられない。(イブラヒモビッチ)',                      en:"I can't help but laugh at how perfect I am. (Zlatan Ibrahimović)" },
     { id:'s666', level:2, grammar:'名言・Beckham',            ja:'サッカーは私が愛するものだ。(ベッカム)',                                              en:'Football is something I love. (David Beckham)' },
-    { id:'s667', level:3, grammar:'名言・Neymar',             ja:'夢を叶えているとき、プレッシャーはない。(ネイマール)',                                en:'There is no pressure when you are making a dream come true. (Neymar)' },
-    { id:'s668', level:3, grammar:'名言・Mbappé',             ja:'自分のために働くが、家族と分かち合う。(エムバペ)',                                    en:'I work for myself, but I share with my family. (Kylian Mbappé)' },
 
-    // ----- 政治家 (9) -----
+    // ----- 政治家 -----
     { id:'s669', level:2, grammar:'名言・Lincoln',            ja:'何になるにしても、良い者になれ。(リンカーン)',                                        en:'Whatever you are, be a good one. (Abraham Lincoln)' },
-    { id:'s670', level:3, grammar:'名言・Lincoln',            ja:'未来を予測する最良の方法は、それを創ることだ。(リンカーン)',                          en:'The best way to predict the future is to create it. (Abraham Lincoln)' },
     { id:'s671', level:1, grammar:'名言・Obama',              ja:'そう、私たちならできる。(オバマ)',                                                    en:'Yes, we can. (Barack Obama)' },
-    { id:'s672', level:3, grammar:'名言・Obama',              ja:'他の誰かを待っていては、変化は来ない。(オバマ)',                                      en:'Change will not come if we wait for some other person. (Barack Obama)' },
-    { id:'s673', level:4, grammar:'名言・Churchill',          ja:'成功は終わりではなく、失敗も致命的ではない。続ける勇気こそ大切だ。(チャーチル)',         en:'Success is not final, failure is not fatal: it is the courage to continue that counts. (Winston Churchill)' },
     { id:'s674', level:4, grammar:'名言・JFK',                ja:'国があなたに何をしてくれるかではなく、あなたが国に何ができるかを問いなさい。(ケネディ)',  en:'Ask not what your country can do for you — ask what you can do for your country. (John F. Kennedy)' },
     { id:'s675', level:1, grammar:'名言・MLK',                ja:'私には夢がある。(キング牧師)',                                                        en:'I have a dream. (Martin Luther King Jr.)' },
     { id:'s676', level:3, grammar:'名言・Theodore Roosevelt', ja:'できると信じれば、半分は達成したも同然だ。(セオドア・ルーズベルト)',                  en:"Believe you can and you're halfway there. (Theodore Roosevelt)" },
-    { id:'s677', level:4, grammar:'名言・Eleanor Roosevelt',  ja:'未来は、自分の夢の美しさを信じる者のものだ。(エレノア・ルーズベルト)',                en:'The future belongs to those who believe in the beauty of their dreams. (Eleanor Roosevelt)' },
 
-    // ----- ユーモア・面白い (8) -----
-    { id:'s678', level:4, grammar:'名言・孫正義 (ユーモア)',   ja:'髪の毛が後退しているのではない。私が前進しているのだ。(孫正義)',                      en:"My hair isn't retreating — I'm advancing. (Masayoshi Son)" },
-    { id:'s679', level:3, grammar:'名言・Yogi Berra (ユーモア)', ja:'分かれ道に来たら、それを取りなさい。(ヨギ・ベラ)',                                  en:'When you come to a fork in the road, take it. (Yogi Berra)' },
-    { id:'s680', level:4, grammar:'名言・Mark Twain (ユーモア)', ja:'私は学校教育に、自分の教育を邪魔させたことはない。(マーク・トウェイン)',           en:'I have never let my schooling interfere with my education. (Mark Twain)' },
-    { id:'s681', level:3, grammar:'名言・Will Rogers (ユーモア)', ja:'穴に落ちたと気づいたら、掘るのをやめなさい。(ウィル・ロジャース)',                  en:'If you find yourself in a hole, stop digging. (Will Rogers)' },
-    { id:'s682', level:4, grammar:'名言・Henry Ford (ユーモア)', ja:'できると思おうと、できないと思おうと、あなたは正しい。(ヘンリー・フォード)',         en:"Whether you think you can or you think you can't, you're right. (Henry Ford)" },
-    { id:'s683', level:4, grammar:'名言・Bill Gates (ユーモア)', ja:'成功はひどい教師だ。賢い人に「自分は負けない」と思わせる。(ビル・ゲイツ)',           en:"Success is a lousy teacher. It seduces smart people into thinking they can't lose. (Bill Gates)" },
-    { id:'s684', level:3, grammar:'名言・Picasso (ユーモア)',   ja:'優れた芸術家は真似る。偉大な芸術家は盗む。(ピカソ)',                                  en:'Good artists copy. Great artists steal. (Picasso)' },
-    { id:'s685', level:3, grammar:'名言・Oscar Wilde (ユーモア)', ja:'自分自身でいなさい。他はみんな、もう取られている。(オスカー・ワイルド)',           en:'Be yourself; everyone else is already taken. (Oscar Wilde)' },
+    // ----- ユーモア -----
+    { id:'s682', level:4, grammar:'名言・Henry Ford',         ja:'できると思おうと、できないと思おうと、あなたは正しい。(ヘンリー・フォード)',         en:"Whether you think you can or you think you can't, you're right. (Henry Ford)" },
+    { id:'s685', level:3, grammar:'名言・Oscar Wilde',        ja:'自分自身でいなさい。他はみんな、もう取られている。(オスカー・ワイルド)',           en:'Be yourself; everyone else is already taken. (Oscar Wilde)' },
 
-    // ----- 起業家・経営者 (5) -----
-    { id:'s686', level:4, grammar:'名言・Bezos',              ja:'危険なのは、進化しないことだ。(ジェフ・ベゾス)',                                      en:'What is dangerous is not to evolve. (Jeff Bezos)' },
-    { id:'s687', level:4, grammar:'名言・Buffett',            ja:'リスクは、自分が何をしているか知らないことから生まれる。(ウォーレン・バフェット)',     en:'Risk comes from not knowing what you are doing. (Warren Buffett)' },
+    // ----- 経営者 -----
     { id:'s688', level:2, grammar:'名言・松下幸之助',          ja:'お客様第一。(松下幸之助)',                                                            en:'Customers come first. (Konosuke Matsushita)' },
-    { id:'s689', level:4, grammar:'名言・本田宗一郎',          ja:'成功は、99パーセントの失敗から生まれる1パーセントだ。(本田宗一郎)',                  en:'Success is the one percent that comes from the ninety-nine percent called failure. (Soichiro Honda)' },
-    { id:'s690', level:4, grammar:'名言・Bezos',              ja:'あなたのブランドとは、他人があなたについて語ることだ。(ベゾス)',                      en:'Your brand is what other people say about you. (Jeff Bezos)' },
 
-    // ----- スポーツ (5) -----
+    // ----- スポーツ -----
     { id:'s691', level:4, grammar:'名言・Michael Jordan',     ja:'私は人生で何度も何度も失敗してきた。だからこそ成功できる。(マイケル・ジョーダン)',     en:"I've failed over and over again in my life, and that is why I succeed. (Michael Jordan)" },
     { id:'s692', level:3, grammar:'名言・Lombardi',           ja:'勝者は決して諦めず、諦める者は決して勝たない。(ヴィンス・ロンバルディ)',              en:'Winners never quit, and quitters never win. (Vince Lombardi)' },
     { id:'s693', level:3, grammar:'名言・Muhammad Ali',       ja:'蝶のように舞い、蜂のように刺す。(モハメド・アリ)',                                    en:'Float like a butterfly, sting like a bee. (Muhammad Ali)' },
@@ -6144,65 +6135,22 @@
     // つまり「独立でありながら、その中にも混ざる」設計。JA は最後に
     // 「（出典名）」を付けてシャドーイング後に出典が頭に残るように。
 
-    // 偉人 (15)
-    { id:'qt01', level:2, tag:'quote', ja:'少年よ、大志を抱け！',                                en:'Boys, be ambitious!' },
-    { id:'qt02', level:3, tag:'quote', ja:'想像力は知識より重要だ。',                          en:'Imagination is more important than knowledge.' },
-    { id:'qt03', level:3, tag:'quote', ja:'天才とは1%のひらめきと99%の汗だ。',                       en:'Genius is one percent inspiration and ninety-nine percent perspiration.' },
-    { id:'qt04', level:4, tag:'quote', ja:'我々が恐れるべき唯一のものは、恐れそのものだ。',         en:'The only thing we have to fear is fear itself.' },
-    { id:'qt05', level:4, tag:'quote', ja:'失敗したのではない。1万通りのうまくいかない方法を見つけただけだ。', en:"I have not failed. I've just found 10,000 ways that won't work." },
-    { id:'qt06', level:4, tag:'quote', ja:'困難を抜け出す一番の道は、それを通り抜けることだ。',   en:'The best way out is always through.' },
-    { id:'qt07', level:3, tag:'quote', ja:'人生とは、別の計画を立てているときに起こるものだ。',     en:"Life is what happens when you're busy making other plans." },
-    { id:'qt08', level:3, tag:'quote', ja:'世界に望む変化に、自分自身がなりなさい。',                    en:'Be the change you wish to see in the world.' },
-    { id:'qt09', level:3, tag:'quote', ja:'一人では小さなことしかできない。共に立てば、大きなことができる。', en:'Alone we can do so little; together we can do so much.' },
-    { id:'qt10', level:4, tag:'quote', ja:'私は今でも、人は心の底では善良だと信じている。',        en:'I still believe people are really good at heart.' },
-    { id:'qt11', level:3, tag:'quote', ja:'未来は、今日あなたが何をするかにかかっている。',              en:'The future depends on what you do today.' },
-    { id:'qt12', level:4, tag:'quote', ja:'教育は、世界を変えるために使える最強の武器だ。',      en:'Education is the most powerful weapon which you can use to change the world.' },
-    { id:'qt13', level:3, tag:'quote', ja:'いつも顔を太陽に向けていなさい。',                      en:'Keep your face always toward the sunshine.' },
-    { id:'qt14', level:3, tag:'quote', ja:'困難の真ん中にこそ機会がある。',                      en:'In the middle of difficulty lies opportunity.' },
-    { id:'qt15', level:3, tag:'quote', ja:'偉大な仕事をする唯一の方法は、自分のしていることを愛することだ。', en:'The only way to do great work is to love what you do.' },
-
-    // スポーツ選手 (10)
-    { id:'qt16', level:4, tag:'quote', ja:'9,000本以上のシュートを外し、何度も失敗した。だから私は成功した。', en:"I've missed more than 9,000 shots in my career. I've failed over and over again. And that is why I succeed." },
-    { id:'qt17', level:2, tag:'quote', ja:'蝶のように舞い、蜂のように刺せ。',                       en:'Float like a butterfly, sting like a bee.' },
-    { id:'qt18', level:3, tag:'quote', ja:'努力なしの才能は、何ものでもない。',           en:'Talent without working hard is nothing.' },
-    { id:'qt19', level:2, tag:'quote', ja:'打たないシュートは100%入らない。',                en:"You miss 100% of the shots you don't take." },
-    { id:'qt20', level:3, tag:'quote', ja:'いつも姿を見せて、いつも一生懸命やる。',                en:'I always show up, and I always work hard.' },
-    { id:'qt21', level:4, tag:'quote', ja:'努力しない才能には、努力する凡人が勝つ。',             en:"Hard work beats talent when talent doesn't work hard." },
-    { id:'qt22', level:3, tag:'quote', ja:'痛みは一時的だが、諦めは一生残る。',             en:'Pain is temporary. Quitting lasts forever.' },
-    { id:'qt23', level:4, tag:'quote', ja:'勝とうとする意思ではなく、勝つために準備する意思が大事だ。', en:"It's not the will to win that matters. It's the will to prepare to win." },
-    { id:'qt24', level:4, tag:'quote', ja:'自信がなければ、勝てない理由をいつも見つける。',           en:"If you don't have confidence, you'll always find a way not to win." },
-    { id:'qt25', level:4, tag:'quote', ja:'チャンピオンは、できるようになるまでプレーし続ける。', en:'Champions keep playing until they get it right.' },
-
-    // 政治家・指導者 (10)
-    { id:'qt26', level:1, tag:'quote', ja:'我々はできる。',                                       en:'Yes, we can.' },
-    { id:'qt27', level:4, tag:'quote', ja:'国があなたに何をしてくれるかではなく、あなたが国に何ができるかを問いなさい。', en:'Ask not what your country can do for you, ask what you can do for your country.' },
-    { id:'qt28', level:2, tag:'quote', ja:'人民の、人民による、人民のための政治。',                     en:'Government of the people, by the people, for the people.' },
-    { id:'qt29', level:2, tag:'quote', ja:'決して、決して、決して諦めてはならない。',                    en:'Never, never, never give up.' },
-    { id:'qt30', level:5, tag:'quote', ja:'成功は最終ではなく、失敗は致命的ではない。大事なのは続ける勇気だ。', en:'Success is not final, failure is not fatal: it is the courage to continue that counts.' },
-    { id:'qt31', level:1, tag:'quote', ja:'私には夢がある。',                  en:'I have a dream.' },
-    { id:'qt32', level:3, tag:'quote', ja:'他の誰か、他の時を待っていては、変化は来ない。',           en:'Change will not come if we wait for some other person or some other time.' },
-    { id:'qt33', level:4, tag:'quote', ja:'平和は力では保てない。理解によってのみ達成できる。',     en:'Peace cannot be kept by force; it can only be achieved by understanding.' },
-    { id:'qt34', level:5, tag:'quote', ja:'最大の危険は、目標が高すぎて届かないことではなく、低すぎて届いてしまうことだ。', en:'The greatest danger for most of us is not that our aim is too high and we miss it, but that it is too low and we reach it.' },
-    { id:'qt35', level:4, tag:'quote', ja:'自分を高めたいなら、他の誰かを高めなさい。',     en:'If you want to lift yourself up, lift up someone else.' },
-
-    // 起業家 (10)
-    { id:'qt36', level:2, tag:'quote', ja:'ハングリーであれ、愚かであれ。',                    en:'Stay hungry, stay foolish.' },
-    { id:'qt37', level:3, tag:'quote', ja:'海軍に入るより、海賊である方がいい。',              en:"It's better to be a pirate than to join the navy." },
-    { id:'qt38', level:2, tag:'quote', ja:'速く動いて、ものを壊せ。',                       en:'Move fast and break things.' },
-    { id:'qt39', level:3, tag:'quote', ja:'今日は厳しい、明日はもっと厳しい、でも明後日は晴れる。',  en:'Today is hard, tomorrow will be worse, but the day after tomorrow will be sunshine.' },
-    { id:'qt40', level:4, tag:'quote', ja:'本当に重要なことなら、勝ち目がなくてもやる。',           en:'When something is important enough, you do it even if the odds are not in your favour.' },
-    { id:'qt41', level:4, tag:'quote', ja:'最も不満な客こそ、最大の学びの源だ。',                     en:'Your most unhappy customers are your greatest source of learning.' },
-    { id:'qt42', level:4, tag:'quote', ja:'私はビジネスマンではない。私自身がビジネスだ。',               en:"I'm not a businessman. I'm a business, man." },
-    { id:'qt43', level:3, tag:'quote', ja:'髪の毛が後退しているのではない。私が前進しているのだ。',          en:"It's not that my hair is receding. It's that I'm advancing." },
-    { id:'qt44', level:2, tag:'quote', ja:'走れ、歩くな。',                                    en:"Run, don't walk." },
-    { id:'qt45', level:2, tag:'quote', ja:'痛みと苦しみは、人格を作る。',                       en:'Pain and suffering build character.' },
-
-    // 面白い / 機智に富んだ (5)
-    { id:'qt46', level:3, tag:'quote', ja:'道が二股に分かれたら、それを取れ。',                        en:'When you come to a fork in the road, take it.' },
-    { id:'qt47', level:4, tag:'quote', ja:'私は、自分が言ったことのほとんどを実際には言っていない。',     en:'I never said most of the things I said.' },
-    { id:'qt48', level:5, tag:'quote', ja:'私の死に関する報道は、かなり誇張されている。',         en:'The reports of my death have been greatly exaggerated.' },
-    { id:'qt49', level:3, tag:'quote', ja:'誘惑以外のすべてに、私は抵抗できる。',                en:'I can resist everything except temptation.' },
-    { id:'qt50', level:3, tag:'quote', ja:'自分自身でいなさい。他の人はもう取られている。',       en:'Be yourself; everyone else is already taken.' },
+    // 偉人の名言 (15) — 短くて誰もが知っているものだけ。
+    { id:'qt01', level:2, tag:'quote', ja:'少年よ、大志を抱け！',                                                                en:'Boys, be ambitious!' },
+    { id:'qt02', level:3, tag:'quote', ja:'想像力は知識より重要だ。',                                                          en:'Imagination is more important than knowledge.' },
+    { id:'qt03', level:3, tag:'quote', ja:'天才とは1%のひらめきと99%の汗だ。',                                                  en:'Genius is one percent inspiration and ninety-nine percent perspiration.' },
+    { id:'qt08', level:3, tag:'quote', ja:'世界に望む変化に、自分自身がなりなさい。',                                          en:'Be the change you wish to see in the world.' },
+    { id:'qt12', level:4, tag:'quote', ja:'教育は、世界を変えるために使える最強の武器だ。',                                  en:'Education is the most powerful weapon which you can use to change the world.' },
+    { id:'qt16', level:4, tag:'quote', ja:'9,000本以上のシュートを外し、何度も失敗した。だから私は成功した。',               en:"I've missed more than 9,000 shots in my career. I've failed over and over again. And that is why I succeed." },
+    { id:'qt17', level:2, tag:'quote', ja:'蝶のように舞い、蜂のように刺せ。',                                                  en:'Float like a butterfly, sting like a bee.' },
+    { id:'qt18', level:3, tag:'quote', ja:'努力なしの才能は、何ものでもない。',                                                en:'Talent without working hard is nothing.' },
+    { id:'qt19', level:2, tag:'quote', ja:'打たないシュートは100%入らない。',                                                  en:"You miss 100% of the shots you don't take." },
+    { id:'qt26', level:1, tag:'quote', ja:'我々はできる。',                                                                    en:'Yes, we can.' },
+    { id:'qt27', level:4, tag:'quote', ja:'国があなたに何をしてくれるかではなく、あなたが国に何ができるかを問いなさい。',     en:'Ask not what your country can do for you, ask what you can do for your country.' },
+    { id:'qt29', level:2, tag:'quote', ja:'決して、決して、決して諦めてはならない。',                                          en:'Never, never, never give up.' },
+    { id:'qt31', level:1, tag:'quote', ja:'私には夢がある。',                                                                  en:'I have a dream.' },
+    { id:'qt36', level:2, tag:'quote', ja:'ハングリーであれ、愚かであれ。',                                                    en:'Stay hungry, stay foolish.' },
+    { id:'qt50', level:3, tag:'quote', ja:'自分自身でいなさい。他の人はもう取られている。',                                  en:'Be yourself; everyone else is already taken.' },
 
     // ============ 必修デイリー英会話 100 (tag:'daily') ============
     // 「絶対に出る」日常会話フレーズ。挨拶・自己紹介・体調・週末・
@@ -11918,14 +11866,10 @@
     if (compTestDays.includes(dayOfWeek)) out.push({ id: 'comp_test' });
     // 9. 1分英語解説 (50% if there's an unfinished lesson)
     if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
-    // 10. ランダムテストで締め
-    out.push({ id: 'random_test' });
-    // 11. ボーナスラウンド (反対方向) — チカチカが長く続くように
-    const reverseOf = (id) => id === 'vocab_ja2en' ? 'vocab_en2ja'
-                            : id === 'composition_ja2en' ? 'composition_en2ja'
-                            : id;
-    out.push({ id: reverseOf(main[0]) });
-    if (rand() < 0.5) out.push({ id: reverseOf(main[1]) });
+    // 10. ボーナスラウンド (反対方向の単語学習) — チカチカが長く続くように。
+    //   composition_en2ja タイルは廃止したので、vocab だけ反対方向にする。
+    if (main.includes('vocab_ja2en')) out.push({ id: 'vocab_en2ja' });
+    if (rand() < 0.5 && !main.includes('shadowing')) out.push({ id: 'shadowing' });
     return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
   }
   function loadTodaysPath(profile) {
@@ -13298,13 +13242,116 @@
     );
   }
 
-  // ---------- Speech (TTS) — temporary stand-in until native MP3 audio is added ----------
+  // ---------- Speech (TTS) ----------
+  // 端末標準の SpeechSynthesis を使う。素のままだとロボットボイスに
+  // フォールバックして「キラ☆たく読み」のように棒読みになるので、
+  // 利用可能な声から最も自然な英語ボイスを選んで指定する。
+  //
+  // ブラウザごとの最高品質ボイス (優先順)
+  //   ・Microsoft "Online (Natural)" / Aria・Guy・Jenny  (Edge / Win Chrome)
+  //   ・Apple "Premium" / "Enhanced" の Ava / Samantha / Daniel / Karen など
+  //   ・Apple 標準の Samantha / Alex / Daniel など
+  //   ・Google US/UK English (Android Chrome)
+  //   ・最後の手段として lang が en-* のものなら何でも
+  //
+  // getVoices() は一部ブラウザで初回 [] を返し、後から voiceschanged が
+  // 飛んでくる。 _voiceCache は voiceschanged で無効化して取り直す。
+  let _voiceCache = null;
+  function _refreshVoiceCache() { _voiceCache = null; }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.getVoices(); // warm up
+      window.speechSynthesis.addEventListener &&
+        window.speechSynthesis.addEventListener('voiceschanged', _refreshVoiceCache);
+      if ('onvoiceschanged' in window.speechSynthesis) {
+        const prev = window.speechSynthesis.onvoiceschanged;
+        window.speechSynthesis.onvoiceschanged = function (ev) {
+          _refreshVoiceCache();
+          if (typeof prev === 'function') try { prev.call(this, ev); } catch {}
+        };
+      }
+    } catch {}
+  }
+
+  // 名前優先 (含まれていれば一致)。上ほど自然。
+  const _VOICE_PRIORITY = [
+    // Microsoft Edge / Windows の Neural オンライン声
+    'Microsoft Aria Online',
+    'Microsoft Guy Online',
+    'Microsoft Jenny Online',
+    'Microsoft Sonia Online',
+    'Microsoft Ryan Online',
+    'Online (Natural',
+    '(Natural)',
+    // Apple の高品質ティア
+    'Ava (Premium)',
+    'Ava (Enhanced)',
+    'Samantha (Enhanced)',
+    'Allison (Enhanced)',
+    'Susan (Enhanced)',
+    'Daniel (Enhanced)',
+    'Serena (Enhanced)',
+    'Karen (Enhanced)',
+    'Moira (Enhanced)',
+    'Tom (Enhanced)',
+    // Apple 標準
+    'Samantha',
+    'Ava',
+    'Allison',
+    'Daniel',
+    'Karen',
+    'Serena',
+    'Alex',
+    // Google Chrome (Android / Desktop)
+    'Google US English',
+    'Google UK English Female',
+    'Google UK English Male',
+  ];
+
+  function _getVoicesSafe() {
+    if (!('speechSynthesis' in window)) return [];
+    if (_voiceCache) return _voiceCache;
+    const v = window.speechSynthesis.getVoices() || [];
+    if (v.length) _voiceCache = v;
+    return v;
+  }
+
+  // preferLang: 'en-US' / 'en-GB' / 'en'。マッチが無ければ広めに探す。
+  function getBestVoice(preferLang) {
+    const voices = _getVoicesSafe();
+    if (!voices.length) return null;
+    const wantLangFull = (preferLang || 'en-US').toLowerCase();
+    const wantLangPref = wantLangFull.slice(0, 2);
+    const langMatchFull = (v) => (v.lang || '').toLowerCase() === wantLangFull;
+    const langMatchPref = (v) => (v.lang || '').toLowerCase().startsWith(wantLangPref);
+    // 1) 名前優先 × 言語完全一致
+    for (const want of _VOICE_PRIORITY) {
+      const wantLower = want.toLowerCase();
+      const v = voices.find(v => (v.name || '').toLowerCase().includes(wantLower) && langMatchFull(v));
+      if (v) return v;
+    }
+    // 2) 名前優先 × en-* どれでも
+    for (const want of _VOICE_PRIORITY) {
+      const wantLower = want.toLowerCase();
+      const v = voices.find(v => (v.name || '').toLowerCase().includes(wantLower) && langMatchPref(v));
+      if (v) return v;
+    }
+    // 3) 言語完全一致のうち先頭
+    const exact = voices.find(langMatchFull);
+    if (exact) return exact;
+    // 4) en-* なら何でも
+    return voices.find(langMatchPref) || null;
+  }
+
   function speak(text) {
     if (!('speechSynthesis' in window)) return;
     try {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
-      u.rate = 0.9;
+      u.rate = 0.95;
+      u.pitch = 1.0;
+      const v = getBestVoice('en-US') || getBestVoice('en-GB') || getBestVoice('en');
+      if (v) u.voice = v;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(u);
     } catch (err) { /* ignore */ }
@@ -14687,7 +14734,11 @@
   // ---------- English Learning Home ----------
   function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
     const isViewer = profile.role === 'viewer';
-    const visibleFeatures = FEATURES.filter(f => isViewer ? f.forViewer : f.forLearner);
+    const visibleFeatures = FEATURES.filter(f => {
+      if (f.hidden) return false;
+      if (Array.isArray(f.forProfileIds) && !f.forProfileIds.includes(profile.id)) return false;
+      return isViewer ? f.forViewer : f.forLearner;
+    });
     // Bumps to force a re-render after dismissing the graduation
     // banner — the queue is read fresh on every render.
     const [forceTick, setForceTick] = useState(0);
@@ -15189,6 +15240,77 @@
             profileColor: profile.color,
           });
         }),
+      ),
+
+      // ----- その他のツール (普段は使わないが、たまに必要なもの) -----
+      // 翻訳ノート (saved_translate) と レベル診断テスト (diagnostic) は
+      // メインの 12 タイルから外し、ここから到達する。viewer は翻訳ノートのみ。
+      !isViewer && e('div', {
+        style: {
+          marginTop: 22, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 11, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'その他のツール'),
+        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 0 } },
+          [
+            { id: 'saved_translate', label: '翻訳ノート',         desc: 'AI翻訳で★保存した文を復習' },
+            { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜2 級・段階式' },
+          ].map((row, i, arr) => e('button', {
+            key: row.id,
+            onClick: () => onPickFeature(row.id),
+            style: {
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 4px',
+              borderTop: i === 0 ? 'none' : '1px solid ' + C.line,
+              background: 'transparent', border: 'none',
+              cursor: 'pointer', textAlign: 'left',
+              fontFamily: 'inherit',
+            }
+          },
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontSize: 14.5, color: C.text, fontWeight: 600 }
+              }, row.label),
+              e('div', {
+                style: { fontSize: 12.5, color: C.sub, marginTop: 2, lineHeight: 1.5 }
+              }, row.desc),
+            ),
+            e('span', {
+              style: { fontSize: 18, color: C.sub, opacity: 0.6 }
+            }, '›'),
+          )),
+        ),
+      ),
+      isViewer && e('div', {
+        style: {
+          marginTop: 22, paddingTop: 14,
+          borderTop: '1px solid ' + C.line,
+        }
+      },
+        e('button', {
+          onClick: () => onPickFeature('saved_translate'),
+          style: {
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '14px 4px',
+            background: 'transparent', border: 'none',
+            cursor: 'pointer', textAlign: 'left', width: '100%',
+            fontFamily: 'inherit',
+          }
+        },
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            e('div', { style: { fontSize: 14.5, color: C.text, fontWeight: 600 } }, '翻訳ノート'),
+            e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2, lineHeight: 1.5 } },
+              'AI翻訳で★保存した文を復習'),
+          ),
+          e('span', { style: { fontSize: 18, color: C.sub, opacity: 0.6 } }, '›'),
+        ),
       ),
 
       // 7-day activity panel — date columns × activity rows. Replaces the
@@ -20587,6 +20709,9 @@
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'en-GB';
         u.rate = 0.95;
+        u.pitch = 1.0;
+        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (v) u.voice = v;
         u.onend   = () => { if (!cancelled && seq === playSeq.current) then(); };
         u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
         try { window.speechSynthesis.speak(u); } catch { then(); }
@@ -24024,7 +24149,7 @@
                 fontSize: 12, color: C.sub, marginTop: 8, textAlign: 'center',
                 fontFamily: SANS_UI,
               }
-            }, '残り ' + more + ' 件はホームの「翻訳ノート」で見られます'),
+            }, '残り ' + more + ' 件はホーム下の「翻訳ノート」で見られます'),
           ),
     );
   }
@@ -24731,6 +24856,9 @@
       const u = new SpeechSynthesisUtterance(current.en);
       u.lang = 'en-GB';
       u.rate = speedConfig.rate;
+      u.pitch = 1.0;
+      const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+      if (_v) u.voice = _v;
       u.onstart = () => { if (!cancelled) setIsSpeaking(true); };
       const finish = () => {
         if (cancelled) return;
@@ -26394,6 +26522,9 @@
         const u = new SpeechSynthesisUtterance(cur.audio[i].en);
         u.lang = 'en-GB';
         u.rate = 0.95;
+        u.pitch = 1.0;
+        const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (_v) u.voice = _v;
         u.onend = () => { i++; setTimeout(playNext, 350); };
         u.onerror = () => { i++; setTimeout(playNext, 350); };
         try { window.speechSynthesis.cancel(); } catch {}
@@ -27174,6 +27305,9 @@
         const u = new SpeechSynthesisUtterance(lines[i].text);
         u.lang  = 'en-GB';
         u.rate  = 1.0;
+        u.pitch = 1.0;
+        const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (_v) u.voice = _v;
         u.onend   = () => { i++; setTimeout(speakNext, 400); };
         u.onerror = () => { i++; setTimeout(speakNext, 400); };
         try { window.speechSynthesis.speak(u); } catch {}
