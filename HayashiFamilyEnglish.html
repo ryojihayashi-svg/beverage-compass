@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 295;
+  const APP_VERSION = 296;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -153,7 +153,7 @@
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
                                                                                           fullWidth: true, forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
-    { id: 'convo_patterns',     label: '定型構文',       desc: '144 構文 × 3 例 = 432 文 (SNSから収集)',
+    { id: 'convo_patterns',     label: '定型構文',       desc: '50 構文 · 投資 / 不動産 / ホスピタリティの実戦英語',
                                                                                           fullWidth: true, forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
   ];
@@ -21026,1698 +21026,834 @@
     );
   }
 
-  // ---------- 使える短い会話フレーズ (魔法の型) ----------
-  // 「I'm having trouble ...ing」のような型 + 各 3 例文 = 一文が短いので
-  // 瞬間英作文として回しやすく、また聞き流しでも繰り返しやすい。
-  // 構造: { id, pattern, ja_pattern, items: [{ ja, en }, ...] }
-  // 例文は 1 パターン 3 つ持たせて、同じ構文の手触りを覚えるまで繰り返す。
+  // ---------- 定型構文 (Section 1: ビジネス・投資・ホスピタリティ 50 構文) ----------
+  // 起業家・投資家・ホテル経営者・レストランオーナー・ビジネスリーダーが
+  // 実際に使う構文だけを集めた。テーマ: 投資 / 不動産 / レストラン /
+  // ホスピタリティ / リーダーシップ / 採用 / 旅行 / ワイン / 建築 / 起業。
+  //
+  // データ形は 2 種類:
+  //   Part A (cp001-cp025): items: [{ja, en}, {ja, en}, {ja, en}]  …短い基本表現 × 3 例
+  //   Part B (cp026-cp050): qa: [{question, positive, neutral, negative}, ×3 シーン]
+  //                                                         …質問 × 3 通りの答え × 3 シーン = 12 文
+  //
+  // 教科書的な例は徹底的に避け、現代の自然なビジネス英語に統一。
   const CONVO_PATTERNS = [
-    // ============ 魔法の型・基本編 ============
-    {
-      id: 'cp001',
-      pattern: "I'm having trouble ...ing",
-      ja_pattern: '〜するのに苦労している',
-      category: '基本',
-      items: [
-        { ja: '日本語の漢字を覚えるのに苦労している。',     en: "I'm having trouble remembering Japanese kanji." },
-        { ja: '夜寝つきが悪くて困っている。',                 en: "I'm having trouble sleeping at night." },
-        { ja: 'うちの息子は宿題に集中するのに苦労している。', en: "My son is having trouble focusing on his homework." },
-      ],
-    },
-    {
-      id: 'cp002',
-      pattern: "I didn't mean to ...",
-      ja_pattern: '〜するつもりじゃなかった',
-      category: '基本',
-      items: [
-        { ja: 'あなたを傷つけるつもりじゃなかった。',           en: "I didn't mean to hurt you." },
-        { ja: 'こんなに長く待たせるつもりじゃなかった。',       en: "I didn't mean to keep you waiting so long." },
-        { ja: '電話を切るつもりはなかったんだ、ごめん。',       en: "I didn't mean to hang up on you, sorry." },
-      ],
-    },
-    {
-      id: 'cp003',
-      pattern: "I'm about to ...",
-      ja_pattern: '今ちょうど〜するところだ',
-      category: '基本',
-      items: [
-        { ja: 'ちょうど家を出るところだ。',                       en: "I'm about to leave the house." },
-        { ja: 'まさに同じことを言おうとしていた。',               en: "I was about to say the same thing." },
-        { ja: 'もう寝るところだから、明日電話するね。',           en: "I'm about to go to bed, so I'll call you tomorrow." },
-      ],
-    },
-    {
-      id: 'cp004',
-      pattern: "It's no wonder that ...",
-      ja_pattern: '〜なのも不思議ではない / 当然だ',
-      category: '基本',
-      items: [
-        { ja: '彼が疲れているのも当然だよ、一晩中働いていたから。', en: "It's no wonder that he's tired — he worked all night." },
-        { ja: 'みんな彼女を好きなのも当然だ。',                     en: "It's no wonder that everyone likes her." },
-        { ja: 'この街が観光客で人気なのも頷ける。',                 en: "It's no wonder that this city is popular with tourists." },
-      ],
-    },
-    {
-      id: 'cp005',
-      pattern: "I can't afford to ...",
-      ja_pattern: '〜する余裕がない',
-      category: '基本',
-      items: [
-        { ja: '今は新しい車を買う余裕がない。',                   en: "I can't afford to buy a new car right now." },
-        { ja: 'もう一回失敗する余裕はない。',                     en: "I can't afford to fail again." },
-        { ja: '今週はもう外食する余裕がない。',                   en: "I can't afford to eat out again this week." },
-      ],
-    },
-    {
-      id: 'cp006',
-      pattern: "I'm willing to ...",
-      ja_pattern: '喜んで〜する / 〜する気がある',
-      category: '基本',
-      items: [
-        { ja: '良い仕事のためなら喜んで残業する。',                       en: "I'm willing to work overtime for a good project." },
-        { ja: 'よく分からない料理でも試してみる気はあるよ。',                 en: "I'm willing to try food I've never heard of." },
-        { ja: '新しい街に引っ越すのも厭わないよ、いいチャンスなら。',         en: "I'm willing to move to a new city for the right opportunity." },
-      ],
-    },
-    {
-      id: 'cp007',
-      pattern: "I'm supposed to ...",
-      ja_pattern: '〜することになっている / はずだ',
-      category: '基本',
-      items: [
-        { ja: '5時に空港で彼に会うことになっている。',                   en: "I'm supposed to meet him at the airport at five." },
-        { ja: '本当はこれ、人に話しちゃいけないんだけど。',                 en: "I'm not supposed to tell anyone, but..." },
-        { ja: 'もう寝てる時間のはずなのに、まだ宿題やってる。',             en: "I'm supposed to be asleep, but I'm still doing homework." },
-      ],
-    },
-    {
-      id: 'cp008',
-      pattern: "I'm used to ...ing",
-      ja_pattern: '〜するのに慣れている',
-      category: '基本',
-      items: [
-        { ja: '毎日早起きするのに慣れている。',                           en: "I'm used to getting up early every day." },
-        { ja: '東京で運転することにはもう慣れた。',                       en: "I'm used to driving in Tokyo now." },
-        { ja: '辛い料理にはもう慣れている。',                             en: "I'm used to eating spicy food." },
-      ],
-    },
-    {
-      id: 'cp009',
-      pattern: "It's likely that ...",
-      ja_pattern: 'おそらく〜だろう',
-      category: '基本',
-      items: [
-        { ja: '彼女はおそらく今夜電話をくれるだろう。',                   en: "It's likely that she'll call tonight." },
-        { ja: 'ピーク時間帯はおそらく混むだろう。',                       en: "It's likely that the restaurant will be busy at peak hours." },
-        { ja: '明日はおそらく雨だろう。',                                 en: "It's likely that it will rain tomorrow." },
-      ],
-    },
-    {
-      id: 'cp010',
-      pattern: "I'm looking forward to ...ing",
-      ja_pattern: '〜するのを楽しみにしている',
-      category: '基本',
-      items: [
-        { ja: 'また会えるのを楽しみにしています。',                       en: "I'm looking forward to seeing you again." },
-        { ja: '長い1日のあとの夕食が楽しみだ。',                           en: "I'm looking forward to dinner after a long day." },
-        { ja: '夏休みが楽しみだ。',                                       en: "I'm looking forward to the summer holidays." },
-      ],
-    },
-    {
-      id: 'cp011',
-      pattern: 'Feel free to ...',
-      ja_pattern: '遠慮なく〜してください',
-      category: '基本',
-      items: [
-        { ja: '何でも遠慮なく聞いてください。',                           en: 'Feel free to ask me anything.' },
-        { ja: '冷蔵庫のものは何でも食べていいよ。',                       en: 'Feel free to eat anything in the fridge.' },
-        { ja: '質問があればいつでも連絡してください。',                   en: 'Feel free to contact me anytime if you have questions.' },
-      ],
-    },
-    {
-      id: 'cp012',
-      pattern: "I'm thinking of ...ing",
-      ja_pattern: '〜しようかと思っている',
-      category: '基本',
-      items: [
-        { ja: '今度の夏に京都に行こうかと思っている。',                   en: "I'm thinking of going to Kyoto this summer." },
-        { ja: '車を売ろうかと考えている。',                               en: "I'm thinking of selling my car." },
-        { ja: 'もう少し英語を本気で勉強しようかと思っている。',           en: "I'm thinking of studying English more seriously." },
-      ],
-    },
-    {
-      id: 'cp013',
-      pattern: "That's because ...",
-      ja_pattern: 'それは〜だからだ',
-      category: '基本',
-      items: [
-        { ja: '彼が遅れるのは、いつも電車を逃すからだ。',                 en: "That's because he always misses the train." },
-        { ja: 'それは私が朝食を食べていなかったからだ。',                 en: "That's because I hadn't eaten breakfast." },
-        { ja: '冬は売上が落ちる、それは観光客が減るからだ。',             en: "That's because fewer tourists come in winter." },
-      ],
-    },
-    {
-      id: 'cp014',
-      pattern: "It depends on ...",
-      ja_pattern: '〜次第だ',
-      category: '基本',
-      items: [
-        { ja: '行けるかどうかは天気次第だ。',                             en: "It depends on the weather." },
-        { ja: '値段は注文する量によります。',                             en: "It depends on how much you order." },
-        { ja: '答えは状況によります。',                                   en: "It depends on the situation." },
-      ],
-    },
-    {
-      id: 'cp015',
-      pattern: "I'm not sure if ...",
-      ja_pattern: '〜かどうか確信がない',
-      category: '基本',
-      items: [
-        { ja: '今日彼が来るかどうかは分からない。',                       en: "I'm not sure if he's coming today." },
-        { ja: 'これがいい考えかどうか自信がない。',                       en: "I'm not sure if this is a good idea." },
-        { ja: '間に合うかどうか分からない。',                             en: "I'm not sure if I'll make it in time." },
-      ],
-    },
-    // ============ 短い英会話フレーズ (実践編) ============
-    {
-      id: 'cp016',
-      pattern: 'I have my hands full.',
-      ja_pattern: '今、手が離せない',
-      category: '実践',
-      items: [
-        { ja: '今、手が離せないんだ、あとで電話するね。',                 en: "I have my hands full right now — I'll call you back." },
-        { ja: '3 人の子育てで本当に手いっぱいだ。',                       en: 'I have my hands full raising three boys.' },
-        { ja: '12月の予約で店が手いっぱいだ。',                           en: "We have our hands full with December bookings." },
-      ],
-    },
-    {
-      id: 'cp017',
-      pattern: 'It was just a coincidence.',
-      ja_pattern: 'ただの偶然だよ',
-      category: '実践',
-      items: [
-        { ja: 'カフェであの人にばったり会ったのは、ただの偶然だった。',   en: 'Running into him at the cafe was just a coincidence.' },
-        { ja: '気にしないで、ただの偶然だよ。',                           en: "Don't read too much into it — it was just a coincidence." },
-        { ja: '私たちが同じ服を着ていたのは偶然だった。',                 en: 'It was just a coincidence that we wore the same shirt.' },
-      ],
-    },
-    {
-      id: 'cp018',
-      pattern: "I'm still working on it.",
-      ja_pattern: 'まだやってる途中だよ',
-      category: '実践',
-      items: [
-        { ja: 'レポートまだやってる途中、明日には出すよ。',               en: "I'm still working on the report — it'll be ready tomorrow." },
-        { ja: 'まだ皿を平らげてる途中、待って。',                         en: "I'm still working on my plate — give me a minute." },
-        { ja: '英語の発音はまだ練習中だよ。',                             en: "I'm still working on my English pronunciation." },
-      ],
-    },
-    {
-      id: 'cp019',
-      pattern: "I'm counting on you.",
-      ja_pattern: '頼りにしてるよ',
-      category: '実践',
-      items: [
-        { ja: '頼りにしてるよ、絶対に時間通りに来てね。',                 en: "I'm counting on you to be on time." },
-        { ja: 'これ大事な仕事だ、頼んだよ。',                             en: "This is important — I'm counting on you." },
-        { ja: 'お父さん、また君を頼りにしてるよ。',                       en: "Once again, I'm counting on you, son." },
-      ],
-    },
-    {
-      id: 'cp020',
-      pattern: "Don't get me wrong.",
-      ja_pattern: '誤解しないで',
-      category: '実践',
-      items: [
-        { ja: '誤解しないでね、君のことは好きだよ、ただ忙しいだけ。',     en: "Don't get me wrong, I like you — I'm just busy." },
-        { ja: '誤解しないでほしいんだけど、その提案には反対だ。',         en: "Don't get me wrong, but I disagree with the proposal." },
-        { ja: '誤解しないで、ジョークだよ。',                             en: "Don't get me wrong — I was just kidding." },
-      ],
-    },
-    {
-      id: 'cp021',
-      pattern: "It's still up in the air.",
-      ja_pattern: 'まだ未定だよ',
-      category: '実践',
-      items: [
-        { ja: '夏のプランはまだ未定だ。',                                 en: "Our summer plans are still up in the air." },
-        { ja: '誰がリーダーになるかはまだ決まっていない。',               en: "Who'll be the new leader is still up in the air." },
-        { ja: '会議の日程はまだ宙に浮いている。',                         en: "The meeting date is still up in the air." },
-      ],
-    },
-    {
-      id: 'cp022',
-      pattern: 'It caught me off guard.',
-      ja_pattern: '不意打ちだったよ',
-      category: '実践',
-      items: [
-        { ja: '彼の質問は不意打ちだった、答えに詰まったよ。',             en: "His question caught me off guard." },
-        { ja: '降格は完全に不意打ちだった。',                             en: 'The demotion caught me off guard completely.' },
-        { ja: '驚かせてくれてありがとう、本当に予想外だったよ。',         en: 'Thanks for the surprise — it really caught me off guard.' },
-      ],
-    },
-    {
-      id: 'cp023',
-      pattern: "I'm a bit torn.",
-      ja_pattern: 'ちょっと迷ってるんだ',
-      category: '実践',
-      items: [
-        { ja: 'どっちのオファーを受けるか、ちょっと迷ってるんだ。',       en: "I'm a bit torn between the two offers." },
-        { ja: '行くか残るか、迷ってる。',                                 en: "I'm a bit torn about whether to go or stay." },
-        { ja: 'どのワインにするか迷うなあ。',                             en: "I'm a bit torn about which wine to pick." },
-      ],
-    },
-    {
-      id: 'cp024',
-      pattern: "That's a relief.",
-      ja_pattern: 'それは安心したよ',
-      category: '実践',
-      items: [
-        { ja: '無事だったって聞いて、本当にホッとした。',                 en: "That's a relief — I was really worried." },
-        { ja: 'テストに合格したのか、よかった、安心したよ。',             en: "You passed the test? That's a relief." },
-        { ja: '雨が止んでホッとした。',                                   en: "That's a relief — the rain finally stopped." },
-      ],
-    },
-    {
-      id: 'cp025',
-      pattern: "I'll get right on it.",
-      ja_pattern: 'すぐにとりかかります',
-      category: '実践',
-      items: [
-        { ja: '了解です、すぐとりかかります。',                           en: "Sure, I'll get right on it." },
-        { ja: 'メール、すぐ書くね。',                                     en: "I'll get right on the email." },
-        { ja: '修理、すぐとりかかります。',                               en: "I'll get right on the repair." },
-      ],
-    },
-    {
-      id: 'cp026',
-      pattern: "It's out of my hands.",
-      ja_pattern: '私の手には負えない / どうしようもない',
-      category: '実践',
-      items: [
-        { ja: '結果は私の手には負えない、社長次第だ。',                   en: "It's out of my hands now — it's up to the boss." },
-        { ja: '判決はもう私の手の届かないところにある。',                 en: "The decision is out of my hands at this point." },
-        { ja: 'ごめん、これ以上は私にはどうしようもない。',               en: "Sorry, but this is out of my hands." },
-      ],
-    },
-    {
-      id: 'cp027',
-      pattern: 'Keep me in the loop.',
-      ja_pattern: '状況を教えておいてね',
-      category: '実践',
-      items: [
-        { ja: '進捗があれば随時教えて。',                                 en: 'Please keep me in the loop on this project.' },
-        { ja: '何か変更があれば連絡してね。',                             en: 'Keep me in the loop if anything changes.' },
-        { ja: '次の会議の予定、共有しておいてね。',                       en: 'Keep me in the loop about the next meeting.' },
-      ],
-    },
-    {
-      id: 'cp028',
-      pattern: "Let's call it a day.",
-      ja_pattern: '今日はこの辺で終わりにしよう',
-      category: '実践',
-      items: [
-        { ja: 'もう 8 時か、今日はこの辺にしよう。',                       en: "It's already eight. Let's call it a day." },
-        { ja: 'みんな疲れただろう、今日はここで終わりにしよう。',         en: "Everyone looks tired. Let's call it a day." },
-        { ja: 'これだけ進めば十分、今日はおしまい。',                     en: "We've done enough. Let's call it a day." },
-      ],
-    },
-    {
-      id: 'cp029',
-      pattern: 'That makes sense.',
-      ja_pattern: 'なるほど / 道理にかなってるね',
-      category: '実践',
-      items: [
-        { ja: 'なるほど、確かにその通りだ。',                             en: 'That makes sense, you have a good point.' },
-        { ja: '言われてみれば、それは筋が通っているね。',                 en: 'Now that you explain it, that makes sense.' },
-        { ja: '彼の説明はちゃんと筋が通っている。',                       en: 'His explanation makes complete sense.' },
-      ],
-    },
-    {
-      id: 'cp030',
-      pattern: "I'm on the same page.",
-      ja_pattern: '同感です / 同じ考えです',
-      category: '実践',
-      items: [
-        { ja: '私もまったく同じ考えだ。',                                 en: "I'm on the same page with you." },
-        { ja: 'チーム全員、認識は揃っていますか？',                       en: 'Are we all on the same page?' },
-        { ja: '計画の方針について、私は彼と同感だ。',                     en: "I'm on the same page as him on this plan." },
-      ],
-    },
-    // ============ 応用編 ============
-    {
-      id: 'cp031',
-      pattern: "I'm convinced that ...",
-      ja_pattern: '〜だと確信している',
-      category: '応用',
-      items: [
-        { ja: '彼が一番ふさわしい候補者だと確信している。',               en: "I'm convinced that he is the best candidate." },
-        { ja: 'もうそろそろ起業のタイミングだと確信している。',           en: "I'm convinced that now is the time to start a business." },
-        { ja: 'この計画はうまくいくと確信している。',                     en: "I'm convinced that this plan will work." },
-      ],
-    },
-    {
-      id: 'cp032',
-      pattern: "It occurs to me that ...",
-      ja_pattern: '〜ということがふと頭に浮かんだ',
-      category: '応用',
-      items: [
-        { ja: '彼の名前を聞き忘れたことに気づいた。',                     en: "It occurs to me that I never asked his name." },
-        { ja: '今日が彼女の誕生日だと、ふと気づいた。',                   en: "It occurs to me that today is her birthday." },
-        { ja: 'もしかして、私の方が間違っていたかもと、ふと思う。',       en: "It occurs to me that I might have been wrong." },
-      ],
-    },
-    {
-      id: 'cp033',
-      pattern: "I'm not in a position to ...",
-      ja_pattern: '〜できる立場にない',
-      category: '応用',
-      items: [
-        { ja: 'コメントできる立場ではありません。',                       en: "I'm not in a position to comment." },
-        { ja: 'お金を貸せる立場じゃない。',                               en: "I'm not in a position to lend you money." },
-        { ja: 'その決定をする立場にはない。',                             en: "I'm not in a position to make that decision." },
-      ],
-    },
-    {
-      id: 'cp034',
-      pattern: "It's no use crying over spilt milk.",
-      ja_pattern: '済んだことを悔やんでも無駄だ',
-      category: '応用',
-      items: [
-        { ja: '済んだことを悔やんでも仕方ない、次へ進もう。',             en: "It's no use crying over spilt milk — let's move on." },
-        { ja: 'もうやってしまったことだ、後悔しても始まらない。',         en: "What's done is done. It's no use crying over spilt milk." },
-        { ja: '結果は変わらない、嘆いても無駄だよ。',                     en: "It's no use crying over spilt milk now." },
-      ],
-    },
-    {
-      id: 'cp035',
-      pattern: "I'm supposed to have done ...",
-      ja_pattern: '〜したはずだった / 〜することになっていた',
-      category: '応用',
-      items: [
-        { ja: '昨日までにレポートを提出するはずだった。',                 en: "I'm supposed to have submitted the report by yesterday." },
-        { ja: '先週の会議に出るはずだった。',                             en: "I'm supposed to have attended the meeting last week." },
-        { ja: 'もう銀行に行ったはずなんだけど、忘れてた。',               en: "I'm supposed to have gone to the bank, but I forgot." },
-      ],
-    },
-    {
-      id: 'cp036',
-      pattern: "It's well worth the effort to ...",
-      ja_pattern: '〜するだけの価値は十分にある',
-      category: '応用',
-      items: [
-        { ja: '英語を学ぶのは、苦労する価値が十分にある。',               en: "It's well worth the effort to learn English." },
-        { ja: '健康に気をつかうのは、努力する価値がある。',               en: "It's well worth the effort to take care of your health." },
-        { ja: '良い人間関係を築くのは、努力する価値がある。',             en: "It's well worth the effort to build good relationships." },
-      ],
-    },
-    {
-      id: 'cp037',
-      pattern: "I'm on the point of ...ing",
-      ja_pattern: '今まさに〜しようとしている',
-      category: '応用',
-      items: [
-        { ja: 'ちょうど寝ようとしていたところだ。',                       en: "I'm on the point of going to bed." },
-        { ja: 'まさに諦めようとしていたとき、答えが浮かんだ。',           en: "I was on the point of giving up when the answer came." },
-        { ja: 'もう泣きそうなところまで来ていた。',                       en: "I was on the point of tears." },
-      ],
-    },
-    {
-      id: 'cp038',
-      pattern: "It's hard to imagine ...",
-      ja_pattern: '〜を想像するのは難しい',
-      category: '応用',
-      items: [
-        { ja: '昔の人がスマホなしでどう暮らしていたか、想像し難い。',     en: "It's hard to imagine life without smartphones." },
-        { ja: '彼が怒っているところは想像できない。',                     en: "It's hard to imagine him being angry." },
-        { ja: '冬がそんなに寒いなんて、想像し難い。',                     en: "It's hard to imagine winters being that cold." },
-      ],
-    },
-    {
-      id: 'cp039',
-      pattern: "I'm hesitant about ...ing",
-      ja_pattern: '〜することにためらいを感じる',
-      category: '応用',
-      items: [
-        { ja: '転職することにためらいを感じている。',                     en: "I'm hesitant about changing jobs." },
-        { ja: 'お金を借りることにはためらいがある。',                     en: "I'm hesitant about borrowing money." },
-        { ja: 'みんなの前でスピーチをすることに気が引ける。',             en: "I'm hesitant about speaking in front of everyone." },
-      ],
-    },
-    {
-      id: 'cp040',
-      pattern: "It's widely believed that ...",
-      ja_pattern: '〜だと広く信じられている',
-      category: '応用',
-      items: [
-        { ja: ' 8 時間睡眠は健康に良いと広く信じられている。',             en: "It's widely believed that eight hours of sleep is healthy." },
-        { ja: '日本のシェフは細部にこだわると広く信じられている。',       en: "It's widely believed that Japanese chefs care about every detail." },
-        { ja: '練習が完璧を作ると広く信じられている。',                   en: "It's widely believed that practice makes perfect." },
-      ],
-    },
-    {
-      id: 'cp041',
-      pattern: "I'm not comfortable ...ing",
-      ja_pattern: '〜するのは気が引ける / 落ち着かない',
-      category: '応用',
-      items: [
-        { ja: 'みんなの前で話すのはちょっと気が引ける。',                 en: "I'm not comfortable speaking in front of everyone." },
-        { ja: 'カードの番号をオンラインで共有するのは気が進まない。',     en: "I'm not comfortable sharing my card number online." },
-        { ja: '初対面でそんな話をするのは少し落ち着かない。',             en: "I'm not comfortable talking about that on the first meeting." },
-      ],
-    },
-    {
-      id: 'cp042',
-      pattern: "It's inevitable that ...",
-      ja_pattern: '〜なのは避けられない / 必然だ',
-      category: '応用',
-      items: [
-        { ja: '人は誰でも年を取る、それは避けられない。',                 en: "It's inevitable that everyone gets older." },
-        { ja: '間違いは避けられないが、そこから学べばいい。',             en: "It's inevitable that we make mistakes, but we can learn." },
-        { ja: '景気には波がある、それは避けられない。',                   en: "It's inevitable that the economy goes through ups and downs." },
-      ],
-    },
-    {
-      id: 'cp043',
-      pattern: "I'm overwhelmed by ...",
-      ja_pattern: '〜に圧倒されている',
-      category: '応用',
-      items: [
-        { ja: '皆さんの優しさに圧倒されています。',                       en: "I'm overwhelmed by everyone's kindness." },
-        { ja: '今週は仕事の量に押しつぶされそうだ。',                     en: "I'm overwhelmed by the amount of work this week." },
-        { ja: '初めての富士山の景色に圧倒された。',                       en: "I was overwhelmed by my first view of Mt. Fuji." },
-      ],
-    },
-    {
-      id: 'cp044',
-      pattern: "It's high time someone did ...",
-      ja_pattern: '(誰かが) 〜してもいい頃だ',
-      category: '応用',
-      items: [
-        { ja: 'もうそろそろ私たちは家を買ってもいい頃だ。',               en: "It's high time we bought our own house." },
-        { ja: 'もうそろそろ彼が決断する時間だ。',                         en: "It's high time he made up his mind." },
-        { ja: '休暇を取ってもいい時期だ。',                               en: "It's high time you took a holiday." },
-      ],
-    },
-    {
-      id: 'cp045',
-      pattern: "I'm grateful for ...",
-      ja_pattern: '〜に感謝している',
-      category: '応用',
-      items: [
-        { ja: '家族の支えに感謝している。',                               en: "I'm grateful for my family's support." },
-        { ja: '皆さんの忍耐に感謝しています。',                           en: "I'm grateful for everyone's patience." },
-        { ja: 'いただいたチャンスに感謝しています。',                     en: "I'm grateful for the opportunity you gave me." },
-      ],
-    },
-    // ============ 強化編 ============
-    {
-      id: 'cp046',
-      pattern: "It's a shame that ...",
-      ja_pattern: '〜なのは残念だ',
-      category: '強化',
-      items: [
-        { ja: '今日来られないなんて残念だね。',                           en: "It's a shame that you can't come today." },
-        { ja: 'こんなに天気がいいのに、室内にいるのはもったいない。',     en: "It's a shame that we're stuck inside on such a nice day." },
-        { ja: 'あのレストランが閉店するなんて残念だ。',                   en: "It's a shame that the restaurant is closing." },
-      ],
-    },
-    {
-      id: 'cp047',
-      pattern: "I'm hesitant to ...",
-      ja_pattern: '〜するのをためらっている',
-      category: '強化',
-      items: [
-        { ja: '彼にお金を貸すのはためらっている。',                       en: "I'm hesitant to lend him money." },
-        { ja: '率直なことを言うのは少しためらう。',                       en: "I'm hesitant to give my honest opinion." },
-        { ja: '結論を急ぐのはためらう。',                                 en: "I'm hesitant to jump to conclusions." },
-      ],
-    },
-    {
-      id: 'cp048',
-      pattern: "It's no exaggeration to say ...",
-      ja_pattern: '〜と言っても過言ではない',
-      category: '強化',
-      items: [
-        { ja: 'この景色は人生最高だと言っても過言ではない。',             en: "It's no exaggeration to say this is the best view of my life." },
-        { ja: '彼は世代最高の選手と言っても過言ではない。',               en: "It's no exaggeration to say he is the best of his generation." },
-        { ja: 'うちの母の料理は最高だと言っても言い過ぎじゃない。',       en: "It's no exaggeration to say my mum's cooking is the best." },
-      ],
-    },
-    {
-      id: 'cp049',
-      pattern: "I'm relieved to hear that ...",
-      ja_pattern: 'それを聞いて安心した',
-      category: '強化',
-      items: [
-        { ja: '無事だと聞いてホッとした。',                               en: "I'm relieved to hear that you're safe." },
-        { ja: '全員試験に合格したと聞いて安心した。',                     en: "I'm relieved to hear that everyone passed." },
-        { ja: '手術がうまくいったと聞いて安心した。',                     en: "I'm relieved to hear that the surgery went well." },
-      ],
-    },
-    {
-      id: 'cp050',
-      pattern: "It's pointless to ...",
-      ja_pattern: '〜しても意味がない / 無駄だ',
-      category: '強化',
-      items: [
-        { ja: '泣いても何も変わらない、無駄だよ。',                       en: "It's pointless to cry — it won't change anything." },
-        { ja: 'もう来ない人を待ち続けても無駄だ。',                       en: "It's pointless to keep waiting for him." },
-        { ja: '彼を説得しようとしても無駄だ、頑固すぎる。',               en: "It's pointless to argue with him — he's too stubborn." },
-      ],
-    },
-    {
-      id: 'cp051',
-      pattern: "I'm curious about ...",
-      ja_pattern: '〜に興味がある / 気になっている',
-      category: '強化',
-      items: [
-        { ja: '日本の伝統に興味があります。',                             en: "I'm curious about Japanese traditions." },
-        { ja: '次のステップが気になっている。',                           en: "I'm curious about what comes next." },
-        { ja: '彼の意見が気になる。',                                     en: "I'm curious about his opinion." },
-      ],
-    },
-    {
-      id: 'cp052',
-      pattern: "It's typical of someone to ...",
-      ja_pattern: '〜がいかにもやりそうなことだ',
-      category: '強化',
-      items: [
-        { ja: 'いかにも彼らしい遅刻だ。',                                 en: "It's typical of him to show up late." },
-        { ja: '助けを申し出るなんて、いかにも彼女らしい。',               en: "It's typical of her to offer help." },
-        { ja: '兄弟げんかなんて、いかにも兄弟らしい。',                   en: "It's typical of brothers to argue." },
-      ],
-    },
-    {
-      id: 'cp053',
-      pattern: "I'm indebted to you for ...",
-      ja_pattern: '〜のことで恩義を感じている',
-      category: '強化',
-      items: [
-        { ja: 'あなたの優しさに本当に感謝しています。',                   en: "I'm indebted to you for your kindness." },
-        { ja: 'あの時のアドバイスには本当に恩を感じています。',           en: "I'm indebted to you for the advice you gave me." },
-        { ja: '一緒にいてくれた時間に、心から恩義を感じています。',       en: "I'm indebted to you for being there for me." },
-      ],
-    },
-    {
-      id: 'cp054',
-      pattern: "It's crucial to ...",
-      ja_pattern: '〜することが極めて重要だ',
-      category: '強化',
-      items: [
-        { ja: '〆切を守ることは極めて重要だ。',                           en: "It's crucial to meet the deadline." },
-        { ja: '十分な睡眠を取ることはとても大事だ。',                     en: "It's crucial to get enough sleep." },
-        { ja: 'お客様の声を聞くことが何より大事だ。',                     en: "It's crucial to listen to your customers." },
-      ],
-    },
-    {
-      id: 'cp055',
-      pattern: "I'm struggling to ...",
-      ja_pattern: '〜しようともがいている / 苦戦している',
-      category: '強化',
-      items: [
-        { ja: 'スケジュールに間に合わせるのに苦戦している。',             en: "I'm struggling to keep up with the schedule." },
-        { ja: '今日は集中するのに苦戦している。',                         en: "I'm struggling to stay focused today." },
-        { ja: '禁煙しようと頑張っているけど、なかなかうまくいかない。',   en: "I'm struggling to quit smoking." },
-      ],
-    },
-    {
-      id: 'cp056',
-      pattern: "It's mandatory to ...",
-      ja_pattern: '〜することは義務だ / 必須だ',
-      category: '強化',
-      items: [
-        { ja: '会議に出席することは必須だ。',                             en: "It's mandatory to attend the meeting." },
-        { ja: 'ヘルメット着用は義務だ。',                                 en: "It's mandatory to wear a helmet." },
-        { ja: 'この書類への署名は必須です。',                             en: "It's mandatory to sign this document." },
-      ],
-    },
-    {
-      id: 'cp057',
-      pattern: "I'm optimistic about ...",
-      ja_pattern: '〜について楽観的だ',
-      category: '強化',
-      items: [
-        { ja: 'うちの会社の将来については楽観的だ。',                     en: "I'm optimistic about our company's future." },
-        { ja: '彼の回復については楽観的だ。',                             en: "I'm optimistic about his recovery." },
-        { ja: '今度の試験はいい感じになりそうだ。',                       en: "I'm optimistic about the upcoming exam." },
-      ],
-    },
-    {
-      id: 'cp058',
-      pattern: "It's helpful to ...",
-      ja_pattern: '〜するのが役立つ',
-      category: '強化',
-      items: [
-        { ja: '日記をつけるのは役に立つよ。',                             en: "It's helpful to keep a journal." },
-        { ja: '質問するのはいいことだ、恥ずかしがらないで。',             en: "It's helpful to ask questions when you're not sure." },
-        { ja: '前もって準備しておくと役に立つ。',                         en: "It's helpful to prepare in advance." },
-      ],
-    },
-    {
-      id: 'cp059',
-      pattern: "I'm indifferent to ...",
-      ja_pattern: '〜に無関心だ',
-      category: '強化',
-      items: [
-        { ja: '政治には正直あまり関心がない。',                           en: "I'm indifferent to politics." },
-        { ja: '何を食べるかは特にこだわりがない。',                       en: "I'm indifferent to what we eat." },
-        { ja: '結果はどっちでもいい。',                                   en: "I'm indifferent to the outcome." },
-      ],
-    },
-    {
-      id: 'cp060',
-      pattern: "It's evident that ...",
-      ja_pattern: '〜なのは明らかだ',
-      category: '強化',
-      items: [
-        { ja: '彼が一生懸命やっているのは明らかだ。',                     en: "It's evident that he is working hard." },
-        { ja: '彼女が緊張しているのは明らかだ。',                         en: "It's evident that she is nervous." },
-        { ja: 'チームに練習が必要なのは明らかだ。',                       en: "It's evident that the team needs more practice." },
-      ],
-    },
-    // ============ 上級編 ============
-    {
-      id: 'cp061',
-      pattern: "I'm on my way to ...",
-      ja_pattern: '〜に向かっている途中だ',
-      category: '上級',
-      items: [
-        { ja: '今、駅に向かっている途中だよ。',                           en: "I'm on my way to the station now." },
-        { ja: 'ちょうど今、向かっています。',                             en: "I'm on my way." },
-        { ja: 'ちょうど食料品店に行く途中だよ。',                         en: "I'm on my way to the grocery store." },
-      ],
-    },
-    {
-      id: 'cp062',
-      pattern: "It's about time to ...",
-      ja_pattern: 'そろそろ〜する時間だ',
-      category: '上級',
-      items: [
-        { ja: 'そろそろ寝る時間だよ。',                                   en: "It's about time to go to bed." },
-        { ja: 'そろそろ家を出ないと。',                                   en: "It's about time to leave the house." },
-        { ja: 'そろそろ本気で勉強するべき頃だ。',                         en: "It's about time to start studying seriously." },
-      ],
-    },
-    {
-      id: 'cp063',
-      pattern: "I'm struggling with ...",
-      ja_pattern: '〜に苦戦している',
-      category: '上級',
-      items: [
-        { ja: 'この数学の問題に苦戦している。',                           en: "I'm struggling with this maths problem." },
-        { ja: '時差ボケで参っている。',                                   en: "I'm struggling with jet lag." },
-        { ja: 'やる気の維持に苦戦している。',                             en: "I'm struggling with staying motivated." },
-      ],
-    },
-    {
-      id: 'cp064',
-      pattern: "I've decided to ...",
-      ja_pattern: '〜することに決めた',
-      category: '上級',
-      items: [
-        { ja: 'もう一度ロンドンに行くことにした。',                       en: "I've decided to visit London again." },
-        { ja: 'タバコをやめることに決めた。',                             en: "I've decided to quit smoking." },
-        { ja: '自分のレストランを始めることに決めた。',                   en: "I've decided to start my own restaurant." },
-      ],
-    },
-    {
-      id: 'cp065',
-      pattern: "I'm confident that ...",
-      ja_pattern: '〜だと確信している',
-      category: '上級',
-      items: [
-        { ja: '私たちが勝つと確信している。',                             en: "I'm confident that we will win." },
-        { ja: '彼ならうまくやってくれると信じている。',                   en: "I'm confident that he can handle it." },
-        { ja: 'すべてうまくいくと確信している。',                         en: "I'm confident that everything will work out." },
-      ],
-    },
-    {
-      id: 'cp066',
-      pattern: "It's common for someone to ...",
-      ja_pattern: '(人が) 〜するのはよくあることだ',
-      category: '上級',
-      items: [
-        { ja: '初めは緊張するのは誰でもよくあることだ。',                 en: "It's common for people to feel nervous at first." },
-        { ja: '高校生が遅くまで起きているのはよくあることだ。',           en: "It's common for high schoolers to stay up late." },
-        { ja: '小さな子供が何度も同じ質問をするのはよくあることだ。',     en: "It's common for small children to ask the same question over and over." },
-      ],
-    },
-    {
-      id: 'cp067',
-      pattern: "I'm under the impression that ...",
-      ja_pattern: '〜という印象を持っている',
-      category: '上級',
-      items: [
-        { ja: '会議は明日と聞いていたんだけど。',                         en: "I was under the impression that the meeting was tomorrow." },
-        { ja: 'もうこの件は片付いたと思っていた。',                       en: "I'm under the impression that this was already settled." },
-        { ja: 'あなたはもう知っていると思っていた。',                     en: "I was under the impression that you already knew." },
-      ],
-    },
-    {
-      id: 'cp068',
-      pattern: "I'm torn between A and B.",
-      ja_pattern: 'A と B の間で迷っている',
-      category: '上級',
-      items: [
-        { ja: '泊まるか帰るかで迷っている。',                             en: "I'm torn between staying and leaving." },
-        { ja: 'パスタとピザのどっちにするか迷う。',                       en: "I'm torn between the pasta and the pizza." },
-        { ja: '東京と京都、どっちに住むか迷っている。',                   en: "I'm torn between living in Tokyo and Kyoto." },
-      ],
-    },
-    {
-      id: 'cp069',
-      pattern: "I'm committed to ...ing",
-      ja_pattern: '〜することに全力を尽くしている',
-      category: '上級',
-      items: [
-        { ja: '英語を上達させることに本気で取り組んでいる。',             en: "I'm committed to improving my English." },
-        { ja: 'お客様への最高のサービスを大切にしています。',             en: "I'm committed to giving the best service to our customers." },
-        { ja: '自分の家族を支えることに全力を尽くす。',                   en: "I'm committed to supporting my family." },
-      ],
-    },
-    {
-      id: 'cp070',
-      pattern: "It's out of the question to ...",
-      ja_pattern: '〜するのは論外だ / ありえない',
-      category: '上級',
-      items: [
-        { ja: 'こんな大事な日に遅刻するなんてあり得ない。',               en: "It's out of the question to be late on such an important day." },
-        { ja: '今諦めるなんてあり得ない。',                               en: "It's out of the question to give up now." },
-        { ja: 'お金がないからって、品質を下げるのは論外だ。',             en: "It's out of the question to cut corners on quality." },
-      ],
-    },
-    {
-      id: 'cp071',
-      pattern: "I'm concerned about ...",
-      ja_pattern: '〜について心配している / 懸念している',
-      category: '上級',
-      items: [
-        { ja: '父の体調が心配だ。',                                       en: "I'm concerned about my father's health." },
-        { ja: 'チームのモチベーションが懸念だ。',                         en: "I'm concerned about the team's motivation." },
-        { ja: '気候変動が心配だ。',                                       en: "I'm concerned about climate change." },
-      ],
-    },
-    {
-      id: 'cp072',
-      pattern: "I'm aware that ...",
-      ja_pattern: '〜ということを承知している',
-      category: '上級',
-      items: [
-        { ja: '時間が押しているのは承知しています。',                     en: "I'm aware that time is short." },
-        { ja: 'これは難しい話だと分かっています。',                       en: "I'm aware that this is a difficult subject." },
-        { ja: '何人かは反対しているのも分かっている。',                   en: "I'm aware that some people disagree." },
-      ],
-    },
-    {
-      id: 'cp073',
-      pattern: "It's necessary for you to ...",
-      ja_pattern: '君が〜する必要がある',
-      category: '上級',
-      items: [
-        { ja: '休息を取ることが必要だよ。',                               en: "It's necessary for you to get some rest." },
-        { ja: '毎日少しずつでも英語を練習する必要がある。',               en: "It's necessary for you to practice English every day." },
-        { ja: '〆切を守ることが必要だ。',                                 en: "It's necessary for you to meet the deadline." },
-      ],
-    },
-    {
-      id: 'cp074',
-      pattern: "I'm passionate about ...",
-      ja_pattern: '〜に情熱を注いでいる',
-      category: '上級',
-      items: [
-        { ja: 'お客様に最高の体験を届けることに情熱を注いでいる。',       en: "I'm passionate about delivering the best experience to our customers." },
-        { ja: '私は本当に料理が好きでたまらない。',                       en: "I'm passionate about cooking." },
-        { ja: '子供たちの教育には本気で力を入れている。',                 en: "I'm passionate about my children's education." },
-      ],
-    },
-    // ============ 感情・意図の型 ============
-    {
-      id: 'cp075',
-      pattern: "I'm tempted to ...",
-      ja_pattern: '〜したくてたまらない / 〜しそうだ',
-      category: '感情',
-      items: [
-        { ja: 'もう一切れ食べたくなってきちゃう。',                       en: "I'm tempted to have another slice." },
-        { ja: 'もう全部やめてしまいたい気分だ。',                         en: "I'm tempted to just give up everything." },
-        { ja: '今日は買ってしまいたくなる気持ちが強い。',                 en: "I'm tempted to buy it today." },
-      ],
-    },
-    {
-      id: 'cp076',
-      pattern: "I'm dying to ...",
-      ja_pattern: '死ぬほど〜したい',
-      category: '感情',
-      items: [
-        { ja: 'お母さんの料理が死ぬほど食べたい。',                       en: "I'm dying to eat my mum's cooking." },
-        { ja: 'その映画、死ぬほど観たい。',                               en: "I'm dying to see that movie." },
-        { ja: 'その話、めちゃくちゃ知りたい。',                           en: "I'm dying to know what happened." },
-      ],
-    },
-    {
-      id: 'cp077',
-      pattern: "I'm skeptical about ...",
-      ja_pattern: '〜を疑っている / 懐疑的だ',
-      category: '感情',
-      items: [
-        { ja: 'その商品の宣伝文句には少し懐疑的だ。',                     en: "I'm skeptical about the product's claims." },
-        { ja: 'その提案には少し疑問を感じる。',                           en: "I'm skeptical about the proposal." },
-        { ja: '本当に効くかどうか、ちょっと疑っている。',                 en: "I'm skeptical about whether it really works." },
-      ],
-    },
-    {
-      id: 'cp078',
-      pattern: "I'm not in the mood to ...",
-      ja_pattern: '〜する気分じゃない',
-      category: '感情',
-      items: [
-        { ja: '今夜は外食する気分じゃない。',                             en: "I'm not in the mood to eat out tonight." },
-        { ja: '今日はあまり話す気分じゃない。',                           en: "I'm not in the mood to talk today." },
-        { ja: 'もう議論する気分じゃない。',                               en: "I'm not in the mood to argue anymore." },
-      ],
-    },
-    {
-      id: 'cp079',
-      pattern: "I have a hard time ...ing",
-      ja_pattern: '〜するのに苦労している',
-      category: '感情',
-      items: [
-        { ja: '彼の名前を覚えるのに苦労する。',                           en: "I have a hard time remembering his name." },
-        { ja: '辛い食べ物が苦手だ。',                                     en: "I have a hard time eating spicy food." },
-        { ja: '朝早く起きるのが苦手だ。',                                 en: "I have a hard time waking up early." },
-      ],
-    },
-    // ============ 状況説明の型 ============
-    {
-      id: 'cp080',
-      pattern: "It turns out that ...",
-      ja_pattern: '結局〜だと分かった',
-      category: '状況',
-      items: [
-        { ja: '結局、それは誤報だった。',                                 en: "It turns out that the news was wrong." },
-        { ja: '結局、ボタンを押し忘れていただけだった。',                 en: "It turns out that I just forgot to press the button." },
-        { ja: '結局、彼が正しかった。',                                   en: "It turns out that he was right all along." },
-      ],
-    },
-    {
-      id: 'cp081',
-      pattern: "It's up to you.",
-      ja_pattern: 'あなた次第だ / 任せるよ',
-      category: '状況',
-      items: [
-        { ja: '行くか行かないかは、あなた次第だよ。',                     en: "Going or not — it's up to you." },
-        { ja: 'お皿は何にする？任せるよ。',                               en: "What dish? It's up to you." },
-        { ja: '決めるのは私じゃない、あなた次第だ。',                     en: "It's not my call. It's up to you." },
-      ],
-    },
-    {
-      id: 'cp082',
-      pattern: "I'm on the verge of ...",
-      ja_pattern: '今にも〜しそうだ',
-      category: '状況',
-      items: [
-        { ja: 'もう泣きそうだ。',                                         en: "I'm on the verge of tears." },
-        { ja: 'もう諦めそうだったけど、なんとか続けた。',                 en: "I was on the verge of giving up." },
-        { ja: 'もう倒れそうなくらい疲れている。',                         en: "I'm on the verge of collapsing from exhaustion." },
-      ],
-    },
-    {
-      id: 'cp083',
-      pattern: "What if ...?",
-      ja_pattern: 'もし〜だったらどうする？',
-      category: '状況',
-      items: [
-        { ja: 'もし雨が降ったらどうする？',                               en: "What if it rains?" },
-        { ja: 'もし彼が来なかったら？',                                   en: "What if he doesn't show up?" },
-        { ja: 'もしうちのレストランがミシュランを取ったら？',             en: "What if our restaurant gets a Michelin star?" },
-      ],
-    },
-    // ============ 提案・依頼の型 ============
-    {
-      id: 'cp084',
-      pattern: "Why don't we ...?",
-      ja_pattern: '〜しませんか？',
-      category: '提案',
-      items: [
-        { ja: '夕飯に出かけない？',                                       en: "Why don't we go out for dinner?" },
-        { ja: '一緒にプロジェクトをやらない？',                           en: "Why don't we work on this project together?" },
-        { ja: 'ちょっと休憩しよう？',                                     en: "Why don't we take a short break?" },
-      ],
-    },
-    {
-      id: 'cp085',
-      pattern: "How about ...ing?",
-      ja_pattern: '〜するのはどう？',
-      category: '提案',
-      items: [
-        { ja: '映画でも観に行くのはどう？',                               en: "How about going to the cinema?" },
-        { ja: 'ピザを注文するのは？',                                     en: "How about ordering pizza?" },
-        { ja: '少し早めに始めるのはどう？',                               en: "How about starting a bit earlier?" },
-      ],
-    },
-    {
-      id: 'cp086',
-      pattern: "Make sure to ...",
-      ja_pattern: '必ず〜するようにしてね',
-      category: '提案',
-      items: [
-        { ja: 'ドアをロックするの忘れないでね。',                         en: "Make sure to lock the door." },
-        { ja: '出る前に水を飲んでおくんだよ。',                           en: "Make sure to drink some water before you go." },
-        { ja: '学校に着いたら必ず連絡してね。',                           en: "Make sure to text me when you get to school." },
-      ],
-    },
-    {
-      id: 'cp087',
-      pattern: "I'd appreciate it if you could ...",
-      ja_pattern: '〜していただけると助かります',
-      category: '提案',
-      items: [
-        { ja: '今夜までにお返事いただけると助かります。',                 en: "I'd appreciate it if you could reply by tonight." },
-        { ja: 'ドアを閉めていただけると助かります。',                     en: "I'd appreciate it if you could close the door." },
-        { ja: 'もう少し小さな声で話していただけると助かります。',         en: "I'd appreciate it if you could speak a little quieter." },
-      ],
-    },
-    // ============ Misc / 日常で頻出 ============
-    {
-      id: 'cp088',
-      pattern: "It takes time to ...",
-      ja_pattern: '〜するのに時間がかかる',
-      category: 'Misc',
-      items: [
-        { ja: '新しい言語を覚えるのには時間がかかる。',                   en: "It takes time to learn a new language." },
-        { ja: '人を信じるには時間がかかる。',                             en: "It takes time to build trust." },
-        { ja: '駅まで歩いて 10 分くらいかかる。',                         en: "It takes about ten minutes to walk to the station." },
-      ],
-    },
-    {
-      id: 'cp089',
-      pattern: "I'm planning to ...",
-      ja_pattern: '〜する予定だ',
-      category: 'Misc',
-      items: [
-        { ja: '来週ロンドンに行く予定です。',                             en: "I'm planning to visit London next week." },
-        { ja: 'いつか自分のレストランを開く予定だ。',                     en: "I'm planning to open my own restaurant someday." },
-        { ja: '今夜は早めに寝る予定。',                                   en: "I'm planning to go to bed early tonight." },
-      ],
-    },
-    {
-      id: 'cp090',
-      pattern: "Do you mind if I ...?",
-      ja_pattern: '〜してもいいですか？',
-      category: 'Misc',
-      items: [
-        { ja: '隣に座ってもいいですか？',                                 en: "Do you mind if I sit next to you?" },
-        { ja: '窓を開けてもいいですか？',                                 en: "Do you mind if I open the window?" },
-        { ja: 'ちょっと先に帰ってもいい？',                               en: "Do you mind if I leave a bit early?" },
-      ],
-    },
-    {
-      id: 'cp091',
-      pattern: "It's no use ...ing",
-      ja_pattern: '〜しても無駄だ',
-      category: 'Misc',
-      items: [
-        { ja: '彼に説教しても無駄だ。',                                   en: "It's no use lecturing him." },
-        { ja: '今さら言い訳しても無駄だよ。',                             en: "It's no use making excuses now." },
-        { ja: 'もう寝た子供を起こそうとしても無駄。',                     en: "It's no use trying to wake up a sleeping baby." },
-      ],
-    },
-    {
-      id: 'cp092',
-      pattern: "As far as I know ...",
-      ja_pattern: '私の知る限りでは',
-      category: 'Misc',
-      items: [
-        { ja: '私の知る限り、彼はまだ東京に住んでいる。',                 en: "As far as I know, he still lives in Tokyo." },
-        { ja: '私の知る限り、その店は今日休みだ。',                       en: "As far as I know, the shop is closed today." },
-        { ja: '私の知る限り、誰も気づいていない。',                       en: "As far as I know, nobody noticed." },
-      ],
-    },
-    {
-      id: 'cp093',
-      pattern: "It reminds me of ...",
-      ja_pattern: '〜を思い出す',
-      category: 'Misc',
-      items: [
-        { ja: 'この匂いで祖母の家を思い出す。',                           en: "It reminds me of my grandmother's house." },
-        { ja: 'この曲を聞くと夏休みを思い出す。',                         en: "This song reminds me of summer holidays." },
-        { ja: 'あなたを見るとお父さんを思い出すよ。',                     en: "You remind me of your father." },
-      ],
-    },
-    {
-      id: 'cp094',
-      pattern: "I'm in the middle of ...",
-      ja_pattern: '〜の真っ最中だ',
-      category: 'Misc',
-      items: [
-        { ja: 'ちょうどミーティングの真っ最中だ。',                       en: "I'm in the middle of a meeting." },
-        { ja: 'ちょうど夕飯を作っているところ。',                         en: "I'm in the middle of cooking dinner." },
-        { ja: 'ちょうど勉強の真っ最中だ。',                               en: "I'm in the middle of studying." },
-      ],
-    },
-    {
-      id: 'cp095',
-      pattern: "Can you tell me how to ...?",
-      ja_pattern: '〜のやり方を教えて？',
-      category: 'Misc',
-      items: [
-        { ja: '駅までの行き方を教えてもらえますか？',                     en: "Can you tell me how to get to the station?" },
-        { ja: 'これの使い方を教えてくれる？',                             en: "Can you tell me how to use this?" },
-        { ja: 'スペルの覚え方を教えてくれる？',                           en: "Can you tell me how to remember the spelling?" },
-      ],
-    },
-    // ============ 魔法の型 (基本編・追加) ============
-    {
-      id: 'cp096',
-      pattern: "It's not like ...",
-      ja_pattern: '〜というわけじゃない',
-      category: 'Misc',
-      items: [
-        { ja: '別に怒っているわけじゃないよ、ただ疲れているだけ。',       en: "It's not like I'm angry — I'm just tired." },
-        { ja: 'お金がないわけじゃない、節約してるだけ。',                 en: "It's not like I don't have money — I'm just saving." },
-        { ja: '彼を嫌っているわけじゃない、ただ合わないだけ。',           en: "It's not like I dislike him — we just don't click." },
-      ],
-    },
-    {
-      id: 'cp097',
-      pattern: "I ended up ...ing",
-      ja_pattern: '結局〜することになった',
-      category: 'Misc',
-      items: [
-        { ja: '結局、徹夜することになった。',                             en: "I ended up staying up all night." },
-        { ja: '結局、自分でやることになった。',                           en: "I ended up doing it myself." },
-        { ja: '結局、タクシーで帰ることになった。',                       en: "I ended up taking a taxi home." },
-      ],
-    },
-    {
-      id: 'cp098',
-      pattern: "I'd rather ...",
-      ja_pattern: 'どちらかといえば〜したい',
-      category: 'Misc',
-      items: [
-        { ja: 'どちらかといえば家にいたい。',                             en: "I'd rather stay home." },
-        { ja: 'コーヒーよりお茶のほうがいいかな。',                       en: "I'd rather have tea than coffee." },
-        { ja: '今はその話はしたくない。',                                 en: "I'd rather not talk about it now." },
-      ],
-    },
-    {
-      id: 'cp099',
-      pattern: "I feel like ...",
-      ja_pattern: '〜したい気分だ',
-      category: 'Misc',
-      items: [
-        { ja: 'ピザが食べたい気分だ。',                                   en: "I feel like having pizza." },
-        { ja: '今日は誰とも話したくない気分。',                           en: "I feel like staying quiet today." },
-        { ja: '走りに行きたい気分だ。',                                   en: "I feel like going for a run." },
-      ],
-    },
-    {
-      id: 'cp100',
-      pattern: "I didn't expect ...",
-      ja_pattern: '〜するとは思わなかった',
-      category: 'Misc',
-      items: [
-        { ja: 'こんな大雨になるとは思わなかった。',                       en: "I didn't expect it to rain so heavily." },
-        { ja: '彼がそんなに早く来るとは思わなかった。',                   en: "I didn't expect him to arrive so soon." },
-        { ja: 'こんなに楽しいなんて思わなかった。',                       en: "I didn't expect it to be this fun." },
-      ],
-    },
-    {
-      id: 'cp101',
-      pattern: "There's no way ...",
-      ja_pattern: '絶対〜なはずがない',
-      category: 'Misc',
-      items: [
-        { ja: '彼が嘘をつくはずがない。',                                 en: "There's no way he would lie." },
-        { ja: '今日中に終わるはずがない。',                               en: "There's no way I can finish this today." },
-        { ja: '絶対そんなことはあり得ない。',                             en: "There's no way that's true." },
-      ],
-    },
-    {
-      id: 'cp102',
-      pattern: "It's worth ...ing",
-      ja_pattern: '〜する価値がある',
-      category: 'Misc',
-      items: [
-        { ja: 'その本は読む価値があるよ。',                               en: "It's worth reading that book." },
-        { ja: 'もう一度試してみる価値はある。',                           en: "It's worth trying again." },
-        { ja: 'お父さんの故郷は訪ねる価値がある。',                       en: "It's worth visiting my dad's hometown." },
-      ],
-    },
-    {
-      id: 'cp103',
-      pattern: "How come ...?",
-      ja_pattern: 'どうして〜なの？',
-      category: 'Misc',
-      items: [
-        { ja: 'どうして昨日来なかったの？',                               en: "How come you didn't show up yesterday?" },
-        { ja: 'どうして急にそう決めたの？',                               en: "How come you decided so suddenly?" },
-        { ja: 'どうしてみんな知らなかったの？',                           en: "How come nobody knew about this?" },
-      ],
-    },
-    {
-      id: 'cp104',
-      pattern: "I was wondering if ...",
-      ja_pattern: '〜かなあと思って',
-      category: 'Misc',
-      items: [
-        { ja: 'ちょっと聞きたかったんだけど、明日空いてる？',             en: "I was wondering if you're free tomorrow." },
-        { ja: '少し手伝ってもらえないかな、と思って。',                   en: "I was wondering if you could help me." },
-        { ja: 'どこか間違ってないかな、と思って。',                       en: "I was wondering if I might have made a mistake." },
-      ],
-    },
-    // ============ 日常で頻出 (リアクション・気持ち) ============
-    {
-      id: 'cp105',
-      pattern: "I can't help ...ing",
-      ja_pattern: '〜せずにはいられない',
-      category: 'リアクション',
-      items: [
-        { ja: 'うちの子のことを考えずにはいられない。',                   en: "I can't help thinking about my kids." },
-        { ja: 'おかしくて笑わずにはいられなかった。',                     en: "I couldn't help laughing — it was too funny." },
-        { ja: '昔のことが懐かしくて、つい思い返してしまう。',             en: "I can't help missing the old days." },
-      ],
-    },
-    {
-      id: 'cp106',
-      pattern: "I'm sick of ...ing",
-      ja_pattern: '〜にうんざりしている',
-      category: 'リアクション',
-      items: [
-        { ja: '毎日同じことの繰り返しでもううんざりだ。',                 en: "I'm sick of doing the same thing every day." },
-        { ja: '言い訳ばかり聞かされて、もうたくさんだ。',                 en: "I'm sick of hearing excuses." },
-        { ja: 'こう寒い日が続くともううんざりだ。',                       en: "I'm sick of this cold weather." },
-      ],
-    },
-    {
-      id: 'cp107',
-      pattern: "It slipped my mind.",
-      ja_pattern: 'うっかり忘れてた',
-      category: 'リアクション',
-      items: [
-        { ja: 'ごめん、約束をうっかり忘れてた。',                         en: "Sorry, it slipped my mind." },
-        { ja: '電話するの、すっかり忘れてた。',                           en: "I meant to call, but it slipped my mind." },
-        { ja: '彼の誕生日のこと、うっかり忘れてた。',                     en: "His birthday completely slipped my mind." },
-      ],
-    },
-    {
-      id: 'cp108',
-      pattern: "No big deal.",
-      ja_pattern: '大したことない',
-      category: 'リアクション',
-      items: [
-        { ja: '気にしないで、大したことじゃないよ。',                     en: "No big deal, don't worry about it." },
-        { ja: 'ちょっと遅れたくらい、大したことじゃないよ。',             en: "A few minutes late? No big deal." },
-        { ja: 'ありがとう、でも本当に大したことじゃないんだ。',           en: "Thanks, but really, no big deal." },
-      ],
-    },
+    // ============ Part A: 基本表現 (1-25) ============
     {
-      id: 'cp109',
-      pattern: "Take your time.",
-      ja_pattern: 'ゆっくりどうぞ',
-      category: 'リアクション',
+      id: 'cp001', pattern: "I'd rather", ja_pattern: '〜する方がいい',
       items: [
-        { ja: '急がないで、ゆっくりどうぞ。',                             en: "Take your time, no rush." },
-        { ja: 'ゆっくり選んでくださいね。',                               en: "Take your time choosing." },
-        { ja: 'ちゃんと考えていいよ、急がなくていい。',                   en: "Take your time to think it through." },
+        { ja: '今日はここにいた方がいいです。',                   en: "I'd rather stay here today." },
+        { ja: '電話するより会った方がいいです。',                 en: "I'd rather meet in person than talk on the phone." },
+        { ja: '今日は決めない方がいいです。',                     en: "I'd rather not decide today." },
       ],
     },
     {
-      id: 'cp110',
-      pattern: "It is what it is.",
-      ja_pattern: '仕方ない / そういうもんだ',
-      category: 'リアクション',
+      id: 'cp002', pattern: 'I would like to', ja_pattern: '〜したいです',
       items: [
-        { ja: 'もう変えられない、しょうがないよ。',                       en: "We can't change it now — it is what it is." },
-        { ja: '結果は出てしまった、もう仕方ない。',                       en: "The result is in. It is what it is." },
-        { ja: '色々理屈はあるけど、結局そういうもんだよ。',               en: "There are reasons for it, but it is what it is." },
+        { ja: '詳しく知りたいです。',                             en: 'I would like to know more.' },
+        { ja: 'その物件を見たいです。',                           en: 'I would like to see the property.' },
+        { ja: 'あなたの意見を聞きたいです。',                     en: 'I would like to hear your opinion.' },
       ],
     },
     {
-      id: 'cp111',
-      pattern: "Make yourself at home.",
-      ja_pattern: 'くつろいでね',
-      category: 'リアクション',
+      id: 'cp003', pattern: 'I want to', ja_pattern: '〜したい',
       items: [
-        { ja: 'うちみたいにくつろいでね。',                               en: "Make yourself at home." },
-        { ja: '冷蔵庫のものは何でもどうぞ、くつろいでね。',               en: "Help yourself to anything — make yourself at home." },
-        { ja: '靴は脱いで、ゆっくりしてね。',                             en: "Take off your shoes and make yourself at home." },
+        { ja: '英語を上達させたいです。',                         en: 'I want to improve my English.' },
+        { ja: '良いチームを作りたいです。',                       en: 'I want to build a great team.' },
+        { ja: '美しい店を作りたいです。',                         en: 'I want to create a beautiful restaurant.' },
       ],
     },
     {
-      id: 'cp112',
-      pattern: "I'm all ears.",
-      ja_pattern: 'ちゃんと聞いてるよ',
-      category: 'リアクション',
+      id: 'cp004', pattern: 'I need to', ja_pattern: '〜する必要がある',
       items: [
-        { ja: 'うん、聞いてるよ、続けて。',                               en: "Go on, I'm all ears." },
-        { ja: 'いいアイデアがあるなら、聞かせて。',                       en: "If you have a good idea, I'm all ears." },
-        { ja: '言いたいこと全部聞くから、話して。',                       en: "Tell me everything — I'm all ears." },
+        { ja: '契約書を確認する必要があります。',                 en: 'I need to review the contract.' },
+        { ja: '銀行と話す必要があります。',                       en: 'I need to talk to the bank.' },
+        { ja: '数字を確認する必要があります。',                   en: 'I need to check the numbers.' },
       ],
     },
     {
-      id: 'cp113',
-      pattern: "Let me sleep on it.",
-      ja_pattern: '一晩考えさせて',
-      category: 'リアクション',
+      id: 'cp005', pattern: 'I have to', ja_pattern: '〜しなければならない',
       items: [
-        { ja: '大事な話だから、一晩考えさせて。',                         en: "Let me sleep on it before I decide." },
-        { ja: '今晩じっくり考えて、明日返事するね。',                     en: "Let me sleep on it and I'll get back to you tomorrow." },
-        { ja: '即断は危ない、一晩寝かせよう。',                           en: "Big decisions are risky — let me sleep on it." },
+        { ja: '今日は早く帰らなければなりません。',               en: 'I have to leave early today.' },
+        { ja: '会議の準備をしなければなりません。',               en: 'I have to prepare for the meeting.' },
+        { ja: '金曜日までに決めなければなりません。',             en: 'I have to decide by Friday.' },
       ],
     },
     {
-      id: 'cp114',
-      pattern: "That makes two of us.",
-      ja_pattern: '私もだよ / 同じだよ',
-      category: 'リアクション',
+      id: 'cp006', pattern: "I'm going to", ja_pattern: '〜する予定です',
       items: [
-        { ja: 'お腹空いた？私もだよ。',                                   en: "You're hungry? That makes two of us." },
-        { ja: '疲れたよね、それは私も同じ。',                             en: "Tired? That makes two of us." },
-        { ja: '彼が苦手って？私もだよ。',                                 en: "You don't like him? That makes two of us." },
+        { ja: '来週ロンドンへ行きます。',                         en: "I'm going to London next week." },
+        { ja: '彼に連絡します。',                                 en: "I'm going to contact him." },
+        { ja: 'この案件を進めます。',                             en: "I'm going to move forward with this project." },
       ],
     },
-    // ============ ビジネス / 丁寧 ============
     {
-      id: 'cp115',
-      pattern: "I'd like to ...",
-      ja_pattern: '〜したいのですが',
-      category: 'ビジネス',
+      id: 'cp007', pattern: "I'm thinking of", ja_pattern: '〜しようと思っています',
       items: [
-        { ja: '会議の予約をしたいのですが。',                             en: "I'd like to book a meeting." },
-        { ja: 'メニューに一つ提案を加えたいのですが。',                   en: "I'd like to add a suggestion to the menu." },
-        { ja: 'お礼を申し上げたく、お電話しました。',                     en: "I'd like to thank you for everything." },
+        { ja: '不動産を買おうと思っています。',                   en: "I'm thinking of buying a property." },
+        { ja: '新しい人を採用しようと思っています。',             en: "I'm thinking of hiring someone new." },
+        { ja: 'レイアウトを変更しようと思っています。',           en: "I'm thinking of changing the layout." },
       ],
     },
     {
-      id: 'cp116',
-      pattern: "I'll get back to you.",
-      ja_pattern: '後ほどご連絡します',
-      category: 'ビジネス',
+      id: 'cp008', pattern: "I'm planning to", ja_pattern: '〜する計画です',
       items: [
-        { ja: '確認次第、ご連絡します。',                                 en: "I'll get back to you once I check." },
-        { ja: '今日中に折り返します。',                                   en: "I'll get back to you by the end of the day." },
-        { ja: '価格はチームと相談してから返答します。',                   en: "I'll get back to you on the price after talking to my team." },
+        { ja: '来年パリへ行く計画です。',                         en: "I'm planning to visit Paris next year." },
+        { ja: '事業を拡大する計画です。',                         en: "I'm planning to expand the business." },
+        { ja: '投資を増やす計画です。',                           en: "I'm planning to increase my investments." },
       ],
     },
     {
-      id: 'cp117',
-      pattern: "Bear with me.",
-      ja_pattern: '少しお待ちください',
-      category: 'ビジネス',
+      id: 'cp009', pattern: "I'm looking forward to", ja_pattern: '〜を楽しみにしています',
       items: [
-        { ja: 'ちょっと待ってね、すぐ調べる。',                           en: "Bear with me — I'll check right away." },
-        { ja: '今、システムを起動中なので少々お待ちを。',                 en: "Bear with me while the system loads." },
-        { ja: '長くなりますが、最後までお付き合いください。',             en: "Please bear with me, this might take a while." },
+        { ja: 'お会いするのを楽しみにしています。',               en: "I'm looking forward to seeing you." },
+        { ja: 'オープンを楽しみにしています。',                   en: "I'm looking forward to the opening." },
+        { ja: '結果を楽しみにしています。',                       en: "I'm looking forward to the results." },
       ],
     },
     {
-      id: 'cp118',
-      pattern: "Long story short, ...",
-      ja_pattern: '要するに',
-      category: 'ビジネス',
+      id: 'cp010', pattern: "I'd love to", ja_pattern: 'ぜひ〜したい',
       items: [
-        { ja: '要するに、もうやめることにしたんだ。',                     en: "Long story short, I decided to quit." },
-        { ja: '長くなるから省くけど、結局うまくいかなかった。',           en: "Long story short, it didn't work out." },
-        { ja: '色々あったけど、結論は『行く』だ。',                       en: "Long story short, I'm going." },
+        { ja: 'ぜひ行きたいです。',                               en: "I'd love to go." },
+        { ja: 'ぜひ参加したいです。',                             en: "I'd love to join." },
+        { ja: 'ぜひお話ししたいです。',                           en: "I'd love to talk with you." },
       ],
     },
     {
-      id: 'cp119',
-      pattern: "Just to be clear, ...",
-      ja_pattern: '念のため確認ですが',
-      category: 'ビジネス',
+      id: 'cp011', pattern: 'Even if', ja_pattern: 'たとえ〜でも',
       items: [
-        { ja: '念のため確認ですが、明日 10 時で合ってますか？',           en: "Just to be clear, the meeting is at 10 tomorrow, right?" },
-        { ja: '念のため、これは無料サンプルです。',                       en: "Just to be clear, this is a free sample." },
-        { ja: '誤解のないように言うと、私は反対していません。',           en: "Just to be clear, I'm not against the idea." },
+        { ja: 'たとえ高くても買うと思います。',                   en: "Even if it's expensive, I think I'll buy it." },
+        { ja: 'たとえ失敗しても学べます。',                       en: 'Even if we fail, we can learn something.' },
+        { ja: 'たとえ忙しくても時間を作ります。',                 en: "Even if I'm busy, I'll make time." },
       ],
     },
     {
-      id: 'cp120',
-      pattern: "What do you mean by ...?",
-      ja_pattern: '〜とはどういう意味？',
-      category: '会話展開',
+      id: 'cp012', pattern: 'Although', ja_pattern: '〜だけれども',
       items: [
-        { ja: '「フェア」とはどういう意味ですか？',                       en: 'What do you mean by "fair"?' },
-        { ja: 'すぐとは、いつのことですか？',                             en: 'What do you mean by "soon"?' },
-        { ja: '「無理」というのは、どういう意味で？',                     en: 'What do you mean by "impossible"?' },
+        { ja: '小さいけれど美しいです。',                         en: "Although it's small, it's beautiful." },
+        { ja: '高いけれど価値があります。',                       en: "Although it's expensive, it's worth it." },
+        { ja: '若いけれど優秀です。',                             en: "Although he's young, he's very capable." },
       ],
     },
     {
-      id: 'cp121',
-      pattern: "Correct me if I'm wrong, but ...",
-      ja_pattern: '間違ってたら直して、でも〜',
-      category: '会話展開',
+      id: 'cp013', pattern: 'Even though', ja_pattern: '〜にもかかわらず',
       items: [
-        { ja: '間違ってたら直してほしいんだけど、〆切は金曜だよね？',     en: "Correct me if I'm wrong, but the deadline is Friday." },
-        { ja: '違っていたら言ってね、確かこのお店は日曜定休のはず。',     en: "Correct me if I'm wrong, but this shop closes on Sundays." },
-        { ja: '勘違いだったら申し訳ないけど、もう支払い済みのはずです。', en: "Correct me if I'm wrong, but I think I've already paid." },
+        { ja: '疲れていたけれど行きました。',                     en: 'Even though I was tired, I went.' },
+        { ja: '雨だったけれど楽しめました。',                     en: 'Even though it rained, we enjoyed it.' },
+        { ja: '難しかったけれど成功しました。',                   en: 'Even though it was difficult, we succeeded.' },
       ],
     },
     {
-      id: 'cp122',
-      pattern: "Chances are ...",
-      ja_pattern: 'おそらく〜',
-      category: '会話展開',
+      id: 'cp014', pattern: 'As long as', ja_pattern: '〜する限り',
       items: [
-        { ja: 'おそらく彼は今夜は来ない。',                               en: "Chances are he won't come tonight." },
-        { ja: 'おそらく明日も雨だ。',                                     en: "Chances are it will rain tomorrow too." },
-        { ja: 'たぶん同じ電車で帰ることになるよ。',                       en: "Chances are we'll be on the same train home." },
+        { ja: '品質が良ければ問題ありません。',                   en: "As long as the quality is good, I'm happy." },
+        { ja: '皆が賛成なら進めます。',                           en: "As long as everyone agrees, we'll move forward." },
+        { ja: 'チームが強ければ大丈夫です。',                     en: "As long as the team is strong, we'll be fine." },
       ],
     },
     {
-      id: 'cp123',
-      pattern: "All of a sudden, ...",
-      ja_pattern: '急に〜',
-      category: '会話展開',
+      id: 'cp015', pattern: 'Unless', ja_pattern: '〜しない限り',
       items: [
-        { ja: '急に雨が降り始めた。',                                     en: "All of a sudden, it started to rain." },
-        { ja: '突然、停電になった。',                                     en: "All of a sudden, the power went out." },
-        { ja: '急に名前を呼ばれて、びっくりした。',                       en: "All of a sudden, someone called my name." },
+        { ja: '状況が変わらない限り進めます。',                   en: "Unless something changes, we'll proceed." },
+        { ja: '価格が下がらない限り買いません。',                 en: "Unless the price comes down, I won't buy it." },
+        { ja: '改善しない限り成長できません。',                   en: "Unless we improve, we won't grow." },
       ],
     },
     {
-      id: 'cp124',
-      pattern: "In the meantime, ...",
-      ja_pattern: 'その間に〜',
-      category: '会話展開',
+      id: 'cp016', pattern: 'It depends on', ja_pattern: '〜次第です',
       items: [
-        { ja: 'その間に、お茶でもどうぞ。',                               en: "In the meantime, please have some tea." },
-        { ja: '料理ができるまでの間に、テーブルを準備しておいて。',       en: "In the meantime, please set the table." },
-        { ja: '彼が戻るまでの間に、メールを片付けよう。',                 en: "In the meantime, I'll clear my emails." },
+        { ja: 'タイミング次第です。',                             en: 'It depends on the timing.' },
+        { ja: '場所次第です。',                                   en: 'It depends on the location.' },
+        { ja: '銀行次第です。',                                   en: 'It depends on the bank.' },
       ],
     },
-    // ============ 自然な相槌・前置き (日常会話で頻出) ============
     {
-      id: 'cp125',
-      pattern: "I'm running late.",
-      ja_pattern: '遅れそうだ',
-      category: '日常',
+      id: 'cp017', pattern: 'Rather than', ja_pattern: '〜よりむしろ',
       items: [
-        { ja: 'ごめん、ちょっと遅れそう。',                               en: "Sorry, I'm running late." },
-        { ja: '今日は朝から遅れぎみだ。',                                 en: "I've been running late all morning." },
-        { ja: '電車が遅れて、今日は会議に間に合わないかも。',             en: "The train was delayed, so I'm running late." },
+        { ja: '量より質を重視します。',                           en: "I'd focus on quality rather than quantity." },
+        { ja: '拡大より基盤作りを優先します。',                   en: "I'd strengthen the foundation rather than expand." },
+        { ja: '急ぐより考えたいです。',                           en: "I'd rather think carefully than rush." },
       ],
     },
     {
-      id: 'cp126',
-      pattern: "I'm running out of ...",
-      ja_pattern: '〜が切れそう / 尽きてきた',
-      category: '日常',
+      id: 'cp018', pattern: "There's no point in", ja_pattern: '〜しても意味がない',
       items: [
-        { ja: '時間がなくなってきた。',                                   en: "I'm running out of time." },
-        { ja: 'ガソリンが切れそうだ。',                                   en: "I'm running out of gas." },
-        { ja: 'もうアイデアが尽きてきた。',                               en: "I'm running out of ideas." },
+        { ja: '言い争っても意味がありません。',                   en: "There's no point in arguing." },
+        { ja: '焦っても意味がありません。',                       en: "There's no point in rushing." },
+        { ja: '良い人材なしに出店しても意味がありません。',       en: "There's no point in opening a restaurant without great people." },
       ],
     },
     {
-      id: 'cp127',
-      pattern: "I owe you one.",
-      ja_pattern: '借りができたね / ありがとう',
-      category: '日常',
+      id: 'cp019', pattern: "It's worth -ing", ja_pattern: '〜する価値がある',
       items: [
-        { ja: '助かったよ、借りができた。',                               en: "Thanks for the help — I owe you one." },
-        { ja: 'いつかお礼するよ、本当に借りた。',                         en: "I owe you one. I'll pay you back somehow." },
-        { ja: '今度は私がおごる、借りがあるからね。',                     en: "Dinner's on me — I owe you one." },
+        { ja: '行く価値があります。',                             en: "It's worth visiting." },
+        { ja: '待つ価値があります。',                             en: "It's worth waiting for." },
+        { ja: '良いデザインに投資する価値があります。',           en: "It's worth investing in good design." },
       ],
     },
     {
-      id: 'cp128',
-      pattern: "I'll keep that in mind.",
-      ja_pattern: '覚えておくね',
-      category: '日常',
+      id: 'cp020', pattern: 'I tend to', ja_pattern: '〜しがちだ',
       items: [
-        { ja: 'いいアドバイスだ、覚えておくよ。',                         en: "Good advice — I'll keep that in mind." },
-        { ja: 'なるほど、心に留めておきます。',                           en: "I see. I'll keep that in mind." },
-        { ja: 'ありがとう、次回に活かすよ。',                             en: "Thanks, I'll keep that in mind for next time." },
+        { ja: '私は考え過ぎる傾向があります。',                   en: 'I tend to overthink things.' },
+        { ja: '細部に注目する傾向があります。',                   en: 'I tend to focus on details.' },
+        { ja: '直感を信じる傾向があります。',                     en: 'I tend to trust my instincts.' },
       ],
     },
     {
-      id: 'cp129',
-      pattern: "That's a good point.",
-      ja_pattern: 'それは一理ある',
-      category: '日常',
+      id: 'cp021', pattern: 'I see what you mean', ja_pattern: '言いたいことは分かります',
       items: [
-        { ja: 'なるほど、それは一理あるね。',                             en: "That's a good point — I hadn't thought of that." },
-        { ja: '確かにその通り、いい指摘だ。',                             en: "That's a good point. You're absolutely right." },
-        { ja: 'うん、それも考慮に入れるべきだ。',                         en: "That's a good point — we should think about that too." },
+        { ja: '言いたいことは分かります。',                       en: 'I see what you mean.' },
+        { ja: 'なるほど、その考え方は分かります。',               en: "I see what you mean. That's an interesting perspective." },
+        { ja: '完全には同意しませんが、言いたいことは分かります。', en: "I see what you mean, although I don't completely agree." },
       ],
     },
     {
-      id: 'cp130',
-      pattern: "Speaking of which, ...",
-      ja_pattern: 'そういえば',
-      category: '日常',
+      id: 'cp022', pattern: 'That makes sense', ja_pattern: 'なるほど',
       items: [
-        { ja: 'そういえば、その件、どうなったの？',                       en: "Speaking of which, how did that turn out?" },
-        { ja: 'そういえば、明日来るんだっけ？',                           en: "Speaking of which, are you coming tomorrow?" },
-        { ja: 'それで思い出した、メール返信したっけ？',                   en: "Speaking of which, did you reply to that email?" },
+        { ja: 'なるほど、それは理にかなっています。',             en: 'That makes sense.' },
+        { ja: 'なるほど、それなら理解できます。',                 en: 'That makes sense to me.' },
+        { ja: 'なるほど、だからそうしたのですね。',               en: "That makes sense. That's why you did it." },
       ],
     },
     {
-      id: 'cp131',
-      pattern: "By the way, ...",
-      ja_pattern: 'ところで',
-      category: '日常',
+      id: 'cp023', pattern: "That's a good point", ja_pattern: 'それは良い指摘ですね',
       items: [
-        { ja: 'ところで、お母さんはお元気？',                             en: "By the way, how's your mum?" },
-        { ja: 'そういえば、傘を借りていい？',                             en: "By the way, can I borrow your umbrella?" },
-        { ja: 'ところで、新しい店、行ってみた？',                         en: "By the way, have you tried the new place?" },
+        { ja: 'それは良い指摘ですね。',                           en: "That's a good point." },
+        { ja: 'それは考えていませんでした。良い指摘です。',       en: "I hadn't thought of that. That's a good point." },
+        { ja: '確かに、それは重要ですね。',                       en: "That's a good point. It's important." },
       ],
     },
     {
-      id: 'cp132',
-      pattern: "To be honest, ...",
-      ja_pattern: '正直に言うと',
-      category: '日常',
+      id: 'cp024', pattern: 'In terms of', ja_pattern: '〜の観点では',
       items: [
-        { ja: '正直に言うと、味はあんまりだった。',                       en: "To be honest, the food wasn't great." },
-        { ja: '正直、もうやる気が出ない。',                               en: "To be honest, I've lost my motivation." },
-        { ja: '正直なところ、行きたくない。',                             en: "To be honest, I don't really want to go." },
+        { ja: '立地の観点では最高です。',                         en: "In terms of location, it's excellent." },
+        { ja: '利益の観点では難しいです。',                       en: "In terms of profitability, it's challenging." },
+        { ja: 'デザインの観点ではとても美しいです。',             en: "In terms of design, it's beautiful." },
       ],
     },
     {
-      id: 'cp133',
-      pattern: "The thing is, ...",
-      ja_pattern: '実は / 問題は',
-      category: '日常',
+      id: 'cp025', pattern: 'From my perspective', ja_pattern: '私の考えでは',
       items: [
-        { ja: '実はね、もうチケットが取れないんだ。',                     en: "The thing is, the tickets are already sold out." },
-        { ja: '問題は、予算が足りないってことなんだ。',                   en: "The thing is, we don't have enough budget." },
-        { ja: '実を言うと、僕はあの人を知らないんだ。',                   en: "The thing is, I don't actually know him." },
+        { ja: '私の考えでは良い投資です。',                       en: "From my perspective, it's a good investment." },
+        { ja: '私の考えでは少し高すぎます。',                     en: "From my perspective, it's a little too expensive." },
+        { ja: '私の考えではタイミングが重要です。',               en: 'From my perspective, timing is everything.' },
       ],
     },
+
+    // ============ Part B: 基本質問 (26-50) ============
+    // 各構文に質問 × 3 シーン。各シーンで肯定・中立・否定 3 通りの答え。
+
     {
-      id: 'cp134',
-      pattern: "Now that you mention it, ...",
-      ja_pattern: 'そう言われてみれば',
-      category: '日常',
-      items: [
-        { ja: 'そう言われてみれば、確かに見覚えがある顔だ。',             en: "Now that you mention it, his face does look familiar." },
-        { ja: 'そう言えば、最近ちょっと疲れてるかも。',                   en: "Now that you mention it, I have been feeling tired." },
-        { ja: '言われてみると、あれは確かにおかしかった。',               en: "Now that you mention it, that was strange." },
-      ],
-    },
-    {
-      id: 'cp135',
-      pattern: "I'll see what I can do.",
-      ja_pattern: '何ができるか考えてみる',
-      category: '日常',
-      items: [
-        { ja: 'できる限りのことはやってみるよ。',                         en: "I'll see what I can do." },
-        { ja: '約束はできないけど、検討してみる。',                       en: "I can't promise, but I'll see what I can do." },
-        { ja: '上司に聞いてみて、できるだけのことをします。',             en: "I'll talk to my boss and see what I can do." },
-      ],
-    },
-    {
-      id: 'cp136',
-      pattern: "That's news to me.",
-      ja_pattern: '初耳だ',
-      category: '日常',
-      items: [
-        { ja: 'え、そんな話、初耳だよ。',                                 en: "What? That's news to me." },
-        { ja: '彼が辞めたって？それは初めて聞いた。',                     en: "He quit? That's news to me." },
-        { ja: '会議が中止？聞いてないよ。',                               en: "The meeting is cancelled? That's news to me." },
-      ],
-    },
-    {
-      id: 'cp137',
-      pattern: "Don't get your hopes up.",
-      ja_pattern: '期待しすぎないで',
-      category: '日常',
-      items: [
-        { ja: 'まだ確定じゃないから、期待しすぎないでね。',               en: "It's not confirmed yet, so don't get your hopes up." },
-        { ja: 'うちのチームは弱いから、優勝を期待しないで。',             en: "Don't get your hopes up — our team isn't very strong." },
-        { ja: 'でもあまり期待しないでね、ダメかもしれないから。',         en: "Don't get your hopes up — it might not work out." },
-      ],
-    },
-    {
-      id: 'cp138',
-      pattern: "That works for me.",
-      ja_pattern: 'それで大丈夫',
-      category: '日常',
-      items: [
-        { ja: '7時で大丈夫だよ。',                                       en: "Seven works for me." },
-        { ja: 'その案、私はOKだよ。',                                     en: "That works for me." },
-        { ja: '来週の月曜なら問題ない。',                                 en: "Next Monday works for me." },
-      ],
-    },
-    {
-      id: 'cp139',
-      pattern: "You can say that again.",
-      ja_pattern: '本当にその通り / 同感',
-      category: '日常',
-      items: [
-        { ja: '今日は本当に忙しい！「本当それな！」',                     en: '"Today is so busy!" — "You can say that again!"' },
-        { ja: '彼ってすごい！本当にね、まったく同感だ。',                 en: "He's amazing! You can say that again." },
-        { ja: 'この夏は暑いね。本当そうだよ。',                           en: '"It\'s a hot summer." — "You can say that again."' },
+      id: 'cp026', pattern: 'What do you think about …?', ja_pattern: '〜についてどう思いますか？',
+      qa: [
+        {
+          question: { ja: 'この物件についてどう思いますか？',         en: 'What do you think about this property?' },
+          positive: { ja: '良い投資だと思います。',                   en: "I think it's a good investment." },
+          neutral:  { ja: 'もう少し調べたいです。',                   en: "I'd like to do more research." },
+          negative: { ja: '少し高すぎると思います。',                 en: "I think it's overpriced." },
+        },
+        {
+          question: { ja: 'このレストランについてどう思いますか？',   en: 'What do you think about this restaurant?' },
+          positive: { ja: 'コンセプトが素晴らしいと思います。',       en: 'I think the concept is excellent.' },
+          neutral:  { ja: '可能性は感じます。',                       en: 'I think it has potential.' },
+          negative: { ja: '個性が少し弱いと思います。',               en: 'I think it lacks a strong identity.' },
+        },
+        {
+          question: { ja: 'この立地についてどう思いますか？',         en: 'What do you think about this location?' },
+          positive: { ja: '東京でも最高クラスの立地です。',           en: "It's one of the best locations in Tokyo." },
+          neutral:  { ja: '悪くないと思います。',                     en: "I think it's decent." },
+          negative: { ja: 'もう少し人通りが欲しいですね。',           en: "I'd like to see more foot traffic." },
+        },
       ],
     },
     {
-      id: 'cp140',
-      pattern: "I'm beat.",
-      ja_pattern: 'くたくただ',
-      category: '日常',
-      items: [
-        { ja: '今日は本当にくたくただよ。',                               en: "I'm beat after today." },
-        { ja: 'もう疲れて頭が回らない、寝る。',                           en: "I'm beat — I'm going to bed." },
-        { ja: '一日中ボールを蹴って、もうへとへと。',                     en: "I'm beat after kicking the ball all day." },
-      ],
-    },
-    {
-      id: 'cp141',
-      pattern: "Let's keep in touch.",
-      ja_pattern: '連絡取り合おう',
-      category: '日常',
-      items: [
-        { ja: 'これからも連絡取り合おうね。',                             en: "Let's keep in touch." },
-        { ja: 'メールでもいいから、ちゃんと連絡し続けようよ。',           en: "Let's keep in touch by email." },
-        { ja: '海外でも連絡取り合いたいな。',                             en: "Let's keep in touch even when you're abroad." },
+      id: 'cp027', pattern: 'How do you feel about …?', ja_pattern: '〜についてどう感じますか？',
+      qa: [
+        {
+          question: { ja: 'この提案についてどう思いますか？',         en: 'How do you feel about this proposal?' },
+          positive: { ja: 'とても前向きです。',                       en: 'I feel very positive about it.' },
+          neutral:  { ja: 'まだ判断中です。',                         en: "I'm still evaluating it." },
+          negative: { ja: '少し懸念があります。',                     en: 'I have some concerns.' },
+        },
+        {
+          question: { ja: 'この価格についてどう思いますか？',         en: 'How do you feel about the price?' },
+          positive: { ja: '妥当だと思います。',                       en: "I think it's fair." },
+          neutral:  { ja: '少し高いですが理解できます。',             en: "It's a bit expensive, but understandable." },
+          negative: { ja: '高すぎると思います。',                     en: "I think it's too expensive." },
+        },
+        {
+          question: { ja: 'このタイミングについてどう思いますか？',   en: 'How do you feel about the timing?' },
+          positive: { ja: '良いタイミングだと思います。',             en: 'I think the timing is right.' },
+          neutral:  { ja: '何とも言えません。',                       en: "I'm not sure yet." },
+          negative: { ja: '少し早すぎると思います。',                 en: "I think it's a little too early." },
+        },
       ],
     },
     {
-      id: 'cp142',
-      pattern: "I'm getting the hang of it.",
-      ja_pattern: 'コツが掴めてきた',
-      category: '日常',
-      items: [
-        { ja: '少しずつ、コツが掴めてきた。',                             en: "I'm getting the hang of it." },
-        { ja: '新しい仕事、やっと慣れてきた。',                           en: "I'm finally getting the hang of my new job." },
-        { ja: 'やっと英語にも慣れてきたよ。',                             en: "I'm getting the hang of English." },
+      id: 'cp028', pattern: 'Have you ever been to …?', ja_pattern: '〜へ行ったことがありますか？',
+      qa: [
+        {
+          question: { ja: 'ロンドンへ行ったことがありますか？',       en: 'Have you ever been to London?' },
+          positive: { ja: 'はい、何度もあります。',                   en: 'Yes, many times.' },
+          neutral:  { ja: '一度だけあります。',                       en: 'Yes, just once.' },
+          negative: { ja: 'まだありません。',                         en: 'No, not yet.' },
+        },
+        {
+          question: { ja: 'Benuへ行ったことがありますか？',           en: 'Have you ever been to Benu?' },
+          positive: { ja: 'はい、素晴らしかったです。',               en: 'Yes, it was amazing.' },
+          neutral:  { ja: '予約が取れませんでした。',                 en: "Not yet, I couldn't get a reservation." },
+          negative: { ja: 'いいえ、興味がありません。',               en: "No, I'm not particularly interested." },
+        },
+        {
+          question: { ja: '台湾へ行ったことがありますか？',           en: 'Have you ever been to Taiwan?' },
+          positive: { ja: 'はい、大好きです。',                       en: 'Yes, I love Taiwan.' },
+          neutral:  { ja: '昔行ったことがあります。',                 en: 'Yes, a long time ago.' },
+          negative: { ja: 'まだ行ったことがありません。',             en: "No, I've never been there." },
+        },
       ],
     },
     {
-      id: 'cp143',
-      pattern: "It's on the tip of my tongue.",
-      ja_pattern: '喉まで出かかってるんだけど',
-      category: '日常',
-      items: [
-        { ja: 'あの人の名前、喉まで出かかってる…。',                     en: "His name is on the tip of my tongue..." },
-        { ja: 'あの単語、出てきそうで出てこない。',                       en: "It's on the tip of my tongue, I just can't say it." },
-        { ja: 'あのレストラン、なんて名前だっけ…喉まで出かかってる。',   en: "What was the name of that restaurant? It's on the tip of my tongue." },
+      id: 'cp029', pattern: 'What would you do if you were me?', ja_pattern: 'あなたならどうしますか？',
+      qa: [
+        {
+          question: { ja: 'あなたならどうしますか？',                 en: 'What would you do if you were me?' },
+          positive: { ja: '私なら進めます。',                         en: "I'd move forward." },
+          neutral:  { ja: 'もう少し様子を見ます。',                   en: "I'd wait and see." },
+          negative: { ja: '私なら見送ります。',                       en: "I'd walk away." },
+        },
+        {
+          question: { ja: 'この投資ならどうしますか？',               en: 'What would you do if you were me regarding this investment?' },
+          positive: { ja: '少しずつ投資します。',                     en: "I'd invest gradually." },
+          neutral:  { ja: 'もっと調べます。',                         en: "I'd do more research." },
+          negative: { ja: '投資しません。',                           en: "I wouldn't invest." },
+        },
+        {
+          question: { ja: 'この物件ならどうしますか？',               en: 'What would you do if you were me regarding this property?' },
+          positive: { ja: '購入を検討します。',                       en: "I'd seriously consider buying it." },
+          neutral:  { ja: '条件交渉します。',                         en: "I'd negotiate the terms." },
+          negative: { ja: '今は買いません。',                         en: "I wouldn't buy it now." },
+        },
       ],
     },
     {
-      id: 'cp144',
-      pattern: "Sounds like a plan.",
-      ja_pattern: 'それいいね / その案で行こう',
-      category: '日常',
-      items: [
-        { ja: '7時に集合？うん、それいいね。',                           en: "Meet at seven? Sounds like a plan." },
-        { ja: 'まずカフェ、その後映画。いいね、その案で行こう。',         en: "Cafe first, then movie. Sounds like a plan." },
-        { ja: '土曜日でいい？うん、それでいこう。',                       en: "Saturday works? Sounds like a plan." },
+      id: 'cp030', pattern: 'Why do you think that?', ja_pattern: 'なぜそう思いますか？',
+      qa: [
+        {
+          question: { ja: 'なぜそう思いますか？',                     en: 'Why do you think that?' },
+          positive: { ja: '需要が強いからです。',                     en: 'Because demand is strong.' },
+          neutral:  { ja: 'いくつか良い兆候があります。',             en: 'Because there are some positive signs.' },
+          negative: { ja: 'リスクが大きいからです。',                 en: 'Because the risk is significant.' },
+        },
+        {
+          question: { ja: 'なぜ成功すると考えるのですか？',           en: 'Why do you think it will succeed?' },
+          positive: { ja: 'チームが素晴らしいからです。',             en: 'Because the team is exceptional.' },
+          neutral:  { ja: '可能性はあると思います。',                 en: 'Because I see potential.' },
+          negative: { ja: '成功するとは限りません。',                 en: "I'm not sure it will." },
+        },
+        {
+          question: { ja: 'なぜその立地が良いのですか？',             en: 'Why do you think the location is good?' },
+          positive: { ja: '供給が限られているからです。',             en: 'Because supply is limited.' },
+          neutral:  { ja: '需要は安定しています。',                   en: 'Because demand is stable.' },
+          negative: { ja: 'そこまで強い立地ではありません。',         en: "I don't think it's that strong." },
+        },
+      ],
+    },
+    {
+      id: 'cp031', pattern: 'What makes you say that?', ja_pattern: 'なぜそう思うのですか？',
+      qa: [
+        {
+          question: { ja: 'なぜその立地が良いと思うのですか？',       en: 'What makes you say that about the location?' },
+          positive: { ja: '供給が限られているからです。',             en: 'Because supply is limited.' },
+          neutral:  { ja: 'いくつか良い指標があります。',             en: 'Because there are several positive indicators.' },
+          negative: { ja: '実はそこまで確信していません。',           en: "Actually, I'm not that confident." },
+        },
+        {
+          question: { ja: 'なぜそこまで自信があるのですか？',         en: 'What makes you say that?' },
+          positive: { ja: '似た案件を何度も見てきたからです。',       en: "Because I've seen similar situations many times." },
+          neutral:  { ja: '経験上そう感じます。',                     en: 'Based on my experience.' },
+          negative: { ja: '単なる仮説です。',                         en: "It's just a hypothesis." },
+        },
+        {
+          question: { ja: 'なぜそう判断したのですか？',               en: 'What makes you say that?' },
+          positive: { ja: '数字がそれを示しています。',               en: 'Because the numbers support it.' },
+          neutral:  { ja: '現時点の情報からです。',                   en: 'Based on the information available today.' },
+          negative: { ja: 'まだ十分なデータはありません。',           en: "We don't have enough data yet." },
+        },
+      ],
+    },
+    {
+      id: 'cp032', pattern: 'What do you mean by that?', ja_pattern: 'それはどういう意味ですか？',
+      qa: [
+        {
+          question: { ja: 'それはどういう意味ですか？（タイミング）', en: 'What do you mean by that?' },
+          positive: { ja: '今が良いタイミングだという意味です。',     en: 'I mean this is a good opportunity.' },
+          neutral:  { ja: 'もう少し様子を見るべきという意味です。',   en: 'I mean we should wait and see.' },
+          negative: { ja: '今はやめた方がいいという意味です。',       en: 'I mean we should avoid it for now.' },
+        },
+        {
+          question: { ja: 'それはどういう意味ですか？（ブランド）',   en: 'What do you mean by that?' },
+          positive: { ja: 'ブランド価値が上がるという意味です。',     en: 'I mean the brand value will increase.' },
+          neutral:  { ja: 'まだ不確実性があるという意味です。',       en: "I mean there's still uncertainty." },
+          negative: { ja: 'リスクが高いという意味です。',             en: 'I mean the risk is high.' },
+        },
+        {
+          question: { ja: 'それはどういう意味ですか？（長期）',       en: 'What do you mean by that?' },
+          positive: { ja: '長期的には有望という意味です。',           en: 'I mean it has long-term potential.' },
+          neutral:  { ja: '今は判断が難しいという意味です。',         en: "I mean it's difficult to judge right now." },
+          negative: { ja: '期待ほどではないという意味です。',         en: "I mean it's not as good as expected." },
+        },
+      ],
+    },
+    {
+      id: 'cp033', pattern: 'Can you tell me more?', ja_pattern: 'もう少し教えてください',
+      qa: [
+        {
+          question: { ja: 'その話をもう少し教えてください。',         en: 'Can you tell me more about that?' },
+          positive: { ja: 'もちろんです。',                           en: 'Of course.' },
+          neutral:  { ja: '分かっている範囲でお話しします。',         en: "I'll share what I know." },
+          negative: { ja: 'まだ詳しくは分かりません。',               en: "I don't know enough yet." },
+        },
+        {
+          question: { ja: 'そのプロジェクトについてもう少し教えてください。', en: 'Can you tell me more about the project?' },
+          positive: { ja: '順調に進んでいます。',                     en: "It's progressing well." },
+          neutral:  { ja: 'まだ計画段階です。',                       en: "We're still in the planning phase." },
+          negative: { ja: 'いくつか課題があります。',                 en: 'There are several challenges.' },
+        },
+        {
+          question: { ja: 'その投資についてもう少し教えてください。', en: 'Can you tell me more about the investment?' },
+          positive: { ja: '長期的な成長が期待できます。',             en: 'It has strong long-term potential.' },
+          neutral:  { ja: '現在分析中です。',                         en: "We're still evaluating it." },
+          negative: { ja: 'リスクが高めです。',                       en: 'The risk is relatively high.' },
+        },
+      ],
+    },
+    {
+      id: 'cp034', pattern: 'How important is …?', ja_pattern: '〜はどれくらい重要ですか？',
+      qa: [
+        {
+          question: { ja: '立地はどれくらい重要ですか？',             en: 'How important is location?' },
+          positive: { ja: '非常に重要です。',                         en: "It's extremely important." },
+          neutral:  { ja: '重要ですが全てではありません。',           en: "It's important, but not everything." },
+          negative: { ja: 'このケースではそれほど重要ではありません。', en: "It's not that important in this case." },
+        },
+        {
+          question: { ja: 'デザインはどれくらい重要ですか？',         en: 'How important is design?' },
+          positive: { ja: 'ブランドに大きな影響を与えます。',         en: 'It has a huge impact on the brand.' },
+          neutral:  { ja: '業態によります。',                         en: 'It depends on the business.' },
+          negative: { ja: '優先順位は高くありません。',               en: "It's not a top priority." },
+        },
+        {
+          question: { ja: '採用はどれくらい重要ですか？',             en: 'How important is hiring?' },
+          positive: { ja: '成功を左右します。',                       en: 'It determines success.' },
+          neutral:  { ja: '重要な要素の一つです。',                   en: "It's one of the important factors." },
+          negative: { ja: '他にも重要な要素があります。',             en: 'There are other important factors.' },
+        },
+      ],
+    },
+    {
+      id: 'cp035', pattern: 'What happened?', ja_pattern: '何があったのですか？',
+      qa: [
+        {
+          question: { ja: '何があったのですか？',                     en: 'What happened?' },
+          positive: { ja: '問題は解決しました。',                     en: 'The issue has been resolved.' },
+          neutral:  { ja: '少し遅れています。',                       en: "We're running a little behind schedule." },
+          negative: { ja: '大きな問題が発生しました。',               en: 'A major issue came up.' },
+        },
+        {
+          question: { ja: 'プロジェクトで何があったのですか？',       en: 'What happened with the project?' },
+          positive: { ja: '予定より早く進んでいます。',               en: "It's ahead of schedule." },
+          neutral:  { ja: '予定通り進んでいます。',                   en: "It's moving as planned." },
+          negative: { ja: '工事が遅れています。',                     en: 'Construction has been delayed.' },
+        },
+        {
+          question: { ja: 'チームで何があったのですか？',             en: 'What happened with the team?' },
+          positive: { ja: '素晴らしい人材が加わりました。',           en: 'We hired a great person.' },
+          neutral:  { ja: 'いくつか変更がありました。',               en: 'There have been some changes.' },
+          negative: { ja: '重要なメンバーが辞めました。',             en: 'A key member left.' },
+        },
+      ],
+    },
+    {
+      id: 'cp036', pattern: 'Why is that?', ja_pattern: 'なぜですか？',
+      qa: [
+        {
+          question: { ja: 'なぜですか？',                             en: 'Why is that?' },
+          positive: { ja: '需要が増えているからです。',               en: 'Because demand is increasing.' },
+          neutral:  { ja: '市場環境が変化しているからです。',         en: 'Because market conditions are changing.' },
+          negative: { ja: '競争が激しくなっているからです。',         en: 'Because competition is increasing.' },
+        },
+        {
+          question: { ja: 'なぜそう考えるのですか？',                 en: 'Why is that?' },
+          positive: { ja: 'データがそれを示しています。',             en: 'Because the data supports it.' },
+          neutral:  { ja: 'そう感じるからです。',                     en: "That's simply my impression." },
+          negative: { ja: 'いくつか懸念があるからです。',             en: 'Because I have some concerns.' },
+        },
+        {
+          question: { ja: 'なぜその戦略なのですか？',                 en: 'Why is that?' },
+          positive: { ja: '長期的に有利だからです。',                 en: "Because it's advantageous long term." },
+          neutral:  { ja: '現時点では最善だからです。',               en: "Because it's the best option right now." },
+          negative: { ja: '他に選択肢が少ないからです。',             en: "Because there aren't many alternatives." },
+        },
+      ],
+    },
+    {
+      id: 'cp037', pattern: 'How likely is it that …?', ja_pattern: '〜の可能性はどれくらいありますか？',
+      qa: [
+        {
+          question: { ja: '価格が上がる可能性はどれくらいありますか？', en: 'How likely is it that prices will rise?' },
+          positive: { ja: 'かなり高いと思います。',                   en: "I think it's highly likely." },
+          neutral:  { ja: '五分五分だと思います。',                   en: "I think it's fifty-fifty." },
+          negative: { ja: '可能性は低いと思います。',                 en: "I think it's unlikely." },
+        },
+        {
+          question: { ja: '成功する可能性はどれくらいありますか？',   en: 'How likely is it that this will succeed?' },
+          positive: { ja: '十分可能性があります。',                   en: 'I think it has a strong chance.' },
+          neutral:  { ja: 'まだ分かりません。',                       en: "It's too early to tell." },
+          negative: { ja: '簡単ではないと思います。',                 en: "I don't think it will be easy." },
+        },
+        {
+          question: { ja: '上場する可能性はどれくらいありますか？',   en: 'How likely is it that the company will go public?' },
+          positive: { ja: 'かなり高いと思います。',                   en: 'I think the chances are high.' },
+          neutral:  { ja: '現時点では判断できません。',               en: "It's hard to say at this stage." },
+          negative: { ja: 'まだ課題が多いです。',                     en: 'There are still many hurdles.' },
+        },
+      ],
+    },
+    {
+      id: 'cp038', pattern: 'What are the pros and cons?', ja_pattern: 'メリットとデメリットは何ですか？',
+      qa: [
+        {
+          question: { ja: 'この物件のメリットとデメリットは何ですか？', en: 'What are the pros and cons of this property?' },
+          positive: { ja: '立地が素晴らしく、希少性があります。',     en: 'The location is excellent and the property is unique.' },
+          neutral:  { ja: '良い点も悪い点もあります。',               en: 'It has both strengths and weaknesses.' },
+          negative: { ja: '価格が高く、維持費も高額です。',           en: 'The price is high and the carrying costs are significant.' },
+        },
+        {
+          question: { ja: 'この投資のメリットとデメリットは何ですか？', en: 'What are the pros and cons of this investment?' },
+          positive: { ja: '大きな成長余地があります。',               en: 'It has significant upside potential.' },
+          neutral:  { ja: 'リスクとリターンのバランスは普通です。',   en: 'The risk-reward profile is fairly balanced.' },
+          negative: { ja: '流動性が低いです。',                       en: 'Liquidity is limited.' },
+        },
+        {
+          question: { ja: 'この計画のメリットとデメリットは何ですか？', en: 'What are the pros and cons of this plan?' },
+          positive: { ja: 'ブランド価値を高められます。',             en: 'It can strengthen the brand.' },
+          neutral:  { ja: '時間はかかりますが実現可能です。',         en: "It will take time, but it's achievable." },
+          negative: { ja: '予算超過のリスクがあります。',             en: 'There is a risk of cost overruns.' },
+        },
+      ],
+    },
+    {
+      id: 'cp039', pattern: "What's the downside?", ja_pattern: '欠点は何ですか？',
+      qa: [
+        {
+          question: { ja: '欠点は何ですか？',                         en: "What's the downside?" },
+          positive: { ja: '大きな欠点は見当たりません。',             en: "I don't see any major downside." },
+          neutral:  { ja: '多少時間がかかります。',                   en: 'It may take some time.' },
+          negative: { ja: '初期投資が大きいです。',                   en: 'The upfront investment is substantial.' },
+        },
+        {
+          question: { ja: 'この投資の欠点は何ですか？',               en: "What's the downside of this investment?" },
+          positive: { ja: 'リスクは比較的低いです。',                 en: 'The risk is relatively low.' },
+          neutral:  { ja: '短期的な利益は期待しにくいです。',         en: 'Short-term gains may be limited.' },
+          negative: { ja: '下落時に売却しづらいです。',               en: 'It may be difficult to exit during a downturn.' },
+        },
+        {
+          question: { ja: 'この物件の欠点は何ですか？',               en: "What's the downside of this property?" },
+          positive: { ja: '立地がその欠点を補っています。',           en: 'The location outweighs the drawbacks.' },
+          neutral:  { ja: '管理費が少し高いです。',                   en: 'The maintenance fees are somewhat high.' },
+          negative: { ja: '価格がかなり高いです。',                   en: 'The price is very high.' },
+        },
+      ],
+    },
+    {
+      id: 'cp040', pattern: 'Compared to …, how is …?', ja_pattern: '〜と比べてどうですか？',
+      qa: [
+        {
+          question: { ja: '東京と比べてロンドンはどうですか？',       en: 'Compared to Tokyo, how is London?' },
+          positive: { ja: 'より国際的です。',                         en: "It's more international." },
+          neutral:  { ja: 'それぞれに魅力があります。',               en: 'Each has its own strengths.' },
+          negative: { ja: 'サービス面では東京の方が上です。',         en: 'Tokyo is better in terms of service.' },
+        },
+        {
+          question: { ja: 'ホテルと比べてNOT A HOTELはどうですか？',  en: 'Compared to a hotel, how is NOT A HOTEL?' },
+          positive: { ja: '自由度が高いです。',                       en: 'It offers greater flexibility.' },
+          neutral:  { ja: '用途によります。',                         en: 'It depends on how you use it.' },
+          negative: { ja: 'サービスはホテルの方が充実しています。',   en: 'Hotels provide more comprehensive service.' },
+        },
+        {
+          question: { ja: '去年と比べて今年はどうですか？',           en: 'Compared to last year, how is this year?' },
+          positive: { ja: 'かなり良くなっています。',                 en: "It's significantly better." },
+          neutral:  { ja: '大きな変化はありません。',                 en: "There hasn't been a major change." },
+          negative: { ja: '厳しくなっています。',                     en: "It's becoming more challenging." },
+        },
+      ],
+    },
+    {
+      id: 'cp041', pattern: 'What should I be aware of?', ja_pattern: '何に注意すべきですか？',
+      qa: [
+        {
+          question: { ja: 'この物件を買う上で何に注意すべきですか？', en: 'What should I be aware of when buying this property?' },
+          positive: { ja: '将来的な価値上昇の可能性があります。',     en: 'There is potential for appreciation.' },
+          neutral:  { ja: '管理費を確認してください。',               en: 'You should review the maintenance fees.' },
+          negative: { ja: '将来の供給増加に注意してください。',       en: 'Be aware of future supply increases.' },
+        },
+        {
+          question: { ja: 'レストラン経営で何に注意すべきですか？',   en: 'What should I be aware of when running a restaurant?' },
+          positive: { ja: '強いチームがあれば成功しやすいです。',     en: 'A strong team can make a huge difference.' },
+          neutral:  { ja: 'キャッシュフロー管理が重要です。',         en: 'Cash flow management is important.' },
+          negative: { ja: '人材不足が大きな課題です。',               en: 'Staffing shortages can be a major challenge.' },
+        },
+        {
+          question: { ja: 'この投資で何に注意すべきですか？',         en: 'What should I be aware of with this investment?' },
+          positive: { ja: '長期的な成長余地があります。',             en: 'It has long-term growth potential.' },
+          neutral:  { ja: '時間軸を意識してください。',               en: 'Pay attention to the investment horizon.' },
+          negative: { ja: '流動性リスクがあります。',                 en: 'There is liquidity risk.' },
+        },
+      ],
+    },
+    {
+      id: 'cp042', pattern: 'How does that work?', ja_pattern: 'それはどういう仕組みですか？',
+      qa: [
+        {
+          question: { ja: 'それはどういう仕組みですか？',             en: 'How does that work?' },
+          positive: { ja: '収益をパートナーで分配します。',           en: 'The revenue is shared among partners.' },
+          neutral:  { ja: '契約内容によります。',                     en: 'It depends on the agreement.' },
+          negative: { ja: '仕組みが少し複雑です。',                   en: 'The structure is somewhat complicated.' },
+        },
+        {
+          question: { ja: 'プライベートバンクはどういう仕組みですか？', en: 'How does private banking work?' },
+          positive: { ja: '資産管理を包括的に支援します。',           en: 'They provide comprehensive wealth management.' },
+          neutral:  { ja: '銀行によって異なります。',                 en: 'It varies by institution.' },
+          negative: { ja: '手数料が高い場合があります。',             en: 'Fees can be expensive.' },
+        },
+        {
+          question: { ja: 'この融資スキームはどういう仕組みですか？', en: 'How does this financing structure work?' },
+          positive: { ja: '柔軟性があります。',                       en: 'It offers flexibility.' },
+          neutral:  { ja: '担保を設定します。',                       en: 'Collateral is required.' },
+          negative: { ja: '条件が厳しい場合があります。',             en: 'The terms can be restrictive.' },
+        },
+      ],
+    },
+    {
+      id: 'cp043', pattern: 'If you had to choose, which would you pick?', ja_pattern: '選ぶならどちらですか？',
+      qa: [
+        {
+          question: { ja: '選ぶならどちらですか？',                   en: 'If you had to choose, which would you pick?' },
+          positive: { ja: '立地の良い方を選びます。',                 en: "I'd choose the better location." },
+          neutral:  { ja: '条件次第です。',                           en: 'It depends on the terms.' },
+          negative: { ja: 'どちらも選びません。',                     en: "I'd choose neither." },
+        },
+        {
+          question: { ja: '選ぶならどのレストランですか？',           en: 'If you had to choose, which restaurant would you pick?' },
+          positive: { ja: 'コンセプトが最も強い店です。',             en: "I'd choose the one with the strongest concept." },
+          neutral:  { ja: 'もう少し見てから決めます。',               en: "I'd like to see more before deciding." },
+          negative: { ja: 'どちらも私の好みではありません。',         en: 'Neither fits my taste.' },
+        },
+        {
+          question: { ja: '選ぶならどの投資ですか？',                 en: 'If you had to choose, which investment would you pick?' },
+          positive: { ja: '長期的な成長余地がある方です。',           en: 'The one with stronger long-term potential.' },
+          neutral:  { ja: 'リスクとリターンを比較します。',           en: "I'd compare the risk and reward." },
+          negative: { ja: '今は投資しません。',                       en: "I wouldn't invest right now." },
+        },
+      ],
+    },
+    {
+      id: 'cp044', pattern: 'Am I missing something?', ja_pattern: '何か見落としていますか？',
+      qa: [
+        {
+          question: { ja: '何か見落としていますか？',                 en: 'Am I missing something?' },
+          positive: { ja: '全体的によく整理できています。',           en: "I think you've covered most of it." },
+          neutral:  { ja: 'いくつか追加で確認した方が良いです。',     en: 'There are a few more things to check.' },
+          negative: { ja: 'リスクを少し軽視しているかもしれません。', en: 'You may be underestimating the risk.' },
+        },
+        {
+          question: { ja: 'この物件で見落としはありますか？',         en: 'Am I missing something regarding this property?' },
+          positive: { ja: '良い分析だと思います。',                   en: 'I think your analysis is solid.' },
+          neutral:  { ja: '出口戦略も考えた方が良いです。',           en: 'You should also think about your exit strategy.' },
+          negative: { ja: '維持費を見落としているかもしれません。',   en: 'You may be overlooking the carrying costs.' },
+        },
+        {
+          question: { ja: 'このレストラン計画で見落としはありますか？', en: 'Am I missing something regarding this restaurant project?' },
+          positive: { ja: '方向性は良いと思います。',                 en: 'I think the direction is strong.' },
+          neutral:  { ja: '採用計画を再確認してください。',           en: 'You should revisit the hiring plan.' },
+          negative: { ja: 'オペレーションが複雑すぎるかもしれません。', en: 'The operation may be too complex.' },
+        },
+      ],
+    },
+    {
+      id: 'cp045', pattern: 'What concerns you most?', ja_pattern: '最も心配していることは何ですか？',
+      qa: [
+        {
+          question: { ja: '最も心配していることは何ですか？',         en: 'What concerns you most?' },
+          positive: { ja: '大きな懸念はありません。',                 en: "I don't have major concerns." },
+          neutral:  { ja: '市場環境です。',                           en: 'The market environment.' },
+          negative: { ja: '実行リスクです。',                         en: 'Execution risk.' },
+        },
+        {
+          question: { ja: 'この案件で最も心配なことは何ですか？',     en: 'What concerns you most about this project?' },
+          positive: { ja: 'チームには自信があります。',               en: "I'm confident in the team." },
+          neutral:  { ja: 'スケジュールです。',                       en: 'The timeline.' },
+          negative: { ja: '予算超過です。',                           en: 'Budget overruns.' },
+        },
+        {
+          question: { ja: 'この市場で最も心配なことは何ですか？',     en: 'What concerns you most about this market?' },
+          positive: { ja: '長期的には楽観的です。',                   en: "I'm optimistic long term." },
+          neutral:  { ja: '金利です。',                               en: 'Interest rates.' },
+          negative: { ja: '景気後退です。',                           en: 'A potential recession.' },
+        },
+      ],
+    },
+    {
+      id: 'cp046', pattern: 'What would you prioritize?', ja_pattern: '何を優先しますか？',
+      qa: [
+        {
+          question: { ja: '何を優先しますか？',                       en: 'What would you prioritize?' },
+          positive: { ja: 'チームです。',                             en: 'The team.' },
+          neutral:  { ja: 'キャッシュフローです。',                   en: 'Cash flow.' },
+          negative: { ja: 'まずリスク管理です。',                     en: 'Risk management first.' },
+        },
+        {
+          question: { ja: 'レストラン開業なら何を優先しますか？',     en: 'What would you prioritize when opening a restaurant?' },
+          positive: { ja: '最高の料理人です。',                       en: 'Finding the best chef.' },
+          neutral:  { ja: '強いコンセプトです。',                     en: 'A strong concept.' },
+          negative: { ja: '無理な拡大は避けます。',                   en: 'Avoiding overexpansion.' },
+        },
+        {
+          question: { ja: 'この投資なら何を優先しますか？',           en: 'What would you prioritize in this investment?' },
+          positive: { ja: '長期成長です。',                           en: 'Long-term growth.' },
+          neutral:  { ja: '流動性です。',                             en: 'Liquidity.' },
+          negative: { ja: '元本保全です。',                           en: 'Capital preservation.' },
+        },
+      ],
+    },
+    {
+      id: 'cp047', pattern: 'Are you saying that …?', ja_pattern: 'つまり〜ということですか？',
+      qa: [
+        {
+          question: { ja: 'つまり待つべきということですか？',         en: 'Are you saying that we should wait?' },
+          positive: { ja: 'はい、その通りです。',                     en: 'Yes, exactly.' },
+          neutral:  { ja: 'もう少し慎重になるべきです。',             en: 'We should be more cautious.' },
+          negative: { ja: 'いいえ、今進めるべきです。',               en: 'No, we should move forward now.' },
+        },
+        {
+          question: { ja: 'つまりマーケットは割高ということですか？', en: 'Are you saying that the market is overvalued?' },
+          positive: { ja: '一部ではそうです。',                       en: 'In some areas, yes.' },
+          neutral:  { ja: 'まだ判断が難しいです。',                   en: "It's difficult to say." },
+          negative: { ja: 'いいえ、まだ成長余地があります。',         en: "No, I think there's still room to grow." },
+        },
+        {
+          question: { ja: 'つまりリスクが高すぎるということですか？', en: 'Are you saying that the risk is too high?' },
+          positive: { ja: 'それが私の懸念です。',                     en: "That's my concern." },
+          neutral:  { ja: '管理可能なレベルです。',                   en: "It's manageable." },
+          negative: { ja: '妥当なリスクだと思います。',               en: 'I think the risk is reasonable.' },
+        },
+      ],
+    },
+    {
+      id: 'cp048', pattern: "So what you're saying is …?", ja_pattern: 'つまり〜ということですね？',
+      qa: [
+        {
+          question: { ja: 'つまり品質を優先すべきということですね？', en: "So what you're saying is we should focus on quality?" },
+          positive: { ja: 'その通りです。',                           en: 'Exactly.' },
+          neutral:  { ja: 'それが重要な要素の一つです。',             en: "That's one important factor." },
+          negative: { ja: '品質だけでは十分ではありません。',         en: "Quality alone isn't enough." },
+        },
+        {
+          question: { ja: 'つまりタイミングが良くないということですね？', en: "So what you're saying is the timing isn't right?" },
+          positive: { ja: 'はい、その通りです。',                     en: "Yes, that's right." },
+          neutral:  { ja: 'もう少し様子を見たいです。',               en: "I'd like to wait and see." },
+          negative: { ja: 'いいえ、今でも良いと思います。',           en: 'No, I think now is fine.' },
+        },
+        {
+          question: { ja: 'つまりもっと強いチームが必要ということですね？', en: "So what you're saying is we need a stronger team?" },
+          positive: { ja: '間違いありません。',                       en: 'Absolutely.' },
+          neutral:  { ja: '改善の余地があります。',                   en: "There's room for improvement." },
+          negative: { ja: 'チームは十分強いと思います。',             en: 'I think the team is already strong.' },
+        },
+      ],
+    },
+    {
+      id: 'cp049', pattern: 'Is it worth it?', ja_pattern: 'それだけの価値がありますか？',
+      qa: [
+        {
+          question: { ja: 'それだけの価値がありますか？',             en: 'Is it worth it?' },
+          positive: { ja: 'もちろんです。',                           en: 'Absolutely.' },
+          neutral:  { ja: '状況によります。',                         en: 'It depends.' },
+          negative: { ja: '私はそうは思いません。',                   en: "I don't think so." },
+        },
+        {
+          question: { ja: 'この物件を買う価値はありますか？',         en: 'Is it worth buying this property?' },
+          positive: { ja: '立地を考えるとあります。',                 en: 'Yes, because of the location.' },
+          neutral:  { ja: '長期保有ならあります。',                   en: "Yes, if you're thinking long term." },
+          negative: { ja: '高すぎると思います。',                     en: "I think it's overpriced." },
+        },
+        {
+          question: { ja: 'この事業に投資する価値はありますか？',     en: 'Is it worth investing in this business?' },
+          positive: { ja: '上昇余地があります。',                     en: 'There is significant upside.' },
+          neutral:  { ja: 'もう少し調べたいです。',                   en: "I'd like to research it further." },
+          negative: { ja: 'リスクが高すぎます。',                     en: 'The risk is too high.' },
+        },
+      ],
+    },
+    {
+      id: 'cp050', pattern: 'How come?', ja_pattern: 'どうしてですか？',
+      qa: [
+        {
+          question: { ja: 'どうしてですか？',                         en: 'How come?' },
+          positive: { ja: '需要が増えたからです。',                   en: 'Because demand increased.' },
+          neutral:  { ja: 'いくつか理由があります。',                 en: 'There are several reasons.' },
+          negative: { ja: '状況が悪化したからです。',                 en: 'Because conditions deteriorated.' },
+        },
+        {
+          question: { ja: 'どうしてそんなに成功しているのですか？',   en: "How come it's so successful?" },
+          positive: { ja: '料理とサービスが素晴らしいからです。',     en: 'Because the food and service are exceptional.' },
+          neutral:  { ja: '立地も影響しています。',                   en: 'The location also helps.' },
+          negative: { ja: '必ずしも再現性はありません。',             en: 'It may not be easily repeatable.' },
+        },
+        {
+          question: { ja: 'どうしてその案件に興味があるのですか？',   en: "How come you're interested in that project?" },
+          positive: { ja: '人を信頼しているからです。',               en: 'Because I believe in the people.' },
+          neutral:  { ja: '面白いと思ったからです。',                 en: 'Because I found it interesting.' },
+          negative: { ja: 'まだ投資するかは決めていません。',         en: "I haven't decided whether to invest yet." },
+        },
       ],
     },
   ];
 
-  // ---------- 魔法の型のレベル振り (英検目安) ----------
-  // 各構文を瞬間英作文 / シャドーイング にマージするときの難易度。
+  // ---------- 定型構文のレベル振り (英検目安) ----------
+  // 各構文の難易度。Part A (1-25 基本表現) は LV2-4、
+  // Part B (26-50 質問) は LV2-4。総じて中級-中上級のビジネス英語。
   // 2 = 中学中級 / 3 = 高校標準 / 4 = 高校発展 / 5 = 上級
   const CONVO_PATTERN_LEVELS = {
-    cp001: 3, cp002: 2, cp003: 2, cp004: 3, cp005: 3, cp006: 3, cp007: 3, cp008: 3, cp009: 3, cp010: 2,
-    cp011: 2, cp012: 3, cp013: 3, cp014: 2, cp015: 3, cp016: 3, cp017: 3, cp018: 2, cp019: 3, cp020: 3,
-    cp021: 3, cp022: 4, cp023: 3, cp024: 2, cp025: 3, cp026: 3, cp027: 3, cp028: 3, cp029: 2, cp030: 3,
-    cp031: 4, cp032: 4, cp033: 4, cp034: 5, cp035: 4, cp036: 4, cp037: 4, cp038: 4, cp039: 4, cp040: 4,
-    cp041: 4, cp042: 4, cp043: 4, cp044: 5, cp045: 3, cp046: 4, cp047: 4, cp048: 5, cp049: 4, cp050: 4,
-    cp051: 3, cp052: 5, cp053: 5, cp054: 4, cp055: 4, cp056: 4, cp057: 4, cp058: 4, cp059: 4, cp060: 4,
-    cp061: 3, cp062: 3, cp063: 3, cp064: 3, cp065: 4, cp066: 4, cp067: 4, cp068: 4, cp069: 4, cp070: 4,
-    cp071: 4, cp072: 4, cp073: 4, cp074: 4, cp075: 4, cp076: 3, cp077: 4, cp078: 3, cp079: 3, cp080: 3,
-    cp081: 2, cp082: 4, cp083: 2, cp084: 2, cp085: 2, cp086: 2, cp087: 4, cp088: 3, cp089: 2, cp090: 2,
-    cp091: 4, cp092: 3, cp093: 3, cp094: 3, cp095: 2, cp096: 3, cp097: 3, cp098: 3, cp099: 3, cp100: 3,
-    cp101: 3, cp102: 3, cp103: 2, cp104: 3, cp105: 3, cp106: 3, cp107: 3, cp108: 2, cp109: 2, cp110: 3,
-    cp111: 3, cp112: 3, cp113: 3, cp114: 2, cp115: 2, cp116: 3, cp117: 3, cp118: 3, cp119: 3, cp120: 3,
-    cp121: 4, cp122: 4, cp123: 2, cp124: 3, cp125: 2, cp126: 3, cp127: 3, cp128: 2, cp129: 2, cp130: 2,
-    cp131: 2, cp132: 2, cp133: 3, cp134: 4, cp135: 3, cp136: 3, cp137: 3, cp138: 2, cp139: 3, cp140: 2,
-    cp141: 2, cp142: 3, cp143: 4, cp144: 2,
+    // Part A
+    cp001: 3, cp002: 2, cp003: 2, cp004: 2, cp005: 2, cp006: 2, cp007: 3, cp008: 3, cp009: 3, cp010: 3,
+    cp011: 3, cp012: 3, cp013: 3, cp014: 3, cp015: 4, cp016: 3, cp017: 4, cp018: 4, cp019: 4, cp020: 3,
+    cp021: 3, cp022: 3, cp023: 3, cp024: 4, cp025: 4,
+    // Part B
+    cp026: 3, cp027: 3, cp028: 3, cp029: 4, cp030: 3, cp031: 4, cp032: 3, cp033: 3, cp034: 3, cp035: 2,
+    cp036: 2, cp037: 4, cp038: 4, cp039: 4, cp040: 4, cp041: 4, cp042: 3, cp043: 4, cp044: 3, cp045: 4,
+    cp046: 4, cp047: 4, cp048: 4, cp049: 3, cp050: 2,
   };
 
-  // ---------- CONVO_PATTERNS を瞬間英作文 + シャドーイングにマージ ----------
-  // 各パターンの 3 例文を「セット」として連続で SHADOWING_QA / SENTENCES に
-  // push する。pattern_id を持たせておくと、後で SHADOWING_GROUPS が 3 連の
-  // 同 pattern_id を 1 グループとしてまとめてくれる (= シャドーイングでは
-  // 「同じ型を 3 連続で繰り返す」が成立)。
-  // 内部の 3 個の順序はモジュール読み込み時にシャッフルしているので、アプリを
-  // 開き直すたびに違う並びになる。
-  (function pullConvoPatternsIntoTrainingPools() {
-    function shuffle(arr) {
-      const a = arr.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const t = a[i]; a[i] = a[j]; a[j] = t;
-      }
-      return a;
-    }
-    for (const p of CONVO_PATTERNS) {
-      const lv = CONVO_PATTERN_LEVELS[p.id] || 3;
-      const grammar = '定型構文 · ' + p.pattern;
-      // 同 pattern の 3 個の中で順序をシャッフル (アプリ起動ごとに変わる)
-      const items = shuffle(p.items);
-      items.forEach((it, idx) => {
-        if (!it.ja || !it.en) return;
-        const sId = 'cp_' + p.id + '_' + (idx + 1);
-        // 瞬間英作文 (SENTENCES) — pickComposition がここから抽出
-        const sEntry = {
-          id: sId,
-          level: lv,
-          ja: it.ja,
-          en: it.en,
-          grammar: grammar,
-          pattern_id: p.id,
-        };
-        SENTENCES.push(sEntry);
-        SENTENCE_BY_ID[sId] = sEntry;
-        // シャドーイング (SHADOWING_QA) — 続く SHADOWING_GROUPS が
-        // pattern_id が同じ 3 連続を 1 グループにする
-        SHADOWING_QA.push({
-          id: 'sh_' + sId,
-          level: lv,
-          ja: it.ja,
-          en: it.en,
-          pattern_id: p.id,
-          tag: 'magic_pattern',
-        });
-      });
-    }
-  })();
+  // 旧版では CONVO_PATTERNS を SENTENCES / SHADOWING_QA に自動マージしていたが、
+  // 新仕様では定型構文タイルが瞬間英作文・聞き流しの 2 モードを内蔵するため、
+  // 自動マージは行わない。瞬間英作文・シャドーイングタイルは従来通り、
+  // SENTENCES (s001-) / SHADOWING_QA (sd / qa / dl / qt) を使う。
 
   // ---------- 魔法の型ブラウザ (CONVO_PATTERNS の一覧 + 例文) ----------
   // 144 パターンを一覧表示し、タップすると 3 例文 (EN/JA + 読み上げボタン) が
   // インラインで展開する。検索ボックスでパターン名 (英 or 日) で絞り込める。
   // 父 (亮治) のホームの "魔法の型" タイルから到達。瞬間英作文・シャドーイングへの
-  // 自動マージはそのまま並行稼働。
-  // ---------- 魔法の型ブラウザ + 3 つの練習モード ----------
-  // 144 構文 × 3 例文 = 432 文をブラウズ、または 3 つの形式で連続練習する。
-  //   browse  : タップで開閉する一覧（既定）
-  //   compose : 英作文形式 (日本語表示 → タップで英語が出る)
-  //   shadow  : シャドーイング形式 (英語を 2 回再生 → 自動で次へ)
-  //   think   : 思考タメ形式 (日本語表示 → 数秒待つ → 英語を音声再生)
-  // どのモードも、3 例文をパターンごとにまとめて連続提示する設計
-  // (亮治さんの「3 つ並べた方が記憶に残る」指示に合わせて)。
+  // ---------- 定型構文ブラウザ + 2 つの練習モード ----------
+  // 50 構文 × (Part A 3 例 / Part B 12 文) を一覧表示 + 2 つの形式で練習。
+  //   browse  : タップで開閉する一覧 (既定)
+  //   compose : 瞬間英作文モード (JA 表示 → 答えを表示 + 発音 → 覚えた/覚えていない)
+  //   listen  : 聞き流しモード (JA 音声 → 間 → EN 音声 × 3 → 自動で次へ)
+  // どちらの練習モードも 15 問区切りで「次に進みますか？」を聞く。
   function ConvoPatterns({ profile, onBack }) {
     const [mode, setMode] = useState('browse');
     const onPickMode = (m) => {
-      // iOS PWA で TTS を解錠するための空発話 (シャドーイングと思考タメで必要)
+      // iOS PWA で TTS を解錠するための空発話 (聞き流しモードで必要)
       try {
         if (window.speechSynthesis) {
           window.speechSynthesis.cancel();
@@ -22730,8 +21866,7 @@
     };
     const goBack = () => setMode('browse');
     if (mode === 'compose') return e(ConvoComposePractice, { profile, onBack: goBack });
-    if (mode === 'shadow')  return e(ConvoShadowPractice,  { profile, onBack: goBack });
-    if (mode === 'think')   return e(ConvoThinkPractice,   { profile, onBack: goBack });
+    if (mode === 'listen')  return e(ConvoListenPractice,  { profile, onBack: goBack });
     return e(ConvoBrowse, { profile, onBack, onPickMode });
   }
 
@@ -22757,26 +21892,72 @@
       }
     }
     const out = [];
+    // 各カードの kind に応じてバッジを描き分ける用のラベル。
+    // KIND_LABEL は呼び出し側 (練習画面) で参照する。
+    const ROLE_TO_SUFFIX = { question: 'q', positive: 'p', neutral: 'n', negative: 'g' };
     for (const p of patterns) {
-      p.items.forEach((it, idx) => {
-        if (!it.ja || !it.en) return;
-        const sId = 'cp_' + p.id + '_' + (idx + 1);
-        if (composition && isSentenceMastered(composition[sId])) return;
-        if (isItemHidden('composition', sId)) return;
-        out.push({
-          id:         sId,
-          patternId:  p.id,
-          patternEn:  p.pattern,
-          patternJa:  p.ja_pattern,
-          exampleIdx: idx,
-          exampleNo:  idx + 1,
-          totalInPattern: p.items.length,
-          ja: it.ja,
-          en: it.en,
+      const lv = CONVO_PATTERN_LEVELS[p.id] || 3;
+      // Part A: items: [{ja,en}, ×3]
+      if (Array.isArray(p.items)) {
+        p.items.forEach((it, idx) => {
+          if (!it.ja || !it.en) return;
+          const sId = 'cp_' + p.id + '_' + (idx + 1);
+          if (composition && isSentenceMastered(composition[sId])) return;
+          if (isItemHidden('composition', sId)) return;
+          out.push({
+            id: sId,
+            patternId: p.id,
+            patternEn: p.pattern,
+            patternJa: p.ja_pattern,
+            level: lv,
+            kind: 'example',
+            sceneNo: null, totalScenes: null,
+            exampleIdx: idx, exampleNo: idx + 1,
+            totalInPattern: p.items.length,
+            ja: it.ja, en: it.en,
+          });
         });
-      });
+      }
+      // Part B: qa: [{question, positive, neutral, negative}, ×3 scenes]
+      if (Array.isArray(p.qa)) {
+        p.qa.forEach((scene, sceneIdx) => {
+          const sceneNo = sceneIdx + 1;
+          // 質問 → 肯定 → 中立 → 否定 の順
+          (['question', 'positive', 'neutral', 'negative']).forEach((role) => {
+            const obj = scene[role];
+            if (!obj || !obj.ja || !obj.en) return;
+            const sId = 'cp_' + p.id + '_' + sceneNo + ROLE_TO_SUFFIX[role];
+            if (composition && isSentenceMastered(composition[sId])) return;
+            if (isItemHidden('composition', sId)) return;
+            out.push({
+              id: sId,
+              patternId: p.id,
+              patternEn: p.pattern,
+              patternJa: p.ja_pattern,
+              level: lv,
+              kind: role,
+              sceneNo, totalScenes: p.qa.length,
+              exampleIdx: null, exampleNo: null, totalInPattern: null,
+              ja: obj.ja, en: obj.en,
+            });
+          });
+        });
+      }
     }
     return out;
+  }
+
+  // 種類バッジのラベル ({ kind } → '質問' / '肯定' / '中立' / '否定' / null)
+  const CONVO_KIND_LABEL = {
+    question: '質問', positive: '肯定', neutral: '中立', negative: '否定',
+  };
+  // 種類バッジの色付け (success / danger / sub などをトーン分け)
+  function convoKindBg(kind) {
+    if (kind === 'question') return { bg: '#3D6FA01A', fg: '#3D6FA0' };
+    if (kind === 'positive') return { bg: C.success + '1A', fg: C.success };
+    if (kind === 'neutral')  return { bg: C.sub + '1A',     fg: C.sub };
+    if (kind === 'negative') return { bg: C.danger + '14',  fg: C.danger };
+    return null;
   }
 
   // 定型構文の文を「全機能から外す」ヘルパー。
@@ -22789,7 +21970,8 @@
     hideItem('shadowing', 'sh_' + cpId);
   }
 
-  // ----- 一覧 (旧 ConvoPatterns 本体) -----
+  // ----- 一覧 -----
+  // Part A は items 3 例を展開、Part B は 3 シーン × (Q + 肯定/中立/否定) を展開。
   function ConvoBrowse({ profile, onBack, onPickMode }) {
     const [query, setQuery] = useState('');
     const [openId, setOpenId] = useState(null);
@@ -22797,15 +21979,29 @@
     const q = query.trim().toLowerCase();
     const filtered = useMemo(() => {
       if (!q) return CONVO_PATTERNS;
+      const matchPair = (pair) =>
+        (pair && pair.en || '').toLowerCase().includes(q) ||
+        (pair && pair.ja || '').toLowerCase().includes(q);
       return CONVO_PATTERNS.filter(p => {
         if ((p.pattern || '').toLowerCase().includes(q)) return true;
         if ((p.ja_pattern || '').toLowerCase().includes(q)) return true;
-        if ((p.category || '').toLowerCase().includes(q)) return true;
-        return p.items.some(it =>
-          (it.en || '').toLowerCase().includes(q) ||
-          (it.ja || '').toLowerCase().includes(q));
+        if (Array.isArray(p.items) && p.items.some(matchPair)) return true;
+        if (Array.isArray(p.qa) && p.qa.some(scene =>
+          matchPair(scene.question) || matchPair(scene.positive) ||
+          matchPair(scene.neutral) || matchPair(scene.negative))) return true;
+        return false;
       });
     }, [q]);
+
+    // 合計文数 (動的にカウント)
+    const totalCount = useMemo(() => {
+      let n = 0;
+      for (const p of CONVO_PATTERNS) {
+        if (Array.isArray(p.items)) n += p.items.length;
+        if (Array.isArray(p.qa)) n += p.qa.length * 4;
+      }
+      return n;
+    }, []);
 
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
     const topBar = e('div', {
@@ -22820,28 +22016,59 @@
 
     const modeButtons = e('div', {
       style: {
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8,
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
         marginBottom: 18,
       }
     },
       [
-        { id: 'compose', label: '英作文', desc: '日→英 タップで答え' },
-        { id: 'shadow',  label: 'シャドーイング', desc: '英×2 自動再生' },
-        { id: 'think',   label: '思考タメ', desc: '日→間→英 自動' },
+        { id: 'compose', label: '瞬間英作文', desc: '日→英 タップで答え + 覚えた/覚えていない' },
+        { id: 'listen',  label: '聞き流し',   desc: '日→ 間 → 英×3 を 1 枚ずつ・自動進行' },
       ].map(b => e('button', {
         key: b.id,
         onClick: () => onPickMode(b.id),
         style: {
-          padding: '12px 8px', borderRadius: 12,
+          padding: '14px 10px', borderRadius: 12,
           background: profile.color + '12', color: profile.color,
           border: '1px solid ' + profile.color + '33',
           cursor: 'pointer', textAlign: 'center',
           fontFamily: 'inherit',
         }
       },
-        e('div', { style: { fontSize: 14, fontWeight: 700, fontFamily: SANS_UI } }, b.label),
-        e('div', { style: { fontSize: 10.5, color: C.sub, marginTop: 4, lineHeight: 1.4 } }, b.desc),
+        e('div', { style: { fontSize: 15, fontWeight: 700, fontFamily: SANS_UI } }, b.label),
+        e('div', { style: { fontSize: 11, color: C.sub, marginTop: 4, lineHeight: 1.45 } }, b.desc),
       )),
+    );
+
+    // 1 つの「文章行」コンポーネント (EN + JA + 役割バッジ + 🔊)
+    const renderLine = (key, en, ja, kindLabel, kindColors, indent) => e('div', {
+      key,
+      style: {
+        display: 'flex', alignItems: 'flex-start', gap: 10,
+        padding: '10px 16px 10px ' + (16 + (indent || 0)) + 'px',
+        borderTop: '1px solid ' + C.line,
+      }
+    },
+      kindLabel ? e('span', {
+        style: {
+          flex: '0 0 auto', marginTop: 3,
+          padding: '2px 7px', borderRadius: 6,
+          background: kindColors.bg, color: kindColors.fg,
+          fontFamily: SANS_UI, fontSize: 10.5, fontWeight: 800,
+          letterSpacing: '0.04em',
+        }
+      }, kindLabel) : null,
+      e('div', { style: { flex: 1, minWidth: 0 } },
+        e('div', {
+          style: { fontFamily: SERIF_READ, fontSize: 16, color: C.text, lineHeight: 1.5 }
+        }, en),
+        e('div', {
+          style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.6 }
+        }, ja),
+      ),
+      e(SpeakerBtn, {
+        onClick: () => speak(en),
+        color: profile.color, size: 32,
+      }),
     );
 
     return e('div', { style: pageStyle },
@@ -22853,14 +22080,14 @@
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
         },
-          'Instagram / TikTok / YouTube から集めた、ネイティブが日常で連発する ',
+          '投資・不動産・レストラン・ホスピタリティ・リーダーシップ等で実際に使う ',
           e('strong', null, CONVO_PATTERNS.length + ' 構文'),
-          ' × 3 例文 = ',
-          e('strong', null, (CONVO_PATTERNS.length * 3) + ' 文'),
-          '。'),
+          ' / 計 ',
+          e('strong', null, totalCount + ' 文'),
+          '。前半 25 は基本表現、後半 25 は質問 + 肯定 / 中立 / 否定の答え 3 通り。'),
       ),
 
-      // 練習モード 3 つのボタン
+      // 練習モード 2 つのボタン
       modeButtons,
 
       // 検索ボックス
@@ -22869,7 +22096,7 @@
           type: 'search',
           value: query,
           onChange: (ev) => { setQuery(ev.target.value); setOpenId(null); },
-          placeholder: '型名で検索 (例: trouble, about to, 苦労)',
+          placeholder: '型名・例文で検索 (例: investment, 物件)',
           style: {
             width: '100%', padding: '12px 14px',
             borderRadius: 12, border: '1px solid ' + C.line,
@@ -22893,88 +22120,97 @@
             }
           }, '該当する型がありません。')
         : e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            filtered.map((p, i) => {
+            filtered.map((p) => {
               const isOpen = openId === p.id;
-              const lv = (typeof CONVO_PATTERN_LEVELS !== 'undefined' && CONVO_PATTERN_LEVELS[p.id]) || 3;
+              const lv = (CONVO_PATTERN_LEVELS && CONVO_PATTERN_LEVELS[p.id]) || 3;
+              const isPartB = Array.isArray(p.qa);
+
+              // ヘッダー (LV バッジ + 型 + JA 訳 + 開閉)
+              const header = e('button', {
+                onClick: () => setOpenId(isOpen ? null : p.id),
+                style: {
+                  width: '100%', padding: '14px 16px',
+                  background: 'transparent', border: 'none',
+                  cursor: 'pointer', textAlign: 'left',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  fontFamily: 'inherit',
+                }
+              },
+                e('div', {
+                  style: {
+                    flex: '0 0 auto',
+                    padding: '4px 8px', borderRadius: 8,
+                    background: profile.color + '14', color: profile.color,
+                    fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+                    letterSpacing: '0.04em',
+                  }
+                }, 'LV' + lv),
+                e('div', { style: { flex: 1, minWidth: 0 } },
+                  e('div', {
+                    style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+                  }, p.pattern),
+                  e('div', {
+                    style: { fontSize: 12.5, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+                  }, p.ja_pattern),
+                ),
+                e('span', {
+                  style: {
+                    fontSize: 14, color: C.sub, opacity: 0.6,
+                    transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
+                    transition: 'transform 0.15s ease',
+                  }
+                }, '›'),
+              );
+
+              // 展開部 — Part A は 3 例、Part B は 3 シーン × (Q + 3 答え)
+              let body = null;
+              if (isOpen) {
+                if (isPartB) {
+                  body = e('div', {
+                    style: { background: C.softer + '55' }
+                  },
+                    p.qa.map((scene, sIdx) => e('div', {
+                      key: 'sc' + sIdx,
+                      style: {
+                        borderTop: '1px solid ' + C.line,
+                      }
+                    },
+                      // シーン見出し
+                      e('div', {
+                        style: {
+                          padding: '8px 16px',
+                          background: profile.color + '08',
+                          fontSize: 11, color: C.sub,
+                          fontFamily: SANS_UI, fontWeight: 700, letterSpacing: '0.06em',
+                        }
+                      }, 'SCENE ' + (sIdx + 1)),
+                      // Q + 答え 3 通り
+                      renderLine('q' + sIdx, scene.question.en, scene.question.ja,
+                        '質問', convoKindBg('question'), 0),
+                      renderLine('p' + sIdx, scene.positive.en, scene.positive.ja,
+                        '肯定', convoKindBg('positive'), 0),
+                      renderLine('n' + sIdx, scene.neutral.en, scene.neutral.ja,
+                        '中立', convoKindBg('neutral'), 0),
+                      renderLine('g' + sIdx, scene.negative.en, scene.negative.ja,
+                        '否定', convoKindBg('negative'), 0),
+                    )),
+                  );
+                } else {
+                  body = e('div', { style: { background: C.softer + '55' } },
+                    p.items.map((it, idx) =>
+                      renderLine('it' + idx, it.en, it.ja,
+                        (idx + 1) + '.', { bg: 'transparent', fg: C.sub }, 0)),
+                  );
+                }
+              }
+
               return e('div', {
                 key: p.id,
                 style: {
                   background: C.card, border: '1px solid ' + C.line,
                   borderRadius: 14, overflow: 'hidden',
                 }
-              },
-                e('button', {
-                  onClick: () => setOpenId(isOpen ? null : p.id),
-                  style: {
-                    width: '100%', padding: '14px 16px',
-                    background: 'transparent', border: 'none',
-                    cursor: 'pointer', textAlign: 'left',
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    fontFamily: 'inherit',
-                  }
-                },
-                  e('div', {
-                    style: {
-                      flex: '0 0 auto',
-                      padding: '4px 8px', borderRadius: 8,
-                      background: profile.color + '14', color: profile.color,
-                      fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
-                      letterSpacing: '0.04em',
-                    }
-                  }, 'LV' + lv),
-                  e('div', { style: { flex: 1, minWidth: 0 } },
-                    e('div', {
-                      style: { fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.4 }
-                    }, p.pattern),
-                    e('div', {
-                      style: { fontSize: 12.5, color: C.sub, marginTop: 4, lineHeight: 1.5 }
-                    }, p.ja_pattern),
-                  ),
-                  e('span', {
-                    style: {
-                      fontSize: 14, color: C.sub, opacity: 0.6,
-                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0)',
-                      transition: 'transform 0.15s ease',
-                    }
-                  }, '›'),
-                ),
-                isOpen && e('div', {
-                  style: {
-                    borderTop: '1px solid ' + C.line,
-                    background: C.softer + '55',
-                    padding: '10px 0',
-                  }
-                },
-                  p.items.map((it, idx) => e('div', {
-                    key: idx,
-                    style: {
-                      display: 'flex', alignItems: 'flex-start', gap: 10,
-                      padding: '10px 16px',
-                      borderTop: idx > 0 ? '1px solid ' + C.line : 'none',
-                    }
-                  },
-                    e('div', {
-                      style: {
-                        flex: '0 0 22px', textAlign: 'center',
-                        fontSize: 12, color: C.sub, fontFamily: SANS_UI,
-                        fontWeight: 700, paddingTop: 4,
-                      }
-                    }, (idx + 1) + '.'),
-                    e('div', { style: { flex: 1, minWidth: 0 } },
-                      e('div', {
-                        style: { fontFamily: SERIF_READ, fontSize: 16, color: C.text, lineHeight: 1.5 }
-                      }, it.en),
-                      e('div', {
-                        style: { fontSize: 13, color: C.sub, marginTop: 4, lineHeight: 1.6 }
-                      }, it.ja),
-                    ),
-                    e(SpeakerBtn, {
-                      onClick: () => speak(it.en),
-                      color: profile.color, size: 32,
-                    }),
-                  )),
-                ),
-              );
+              }, header, body);
             }),
           ),
     );
@@ -23086,7 +22322,7 @@
         display: 'flex', alignItems: 'center', gap: 10,
       }
     },
-      e('div', {
+      exampleNo != null && totalInPattern != null && e('div', {
         style: {
           flex: '0 0 auto',
           padding: '3px 7px', borderRadius: 6,
@@ -23136,35 +22372,94 @@
     }, '×');
   }
 
-  // ----- ① 英作文形式 (日本語 → タップで英語 + 覚えた/覚えていない) -----
-  // 既存の瞬間英作文と同じ仕組みで、覚えた (db.recordSentence true) /
-  // 覚えていない (false) を打鍵すると、瞬間英作文の進捗・間違い復習にも
-  // 反映される。連続正解 3 回でマスター扱い → 次セッション以降は出さない。
+  // ----- 練習画面共通: kind バッジ (質問 / 肯定 / 中立 / 否定) -----
+  function ConvoKindChip({ kind }) {
+    const label = CONVO_KIND_LABEL[kind];
+    const colors = convoKindBg(kind);
+    if (!label || !colors) return null;
+    return e('div', {
+      style: {
+        display: 'inline-flex', alignItems: 'center',
+        padding: '4px 10px', borderRadius: 999,
+        background: colors.bg, color: colors.fg,
+        fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 800,
+        letterSpacing: '0.06em',
+        marginBottom: 10,
+      }
+    }, label);
+  }
+
+  // ----- 練習画面共通: 1 セッション分が終わった時の「次に進みますか？」ダイアログ -----
+  // 15 問区切り。session 内の正解数も簡単に表示。
+  function ConvoChunkPrompt({ profile, doneCount, totalDone, totalQueue, onContinue, onQuit }) {
+    return e('div', {
+      style: {
+        marginTop: 20,
+        background: C.card, border: '1px solid ' + C.line,
+        borderRadius: 14, padding: '28px 22px',
+        textAlign: 'center',
+      }
+    },
+      e('div', {
+        style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 8 }
+      }, doneCount + ' 問終わりました'),
+      e('div', {
+        style: { fontSize: 13, color: C.sub, lineHeight: 1.7, marginBottom: 20 }
+      },
+        '全 ' + totalQueue + ' 問のうち ',
+        e('strong', null, totalDone + ''),
+        ' 問終わりました。'),
+      e('div', {
+        style: { display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }
+      },
+        e('button', {
+          onClick: onQuit,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, 'やめる'),
+        e('button', {
+          onClick: onContinue,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: profile.color, color: '#fff', border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+          }
+        }, '次の 15 問へ ›'),
+      ),
+    );
+  }
+
+  // セッションあたりの問題数 (亮治さん指定で 15 問区切り)。
+  const CONVO_CHUNK_SIZE = 15;
+
+  // ----- ① 瞬間英作文モード -----
+  // 日本語表示 → 「答えを表示 + 発音」→ 覚えた / 覚えていない
+  // db.recordSentence で進捗が瞬間英作文と同じ仕組みで保存される。
+  // 連続 3 回正解で自動的にプールから外れる。15 問ごとに区切る。
   function ConvoComposePractice({ profile, onBack }) {
     const [order, setOrder] = useState('sequential');
-    const [seed, setSeed]   = useState(0);  // 'random' を再選択したときの再シャッフル
-    const [tick, setTick]   = useState(0);  // recordSentence 後の queue 再生成
+    const [seed, setSeed]   = useState(0);
+    const [tick, setTick]   = useState(0);
     const queue = useMemo(() => {
       const composition = (db.load(profile.id).composition) || {};
       return buildConvoQueue({ order, composition });
     }, [profile.id, order, seed, tick]);
-    const [idx, setIdx]         = useState(0);
-    const [revealed, setRevealed] = useState(false);
+
+    const [idx, setIdx]             = useState(0);
+    const [revealed, setRevealed]   = useState(false);
+    const [solvedInChunk, setSolved] = useState(0);
+    const [showChunkPrompt, setShowChunkPrompt] = useState(false);
     useEffect(() => {
       if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
     }, [queue.length]);
     const cur = queue[idx];
-    const next = () => {
-      if (!queue.length) return;
-      if (idx + 1 >= queue.length) return;
-      setIdx(idx + 1);
-      setRevealed(false);
-    };
-    const prev = () => {
-      if (idx <= 0) return;
-      setIdx(idx - 1);
-      setRevealed(false);
-    };
+
     const reveal = () => {
       setRevealed(true);
       try { speak(cur.en); } catch {}
@@ -23172,505 +22467,495 @@
     const mark = (isCorrect) => {
       if (!cur) return;
       try { db.recordSentence(profile.id, cur.id, isCorrect); } catch {}
-      // queue を再生成して、正解 3 連続したものは自動的にプールから消える。
-      setTick(t => t + 1);
-      // 次の問題に進む (覚えていない = 進む、覚えた = 進む。とにかく次へ)。
-      // 再生成後 queue が縮むので idx はそのまま (= 次の sentence)。
-      setIdx(i => Math.min(i + 1, queue.length));
+      // セッション開始時に組んだ queue は固定で walk する (mark では再構築しない)。
+      // 「覚えた」はマスター扱いになり、次セッションで queue から外れる。
+      const nextSolved = solvedInChunk + 1;
+      const isLast = idx + 1 >= queue.length;
+      setSolved(nextSolved);
       setRevealed(false);
+      if (nextSolved >= CONVO_CHUNK_SIZE || isLast) {
+        // 15 問達成 or 全 queue 走破 → 確認ダイアログ。
+        setShowChunkPrompt(true);
+      } else {
+        setIdx(i => i + 1);
+      }
     };
     const reorder = (o) => {
       setOrder(o);
       setSeed(s => s + 1);
       setIdx(0);
       setRevealed(false);
+      setSolved(0);
+      setShowChunkPrompt(false);
     };
+    const continueNext = () => {
+      const wasLast = idx + 1 >= queue.length;
+      setShowChunkPrompt(false);
+      setSolved(0);
+      if (wasLast) {
+        // queue 走破 → 「覚えた」が増えた状態で再構築 (= 残りの「覚えていない」だけ)
+        setTick(t => t + 1);
+        setIdx(0);
+      } else {
+        setIdx(i => i + 1);
+      }
+    };
+    const totalDone = useMemo(() => {
+      const comp = (db.load(profile.id).composition) || {};
+      // 全 50 構文の中で「マスター済み (連続 3 回正解)」の sentence 数
+      let n = 0;
+      for (const p of CONVO_PATTERNS) {
+        if (Array.isArray(p.items)) {
+          for (let i = 0; i < p.items.length; i++) {
+            const sId = 'cp_' + p.id + '_' + (i + 1);
+            if (isSentenceMastered(comp[sId])) n++;
+          }
+        }
+        if (Array.isArray(p.qa)) {
+          const SUFF = { 1: 'q', 2: 'p', 3: 'n', 4: 'g' };
+          p.qa.forEach((scene, sIdx) => {
+            const sNo = sIdx + 1;
+            ['q','p','n','g'].forEach(suff => {
+              const sId = 'cp_' + p.id + '_' + sNo + suff;
+              if (isSentenceMastered(comp[sId])) n++;
+            });
+          });
+        }
+      }
+      return n;
+    }, [profile.id, tick]);
+
+    const totalQueueAtStart = useMemo(() => {
+      // 「覚えた」を考慮せず、× で外していないものだけを母数とする。
+      let n = 0;
+      for (const p of CONVO_PATTERNS) {
+        if (Array.isArray(p.items)) {
+          for (let i = 0; i < p.items.length; i++) {
+            const sId = 'cp_' + p.id + '_' + (i + 1);
+            if (!isItemHidden('composition', sId)) n++;
+          }
+        }
+        if (Array.isArray(p.qa)) {
+          p.qa.forEach((scene, sIdx) => {
+            ['q','p','n','g'].forEach(suff => {
+              const sId = 'cp_' + p.id + '_' + (sIdx + 1) + suff;
+              if (!isItemHidden('composition', sId)) n++;
+            });
+          });
+        }
+      }
+      return n;
+    }, [tick]);
+
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+
+    // 完走画面
+    const allDone = !cur && queue.length === 0;
+
     return e('div', { style: pageStyle },
       e(ConvoPracticeTopBar, {
         profile, onBack,
-        modeLabel: '英作文',
+        modeLabel: '瞬間英作文',
         idx: Math.min(idx, Math.max(0, queue.length - 1)), total: queue.length,
         showPattern: false,
       }),
       e(ConvoOrderToggle, { profile, order, onChange: reorder }),
-      // 残数 0 の場合は完走画面
-      !cur
-        ? e('div', {
-            style: {
-              marginTop: 22, padding: '40px 20px', textAlign: 'center',
-              background: C.card, border: '1px solid ' + C.line,
-              borderRadius: 14, color: C.sub, fontSize: 14, lineHeight: 1.7,
-            }
-          },
-            e('div', { style: { fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 8 } },
-              '全部「覚えた」になりました 🎉'),
-            e('div', null,
-              '432 文すべてが連続 3 回正解になっています。',
-              e('br'),
-              '間違えると自動で復習プールに戻ります。'),
-          )
-        : e('div', null,
-            // 日本語 (右上に × 削除ボタン)
-            e('div', {
+
+      // チャンク完了プロンプト
+      showChunkPrompt
+        ? e(ConvoChunkPrompt, {
+            profile,
+            doneCount: CONVO_CHUNK_SIZE,
+            totalDone, totalQueue: totalQueueAtStart,
+            onContinue: continueNext,
+            onQuit: onBack,
+          })
+        : allDone
+          ? e('div', {
               style: {
-                position: 'relative',
+                marginTop: 22, padding: '40px 20px', textAlign: 'center',
                 background: C.card, border: '1px solid ' + C.line,
-                borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
-                textAlign: 'center', minHeight: 88,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 14, color: C.sub, fontSize: 14, lineHeight: 1.7,
               }
             },
+              e('div', { style: { fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 8 } },
+                '全部「覚えた」になりました 🎉'),
+              e('div', null,
+                'すべての文が連続 3 回正解になっています。',
+                e('br'),
+                '間違えると自動で復習プールに戻ります。'),
+            )
+          : !cur ? null : e('div', null,
+              // kind バッジ (Part B のときだけ)
+              cur.kind && cur.kind !== 'example' && e('div', {
+                style: { marginTop: 10, paddingLeft: 2 }
+              },
+                e(ConvoKindChip, { kind: cur.kind }),
+              ),
+              // 日本語 + 右上の × 削除
               e('div', {
-                style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
-              }, cur.ja),
-              e(ConvoDeleteBtn, {
-                onConfirm: () => {
-                  hideConvoSentence(cur.id);
-                  setTick(t => t + 1);
-                  setRevealed(false);
-                  // queue 再生成で現在の idx は自動的に次の sentence を指す
+                style: {
+                  position: 'relative',
+                  background: C.card, border: '1px solid ' + C.line,
+                  borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: cur.kind && cur.kind !== 'example' ? 4 : 12,
+                  textAlign: 'center', minHeight: 88,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }
+              },
+                e('div', {
+                  style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
+                }, cur.ja),
+                e(ConvoDeleteBtn, {
+                  onConfirm: () => {
+                    hideConvoSentence(cur.id);
+                    setTick(t => t + 1);
+                    setRevealed(false);
+                  }
+                }),
+              ),
+              // 英語 (revealed のときだけ)
+              revealed && e('div', {
+                style: {
+                  background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
+                  borderRadius: 14, padding: '20px 18px', marginTop: 12,
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }
+              },
+                e('div', {
+                  style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+                }, cur.en),
+                e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+              ),
+              // パターン名は答えが出てから下に出す
+              revealed && e(ConvoPatternFootnote, {
+                profile,
+                patternEn: cur.patternEn, patternJa: cur.patternJa,
+                exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
               }),
-            ),
-            // 英語 (revealed のときだけ)
-            revealed && e('div', {
-              style: {
-                background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
-                borderRadius: 14, padding: '20px 18px', marginTop: 12,
-                display: 'flex', alignItems: 'center', gap: 12,
-              }
-            },
+              // ボタン群
+              !revealed
+                ? e('div', {
+                    style: { marginTop: 22 }
+                  },
+                    e('button', {
+                      onClick: reveal,
+                      style: {
+                        width: '100%',
+                        padding: '16px 0', borderRadius: 12,
+                        background: profile.color, color: '#fff', border: 'none',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                      }
+                    }, '答えを表示 + 発音'),
+                  )
+                : e('div', {
+                    style: {
+                      marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+                    }
+                  },
+                    e('button', {
+                      onClick: () => mark(false),
+                      style: {
+                        padding: '16px 0', borderRadius: 12,
+                        background: C.danger + '12', color: C.danger,
+                        border: '1px solid ' + C.danger + '40',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                      }
+                    }, '覚えていない'),
+                    e('button', {
+                      onClick: () => mark(true),
+                      style: {
+                        padding: '16px 0', borderRadius: 12,
+                        background: C.success + '12', color: C.success,
+                        border: '1px solid ' + C.success + '40',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                      }
+                    }, '覚えた'),
+                  ),
+              // セッション内の進捗（小さく）
               e('div', {
-                style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
-              }, cur.en),
-              e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+                style: { textAlign: 'center', fontSize: 12, color: C.sub, marginTop: 14, fontFamily: SANS_UI }
+              }, 'このセッション: ' + solvedInChunk + ' / ' + CONVO_CHUNK_SIZE + ' 問'),
             ),
-            // パターン名は「答えが出た後」だけ下に出す
-            revealed && e(ConvoPatternFootnote, {
-              profile,
-              patternEn: cur.patternEn, patternJa: cur.patternJa,
-              exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
-            }),
-            // ボタン群
-            !revealed
-              ? e('div', {
-                  style: {
-                    marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
-                  }
-                },
-                  e('button', {
-                    onClick: prev, disabled: idx === 0,
-                    style: {
-                      padding: '14px 0', borderRadius: 12,
-                      background: C.softer, color: C.sub,
-                      border: '1px solid ' + C.line,
-                      cursor: idx === 0 ? 'not-allowed' : 'pointer',
-                      opacity: idx === 0 ? 0.45 : 1,
-                      fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-                    }
-                  }, '‹ 前'),
-                  e('button', {
-                    onClick: reveal,
-                    style: {
-                      padding: '14px 0', borderRadius: 12,
-                      background: profile.color, color: '#fff', border: 'none',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-                    }
-                  }, '答えを表示 + 発音'),
-                  e('button', {
-                    onClick: next, disabled: idx + 1 >= queue.length,
-                    style: {
-                      padding: '14px 0', borderRadius: 12,
-                      background: C.softer, color: C.sub,
-                      border: '1px solid ' + C.line,
-                      cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
-                      opacity: idx + 1 >= queue.length ? 0.45 : 1,
-                      fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-                    }
-                  }, 'スキップ ›'),
-                )
-              : e('div', {
-                  style: {
-                    marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
-                  }
-                },
-                  e('button', {
-                    onClick: () => mark(false),
-                    style: {
-                      padding: '16px 0', borderRadius: 12,
-                      background: C.danger + '12', color: C.danger,
-                      border: '1px solid ' + C.danger + '40',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-                    }
-                  }, '覚えていない'),
-                  e('button', {
-                    onClick: () => mark(true),
-                    style: {
-                      padding: '16px 0', borderRadius: 12,
-                      background: C.success + '12', color: C.success,
-                      border: '1px solid ' + C.success + '40',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-                    }
-                  }, '覚えた'),
-                ),
-          ),
     );
   }
 
-  // ----- ② シャドーイング形式 (英語×2 自動再生 → 自動で次へ) -----
-  // デフォルトは「ランダム (パターン順をシャッフル、3 例文の固まりは保持)」。
-  // 同じ型を 3 連続で聞かせるリズムは維持するが、毎セッション違う順番で出る。
-  function ConvoShadowPractice({ profile, onBack }) {
-    const [order, setOrder] = useState('random');
-    const [seed, setSeed]   = useState(0);
-    const [tick, setTick]   = useState(0);  // × で外したあとの queue 再生成
-    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed, tick]);
-    const [idx, setIdx] = useState(0);
-    const [playing, setPlaying] = useState(true);
-    useEffect(() => {
-      if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
-    }, [queue.length]);
-    const reorder = (o) => {
-      setOrder(o);
-      setSeed(s => s + 1);
-      setIdx(0);
-      setPlaying(true);
-    };
-    const cur = queue[idx];
-    const playSeq = useRef(0);
-
-    useEffect(() => {
-      if (!playing) return;
-      const seq = ++playSeq.current;
-      let cancelled = false;
-      const timeouts = [];
-      const cur2 = queue[idx];
-      if (!cur2) return;
-      const speakOnce = (then) => {
-        if (cancelled || seq !== playSeq.current) return;
-        if (!window.speechSynthesis) { then(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(cur2.en);
-        u.lang = 'en-GB'; u.rate = 0.95; u.pitch = 1.0;
-        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) then(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
-        try { window.speechSynthesis.speak(u); } catch { then(); }
-      };
-      // 0.6s → EN → 1.5s (口を動かす時間) → EN → 0.8s → 次へ
-      timeouts.push(setTimeout(() => {
-        speakOnce(() => {
-          timeouts.push(setTimeout(() => {
-            speakOnce(() => {
-              timeouts.push(setTimeout(() => {
-                if (cancelled || seq !== playSeq.current) return;
-                if (idx + 1 >= queue.length) {
-                  setPlaying(false);
-                } else {
-                  setIdx(idx + 1);
-                }
-              }, 800));
-            });
-          }, 1500));
-        });
-      }, 600));
-      return () => {
-        cancelled = true;
-        timeouts.forEach(clearTimeout);
-        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
-      };
-    }, [playing, idx]);
-
-    useEffect(() => () => {
-      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
-    }, []);
-
-    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
-    if (!cur) return null;
-    const reachedEnd = !playing && idx + 1 >= queue.length;
-    return e('div', { style: pageStyle },
-      e(ConvoPracticeTopBar, {
-        profile, onBack,
-        modeLabel: 'シャドーイング',
-        idx, total: queue.length,
-        showPattern: true,
-        patternEn: cur.patternEn, patternJa: cur.patternJa,
-        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
-      }),
-      e(ConvoOrderToggle, { profile, order, onChange: reorder }),
-      // 英語 (常に表示) + 日本語 (下に小さく) + 右上に × 削除ボタン
-      e('div', {
-        style: {
-          position: 'relative',
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
-        }
-      },
-        e('div', {
-          style: { fontFamily: SERIF_READ, fontSize: 22, color: C.text, lineHeight: 1.55, textAlign: 'center' }
-        }, cur.en),
-        e('div', {
-          style: { fontSize: 14, color: C.sub, marginTop: 12, textAlign: 'center', lineHeight: 1.6 }
-        }, cur.ja),
-        e(ConvoDeleteBtn, {
-          onConfirm: () => {
-            // 自動再生を一度止めて、× で外して queue を再生成
-            try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
-            hideConvoSentence(cur.id);
-            setPlaying(false);
-            setTick(t => t + 1);
-            // 再生成された queue で同じ idx は次の sentence を指す
-            // 短い遅延の後に再生再開 (連続削除時のチラつき防止)
-            setTimeout(() => setPlaying(true), 50);
-          }
-        }),
-      ),
-      // 操作ボタン
-      e('div', {
-        style: {
-          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
-        }
-      },
-        e('button', {
-          onClick: () => { if (idx > 0) setIdx(idx - 1); setPlaying(true); },
-          disabled: idx === 0,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx === 0 ? 'not-allowed' : 'pointer',
-            opacity: idx === 0 ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, '‹ 前'),
-        e('button', {
-          onClick: () => {
-            if (reachedEnd) { setIdx(0); setPlaying(true); }
-            else setPlaying(!playing);
-          },
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: profile.color, color: '#fff', border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-          }
-        }, reachedEnd ? '最初から' : (playing ? '⏸ 一時停止' : '▶ 再生')),
-        e('button', {
-          onClick: () => { if (idx + 1 < queue.length) setIdx(idx + 1); setPlaying(true); },
-          disabled: idx + 1 >= queue.length,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
-            opacity: idx + 1 >= queue.length ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, '次 ›'),
-      ),
-    );
-  }
-
-  // ----- ③ 思考タメ形式 (日本語 → 数秒待つ → 英語音声 → 自動で次へ) -----
-  // 英作文の頭の体操に最適。日本語を見て自分で組み立てる時間を取った後、
-  // ネイティブの音声が答え合わせとして流れる。テキストの英語は音声と
-  // 同時に表示する (聞き取れなくても文字で確認できる)。
-  function ConvoThinkPractice({ profile, onBack }) {
+  // ----- ② 聞き流しモード -----
+  // 1 カードごとに: JA 音声 → 1, 2, 3 と少し間 → EN 音声 ×3 → 次へ自動進行。
+  // 15 問区切りで「次に進みますか？」を出す。
+  // JA は ja-JP、EN は en-GB / en-US (getBestVoice 優先)。
+  function ConvoListenPractice({ profile, onBack }) {
     const [order, setOrder] = useState('sequential');
     const [seed, setSeed]   = useState(0);
-    const [tick, setTick]   = useState(0);  // × で外したあとの queue 再生成
+    const [tick, setTick]   = useState(0);
     const queue = useMemo(() => buildConvoQueue({ order }), [order, seed, tick]);
-    const [idx, setIdx] = useState(0);
-    const [playing, setPlaying] = useState(true);
-    const [phase, setPhase] = useState('thinking'); // 'thinking' | 'answer'
-    const [secondsLeft, setSecondsLeft] = useState(5);
+
+    const [idx, setIdx]               = useState(0);
+    const [playing, setPlaying]       = useState(true);
+    const [phase, setPhase]           = useState('idle');  // 'idle' | 'ja' | 'pause' | 'en' | 'done'
+    const [enRepeat, setEnRepeat]     = useState(0);       // 何回目の EN 発話か (1..3)
+    const [solvedInChunk, setSolved]  = useState(0);
+    const [showChunkPrompt, setShowChunkPrompt] = useState(false);
+    const playSeq = useRef(0);
+
     useEffect(() => {
       if (idx >= queue.length) setIdx(Math.max(0, queue.length - 1));
     }, [queue.length]);
     const cur = queue[idx];
-    const playSeq = useRef(0);
-    const reorder = (o) => {
-      setOrder(o);
-      setSeed(s => s + 1);
-      setIdx(0);
-      setPlaying(true);
-      setPhase('thinking');
-    };
 
-    // 自動進行: thinking 5 秒 → answer (EN 音声 + テキスト) → 1.5 秒 → 次へ
+    // 1 カードの再生シーケンス
     useEffect(() => {
-      if (!playing) return;
+      if (!playing || !cur || showChunkPrompt) return;
       const seq = ++playSeq.current;
       let cancelled = false;
       const timeouts = [];
-      setPhase('thinking');
-      setSecondsLeft(5);
-      // 1 秒ごとにカウントダウン
-      const tickId = setInterval(() => {
-        if (cancelled || seq !== playSeq.current) { clearInterval(tickId); return; }
-        setSecondsLeft(s => {
-          if (s <= 1) { clearInterval(tickId); return 0; }
-          return s - 1;
-        });
-      }, 1000);
-      // 5 秒後に answer フェーズへ
-      timeouts.push(setTimeout(() => {
-        if (cancelled || seq !== playSeq.current) return;
-        setPhase('answer');
-        // EN 音声を再生
-        if (!window.speechSynthesis) {
-          // 音声無し環境: 2 秒見せて次へ
-          timeouts.push(setTimeout(() => {
-            if (cancelled || seq !== playSeq.current) return;
-            if (idx + 1 >= queue.length) setPlaying(false);
-            else setIdx(idx + 1);
-          }, 2000));
-          return;
-        }
+      const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
+
+      // JA 用 utterance
+      const speakJa = () => new Promise(resolve => {
+        if (cancelled || seq !== playSeq.current) { resolve(); return; }
+        if (!window.speechSynthesis) { resolve(); return; }
         try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(queue[idx].en);
-        u.lang = 'en-GB'; u.rate = 0.95; u.pitch = 1.0;
+        const u = new SpeechSynthesisUtterance(cur.ja);
+        u.lang = 'ja-JP';
+        u.rate = 1.0;
+        u.pitch = 1.0;
+        // getBestVoice('ja-JP') があれば使う、なければ system default。
+        const v = getBestVoice('ja-JP');
+        if (v) u.voice = v;
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        try { window.speechSynthesis.speak(u); } catch { resolve(); }
+      });
+      const speakEn = () => new Promise(resolve => {
+        if (cancelled || seq !== playSeq.current) { resolve(); return; }
+        if (!window.speechSynthesis) { resolve(); return; }
+        try { window.speechSynthesis.cancel(); } catch {}
+        const u = new SpeechSynthesisUtterance(cur.en);
+        u.lang = 'en-GB';
+        u.rate = 0.95;
+        u.pitch = 1.0;
         const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
         if (v) u.voice = v;
-        const advance = () => {
-          timeouts.push(setTimeout(() => {
-            if (cancelled || seq !== playSeq.current) return;
-            if (idx + 1 >= queue.length) setPlaying(false);
-            else setIdx(idx + 1);
-          }, 1500));
-        };
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) advance(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) advance(); };
-        try { window.speechSynthesis.speak(u); } catch { advance(); }
-      }, 5000));
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        try { window.speechSynthesis.speak(u); } catch { resolve(); }
+      });
+
+      (async () => {
+        // JA → 1.5 秒 → EN ×3 (各回後に短いポーズ) → 0.6 秒 → 次
+        setPhase('ja');
+        setEnRepeat(0);
+        await speakJa();
+        if (cancelled || seq !== playSeq.current) return;
+        setPhase('pause');
+        await sleep(1500);
+        if (cancelled || seq !== playSeq.current) return;
+        for (let r = 1; r <= 3; r++) {
+          if (cancelled || seq !== playSeq.current) return;
+          setPhase('en');
+          setEnRepeat(r);
+          await speakEn();
+          if (cancelled || seq !== playSeq.current) return;
+          if (r < 3) await sleep(700);
+        }
+        if (cancelled || seq !== playSeq.current) return;
+        await sleep(600);
+        if (cancelled || seq !== playSeq.current) return;
+
+        const nextSolved = solvedInChunk + 1;
+        const isLast = idx + 1 >= queue.length;
+        // 次へ進む / チャンク終了 / 完走
+        if (nextSolved >= CONVO_CHUNK_SIZE || isLast) {
+          setPlaying(false);
+          setSolved(nextSolved);
+          setShowChunkPrompt(true);
+        } else {
+          setSolved(nextSolved);
+          setIdx(idx + 1);
+        }
+      })();
+
       return () => {
         cancelled = true;
-        clearInterval(tickId);
         timeouts.forEach(clearTimeout);
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
-    }, [playing, idx]);
+    }, [playing, idx, showChunkPrompt]);
 
     useEffect(() => () => {
       try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
     }, []);
 
+    const reorder = (o) => {
+      setOrder(o);
+      setSeed(s => s + 1);
+      setIdx(0);
+      setPlaying(true);
+      setPhase('idle');
+      setSolved(0);
+      setShowChunkPrompt(false);
+    };
+    const continueNext = () => {
+      const wasLast = idx + 1 >= queue.length;
+      setShowChunkPrompt(false);
+      setSolved(0);
+      if (wasLast) {
+        setTick(t => t + 1);
+        setIdx(0);
+      } else {
+        setIdx(i => i + 1);
+      }
+      setPlaying(true);
+    };
+
+    const totalQueueLen = queue.length;
+
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    if (!cur && totalQueueLen === 0) {
+      return e('div', { style: pageStyle },
+        e(ConvoPracticeTopBar, {
+          profile, onBack, modeLabel: '聞き流し', idx: 0, total: 0, showPattern: false,
+        }),
+        e('div', {
+          style: {
+            marginTop: 22, padding: '40px 20px', textAlign: 'center',
+            background: C.card, border: '1px solid ' + C.line, borderRadius: 14,
+            color: C.sub, fontSize: 14, lineHeight: 1.7,
+          }
+        }, '出題できる文がありません。'),
+      );
+    }
     if (!cur) return null;
-    const reachedEnd = !playing && idx + 1 >= queue.length;
 
     return e('div', { style: pageStyle },
       e(ConvoPracticeTopBar, {
         profile, onBack,
-        modeLabel: '思考タメ',
+        modeLabel: '聞き流し',
         idx, total: queue.length,
         showPattern: false,
       }),
       e(ConvoOrderToggle, { profile, order, onChange: reorder }),
-      // 日本語 (常に表示) + 右上に × 削除ボタン
-      e('div', {
-        style: {
-          position: 'relative',
-          background: C.card, border: '1px solid ' + C.line,
-          borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 12,
-          textAlign: 'center', minHeight: 88,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }
-      },
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
-        }, cur.ja),
-        e(ConvoDeleteBtn, {
-          onConfirm: () => {
-            try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
-            hideConvoSentence(cur.id);
-            setPlaying(false);
-            setPhase('thinking');
-            setTick(t => t + 1);
-            setTimeout(() => setPlaying(true), 50);
-          }
-        }),
-      ),
-      // thinking フェーズ: カウントダウンを大きく
-      phase === 'thinking' && e('div', {
-        style: {
-          marginTop: 16, padding: '18px',
-          textAlign: 'center', color: profile.color,
-          fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
-        }
-      },
-        '英語を組み立ててみよう…  ',
-        e('span', {
-          style: { fontSize: 28, fontVariantNumeric: 'tabular-nums', marginLeft: 8 }
-        }, secondsLeft + 's'),
-      ),
-      // answer フェーズ: 英語をテキストで出す (音声と同期)
-      phase === 'answer' && e('div', {
-        style: {
-          background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
-          borderRadius: 14, padding: '20px 18px', marginTop: 12,
-          display: 'flex', alignItems: 'center', gap: 12,
-        }
-      },
-        e('div', {
-          style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
-        }, cur.en),
-        e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
-      ),
-      // パターン名は答えが出てから下に出す (ヒントになるので thinking 中は隠す)
-      phase === 'answer' && e(ConvoPatternFootnote, {
-        profile,
-        patternEn: cur.patternEn, patternJa: cur.patternJa,
-        exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
-      }),
-      // 操作ボタン
-      e('div', {
-        style: {
-          marginTop: 22, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
-        }
-      },
-        e('button', {
-          onClick: () => { if (idx > 0) setIdx(idx - 1); setPlaying(true); },
-          disabled: idx === 0,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx === 0 ? 'not-allowed' : 'pointer',
-            opacity: idx === 0 ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, '‹ 前'),
-        e('button', {
-          onClick: () => {
-            if (reachedEnd) { setIdx(0); setPlaying(true); }
-            else setPlaying(!playing);
-          },
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: profile.color, color: '#fff', border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-          }
-        }, reachedEnd ? '最初から' : (playing ? '⏸ 一時停止' : '▶ 再生')),
-        e('button', {
-          onClick: () => { if (idx + 1 < queue.length) setIdx(idx + 1); setPlaying(true); },
-          disabled: idx + 1 >= queue.length,
-          style: {
-            padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: C.sub,
-            border: '1px solid ' + C.line,
-            cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
-            opacity: idx + 1 >= queue.length ? 0.45 : 1,
-            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
-          }
-        }, '次 ›'),
-      ),
+
+      showChunkPrompt
+        ? e(ConvoChunkPrompt, {
+            profile,
+            doneCount: CONVO_CHUNK_SIZE,
+            totalDone: solvedInChunk,
+            totalQueue: totalQueueLen,
+            onContinue: continueNext,
+            onQuit: onBack,
+          })
+        : e('div', null,
+            // kind バッジ
+            cur.kind && cur.kind !== 'example' && e('div', {
+              style: { marginTop: 10, paddingLeft: 2 }
+            }, e(ConvoKindChip, { kind: cur.kind })),
+            // JA + EN (常に表示) + 右上 ×
+            e('div', {
+              style: {
+                position: 'relative',
+                background: C.card, border: '1px solid ' + C.line,
+                borderRadius: 14, padding: '24px 38px 24px 18px',
+                marginTop: cur.kind && cur.kind !== 'example' ? 4 : 12,
+              }
+            },
+              // JA (大きめ)
+              e('div', {
+                style: {
+                  fontFamily: SERIF, fontSize: 20, color: C.text, lineHeight: 1.6,
+                  textAlign: 'center',
+                  opacity: phase === 'ja' ? 1 : 0.85,
+                }
+              }, cur.ja),
+              // 区切り
+              e('div', { style: { height: 1, background: C.line, margin: '14px 0' } }),
+              // EN (大きめ)
+              e('div', {
+                style: {
+                  fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.55,
+                  textAlign: 'center',
+                  opacity: phase === 'en' ? 1 : 0.85,
+                }
+              }, cur.en),
+              // フェーズ表示 (小さく)
+              e('div', {
+                style: {
+                  marginTop: 14, textAlign: 'center',
+                  fontFamily: SANS_UI, fontSize: 11.5, color: C.sub, letterSpacing: '0.08em',
+                }
+              },
+                phase === 'ja'    ? '日本語を再生中…' :
+                phase === 'pause' ? '少し待ちます…' :
+                phase === 'en'    ? '英語 ' + enRepeat + ' / 3 回目' :
+                phase === 'done'  ? '完了' :
+                                    '準備中'),
+              e(ConvoDeleteBtn, {
+                onConfirm: () => {
+                  try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+                  hideConvoSentence(cur.id);
+                  setPlaying(false);
+                  setTick(t => t + 1);
+                  setTimeout(() => setPlaying(true), 80);
+                }
+              }),
+            ),
+            // パターン名
+            e(ConvoPatternFootnote, {
+              profile,
+              patternEn: cur.patternEn, patternJa: cur.patternJa,
+              exampleNo: cur.exampleNo, totalInPattern: cur.totalInPattern,
+            }),
+            // 操作ボタン
+            e('div', {
+              style: {
+                marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10,
+              }
+            },
+              e('button', {
+                onClick: () => { if (idx > 0) { setIdx(idx - 1); setPlaying(true); } },
+                disabled: idx === 0,
+                style: {
+                  padding: '14px 0', borderRadius: 12,
+                  background: C.softer, color: C.sub,
+                  border: '1px solid ' + C.line,
+                  cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                  opacity: idx === 0 ? 0.45 : 1,
+                  fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+                }
+              }, '‹ 前'),
+              e('button', {
+                onClick: () => {
+                  if (phase === 'done') { setIdx(0); setPlaying(true); }
+                  else setPlaying(!playing);
+                },
+                style: {
+                  padding: '14px 0', borderRadius: 12,
+                  background: profile.color, color: '#fff', border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+                }
+              }, phase === 'done' ? '最初から' : (playing ? '⏸ 一時停止' : '▶ 再生')),
+              e('button', {
+                onClick: () => { if (idx + 1 < queue.length) { setIdx(idx + 1); setPlaying(true); } },
+                disabled: idx + 1 >= queue.length,
+                style: {
+                  padding: '14px 0', borderRadius: 12,
+                  background: C.softer, color: C.sub,
+                  border: '1px solid ' + C.line,
+                  cursor: idx + 1 >= queue.length ? 'not-allowed' : 'pointer',
+                  opacity: idx + 1 >= queue.length ? 0.45 : 1,
+                  fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+                }
+              }, '次 ›'),
+            ),
+            // セッション内の進捗（小さく）
+            e('div', {
+              style: { textAlign: 'center', fontSize: 12, color: C.sub, marginTop: 12, fontFamily: SANS_UI }
+            }, 'このセッション: ' + solvedInChunk + ' / ' + CONVO_CHUNK_SIZE + ' 問'),
+          ),
     );
   }
 
