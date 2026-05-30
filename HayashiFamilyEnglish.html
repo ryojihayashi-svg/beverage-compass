@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 296;
+  const APP_VERSION = 297;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21037,6 +21037,47 @@
   //                                                         …質問 × 3 通りの答え × 3 シーン = 12 文
   //
   // 教科書的な例は徹底的に避け、現代の自然なビジネス英語に統一。
+  // ---------- 定型構文セクション一覧 ----------
+  // 「Section 1 / Section 2 ...」というまとまりで構文を区切る。
+  // ユーザーはまずセクションを選び、その中で 2 つの練習モードを使う。
+  // 新セクション追加時は patternIds を加えて CONVO_PATTERNS にエントリを足す。
+  const CONVO_SECTIONS = [
+    {
+      no: 1,
+      title: 'Section 1',
+      subtitle: 'ビジネス・投資・ホスピタリティ',
+      description:
+        '投資 / 不動産 / レストラン / ホテル / リーダーシップ / 採用 / 建築 / ワインの ' +
+        '50 構文 (前半 25 は基本表現、後半 25 は質問 + 肯定 / 中立 / 否定 の答え)。',
+      patternIds: [
+        'cp001','cp002','cp003','cp004','cp005','cp006','cp007','cp008','cp009','cp010',
+        'cp011','cp012','cp013','cp014','cp015','cp016','cp017','cp018','cp019','cp020',
+        'cp021','cp022','cp023','cp024','cp025',
+        'cp026','cp027','cp028','cp029','cp030','cp031','cp032','cp033','cp034','cp035',
+        'cp036','cp037','cp038','cp039','cp040','cp041','cp042','cp043','cp044','cp045',
+        'cp046','cp047','cp048','cp049','cp050',
+      ],
+    },
+    // Section 2 以降をここに追加していく。
+  ];
+
+  // セクションに属するパターンの数を数えるユーティリティ。
+  function sectionPatternCount(section) {
+    return (section && section.patternIds ? section.patternIds.length : 0);
+  }
+  // セクション内の合計文数 (Part A: items 数 + Part B: qa シーン×4)。
+  function sectionSentenceCount(section) {
+    if (!section || !section.patternIds) return 0;
+    const ids = new Set(section.patternIds);
+    let n = 0;
+    for (const p of CONVO_PATTERNS) {
+      if (!ids.has(p.id)) continue;
+      if (Array.isArray(p.items)) n += p.items.length;
+      if (Array.isArray(p.qa)) n += p.qa.length * 4;
+    }
+    return n;
+  }
+
   const CONVO_PATTERNS = [
     // ============ Part A: 基本表現 (1-25) ============
     {
@@ -21844,14 +21885,26 @@
   // 144 パターンを一覧表示し、タップすると 3 例文 (EN/JA + 読み上げボタン) が
   // インラインで展開する。検索ボックスでパターン名 (英 or 日) で絞り込める。
   // 父 (亮治) のホームの "魔法の型" タイルから到達。瞬間英作文・シャドーイングへの
-  // ---------- 定型構文ブラウザ + 2 つの練習モード ----------
-  // 50 構文 × (Part A 3 例 / Part B 12 文) を一覧表示 + 2 つの形式で練習。
-  //   browse  : タップで開閉する一覧 (既定)
-  //   compose : 瞬間英作文モード (JA 表示 → 答えを表示 + 発音 → 覚えた/覚えていない)
-  //   listen  : 聞き流しモード (JA 音声 → 間 → EN 音声 × 3 → 自動で次へ)
+  // ---------- 定型構文 (セクション一覧 → セクション内ブラウズ + 2 練習モード) ----------
+  // 階層構造:
+  //   sections : セクション一覧 (Section 1 / 2 / 3 …) ← 最初に出る
+  //   browse   : セクション内の構文一覧 (タップで例文展開)
+  //   compose  : 瞬間英作文モード (JA → 答えを表示 + 発音 → 覚えた/覚えていない)
+  //   listen   : 聞き流しモード (JA 音声 → 間 → EN 音声 × 3 → 自動で次へ)
   // どちらの練習モードも 15 問区切りで「次に進みますか？」を聞く。
   function ConvoPatterns({ profile, onBack }) {
+    const [sectionNo, setSectionNo] = useState(null);  // null = セクション一覧
     const [mode, setMode] = useState('browse');
+    const section = sectionNo == null ? null
+      : CONVO_SECTIONS.find(s => s.no === sectionNo);
+
+    if (sectionNo == null || !section) {
+      return e(ConvoSectionList, {
+        profile, onBack,
+        onPickSection: (no) => { setSectionNo(no); setMode('browse'); },
+      });
+    }
+
     const onPickMode = (m) => {
       // iOS PWA で TTS を解錠するための空発話 (聞き流しモードで必要)
       try {
@@ -21864,10 +21917,88 @@
       } catch {}
       setMode(m);
     };
-    const goBack = () => setMode('browse');
-    if (mode === 'compose') return e(ConvoComposePractice, { profile, onBack: goBack });
-    if (mode === 'listen')  return e(ConvoListenPractice,  { profile, onBack: goBack });
-    return e(ConvoBrowse, { profile, onBack, onPickMode });
+    const goBackToBrowse   = () => setMode('browse');
+    const goBackToSections = () => { setSectionNo(null); setMode('browse'); };
+    if (mode === 'compose') return e(ConvoComposePractice, { profile, section, onBack: goBackToBrowse });
+    if (mode === 'listen')  return e(ConvoListenPractice,  { profile, section, onBack: goBackToBrowse });
+    return e(ConvoBrowse, { profile, section, onBack: goBackToSections, onPickMode });
+  }
+
+  // ----- セクション一覧画面 -----
+  // タップで対象セクションに入る。準備中 (patternIds が空) のセクションも表示
+  // しておくとロードマップが見える。
+  function ConvoSectionList({ profile, onBack, onPickSection }) {
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        '定型構文'),
+    );
+    return e('div', { style: pageStyle },
+      topBar,
+      e('div', { style: { padding: '4px 4px 22px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+        }, '定型構文'),
+        e('div', {
+          style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+        }, 'セクションを選んでください。各セクションには構文一覧 + 練習モード (瞬間英作文 / 聞き流し) が入っています。'),
+      ),
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+        CONVO_SECTIONS.map(sec => {
+          const patternN = sectionPatternCount(sec);
+          const sentN    = sectionSentenceCount(sec);
+          const ready    = patternN > 0;
+          return e('button', {
+            key: 'sec' + sec.no,
+            onClick: () => ready && onPickSection(sec.no),
+            disabled: !ready,
+            style: {
+              width: '100%', padding: '18px 18px', borderRadius: 14,
+              background: C.card,
+              border: '1px solid ' + (ready ? C.line : C.line),
+              cursor: ready ? 'pointer' : 'not-allowed',
+              opacity: ready ? 1 : 0.55,
+              textAlign: 'left', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 14,
+            }
+          },
+            // 番号バッジ
+            e('div', {
+              style: {
+                flex: '0 0 auto',
+                width: 44, height: 44, borderRadius: 12,
+                background: profile.color + '14', color: profile.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: SANS_UI, fontSize: 18, fontWeight: 800,
+              }
+            }, String(sec.no).padStart(2, '0')),
+            // 本文
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.35 }
+              }, sec.title + (sec.subtitle ? ' — ' + sec.subtitle : '')),
+              sec.description && e('div', {
+                style: { fontSize: 12.5, color: C.sub, marginTop: 6, lineHeight: 1.6 }
+              }, sec.description),
+              e('div', {
+                style: { fontSize: 11.5, color: C.sub, marginTop: 8, fontFamily: SANS_UI, letterSpacing: '0.04em' }
+              }, ready
+                  ? (patternN + ' 構文 · ' + sentN + ' 文')
+                  : '準備中'),
+            ),
+            // 矢印
+            ready && e('span', {
+              style: { fontSize: 18, color: profile.color, opacity: 0.7, flex: '0 0 auto' }
+            }, '›'),
+          );
+        }),
+      ),
+    );
   }
 
   // 全例文を「パターン順 → 各パターン内は items の順」でフラットに並べた
@@ -21885,6 +22016,11 @@
     const order = opts.order || 'sequential';
     const composition = opts.composition || null;
     let patterns = CONVO_PATTERNS.slice();
+    // section が指定されていればその中のパターンだけに絞る。
+    if (opts.section && Array.isArray(opts.section.patternIds)) {
+      const ids = new Set(opts.section.patternIds);
+      patterns = patterns.filter(p => ids.has(p.id));
+    }
     if (order === 'random') {
       for (let i = patterns.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -21970,19 +22106,27 @@
     hideItem('shadowing', 'sh_' + cpId);
   }
 
-  // ----- 一覧 -----
+  // ----- 一覧 (セクション内) -----
   // Part A は items 3 例を展開、Part B は 3 シーン × (Q + 肯定/中立/否定) を展開。
-  function ConvoBrowse({ profile, onBack, onPickMode }) {
+  // section が渡されていれば、そのセクションの構文のみを表示・カウント。
+  function ConvoBrowse({ profile, section, onBack, onPickMode }) {
     const [query, setQuery] = useState('');
     const [openId, setOpenId] = useState(null);
 
+    // セクションに属する構文だけを取り出す。
+    const sectionPatterns = useMemo(() => {
+      if (!section || !section.patternIds) return CONVO_PATTERNS;
+      const ids = new Set(section.patternIds);
+      return CONVO_PATTERNS.filter(p => ids.has(p.id));
+    }, [section]);
+
     const q = query.trim().toLowerCase();
     const filtered = useMemo(() => {
-      if (!q) return CONVO_PATTERNS;
+      if (!q) return sectionPatterns;
       const matchPair = (pair) =>
         (pair && pair.en || '').toLowerCase().includes(q) ||
         (pair && pair.ja || '').toLowerCase().includes(q);
-      return CONVO_PATTERNS.filter(p => {
+      return sectionPatterns.filter(p => {
         if ((p.pattern || '').toLowerCase().includes(q)) return true;
         if ((p.ja_pattern || '').toLowerCase().includes(q)) return true;
         if (Array.isArray(p.items) && p.items.some(matchPair)) return true;
@@ -21991,19 +22135,20 @@
           matchPair(scene.neutral) || matchPair(scene.negative))) return true;
         return false;
       });
-    }, [q]);
+    }, [q, sectionPatterns]);
 
-    // 合計文数 (動的にカウント)
+    // セクション内合計文数
     const totalCount = useMemo(() => {
       let n = 0;
-      for (const p of CONVO_PATTERNS) {
+      for (const p of sectionPatterns) {
         if (Array.isArray(p.items)) n += p.items.length;
         if (Array.isArray(p.qa)) n += p.qa.length * 4;
       }
       return n;
-    }, []);
+    }, [sectionPatterns]);
 
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const sectionLabel = section ? section.title : '定型構文';
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
     },
@@ -22011,7 +22156,7 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        '定型構文'),
+        '定型構文 · ' + sectionLabel),
     );
 
     const modeButtons = e('div', {
@@ -22076,15 +22221,19 @@
       e('div', { style: { padding: '4px 4px 14px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-        }, '定型構文'),
+        }, section
+          ? section.title + (section.subtitle ? ' — ' + section.subtitle : '')
+          : '定型構文'),
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
         },
-          '投資・不動産・レストラン・ホスピタリティ・リーダーシップ等で実際に使う ',
-          e('strong', null, CONVO_PATTERNS.length + ' 構文'),
-          ' / 計 ',
+          (section && section.description) ||
+          '構文を選んで例文を確認、または上のボタンで連続練習。',
+          ' (',
+          e('strong', null, sectionPatterns.length + ' 構文'),
+          ' / ',
           e('strong', null, totalCount + ' 文'),
-          '。前半 25 は基本表現、後半 25 は質問 + 肯定 / 中立 / 否定の答え 3 通り。'),
+          ')'),
       ),
 
       // 練習モード 2 つのボタン
@@ -22442,14 +22591,14 @@
   // 日本語表示 → 「答えを表示 + 発音」→ 覚えた / 覚えていない
   // db.recordSentence で進捗が瞬間英作文と同じ仕組みで保存される。
   // 連続 3 回正解で自動的にプールから外れる。15 問ごとに区切る。
-  function ConvoComposePractice({ profile, onBack }) {
+  function ConvoComposePractice({ profile, section, onBack }) {
     const [order, setOrder] = useState('sequential');
     const [seed, setSeed]   = useState(0);
     const [tick, setTick]   = useState(0);
     const queue = useMemo(() => {
       const composition = (db.load(profile.id).composition) || {};
-      return buildConvoQueue({ order, composition });
-    }, [profile.id, order, seed, tick]);
+      return buildConvoQueue({ order, composition, section });
+    }, [profile.id, order, seed, tick, section]);
 
     const [idx, setIdx]             = useState(0);
     const [revealed, setRevealed]   = useState(false);
@@ -22500,11 +22649,18 @@
         setIdx(i => i + 1);
       }
     };
+    // 対象 (セクション内 or 全体) の構文集合
+    const sectionPatterns = useMemo(() => {
+      if (!section || !section.patternIds) return CONVO_PATTERNS;
+      const ids = new Set(section.patternIds);
+      return CONVO_PATTERNS.filter(p => ids.has(p.id));
+    }, [section]);
+
     const totalDone = useMemo(() => {
       const comp = (db.load(profile.id).composition) || {};
-      // 全 50 構文の中で「マスター済み (連続 3 回正解)」の sentence 数
+      // セクション内の「マスター済み (連続 3 回正解)」の sentence 数
       let n = 0;
-      for (const p of CONVO_PATTERNS) {
+      for (const p of sectionPatterns) {
         if (Array.isArray(p.items)) {
           for (let i = 0; i < p.items.length; i++) {
             const sId = 'cp_' + p.id + '_' + (i + 1);
@@ -22512,23 +22668,21 @@
           }
         }
         if (Array.isArray(p.qa)) {
-          const SUFF = { 1: 'q', 2: 'p', 3: 'n', 4: 'g' };
           p.qa.forEach((scene, sIdx) => {
-            const sNo = sIdx + 1;
             ['q','p','n','g'].forEach(suff => {
-              const sId = 'cp_' + p.id + '_' + sNo + suff;
+              const sId = 'cp_' + p.id + '_' + (sIdx + 1) + suff;
               if (isSentenceMastered(comp[sId])) n++;
             });
           });
         }
       }
       return n;
-    }, [profile.id, tick]);
+    }, [profile.id, tick, sectionPatterns]);
 
     const totalQueueAtStart = useMemo(() => {
-      // 「覚えた」を考慮せず、× で外していないものだけを母数とする。
+      // 「覚えた」を考慮せず、× で外していないものだけを母数とする (セクション内)。
       let n = 0;
-      for (const p of CONVO_PATTERNS) {
+      for (const p of sectionPatterns) {
         if (Array.isArray(p.items)) {
           for (let i = 0; i < p.items.length; i++) {
             const sId = 'cp_' + p.id + '_' + (i + 1);
@@ -22545,7 +22699,7 @@
         }
       }
       return n;
-    }, [tick]);
+    }, [tick, sectionPatterns]);
 
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
 
@@ -22686,11 +22840,11 @@
   // 1 カードごとに: JA 音声 → 1, 2, 3 と少し間 → EN 音声 ×3 → 次へ自動進行。
   // 15 問区切りで「次に進みますか？」を出す。
   // JA は ja-JP、EN は en-GB / en-US (getBestVoice 優先)。
-  function ConvoListenPractice({ profile, onBack }) {
+  function ConvoListenPractice({ profile, section, onBack }) {
     const [order, setOrder] = useState('sequential');
     const [seed, setSeed]   = useState(0);
     const [tick, setTick]   = useState(0);
-    const queue = useMemo(() => buildConvoQueue({ order }), [order, seed, tick]);
+    const queue = useMemo(() => buildConvoQueue({ order, section }), [order, seed, tick, section]);
 
     const [idx, setIdx]               = useState(0);
     const [playing, setPlaying]       = useState(true);
