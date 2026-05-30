@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 297;
+  const APP_VERSION = 298;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21058,7 +21058,23 @@
         'cp046','cp047','cp048','cp049','cp050',
       ],
     },
-    // Section 2 以降をここに追加していく。
+    {
+      no: 2,
+      title: 'Section 2',
+      subtitle: '同意 / 懸念 / 説明力 / 経営 / リスク',
+      description:
+        '同意・不同意・懸念から、説明力 (要点・例え話)、経営 (チーム・品質・サービス)、' +
+        'そして可能性・リスク・長期視点まで。50 構文 × 3 例 = 150 文。' +
+        '各構文に「仕事 / ホテル / 家族」の 3 場面が並ぶ。',
+      patternIds: [
+        'cp051','cp052','cp053','cp054','cp055','cp056','cp057','cp058','cp059','cp060',
+        'cp061','cp062','cp063','cp064','cp065','cp066','cp067','cp068','cp069','cp070',
+        'cp071','cp072','cp073','cp074','cp075','cp076','cp077','cp078','cp079','cp080',
+        'cp081','cp082','cp083','cp084','cp085','cp086','cp087','cp088','cp089','cp090',
+        'cp091','cp092','cp093','cp094','cp095','cp096','cp097','cp098','cp099','cp100',
+      ],
+    },
+    // Section 3 以降をここに追加していく。
   ];
 
   // セクションに属するパターンの数を数えるユーティリティ。
@@ -21859,6 +21875,409 @@
         },
       ],
     },
+
+    // ============ Section 2: 同意 / 懸念 / 説明力 / 経営 / リスク (51-100) ============
+    // 1 構文 × 3 例。各構文に「仕事 / ホテル / 家族」の 3 場面が並ぶ。
+    {
+      id: 'cp051', pattern: 'I agree with the investment strategy.', ja_pattern: '私はその投資戦略に同意します。',
+      items: [
+        { theme: '仕事',   ja: '私は長期投資戦略に同意します。',           en: 'I agree with the long-term investment strategy.' },
+        { theme: 'ホテル', ja: '私はそのレストランコンセプトに同意します。', en: 'I agree with the restaurant concept.' },
+        { theme: '家族',   ja: '私は息子の留学の決断に賛成です。',           en: "I agree with my son's decision to study abroad." },
+      ],
+    },
+    {
+      id: 'cp052', pattern: "I don't agree with the current valuation.", ja_pattern: '私は現在の評価額には同意しません。',
+      items: [
+        { theme: '仕事',   ja: '私は現在の評価額には同意しません。',         en: "I don't agree with the current valuation." },
+        { theme: 'ホテル', ja: '私はそのレストランの価格設定には同意しません。', en: "I don't agree with the restaurant pricing strategy." },
+        { theme: '家族',   ja: '私はその考え方には同意しません。',           en: "I don't agree with that way of thinking." },
+      ],
+    },
+    {
+      id: 'cp053', pattern: "I'm not sure about the financing structure.", ja_pattern: '私はその融資スキームについてまだ判断できません。',
+      items: [
+        { theme: '仕事',   ja: '私はその融資スキームについてまだ判断できません。',       en: "I'm not sure about the financing structure." },
+        { theme: 'ホテル', ja: '私はそのホテル事業の収益モデルについてまだ判断できません。', en: "I'm not sure about the hotel revenue model." },
+        { theme: '家族',   ja: '私はその進路についてまだ判断できません。',               en: "I'm not sure about that career path yet." },
+      ],
+    },
+    {
+      id: 'cp054', pattern: 'I have mixed feelings about the partnership proposal.', ja_pattern: '私はその提携案について複雑な気持ちです。',
+      items: [
+        { theme: '仕事',   ja: '私はその提携案について複雑な気持ちです。',     en: 'I have mixed feelings about the partnership proposal.' },
+        { theme: 'ホテル', ja: '私はその共同出店案について迷っています。',     en: 'I have mixed feelings about the joint restaurant project.' },
+        { theme: '家族',   ja: '私は海外移住について少し迷っています。',       en: 'I have mixed feelings about moving abroad.' },
+      ],
+    },
+    {
+      id: 'cp055', pattern: "I'm open to the hotel development project.", ja_pattern: '私はそのホテル開発案件に前向きです。',
+      items: [
+        { theme: '仕事',   ja: '私はそのホテル開発案件に前向きです。',         en: "I'm open to the hotel development project." },
+        { theme: 'ホテル', ja: '私はその新しいレストラン計画に前向きです。',   en: "I'm open to the new restaurant project." },
+        { theme: '家族',   ja: '私は新しい経験に前向きです。',                 en: "I'm open to new experiences." },
+      ],
+    },
+    {
+      id: 'cp056', pattern: "I'm not against the restaurant expansion plan.", ja_pattern: '私はそのレストラン拡大計画に反対ではありません。',
+      items: [
+        { theme: '仕事',   ja: '私はそのレストラン拡大計画に反対ではありません。', en: "I'm not against the restaurant expansion plan." },
+        { theme: 'ホテル', ja: '私は海外出店に反対ではありません。',             en: "I'm not against opening a restaurant overseas." },
+        { theme: '家族',   ja: '私は子供の留学に反対ではありません。',           en: "I'm not against my children studying abroad." },
+      ],
+    },
+    {
+      id: 'cp057', pattern: 'I have some concerns about the construction budget.', ja_pattern: '私は工事予算に少し懸念があります。',
+      items: [
+        { theme: '仕事',   ja: '私は工事予算に少し懸念があります。',           en: 'I have some concerns about the construction budget.' },
+        { theme: 'ホテル', ja: '私はサービス品質について少し懸念があります。', en: 'I have some concerns about the service quality.' },
+        { theme: '家族',   ja: '私は息子の睡眠時間について少し心配しています。', en: "I have some concerns about my son's sleep schedule." },
+      ],
+    },
+    {
+      id: 'cp058', pattern: 'My main concern is the hiring plan.', ja_pattern: '私の主な懸念は採用計画です。',
+      items: [
+        { theme: '仕事',   ja: '私の主な懸念は採用計画です。',     en: 'My main concern is the hiring plan.' },
+        { theme: 'ホテル', ja: '私の主な懸念はサービスチームです。', en: 'My main concern is the service team.' },
+        { theme: '家族',   ja: '私の主な関心は家族の健康です。',   en: "My main concern is my family's health." },
+      ],
+    },
+    {
+      id: 'cp059', pattern: 'The key issue is the operating model.', ja_pattern: '重要な問題は運営モデルです。',
+      items: [
+        { theme: '仕事',   ja: '重要な問題は運営モデルです。',     en: 'The key issue is the operating model.' },
+        { theme: 'ホテル', ja: '重要な問題は予約システムです。',   en: 'The key issue is the reservation system.' },
+        { theme: '家族',   ja: '重要な問題は時間の使い方です。',   en: 'The key issue is how I spend my time.' },
+      ],
+    },
+    {
+      id: 'cp060', pattern: 'The key question is whether the concept is scalable.', ja_pattern: '重要な問いはコンセプトが拡張可能かどうかです。',
+      items: [
+        { theme: '仕事',   ja: '重要な問いはコンセプトが拡張可能かどうかです。',           en: 'The key question is whether the concept is scalable.' },
+        { theme: 'ホテル', ja: '重要な問いはお客様がまた来たいと思うかどうかです。',       en: 'The key question is whether guests want to come back.' },
+        { theme: '家族',   ja: '重要な問いは本当にその人生を望んでいるかどうかです。',     en: 'The key question is whether I truly want that life.' },
+      ],
+    },
+    {
+      id: 'cp061', pattern: 'It depends on the financing terms.', ja_pattern: '融資条件次第です。',
+      items: [
+        { theme: '仕事',   ja: '麻布台の購入は融資条件次第です。',       en: 'The Azabudai purchase depends on the financing terms.' },
+        { theme: 'ホテル', ja: 'そのホテル計画は賃貸条件次第です。',     en: 'The hotel project depends on the lease terms.' },
+        { theme: '家族',   ja: '家族旅行は子供たちの予定次第です。',     en: "The family trip depends on my children's schedules." },
+      ],
+    },
+    {
+      id: 'cp062', pattern: "If the financing terms are attractive, I'll proceed.", ja_pattern: '融資条件が良ければ進めます。',
+      items: [
+        { theme: '仕事',   ja: '融資条件が良ければ物件購入を進めます。',           en: "If the financing terms are attractive, I'll proceed with the property purchase." },
+        { theme: 'ホテル', ja: '条件が合えば新しいレストラン計画を進めます。',     en: "If the terms are attractive, I'll proceed with the new restaurant project." },
+        { theme: '家族',   ja: '子供たちの予定が合えば家族旅行を計画します。',     en: "If my children's schedules work, I'll plan a family trip." },
+      ],
+    },
+    {
+      id: 'cp063', pattern: 'We need to be careful about cash flow management.', ja_pattern: 'キャッシュフロー管理には注意が必要です。',
+      items: [
+        { theme: '仕事',   ja: '事業拡大時はキャッシュフロー管理に注意が必要です。', en: 'We need to be careful about cash flow management during business expansion.' },
+        { theme: 'ホテル', ja: 'レストラン開業時は人件費に注意が必要です。',         en: 'We need to be careful about labor costs when opening a restaurant.' },
+        { theme: '家族',   ja: '旅行中は体調管理に気を付ける必要があります。',       en: 'We need to be careful about our health while traveling.' },
+      ],
+    },
+    {
+      id: 'cp064', pattern: 'We should avoid unnecessary complexity.', ja_pattern: '不要な複雑さは避けるべきです。',
+      items: [
+        { theme: '仕事',   ja: '株主構成では不要な複雑さを避けるべきです。',     en: 'We should avoid unnecessary complexity in the shareholder structure.' },
+        { theme: 'ホテル', ja: 'サービス設計では不要な複雑さを避けるべきです。', en: 'We should avoid unnecessary complexity in service design.' },
+        { theme: '家族',   ja: '人生では不要なストレスを避けるべきです。',       en: 'We should avoid unnecessary stress in life.' },
+      ],
+    },
+    {
+      id: 'cp065', pattern: 'We might need to revise the restaurant concept.', ja_pattern: 'レストランコンセプトを見直す必要があるかもしれません。',
+      items: [
+        { theme: '仕事',   ja: '事業計画を見直す必要があるかもしれません。',                 en: 'We might need to revise the business plan.' },
+        { theme: 'ホテル', ja: 'レストランコンセプトを見直す必要があるかもしれません。',     en: 'We might need to revise the restaurant concept.' },
+        { theme: '家族',   ja: '今年の旅行計画を見直す必要があるかもしれません。',           en: 'We might need to revise our travel plans for this year.' },
+      ],
+    },
+    {
+      id: 'cp066', pattern: "We don't have to rush the property acquisition.", ja_pattern: '物件取得を急ぐ必要はありません。',
+      items: [
+        { theme: '仕事',   ja: '投資判断を急ぐ必要はありません。',           en: "We don't have to rush the investment decision." },
+        { theme: 'ホテル', ja: 'レストランのオープンを急ぐ必要はありません。', en: "We don't have to rush the restaurant opening." },
+        { theme: '家族',   ja: '週末の予定を急いで決める必要はありません。', en: "We don't have to rush our weekend plans." },
+      ],
+    },
+    {
+      id: 'cp067', pattern: "There's still room for discussion on the management fee.", ja_pattern: '運営報酬についてはまだ議論の余地があります。',
+      items: [
+        { theme: '仕事',   ja: '運営報酬についてはまだ議論の余地があります。',                   en: "There's still room for discussion on the management fee." },
+        { theme: 'ホテル', ja: 'レストランのメニュー構成についてはまだ話し合う余地があります。', en: "There's still room for discussion on the restaurant menu structure." },
+        { theme: '家族',   ja: '夏休みの旅行先についてはまだ話し合う余地があります。',           en: "There's still room for discussion on the summer vacation destination." },
+      ],
+    },
+    {
+      id: 'cp068', pattern: 'How flexible are you on the lease terms?', ja_pattern: '賃貸条件についてどれくらい柔軟ですか？',
+      items: [
+        { theme: '仕事',   ja: '賃貸条件についてどれくらい柔軟ですか？',     en: 'How flexible are you on the lease terms?' },
+        { theme: 'ホテル', ja: '予約時間についてどれくらい柔軟ですか？',     en: 'How flexible are you on the reservation time?' },
+        { theme: '家族',   ja: '週末の予定についてどれくらい柔軟ですか？',   en: 'How flexible are you on the weekend plans?' },
+      ],
+    },
+    {
+      id: 'cp069', pattern: 'Is there any room for negotiation on the purchase price?', ja_pattern: '購入価格に交渉の余地はありますか？',
+      items: [
+        { theme: '仕事',   ja: '購入価格に交渉の余地はありますか？',         en: 'Is there any room for negotiation on the purchase price?' },
+        { theme: 'ホテル', ja: '個室料金に交渉の余地はありますか？',         en: 'Is there any room for negotiation on the private room fee?' },
+        { theme: '家族',   ja: '出発時間について調整の余地はありますか？',   en: 'Is there any room for adjustment on the departure time?' },
+      ],
+    },
+    {
+      id: 'cp070', pattern: 'What would make the hotel project work?', ja_pattern: 'どうすればそのホテル案件は成功しますか？',
+      items: [
+        { theme: '仕事',   ja: 'どうすればそのホテル案件は成功しますか？',                   en: 'What would make the hotel project work?' },
+        { theme: 'ホテル', ja: 'どうすればそのレストランはもっと魅力的になりますか？',       en: 'What would make the restaurant more attractive?' },
+        { theme: '家族',   ja: 'どうすればその旅行は家族全員にとって楽しくなりますか？',     en: 'What would make the trip enjoyable for the whole family?' },
+      ],
+    },
+    {
+      id: 'cp071', pattern: 'The reason is simple.', ja_pattern: '理由はシンプルです。',
+      items: [
+        { theme: '仕事',   ja: 'その物件を買いたい理由はシンプルです。立地が素晴らしいからです。',           en: 'The reason is simple. The location is exceptional.' },
+        { theme: 'ホテル', ja: 'そのレストランが成功している理由はシンプルです。料理が美味しいからです。',   en: 'The reason is simple. The food is excellent.' },
+        { theme: '家族',   ja: '私が家族との時間を大切にする理由はシンプルです。人生で最も大事だからです。', en: 'The reason is simple. Family is the most important thing in my life.' },
+      ],
+    },
+    {
+      id: 'cp072', pattern: 'To put it simply, …', ja_pattern: '簡単に言うと〜です。',
+      items: [
+        { theme: '仕事',   ja: '簡単に言うと、その投資はリスクよりリターンが大きいです。', en: 'To put it simply, the investment offers more upside than downside.' },
+        { theme: 'ホテル', ja: '簡単に言うと、そのホテルは居心地が良いです。',             en: 'To put it simply, the hotel feels comfortable.' },
+        { theme: '家族',   ja: '簡単に言うと、今の人生に満足しています。',                 en: "To put it simply, I'm happy with my life." },
+      ],
+    },
+    {
+      id: 'cp073', pattern: 'In other words, …', ja_pattern: '言い換えると〜です。',
+      items: [
+        { theme: '仕事',   ja: '言い換えると、その事業は利益を出せるということです。', en: 'In other words, the business can be profitable.' },
+        { theme: 'ホテル', ja: '言い換えると、そのレストランは唯一無二です。',         en: 'In other words, the restaurant is one of a kind.' },
+        { theme: '家族',   ja: '言い換えると、もっと自由な時間が欲しいということです。', en: 'In other words, I want more freedom in my life.' },
+      ],
+    },
+    {
+      id: 'cp074', pattern: 'Let me explain …', ja_pattern: '説明させてください。',
+      items: [
+        { theme: '仕事',   ja: '投資戦略について説明させてください。',         en: 'Let me explain the investment strategy.' },
+        { theme: 'ホテル', ja: 'レストランコンセプトについて説明させてください。', en: 'Let me explain the restaurant concept.' },
+        { theme: '家族',   ja: 'なぜその決断をしたのか説明させてください。',   en: 'Let me explain why I made that decision.' },
+      ],
+    },
+    {
+      id: 'cp075', pattern: 'Let me be clear …', ja_pattern: 'はっきり言います。',
+      items: [
+        { theme: '仕事',   ja: 'はっきり言います。その評価額は高すぎます。',           en: 'Let me be clear. The valuation is too high.' },
+        { theme: 'ホテル', ja: 'はっきり言います。サービス品質が最も重要です。',       en: 'Let me be clear. Service quality matters most.' },
+        { theme: '家族',   ja: 'はっきり言います。健康がお金より大事です。',           en: 'Let me be clear. Health is more important than money.' },
+      ],
+    },
+    {
+      id: 'cp076', pattern: "What I'm trying to say is …", ja_pattern: '私が言いたいのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が言いたいのは、今は焦るべきではないということです。',           en: "What I'm trying to say is that we shouldn't rush." },
+        { theme: 'ホテル', ja: '私が言いたいのは、料理より体験が重要だということです。',           en: "What I'm trying to say is that the experience matters more than the food." },
+        { theme: '家族',   ja: '私が言いたいのは、人生は仕事だけではないということです。',         en: "What I'm trying to say is that life is more than work." },
+      ],
+    },
+    {
+      id: 'cp077', pattern: 'The point is …', ja_pattern: '要点は〜です。',
+      items: [
+        { theme: '仕事',   ja: '要点は、その案件に将来性があるということです。',     en: 'The point is that the project has long-term potential.' },
+        { theme: 'ホテル', ja: '要点は、お客様がまた来たいと思うかどうかです。',     en: 'The point is whether guests want to come back.' },
+        { theme: '家族',   ja: '要点は、自分が幸せかどうかです。',                   en: "The point is whether I'm happy." },
+      ],
+    },
+    {
+      id: 'cp078', pattern: 'It comes down to …', ja_pattern: '結局は〜に尽きます。',
+      items: [
+        { theme: '仕事',   ja: '結局は実行力に尽きます。',           en: 'It comes down to execution.' },
+        { theme: 'ホテル', ja: '結局はチームに尽きます。',           en: 'It comes down to the team.' },
+        { theme: '家族',   ja: '結局は人との関係に尽きます。',       en: 'It comes down to relationships.' },
+      ],
+    },
+    {
+      id: 'cp079', pattern: 'At the end of the day, …', ja_pattern: '結局のところ〜です。',
+      items: [
+        { theme: '仕事',   ja: '結局のところ、キャッシュフローが重要です。', en: 'At the end of the day, cash flow matters.' },
+        { theme: 'ホテル', ja: '結局のところ、人が店を作ります。',           en: 'At the end of the day, people make the restaurant.' },
+        { theme: '家族',   ja: '結局のところ、家族が一番大切です。',         en: 'At the end of the day, family comes first.' },
+      ],
+    },
+    {
+      id: 'cp080', pattern: "That's not what I meant.", ja_pattern: 'そういう意味ではありません。',
+      items: [
+        { theme: '仕事',   ja: 'そういう意味ではありません。私は投資に反対しているわけではありません。',         en: "That's not what I meant. I'm not against the investment." },
+        { theme: 'ホテル', ja: 'そういう意味ではありません。私は料理を批判しているわけではありません。',         en: "That's not what I meant. I'm not criticizing the food." },
+        { theme: '家族',   ja: 'そういう意味ではありません。私は家族との時間を減らしたいわけではありません。',   en: "That's not what I meant. I don't want to spend less time with my family." },
+      ],
+    },
+    {
+      id: 'cp081', pattern: 'We need the right management team.', ja_pattern: '適切な経営チームが必要です。',
+      items: [
+        { theme: '仕事',   ja: 'この事業には適切な経営チームが必要です。',     en: 'We need the right management team for this business.' },
+        { theme: 'ホテル', ja: 'このホテルには強い運営チームが必要です。',     en: 'We need the right management team for this hotel.' },
+        { theme: '家族',   ja: '子供たちには良い先生やメンターが必要です。',   en: 'My children need the right mentors around them.' },
+      ],
+    },
+    {
+      id: 'cp082', pattern: 'The restaurant team makes all the difference.', ja_pattern: 'レストランチームがすべてを左右します。',
+      items: [
+        { theme: '仕事',   ja: '結局はチームが会社の成長を決めます。',     en: 'The team makes all the difference in a growing company.' },
+        { theme: 'ホテル', ja: 'レストランチームがすべてを左右します。',   en: 'The restaurant team makes all the difference.' },
+        { theme: '家族',   ja: '人生では誰と時間を過ごすかが大切です。',   en: 'The people around you make all the difference in life.' },
+      ],
+    },
+    {
+      id: 'cp083', pattern: 'Consistency is everything in hospitality.', ja_pattern: 'ホスピタリティでは安定感がすべてです。',
+      items: [
+        { theme: '仕事',   ja: '投資では継続性が重要です。',             en: 'Consistency is everything in investing.' },
+        { theme: 'ホテル', ja: 'ホスピタリティでは安定感がすべてです。', en: 'Consistency is everything in hospitality.' },
+        { theme: '家族',   ja: '健康は毎日の積み重ねです。',             en: 'Consistency is everything when it comes to health.' },
+      ],
+    },
+    {
+      id: 'cp084', pattern: 'Quality comes first.', ja_pattern: '品質が最優先です。',
+      items: [
+        { theme: '仕事',   ja: 'どんな事業でも品質が最優先です。',         en: 'Quality comes first in every business.' },
+        { theme: 'ホテル', ja: 'どんな料理でも品質が最優先です。',         en: 'Quality comes first in every dish.' },
+        { theme: '家族',   ja: '人間関係でも質が量より大事です。',         en: 'Quality comes first in relationships.' },
+      ],
+    },
+    {
+      id: 'cp085', pattern: 'Service should feel natural.', ja_pattern: 'サービスは自然であるべきです。',
+      items: [
+        { theme: '仕事',   ja: '顧客対応は自然であるべきです。',               en: 'Customer service should feel natural.' },
+        { theme: 'ホテル', ja: 'サービスは自然であるべきです。',               en: 'Service should feel natural.' },
+        { theme: '家族',   ja: '親切は押し付けになってはいけません。',         en: 'Kindness should feel natural.' },
+      ],
+    },
+    {
+      id: 'cp086', pattern: 'The guest experience matters more than the interior design.', ja_pattern: '内装より顧客体験が重要です。',
+      items: [
+        { theme: '仕事',   ja: 'ブランドは見た目より体験が重要です。',         en: 'The customer experience matters more than the branding.' },
+        { theme: 'ホテル', ja: '内装より顧客体験が重要です。',                 en: 'The guest experience matters more than the interior design.' },
+        { theme: '家族',   ja: 'モノより思い出が大切です。',                   en: 'Experiences matter more than possessions.' },
+      ],
+    },
+    {
+      id: 'cp087', pattern: 'The restaurant has to be profitable.', ja_pattern: 'レストランは利益を出さなければなりません。',
+      items: [
+        { theme: '仕事',   ja: '事業は利益を出さなければなりません。',           en: 'The business has to be profitable.' },
+        { theme: 'ホテル', ja: 'レストランは利益を出さなければなりません。',     en: 'The restaurant has to be profitable.' },
+        { theme: '家族',   ja: '夢だけでなく現実も大事です。',                   en: 'Passion has to be supported by reality.' },
+      ],
+    },
+    {
+      id: 'cp088', pattern: 'We need to control labor costs.', ja_pattern: '人件費を管理する必要があります。',
+      items: [
+        { theme: '仕事',   ja: '人件費を管理する必要があります。',                 en: 'We need to control labor costs.' },
+        { theme: 'ホテル', ja: 'ホテル運営では人件費管理が重要です。',             en: 'Labor cost control is important in hotel operations.' },
+        { theme: '家族',   ja: '家計では支出管理が重要です。',                     en: 'We need to control household expenses.' },
+      ],
+    },
+    {
+      id: 'cp089', pattern: 'The restaurant concept needs to be clearer.', ja_pattern: 'レストランコンセプトをもっと明確にする必要があります。',
+      items: [
+        { theme: '仕事',   ja: '事業戦略をもっと明確にする必要があります。',                 en: 'The business strategy needs to be clearer.' },
+        { theme: 'ホテル', ja: 'レストランコンセプトをもっと明確にする必要があります。',     en: 'The restaurant concept needs to be clearer.' },
+        { theme: '家族',   ja: '自分が本当に望む人生をもっと明確にする必要があります。',     en: 'I need to be clearer about the life I truly want.' },
+      ],
+    },
+    {
+      id: 'cp090', pattern: 'The dining room needs more warmth.', ja_pattern: 'ダイニングルームにはもっと温かみが必要です。',
+      items: [
+        { theme: '仕事',   ja: 'ブランドにはもっと人間味が必要です。',                       en: 'The brand needs more warmth.' },
+        { theme: 'ホテル', ja: 'ダイニングルームにはもっと温かみが必要です。',               en: 'The dining room needs more warmth.' },
+        { theme: '家族',   ja: '最近は家族との時間がもっと必要だと感じています。',           en: 'I feel like my life needs more family time.' },
+      ],
+    },
+    {
+      id: 'cp091', pattern: "There's a chance that the property value will increase.", ja_pattern: 'その物件価値が上がる可能性があります。',
+      items: [
+        { theme: '仕事',   ja: 'その物件価値が今後上がる可能性があります。',         en: "There's a chance that the property value will increase." },
+        { theme: 'ホテル', ja: 'そのホテルのブランド価値が上がる可能性があります。', en: "There's a chance that the hotel's brand value will increase." },
+        { theme: '家族',   ja: '子供たちが将来海外で暮らす可能性があります。',       en: "There's a chance that my children will live abroad in the future." },
+      ],
+    },
+    {
+      id: 'cp092', pattern: "There's a risk that construction costs will rise.", ja_pattern: '建築コストが上がるリスクがあります。',
+      items: [
+        { theme: '仕事',   ja: '建築コストが上がるリスクがあります。',                       en: "There's a risk that construction costs will rise." },
+        { theme: 'ホテル', ja: 'レストランの開業費用が想定より増えるリスクがあります。',     en: "There's a risk that the restaurant opening costs will exceed expectations." },
+        { theme: '家族',   ja: '忙しすぎると家族との時間が減るリスクがあります。',           en: "There's a risk that I may spend less time with my family if I get too busy." },
+      ],
+    },
+    {
+      id: 'cp093', pattern: 'The hotel opening may take longer than expected.', ja_pattern: 'ホテル開業は想定より時間がかかるかもしれません。',
+      items: [
+        { theme: '仕事',   ja: '資金調達は想定より時間がかかるかもしれません。',     en: 'The financing may take longer than expected.' },
+        { theme: 'ホテル', ja: 'ホテル開業は想定より時間がかかるかもしれません。',   en: 'The hotel opening may take longer than expected.' },
+        { theme: '家族',   ja: '英語の上達は想定より時間がかかるかもしれません。',   en: 'Improving my English may take longer than expected.' },
+      ],
+    },
+    {
+      id: 'cp094', pattern: 'The renovation budget may exceed expectations.', ja_pattern: '改装予算は想定を超えるかもしれません。',
+      items: [
+        { theme: '仕事',   ja: '改装予算は想定を超えるかもしれません。',     en: 'The renovation budget may exceed expectations.' },
+        { theme: 'ホテル', ja: '旅行費用は想定を超えるかもしれません。',     en: 'The travel budget may exceed expectations.' },
+        { theme: '家族',   ja: '子供の教育費は想定を超えるかもしれません。', en: "My children's education costs may exceed expectations." },
+      ],
+    },
+    {
+      id: 'cp095', pattern: "It's too early to evaluate the restaurant performance.", ja_pattern: 'レストランの業績を評価するにはまだ早すぎます。',
+      items: [
+        { theme: '仕事',   ja: 'その投資成果を評価するにはまだ早すぎます。',     en: "It's too early to evaluate the investment performance." },
+        { theme: 'ホテル', ja: 'レストランの業績を評価するにはまだ早すぎます。', en: "It's too early to evaluate the restaurant performance." },
+        { theme: '家族',   ja: '子供の将来を決めつけるにはまだ早すぎます。',     en: "It's too early to judge my children's future." },
+      ],
+    },
+    {
+      id: 'cp096', pattern: "It's hard to predict the real estate market.", ja_pattern: '不動産市場を予測するのは難しいです。',
+      items: [
+        { theme: '仕事',   ja: '不動産市場を予測するのは難しいです。',     en: "It's hard to predict the real estate market." },
+        { theme: 'ホテル', ja: '来年の旅行需要を予測するのは難しいです。', en: "It's hard to predict travel demand next year." },
+        { theme: '家族',   ja: '人生がどうなるかを予測するのは難しいです。', en: "It's hard to predict where life will take us." },
+      ],
+    },
+    {
+      id: 'cp097', pattern: 'I think the hotel project has strong potential.', ja_pattern: 'そのホテル案件には大きな可能性があると思います。',
+      items: [
+        { theme: '仕事',   ja: 'その不動産案件には大きな可能性があると思います。', en: 'I think the real estate project has strong potential.' },
+        { theme: 'ホテル', ja: 'そのホテル案件には大きな可能性があると思います。', en: 'I think the hotel project has strong potential.' },
+        { theme: '家族',   ja: '息子には大きな可能性があると思います。',           en: 'I think my son has strong potential.' },
+      ],
+    },
+    {
+      id: 'cp098', pattern: "I don't think the valuation is realistic.", ja_pattern: 'その評価額は現実的ではないと思います。',
+      items: [
+        { theme: '仕事',   ja: 'その評価額は現実的ではないと思います。',                   en: "I don't think the valuation is realistic." },
+        { theme: 'ホテル', ja: 'そのレストランの売上目標は現実的ではないと思います。',     en: "I don't think the restaurant sales target is realistic." },
+        { theme: '家族',   ja: 'そのスケジュールは現実的ではないと思います。',             en: "I don't think the schedule is realistic." },
+      ],
+    },
+    {
+      id: 'cp099', pattern: 'We should think about the long-term brand value.', ja_pattern: '長期的なブランド価値を考えるべきです。',
+      items: [
+        { theme: '仕事',   ja: '長期的なブランド価値を考えるべきです。',                   en: 'We should think about the long-term brand value.' },
+        { theme: 'ホテル', ja: '短期売上より長期的な顧客体験を考えるべきです。',           en: 'We should think about the long-term guest experience rather than short-term sales.' },
+        { theme: '家族',   ja: '短期的な忙しさより長期的な幸せを考えるべきです。',         en: 'We should think about long-term happiness rather than short-term busyness.' },
+      ],
+    },
+    {
+      id: 'cp100', pattern: 'We should develop the business step by step.', ja_pattern: '事業は一歩ずつ育てるべきです。',
+      items: [
+        { theme: '仕事',   ja: '事業は一歩ずつ育てるべきです。',         en: 'We should develop the business step by step.' },
+        { theme: 'ホテル', ja: 'レストランチームは一歩ずつ育てるべきです。', en: 'We should develop the restaurant team step by step.' },
+        { theme: '家族',   ja: '英語力は一歩ずつ伸ばすべきです。',         en: 'We should improve our English step by step.' },
+      ],
+    },
   ];
 
   // ---------- 定型構文のレベル振り (英検目安) ----------
@@ -21874,6 +22293,12 @@
     cp026: 3, cp027: 3, cp028: 3, cp029: 4, cp030: 3, cp031: 4, cp032: 3, cp033: 3, cp034: 3, cp035: 2,
     cp036: 2, cp037: 4, cp038: 4, cp039: 4, cp040: 4, cp041: 4, cp042: 3, cp043: 4, cp044: 3, cp045: 4,
     cp046: 4, cp047: 4, cp048: 4, cp049: 3, cp050: 2,
+    // Section 2 (51-100)
+    cp051: 3, cp052: 3, cp053: 3, cp054: 4, cp055: 3, cp056: 3, cp057: 3, cp058: 3, cp059: 4, cp060: 4,
+    cp061: 3, cp062: 4, cp063: 3, cp064: 3, cp065: 4, cp066: 3, cp067: 4, cp068: 4, cp069: 4, cp070: 4,
+    cp071: 2, cp072: 3, cp073: 3, cp074: 2, cp075: 3, cp076: 4, cp077: 3, cp078: 4, cp079: 4, cp080: 3,
+    cp081: 3, cp082: 4, cp083: 4, cp084: 3, cp085: 4, cp086: 4, cp087: 3, cp088: 3, cp089: 3, cp090: 3,
+    cp091: 3, cp092: 3, cp093: 4, cp094: 4, cp095: 3, cp096: 3, cp097: 3, cp098: 3, cp099: 3, cp100: 3,
   };
 
   // 旧版では CONVO_PATTERNS を SENTENCES / SHADOWING_QA に自動マージしていたが、
@@ -22047,6 +22472,7 @@
             patternJa: p.ja_pattern,
             level: lv,
             kind: 'example',
+            theme: it.theme || null,
             sceneNo: null, totalScenes: null,
             exampleIdx: idx, exampleNo: idx + 1,
             totalInPattern: p.items.length,
@@ -22345,10 +22771,15 @@
                     )),
                   );
                 } else {
+                  // items に theme (e.g. '仕事' / 'ホテル' / '家族') があれば
+                  // それをバッジに、なければ '1.','2.','3.' を表示。
                   body = e('div', { style: { background: C.softer + '55' } },
-                    p.items.map((it, idx) =>
-                      renderLine('it' + idx, it.en, it.ja,
-                        (idx + 1) + '.', { bg: 'transparent', fg: C.sub }, 0)),
+                    p.items.map((it, idx) => renderLine('it' + idx, it.en, it.ja,
+                      it.theme || (idx + 1) + '.',
+                      it.theme
+                        ? { bg: profile.color + '14', fg: profile.color }
+                        : { bg: 'transparent', fg: C.sub },
+                      0)),
                   );
                 }
               }
@@ -22740,18 +23171,29 @@
                 '間違えると自動で復習プールに戻ります。'),
             )
           : !cur ? null : e('div', null,
-              // kind バッジ (Part B のときだけ)
-              cur.kind && cur.kind !== 'example' && e('div', {
+              // バッジ (Part B → 質問/肯定/中立/否定、Section 2 → 仕事/ホテル/家族)
+              (cur.theme || (cur.kind && cur.kind !== 'example')) && e('div', {
                 style: { marginTop: 10, paddingLeft: 2 }
               },
-                e(ConvoKindChip, { kind: cur.kind }),
+                cur.theme
+                  ? e('div', {
+                      style: {
+                        display: 'inline-flex', alignItems: 'center',
+                        padding: '4px 10px', borderRadius: 999,
+                        background: profile.color + '14', color: profile.color,
+                        fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 800,
+                        letterSpacing: '0.06em',
+                        marginBottom: 10,
+                      }
+                    }, cur.theme)
+                  : e(ConvoKindChip, { kind: cur.kind }),
               ),
               // 日本語 + 右上の × 削除
               e('div', {
                 style: {
                   position: 'relative',
                   background: C.card, border: '1px solid ' + C.line,
-                  borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: cur.kind && cur.kind !== 'example' ? 4 : 12,
+                  borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: (cur.theme || (cur.kind && cur.kind !== 'example')) ? 4 : 12,
                   textAlign: 'center', minHeight: 88,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }
@@ -23003,17 +23445,30 @@
             onQuit: onBack,
           })
         : e('div', null,
-            // kind バッジ
-            cur.kind && cur.kind !== 'example' && e('div', {
+            // バッジ (Part B → 役割、Section 2 → 仕事/ホテル/家族)
+            (cur.theme || (cur.kind && cur.kind !== 'example')) && e('div', {
               style: { marginTop: 10, paddingLeft: 2 }
-            }, e(ConvoKindChip, { kind: cur.kind })),
+            },
+              cur.theme
+                ? e('div', {
+                    style: {
+                      display: 'inline-flex', alignItems: 'center',
+                      padding: '4px 10px', borderRadius: 999,
+                      background: profile.color + '14', color: profile.color,
+                      fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 800,
+                      letterSpacing: '0.06em',
+                      marginBottom: 10,
+                    }
+                  }, cur.theme)
+                : e(ConvoKindChip, { kind: cur.kind }),
+            ),
             // JA + EN (常に表示) + 右上 ×
             e('div', {
               style: {
                 position: 'relative',
                 background: C.card, border: '1px solid ' + C.line,
                 borderRadius: 14, padding: '24px 38px 24px 18px',
-                marginTop: cur.kind && cur.kind !== 'example' ? 4 : 12,
+                marginTop: (cur.theme || (cur.kind && cur.kind !== 'example')) ? 4 : 12,
               }
             },
               // JA (大きめ)
