@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 298;
+  const APP_VERSION = 299;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21075,6 +21075,38 @@
       ],
     },
     // Section 3 以降をここに追加していく。
+    {
+      no: 3,
+      title: 'Section 3',
+      subtitle: '人生・価値観・感情・ストーリー',
+      description:
+        '回想・気付き・感謝・誇り・夢など、経営者が「自分の物語」を語るための表現。' +
+        '50 構文 × 3 例 = 150 文。各構文に「仕事 / ホテル / 家族」の 3 場面が並ぶ。',
+      patternIds: [
+        'cp101','cp102','cp103','cp104','cp105','cp106','cp107','cp108','cp109','cp110',
+        'cp111','cp112','cp113','cp114','cp115','cp116','cp117','cp118','cp119','cp120',
+        'cp121','cp122','cp123','cp124','cp125','cp126','cp127','cp128','cp129','cp130',
+        'cp131','cp132','cp133','cp134','cp135','cp136','cp137','cp138','cp139','cp140',
+        'cp141','cp142','cp143','cp144','cp145','cp146','cp147','cp148','cp149','cp150',
+      ],
+    },
+    // Section 4 以降をここに追加していく。
+    {
+      no: 4,
+      title: 'Section 4',
+      subtitle: '共感・人間関係・好奇心・人生観',
+      description:
+        '聞き返し・共感・深い質問・哲学的問い。経営者や年配の方と「腰を据えて話す」ための英語。' +
+        '50 構文 × 3 例 = 150 文。各構文に「仕事 / ホテル / 家族」の 3 場面。',
+      patternIds: [
+        'cp151','cp152','cp153','cp154','cp155','cp156','cp157','cp158','cp159','cp160',
+        'cp161','cp162','cp163','cp164','cp165','cp166','cp167','cp168','cp169','cp170',
+        'cp171','cp172','cp173','cp174','cp175','cp176','cp177','cp178','cp179','cp180',
+        'cp181','cp182','cp183','cp184','cp185','cp186','cp187','cp188','cp189','cp190',
+        'cp191','cp192','cp193','cp194','cp195','cp196','cp197','cp198','cp199','cp200',
+      ],
+    },
+    // Section 5 以降をここに追加していく。
   ];
 
   // セクションに属するパターンの数を数えるユーティリティ。
@@ -22278,6 +22310,814 @@
         { theme: '家族',   ja: '英語力は一歩ずつ伸ばすべきです。',         en: 'We should improve our English step by step.' },
       ],
     },
+
+    // ============ Section 3: 人生・価値観・感情・ストーリー (101-150) ============
+    // 1 構文 × 3 例 (仕事 / ホテル / 家族)。回想・気付き・感謝・誇り・夢など、
+    // 経営者が「自分の物語」を語るための表現群。
+    {
+      id: 'cp101', pattern: 'I used to…', ja_pattern: '昔は〜でした。',
+      items: [
+        { theme: '仕事',   ja: '昔は自分で毎日料理をしていました。',                       en: 'I used to cook every day.' },
+        { theme: 'ホテル', ja: '昔は新しいレストランばかり探していました。',               en: 'I used to look for new restaurants all the time.' },
+        { theme: '家族',   ja: '昔はもっと働けば幸せになれると思っていました。',           en: 'I used to think that working harder would make me happier.' },
+      ],
+    },
+    {
+      id: 'cp102', pattern: 'I used to think that…', ja_pattern: '昔は〜だと思っていました。',
+      items: [
+        { theme: '仕事',   ja: '昔は規模が大きい会社の方が強いと思っていました。',         en: 'I used to think that bigger companies were stronger.' },
+        { theme: 'ホテル', ja: '昔は豪華な内装が重要だと思っていました。',                 en: 'I used to think that luxurious interiors were important.' },
+        { theme: '家族',   ja: '昔は成功がお金のことだと思っていました。',                 en: 'I used to think that success was about money.' },
+      ],
+    },
+    {
+      id: 'cp103', pattern: "I've learned that…", ja_pattern: '私は〜を学びました。',
+      items: [
+        { theme: '仕事',   ja: '私は良い人材が全てを左右することを学びました。',           en: "I've learned that great people make all the difference." },
+        { theme: 'ホテル', ja: '私はお客様は細部を覚えていることを学びました。',           en: "I've learned that guests remember the details." },
+        { theme: '家族',   ja: '私は時間はお金より大切だと学びました。',                   en: "I've learned that time is more valuable than money." },
+      ],
+    },
+    {
+      id: 'cp104', pattern: "I've realized that…", ja_pattern: '私は〜に気付きました。',
+      items: [
+        { theme: '仕事',   ja: '私は全てを自分でやる必要はないと気付きました。',           en: "I've realized that I don't have to do everything myself." },
+        { theme: 'ホテル', ja: '私は料理より体験の方が記憶に残ると気付きました。',         en: "I've realized that experiences are more memorable than food." },
+        { theme: '家族',   ja: '私は家族との時間が最も大切だと気付きました。',             en: "I've realized that family time matters most." },
+      ],
+    },
+    {
+      id: 'cp105', pattern: "I've always wanted to…", ja_pattern: 'ずっと〜したいと思っていました。',
+      items: [
+        { theme: '仕事',   ja: '私は世界レベルのレストランを作りたいと思っていました。',     en: "I've always wanted to build a world-class restaurant." },
+        { theme: 'ホテル', ja: '私は世界中の素晴らしいホテルを訪れたいと思っていました。',   en: "I've always wanted to visit great hotels around the world." },
+        { theme: '家族',   ja: '私は子供たちともっと旅行したいと思っていました。',           en: "I've always wanted to travel more with my children." },
+      ],
+    },
+    {
+      id: 'cp106', pattern: 'I enjoy…', ja_pattern: '私は〜を楽しんでいます。',
+      items: [
+        { theme: '仕事',   ja: '私は新しい事業を考えることを楽しんでいます。',     en: 'I enjoy developing new business ideas.' },
+        { theme: 'ホテル', ja: '私は素晴らしいレストランを訪れることを楽しんでいます。', en: 'I enjoy visiting great restaurants.' },
+        { theme: '家族',   ja: '私は家族と食事をする時間を楽しんでいます。',         en: 'I enjoy spending time with my family over dinner.' },
+      ],
+    },
+    {
+      id: 'cp107', pattern: 'I care about…', ja_pattern: '私は〜を大切にしています。',
+      items: [
+        { theme: '仕事',   ja: '私は企業文化を大切にしています。',         en: 'I care about company culture.' },
+        { theme: 'ホテル', ja: '私はお客様の体験を大切にしています。',     en: 'I care about the guest experience.' },
+        { theme: '家族',   ja: '私は人との関係を大切にしています。',       en: 'I care about relationships.' },
+      ],
+    },
+    {
+      id: 'cp108', pattern: 'What matters most to me is…', ja_pattern: '私にとって最も大切なのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私にとって最も大切なのは良いチームです。',         en: 'What matters most to me is having a great team.' },
+        { theme: 'ホテル', ja: '私にとって最も大切なのはお客様の満足です。',       en: 'What matters most to me is guest satisfaction.' },
+        { theme: '家族',   ja: '私にとって最も大切なのは家族です。',               en: 'What matters most to me is my family.' },
+      ],
+    },
+    {
+      id: 'cp109', pattern: "I'm grateful for…", ja_pattern: '私は〜に感謝しています。',
+      items: [
+        { theme: '仕事',   ja: '私は素晴らしい仲間たちに感謝しています。', en: "I'm grateful for my team." },
+        { theme: 'ホテル', ja: '私は支えてくれるお客様に感謝しています。', en: "I'm grateful for our guests." },
+        { theme: '家族',   ja: '私は家族に感謝しています。',               en: "I'm grateful for my family." },
+      ],
+    },
+    {
+      id: 'cp110', pattern: "I'm proud of…", ja_pattern: '私は〜を誇りに思っています。',
+      items: [
+        { theme: '仕事',   ja: '私は自分のチームを誇りに思っています。',                 en: "I'm proud of my team." },
+        { theme: 'ホテル', ja: '私はレストランで働く仲間を誇りに思っています。',         en: "I'm proud of the people who work in our restaurants." },
+        { theme: '家族',   ja: '私は子供たちを誇りに思っています。',                     en: "I'm proud of my children." },
+      ],
+    },
+    {
+      id: 'cp111', pattern: 'One of the reasons is…', ja_pattern: '理由の一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が NOT A HOTEL に関わっている理由の一つは、その考え方に共感しているからです。', en: "One of the reasons I'm involved with NOT A HOTEL is that I believe in its vision." },
+        { theme: 'ホテル', ja: 'このレストランが好きな理由の一つは、居心地の良さです。',     en: 'One of the reasons I like this restaurant is its sense of comfort.' },
+        { theme: '家族',   ja: '私が旅行を好きな理由の一つは、新しい視点が得られるからです。', en: 'One of the reasons I love traveling is that it gives me new perspectives.' },
+      ],
+    },
+    {
+      id: 'cp112', pattern: 'The best part is…', ja_pattern: '一番良いのは〜です。',
+      items: [
+        { theme: '仕事',   ja: 'この仕事で一番良いのは、人との出会いです。',                   en: 'The best part of this work is meeting great people.' },
+        { theme: 'ホテル', ja: 'このホテルで一番良いのは、景色です。',                         en: 'The best part of this hotel is the view.' },
+        { theme: '家族',   ja: '父親であることの一番良いところは、子供の成長を見ることです。', en: 'The best part of being a father is watching my children grow.' },
+      ],
+    },
+    {
+      id: 'cp113', pattern: 'The most difficult part is…', ja_pattern: '一番難しいのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '経営で一番難しいのは、人材育成です。',                       en: 'The most difficult part of management is developing people.' },
+        { theme: 'ホテル', ja: 'レストランで一番難しいのは、品質を維持することです。',       en: 'The most difficult part of running a restaurant is maintaining quality.' },
+        { theme: '家族',   ja: '人生で一番難しいのは、時間の使い方です。',                   en: 'The most difficult part of life is deciding how to spend your time.' },
+      ],
+    },
+    {
+      id: 'cp114', pattern: "I've been lucky to…", ja_pattern: '幸運にも〜できました。',
+      items: [
+        { theme: '仕事',   ja: '私は幸運にも素晴らしいパートナーと仕事ができました。',         en: "I've been lucky to work with great partners." },
+        { theme: 'ホテル', ja: '私は幸運にも世界中の素晴らしいレストランを訪れることができました。', en: "I've been lucky to visit great restaurants around the world." },
+        { theme: '家族',   ja: '私は幸運にも素晴らしい家族に恵まれました。',                   en: "I've been lucky to have a wonderful family." },
+      ],
+    },
+    {
+      id: 'cp115', pattern: 'I was surprised by…', ja_pattern: '〜に驚きました。',
+      items: [
+        { theme: '仕事',   ja: '私はチームの成長スピードに驚きました。',           en: 'I was surprised by how quickly the team grew.' },
+        { theme: 'ホテル', ja: '私はそのホテルのサービスレベルに驚きました。',     en: 'I was surprised by the level of service at the hotel.' },
+        { theme: '家族',   ja: '私は息子の成長に驚きました。',                     en: 'I was surprised by how much my son has grown.' },
+      ],
+    },
+    {
+      id: 'cp116', pattern: 'I was impressed by…', ja_pattern: '〜に感銘を受けました。',
+      items: [
+        { theme: '仕事',   ja: '私はその経営者の考え方に感銘を受けました。',     en: "I was impressed by the entrepreneur's mindset." },
+        { theme: 'ホテル', ja: '私はそのシェフの料理に感銘を受けました。',       en: "I was impressed by the chef's cooking." },
+        { theme: '家族',   ja: '私は息子の努力に感銘を受けました。',             en: "I was impressed by my son's dedication." },
+      ],
+    },
+    {
+      id: 'cp117', pattern: "I wasn't expecting…", ja_pattern: '〜は予想していませんでした。',
+      items: [
+        { theme: '仕事',   ja: '私はそこまで大きな反響は予想していませんでした。',             en: "I wasn't expecting such a strong response." },
+        { theme: 'ホテル', ja: '私はそのレストランがここまで人気になるとは思っていませんでした。', en: "I wasn't expecting the restaurant to become so popular." },
+        { theme: '家族',   ja: '私は子供たちがこんなに早く成長するとは思っていませんでした。',   en: "I wasn't expecting my children to grow up so quickly." },
+      ],
+    },
+    {
+      id: 'cp118', pattern: 'Looking back,…', ja_pattern: '振り返ると〜',
+      items: [
+        { theme: '仕事',   ja: '振り返ると、あの決断は正しかったと思います。',                 en: 'Looking back, I think it was the right decision.' },
+        { theme: 'ホテル', ja: '振り返ると、その出店は大きな転機でした。',                     en: 'Looking back, opening that restaurant was a turning point.' },
+        { theme: '家族',   ja: '振り返ると、家族との時間は本当に貴重でした。',                 en: 'Looking back, the time I spent with my family was incredibly valuable.' },
+      ],
+    },
+    {
+      id: 'cp119', pattern: 'Over time,…', ja_pattern: '時間とともに〜',
+      items: [
+        { theme: '仕事',   ja: '時間とともに、自分の役割が変わりました。',     en: 'Over time, my role has changed.' },
+        { theme: 'ホテル', ja: '時間とともに、レストランの文化が育ちました。', en: 'Over time, the restaurant culture developed.' },
+        { theme: '家族',   ja: '時間とともに、価値観が変わりました。',         en: 'Over time, my values have changed.' },
+      ],
+    },
+    {
+      id: 'cp120', pattern: 'These days,…', ja_pattern: '最近は〜',
+      items: [
+        { theme: '仕事',   ja: '最近は組織づくりに多くの時間を使っています。',     en: 'These days, I spend a lot of time building organizations.' },
+        { theme: 'ホテル', ja: '最近は新しいホテルを見るのが好きです。',           en: 'These days, I enjoy visiting new hotels.' },
+        { theme: '家族',   ja: '最近は家族との時間をより大切にしています。',       en: 'These days, I value time with my family more than ever.' },
+      ],
+    },
+    {
+      id: 'cp121', pattern: "I've come to believe that…", ja_pattern: '私は〜だと考えるようになりました。',
+      items: [
+        { theme: '仕事',   ja: '私は良い組織は良い人材から生まれると考えるようになりました。',     en: "I've come to believe that great organizations are built by great people." },
+        { theme: 'ホテル', ja: '私は最高のレストランは安心感を与える場所だと考えるようになりました。', en: "I've come to believe that the best restaurants make people feel comfortable." },
+        { theme: '家族',   ja: '私は幸せは身近なところにあると考えるようになりました。',             en: "I've come to believe that happiness is found in simple things." },
+      ],
+    },
+    {
+      id: 'cp122', pattern: "I've changed my mind about…", ja_pattern: '〜について考えが変わりました。',
+      items: [
+        { theme: '仕事',   ja: '私は事業拡大について考えが変わりました。',     en: "I've changed my mind about business expansion." },
+        { theme: 'ホテル', ja: '私はレストランデザインについて考えが変わりました。', en: "I've changed my mind about restaurant design." },
+        { theme: '家族',   ja: '私は成功の定義について考えが変わりました。',     en: "I've changed my mind about the definition of success." },
+      ],
+    },
+    {
+      id: 'cp123', pattern: 'The older I get, the more…', ja_pattern: '年齢を重ねるほど〜',
+      items: [
+        { theme: '仕事',   ja: '年齢を重ねるほど、人材の重要性を感じます。',         en: 'The older I get, the more I appreciate great people.' },
+        { theme: 'ホテル', ja: '年齢を重ねるほど、シンプルな料理が好きになります。', en: 'The older I get, the more I enjoy simple food.' },
+        { theme: '家族',   ja: '年齢を重ねるほど、家族の大切さを感じます。',         en: 'The older I get, the more I value my family.' },
+      ],
+    },
+    {
+      id: 'cp124', pattern: "One thing I've learned is…", ja_pattern: '私が学んだことの一つは〜',
+      items: [
+        { theme: '仕事',   ja: '私が学んだことの一つは、急がないことです。',                       en: "One thing I've learned is not to rush." },
+        { theme: 'ホテル', ja: '私が学んだことの一つは、お客様は誠実さを感じ取るということです。', en: "One thing I've learned is that guests can sense sincerity." },
+        { theme: '家族',   ja: '私が学んだことの一つは、時間は戻らないということです。',           en: "One thing I've learned is that time never comes back." },
+      ],
+    },
+    {
+      id: 'cp125', pattern: 'If I could do it again,…', ja_pattern: 'もしもう一度できるなら〜',
+      items: [
+        { theme: '仕事',   ja: 'もしもう一度できるなら、もっと早く良い人材に投資します。',       en: "If I could do it again, I'd invest in people earlier." },
+        { theme: 'ホテル', ja: 'もしもう一度できるなら、もっと小さな店から始めます。',           en: "If I could do it again, I'd start with a smaller restaurant." },
+        { theme: '家族',   ja: 'もしもう一度できるなら、子供たちともっと時間を過ごします。',     en: "If I could do it again, I'd spend more time with my children." },
+      ],
+    },
+    {
+      id: 'cp126', pattern: 'One of my goals is…', ja_pattern: '私の目標の一つは〜',
+      items: [
+        { theme: '仕事',   ja: '私の目標の一つは世界に通用する会社を作ることです。',                 en: 'One of my goals is to build a world-class company.' },
+        { theme: 'ホテル', ja: '私の目標の一つは世界で最も美しいレストランを作ることです。',       en: 'One of my goals is to create one of the most beautiful restaurants in the world.' },
+        { theme: '家族',   ja: '私の目標の一つは家族とより多くの時間を過ごすことです。',           en: 'One of my goals is to spend more time with my family.' },
+      ],
+    },
+    {
+      id: 'cp127', pattern: 'One thing I enjoy is…', ja_pattern: '私が楽しんでいることの一つは〜',
+      items: [
+        { theme: '仕事',   ja: '私が楽しんでいることの一つは新しい事業を考えることです。',           en: 'One thing I enjoy is developing new business ideas.' },
+        { theme: 'ホテル', ja: '私が楽しんでいることの一つは新しいレストランを訪れることです。',     en: 'One thing I enjoy is discovering new restaurants.' },
+        { theme: '家族',   ja: '私が楽しんでいることの一つは家族との食事です。',                     en: 'One thing I enjoy is having dinner with my family.' },
+      ],
+    },
+    {
+      id: 'cp128', pattern: 'What fascinates me is…', ja_pattern: '私が魅力を感じるのは〜',
+      items: [
+        { theme: '仕事',   ja: '私が魅力を感じるのは人の才能です。',                 en: 'What fascinates me is human talent.' },
+        { theme: 'ホテル', ja: '私が魅力を感じるのは素晴らしいホスピタリティです。', en: 'What fascinates me is exceptional hospitality.' },
+        { theme: '家族',   ja: '私が魅力を感じるのは人それぞれの人生です。',         en: "What fascinates me is people's life stories." },
+      ],
+    },
+    {
+      id: 'cp129', pattern: "I've become more interested in…", ja_pattern: '最近〜に興味を持つようになりました。',
+      items: [
+        { theme: '仕事',   ja: '最近は組織づくりに興味を持つようになりました。',     en: "I've become more interested in building organizations." },
+        { theme: 'ホテル', ja: '最近はホテル事業に興味を持つようになりました。',     en: "I've become more interested in the hotel business." },
+        { theme: '家族',   ja: '最近は健康に興味を持つようになりました。',           en: "I've become more interested in health and wellness." },
+      ],
+    },
+    {
+      id: 'cp130', pattern: 'What inspires me is…', ja_pattern: '私に刺激を与えてくれるのは〜',
+      items: [
+        { theme: '仕事',   ja: '私に刺激を与えてくれるのは優れた経営者です。',     en: 'What inspires me is great entrepreneurs.' },
+        { theme: 'ホテル', ja: '私に刺激を与えてくれるのは優れた料理人です。',     en: 'What inspires me is great chefs.' },
+        { theme: '家族',   ja: '私に刺激を与えてくれるのは子供たちの成長です。',   en: 'What inspires me is watching my children grow.' },
+      ],
+    },
+    {
+      id: 'cp131', pattern: 'One thing I would never compromise on is…', ja_pattern: '絶対に妥協したくないことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が絶対に妥協したくないことの一つは誠実さです。',           en: 'One thing I would never compromise on is integrity.' },
+        { theme: 'ホテル', ja: '私が絶対に妥協したくないことの一つは料理の品質です。',       en: 'One thing I would never compromise on is food quality.' },
+        { theme: '家族',   ja: '私が絶対に妥協したくないことの一つは家族との時間です。',     en: 'One thing I would never compromise on is time with my family.' },
+      ],
+    },
+    {
+      id: 'cp132', pattern: "One thing I've always believed is…", ja_pattern: '私がずっと信じてきたことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私がずっと信じてきたことの一つは、人が全てを決めるということです。',                       en: "One thing I've always believed is that people make the difference." },
+        { theme: 'ホテル', ja: '私がずっと信じてきたことの一つは、ホスピタリティは人の心を動かすということです。',         en: "One thing I've always believed is that hospitality can move people." },
+        { theme: '家族',   ja: '私がずっと信じてきたことの一つは、幸せは身近なところにあるということです。',               en: "One thing I've always believed is that happiness is found close to home." },
+      ],
+    },
+    {
+      id: 'cp133', pattern: 'The more I…, the more…', ja_pattern: '〜すればするほど〜',
+      items: [
+        { theme: '仕事',   ja: '経営を学べば学ぶほど、人の重要性を感じます。',             en: 'The more I learn about management, the more I appreciate people.' },
+        { theme: 'ホテル', ja: '旅行すればするほど、良いサービスの価値が分かります。',     en: 'The more I travel, the more I appreciate great service.' },
+        { theme: '家族',   ja: '年齢を重ねるほど、家族の大切さを感じます。',               en: 'The older I get, the more I value my family.' },
+      ],
+    },
+    {
+      id: 'cp134', pattern: "I don't regret…", ja_pattern: '私は〜を後悔していません。',
+      items: [
+        { theme: '仕事',   ja: '私は起業したことを後悔していません。',             en: "I don't regret starting my own business." },
+        { theme: 'ホテル', ja: '私はレストランを始めたことを後悔していません。',   en: "I don't regret opening restaurants." },
+        { theme: '家族',   ja: '私は家族を優先したことを後悔していません。',       en: "I don't regret prioritizing my family." },
+      ],
+    },
+    {
+      id: 'cp135', pattern: "If there's one thing I've learned,…", ja_pattern: '私が学んだことが一つあるとすれば〜',
+      items: [
+        { theme: '仕事',   ja: '私が学んだことが一つあるとすれば、人材への投資が最も重要だということです。',   en: "If there's one thing I've learned, it's that investing in people matters most." },
+        { theme: 'ホテル', ja: '私が学んだことが一つあるとすれば、お客様は本物を見抜くということです。',       en: "If there's one thing I've learned, it's that guests recognize authenticity." },
+        { theme: '家族',   ja: '私が学んだことが一つあるとすれば、時間は有限だということです。',               en: "If there's one thing I've learned, it's that time is limited." },
+      ],
+    },
+    {
+      id: 'cp136', pattern: 'I still remember…', ja_pattern: '今でも覚えています。',
+      items: [
+        { theme: '仕事',   ja: '最初のレストランを開いた日のことを今でも覚えています。',         en: 'I still remember the day I opened my first restaurant.' },
+        { theme: 'ホテル', ja: '初めて三つ星レストランを訪れた日のことを今でも覚えています。',   en: 'I still remember my first visit to a three-star restaurant.' },
+        { theme: '家族',   ja: '子供が生まれた日のことを今でも覚えています。',                   en: 'I still remember the day my child was born.' },
+      ],
+    },
+    {
+      id: 'cp137', pattern: 'One of my favorite things is…', ja_pattern: '私の好きなことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私の好きなことの一つは新しいアイデアを考えることです。',             en: 'One of my favorite things is developing new ideas.' },
+        { theme: 'ホテル', ja: '私の好きなことの一つは素晴らしいレストランを見つけることです。',     en: 'One of my favorite things is discovering great restaurants.' },
+        { theme: '家族',   ja: '私の好きなことの一つは家族と旅行することです。',                     en: 'One of my favorite things is traveling with my family.' },
+      ],
+    },
+    {
+      id: 'cp138', pattern: 'What I enjoy most is…', ja_pattern: '私が最も楽しんでいるのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が最も楽しんでいるのは人材を育てることです。',         en: 'What I enjoy most is developing people.' },
+        { theme: 'ホテル', ja: '私が最も楽しんでいるのはお客様に喜んでもらうことです。', en: 'What I enjoy most is making guests happy.' },
+        { theme: '家族',   ja: '私が最も楽しんでいるのは家族と過ごす時間です。',         en: 'What I enjoy most is spending time with my family.' },
+      ],
+    },
+    {
+      id: 'cp139', pattern: 'What I find interesting is…', ja_pattern: '私が面白いと思うのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が面白いと思うのは、人によって成功の定義が違うことです。',         en: 'What I find interesting is that everyone defines success differently.' },
+        { theme: 'ホテル', ja: '私が面白いと思うのは、同じ料理でも人によって感じ方が違うことです。', en: 'What I find interesting is how differently people experience the same dish.' },
+        { theme: '家族',   ja: '私が面白いと思うのは、年齢とともに価値観が変わることです。',         en: 'What I find interesting is how values change over time.' },
+      ],
+    },
+    {
+      id: 'cp140', pattern: "One thing I'd like to do is…", ja_pattern: '私がやりたいことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私がやりたいことの一つは、世界に通用する会社を作ることです。',         en: "One thing I'd like to do is build a world-class company." },
+        { theme: 'ホテル', ja: '私がやりたいことの一つは、世界最高峰のレストランを作ることです。',     en: "One thing I'd like to do is create one of the world's great restaurants." },
+        { theme: '家族',   ja: '私がやりたいことの一つは、家族ともっと旅をすることです。',             en: "One thing I'd like to do is travel more with my family." },
+      ],
+    },
+    {
+      id: 'cp141', pattern: 'One thing I appreciate is…', ja_pattern: '私がありがたいと思うことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私がありがたいと思うことの一つは、信頼できる仲間がいることです。', en: 'One thing I appreciate is having people I can trust.' },
+        { theme: 'ホテル', ja: '私がありがたいと思うことの一つは、常連のお客様がいることです。',   en: 'One thing I appreciate is having loyal guests.' },
+        { theme: '家族',   ja: '私がありがたいと思うことの一つは、家族が健康であることです。',     en: 'One thing I appreciate is having a healthy family.' },
+      ],
+    },
+    {
+      id: 'cp142', pattern: "One thing I've noticed is…", ja_pattern: '私が気付いたことの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が気付いたことの一つは、優秀な人ほど謙虚だということです。',         en: "One thing I've noticed is that the most talented people are often the most humble." },
+        { theme: 'ホテル', ja: '私が気付いたことの一つは、お客様は細部をよく見ているということです。', en: "One thing I've noticed is that guests pay attention to details." },
+        { theme: '家族',   ja: '私が気付いたことの一つは、時間が経つのは本当に早いということです。',   en: "One thing I've noticed is how quickly time passes." },
+      ],
+    },
+    {
+      id: 'cp143', pattern: 'What makes me happy is…', ja_pattern: '私を幸せにするのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私を幸せにするのは、チームの成長を見ることです。',     en: 'What makes me happy is seeing my team grow.' },
+        { theme: 'ホテル', ja: '私を幸せにするのは、お客様が喜んで帰ることです。',     en: 'What makes me happy is seeing guests leave happy.' },
+        { theme: '家族',   ja: '私を幸せにするのは、家族との何気ない時間です。',       en: 'What makes me happy is spending ordinary time with my family.' },
+      ],
+    },
+    {
+      id: 'cp144', pattern: 'What keeps me motivated is…', ja_pattern: '私のモチベーションになっているのは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私のモチベーションになっているのは、新しい挑戦です。',           en: 'What keeps me motivated is taking on new challenges.' },
+        { theme: 'ホテル', ja: '私のモチベーションになっているのは、より良い体験を作ることです。', en: 'What keeps me motivated is creating better experiences.' },
+        { theme: '家族',   ja: '私のモチベーションになっているのは、子供たちの成長です。',         en: 'What keeps me motivated is watching my children grow.' },
+      ],
+    },
+    {
+      id: 'cp145', pattern: 'One thing that surprised me was…', ja_pattern: '驚いたことの一つは〜でした。',
+      items: [
+        { theme: '仕事',   ja: '驚いたことの一つは、組織づくりが想像以上に難しかったことです。',   en: 'One thing that surprised me was how difficult building an organization can be.' },
+        { theme: 'ホテル', ja: '驚いたことの一つは、小さな気遣いが大きな違いを生むことでした。',   en: 'One thing that surprised me was how much small details matter.' },
+        { theme: '家族',   ja: '驚いたことの一つは、子供たちの成長の速さでした。',                 en: 'One thing that surprised me was how quickly my children grew up.' },
+      ],
+    },
+    {
+      id: 'cp146', pattern: 'One thing I admire is…', ja_pattern: '私が尊敬していることの一つは〜です。',
+      items: [
+        { theme: '仕事',   ja: '私が尊敬していることの一つは、困難な状況でも前進し続ける姿勢です。', en: 'One thing I admire is the ability to keep moving forward during difficult times.' },
+        { theme: 'ホテル', ja: '私が尊敬していることの一つは、一流のサービス精神です。',             en: 'One thing I admire is exceptional hospitality.' },
+        { theme: '家族',   ja: '私が尊敬していることの一つは、家族を支える強さです。',               en: 'One thing I admire is the strength to support a family.' },
+      ],
+    },
+    {
+      id: 'cp147', pattern: 'If I had more time,…', ja_pattern: 'もっと時間があれば〜',
+      items: [
+        { theme: '仕事',   ja: 'もっと時間があれば、新しい事業を考えたいです。',         en: "If I had more time, I'd explore new business opportunities." },
+        { theme: 'ホテル', ja: 'もっと時間があれば、世界中のレストランを訪れたいです。', en: "If I had more time, I'd visit more restaurants around the world." },
+        { theme: '家族',   ja: 'もっと時間があれば、家族と旅行したいです。',             en: "If I had more time, I'd travel more with my family." },
+      ],
+    },
+    {
+      id: 'cp148', pattern: 'If I had to choose,…', ja_pattern: '選ばなければならないなら〜',
+      items: [
+        { theme: '仕事',   ja: '選ばなければならないなら、成長より品質を選びます。',     en: "If I had to choose, I'd choose quality over growth." },
+        { theme: 'ホテル', ja: '選ばなければならないなら、豪華さより居心地を選びます。', en: "If I had to choose, I'd choose comfort over luxury." },
+        { theme: '家族',   ja: '選ばなければならないなら、お金より時間を選びます。',     en: "If I had to choose, I'd choose time over money." },
+      ],
+    },
+    {
+      id: 'cp149', pattern: 'The older I get, the less…', ja_pattern: '年齢を重ねるほど〜しなくなります。',
+      items: [
+        { theme: '仕事',   ja: '年齢を重ねるほど、他人と競争しなくなりました。',                     en: 'The older I get, the less I compare myself to others.' },
+        { theme: 'ホテル', ja: '年齢を重ねるほど、派手なレストランに惹かれなくなりました。',         en: "The older I get, the less I'm attracted to flashy restaurants." },
+        { theme: '家族',   ja: '年齢を重ねるほど、他人の評価を気にしなくなりました。',               en: 'The older I get, the less I care about what others think.' },
+      ],
+    },
+    {
+      id: 'cp150', pattern: "If there's one thing I want to leave behind,…", ja_pattern: 'もし残したいものが一つあるとすれば〜',
+      items: [
+        { theme: '仕事',   ja: 'もし残したいものが一つあるとすれば、人が成長できる組織です。',         en: "If there's one thing I want to leave behind, it's an organization where people can grow." },
+        { theme: 'ホテル', ja: 'もし残したいものが一つあるとすれば、人の心に残る体験です。',           en: "If there's one thing I want to leave behind, it's memorable experiences." },
+        { theme: '家族',   ja: 'もし残したいものが一つあるとすれば、家族との思い出です。',             en: "If there's one thing I want to leave behind, it's meaningful memories with my family." },
+      ],
+    },
+
+    // ============ Section 4: 共感・人間関係・好奇心・人生観 (151-200) ============
+    // 1 構文 × 3 例 (仕事 / ホテル / 家族)。聞き返し・共感・深い質問・哲学的問い。
+    // 経営者や年配の方と「腰を据えて話す」ための英語。
+    {
+      id: 'cp151', pattern: 'That reminds me of…', ja_pattern: 'それを聞いて思い出しました。',
+      items: [
+        { theme: '仕事',   ja: 'それを聞いて、最初のレストランを開いた時のことを思い出しました。', en: 'That reminds me of when I opened my first restaurant.' },
+        { theme: 'ホテル', ja: 'それを聞いて、パリで訪れたレストランを思い出しました。',           en: 'That reminds me of a restaurant I visited in Paris.' },
+        { theme: '家族',   ja: 'それを聞いて、子供たちが小さかった頃を思い出しました。',           en: 'That reminds me of when my children were younger.' },
+      ],
+    },
+    {
+      id: 'cp152', pattern: 'I can relate to that.', ja_pattern: 'それは共感できます。',
+      items: [
+        { theme: '仕事',   ja: 'それは共感できます。私も似たような経験があります。',     en: "I can relate to that. I've had a similar experience." },
+        { theme: 'ホテル', ja: 'それは共感できます。良いサービスを作るのは簡単ではありません。', en: "I can relate to that. Creating great service isn't easy." },
+        { theme: '家族',   ja: 'それは共感できます。子育ては本当に難しいですよね。',     en: 'I can relate to that. Raising children is challenging.' },
+      ],
+    },
+    {
+      id: 'cp153', pattern: "I've had a similar experience.", ja_pattern: '私も似た経験があります。',
+      items: [
+        { theme: '仕事',   ja: '私も資金調達で似た経験があります。',         en: "I've had a similar experience with fundraising." },
+        { theme: 'ホテル', ja: '私もレストランの立ち上げで似た経験があります。', en: "I've had a similar experience opening a restaurant." },
+        { theme: '家族',   ja: '私も子供の教育で似た経験があります。',       en: "I've had a similar experience with my children's education." },
+      ],
+    },
+    {
+      id: 'cp154', pattern: "That's exactly how I feel.", ja_pattern: 'まさにそんな気持ちです。',
+      items: [
+        { theme: '仕事',   ja: 'まさにそんな気持ちです。人材が一番大事です。',                 en: "That's exactly how I feel. People matter most." },
+        { theme: 'ホテル', ja: 'まさにそんな気持ちです。体験の方が料理より大事です。',         en: "That's exactly how I feel. The experience matters more than the food." },
+        { theme: '家族',   ja: 'まさにそんな気持ちです。家族との時間は本当に大切です。',       en: "That's exactly how I feel. Family time is precious." },
+      ],
+    },
+    {
+      id: 'cp155', pattern: "I've never thought about it that way.", ja_pattern: 'そういう考え方はしたことがありませんでした。',
+      items: [
+        { theme: '仕事',   ja: 'そういう考え方はしたことがありませんでした。面白いですね。', en: "I've never thought about it that way. That's interesting." },
+        { theme: 'ホテル', ja: 'そういう考え方はしたことがありませんでした。',             en: "I've never thought about restaurant design that way." },
+        { theme: '家族',   ja: 'そういう考え方はしたことがありませんでした。',             en: "I've never thought about happiness that way." },
+      ],
+    },
+    {
+      id: 'cp156', pattern: "That's an interesting perspective.", ja_pattern: '面白い視点ですね。',
+      items: [
+        { theme: '仕事',   ja: '面白い視点ですね。', en: "That's an interesting perspective on leadership." },
+        { theme: 'ホテル', ja: '面白い視点ですね。', en: "That's an interesting perspective on hospitality." },
+        { theme: '家族',   ja: '面白い視点ですね。', en: "That's an interesting perspective on life." },
+      ],
+    },
+    {
+      id: 'cp157', pattern: 'I completely understand.', ja_pattern: 'よく分かります。',
+      items: [
+        { theme: '仕事',   ja: 'よく分かります。経営は簡単ではありません。',               en: "I completely understand. Running a business isn't easy." },
+        { theme: 'ホテル', ja: 'よく分かります。良いサービスを維持するのは大変です。',     en: 'I completely understand. Maintaining great service is difficult.' },
+        { theme: '家族',   ja: 'よく分かります。親になると考え方が変わりますよね。',       en: 'I completely understand. Becoming a parent changes your perspective.' },
+      ],
+    },
+    {
+      id: 'cp158', pattern: "I see where you're coming from.", ja_pattern: '言いたいことは分かります。',
+      items: [
+        { theme: '仕事',   ja: '言いたいことは分かります。', en: "I see where you're coming from regarding the investment." },
+        { theme: 'ホテル', ja: '言いたいことは分かります。', en: "I see where you're coming from regarding the restaurant concept." },
+        { theme: '家族',   ja: '言いたいことは分かります。', en: "I see where you're coming from regarding family priorities." },
+      ],
+    },
+    {
+      id: 'cp159', pattern: 'That must have been difficult.', ja_pattern: 'それは大変でしたね。',
+      items: [
+        { theme: '仕事',   ja: 'それは大変でしたね。', en: 'That must have been difficult during the restructuring.' },
+        { theme: 'ホテル', ja: 'それは大変でしたね。', en: 'That must have been difficult opening a restaurant during the pandemic.' },
+        { theme: '家族',   ja: 'それは大変でしたね。', en: 'That must have been difficult for your family.' },
+      ],
+    },
+    {
+      id: 'cp160', pattern: 'That sounds exciting.', ja_pattern: 'それは楽しそうですね。',
+      items: [
+        { theme: '仕事',   ja: 'それは楽しそうですね。新しい事業ですか？',           en: 'That sounds exciting. Is it a new business?' },
+        { theme: 'ホテル', ja: 'それは楽しそうですね。どんなレストランですか？',     en: 'That sounds exciting. What kind of restaurant is it?' },
+        { theme: '家族',   ja: 'それは楽しそうですね。家族旅行ですか？',             en: 'That sounds exciting. Is it a family trip?' },
+      ],
+    },
+    {
+      id: 'cp161', pattern: 'What was that like?', ja_pattern: 'それはどんな感じでしたか？',
+      items: [
+        { theme: '仕事',   ja: '初めて会社を経営した時はどんな感じでしたか？',     en: 'What was it like when you started your first company?' },
+        { theme: 'ホテル', ja: '三つ星レストランで働くのはどんな感じでしたか？',   en: 'What was it like working at a three-star restaurant?' },
+        { theme: '家族',   ja: '初めて親になった時はどんな感じでしたか？',         en: 'What was it like becoming a parent for the first time?' },
+      ],
+    },
+    {
+      id: 'cp162', pattern: 'How did that happen?', ja_pattern: 'どうしてそうなったのですか？',
+      items: [
+        { theme: '仕事',   ja: 'どうしてその事業はそこまで成長したのですか？',         en: 'How did that business grow so quickly?' },
+        { theme: 'ホテル', ja: 'どうしてそのレストランは有名になったのですか？',       en: 'How did that restaurant become so well known?' },
+        { theme: '家族',   ja: 'どうしてその趣味を始めたのですか？',                   en: 'How did you get into that hobby?' },
+      ],
+    },
+    {
+      id: 'cp163', pattern: 'What was going through your mind?', ja_pattern: 'その時何を考えていましたか？',
+      items: [
+        { theme: '仕事',   ja: '会社を売却した時、何を考えていましたか？',         en: 'What was going through your mind when you sold the company?' },
+        { theme: 'ホテル', ja: '店をオープンした時、何を考えていましたか？',       en: 'What was going through your mind on opening day?' },
+        { theme: '家族',   ja: 'お子さんが生まれた時、何を考えていましたか？',     en: 'What was going through your mind when your child was born?' },
+      ],
+    },
+    {
+      id: 'cp164', pattern: 'How did you feel?', ja_pattern: 'どんな気持ちでしたか？',
+      items: [
+        { theme: '仕事',   ja: 'その契約が成立した時、どんな気持ちでしたか？',     en: 'How did you feel when the deal was completed?' },
+        { theme: 'ホテル', ja: '初めて賞を取った時、どんな気持ちでしたか？',       en: 'How did you feel when you received your first award?' },
+        { theme: '家族',   ja: '子供が卒業した時、どんな気持ちでしたか？',         en: 'How did you feel when your child graduated?' },
+      ],
+    },
+    {
+      id: 'cp165', pattern: 'What did you learn from that?', ja_pattern: 'そこから何を学びましたか？',
+      items: [
+        { theme: '仕事',   ja: 'その失敗から何を学びましたか？',                   en: 'What did you learn from that failure?' },
+        { theme: 'ホテル', ja: 'そのレストラン経験から何を学びましたか？',         en: 'What did you learn from that restaurant experience?' },
+        { theme: '家族',   ja: '子育てから何を学びましたか？',                     en: 'What did you learn from raising children?' },
+      ],
+    },
+    {
+      id: 'cp166', pattern: 'What would you do differently?', ja_pattern: '今なら何を変えますか？',
+      items: [
+        { theme: '仕事',   ja: '今ならその投資で何を変えますか？',     en: 'What would you do differently with that investment?' },
+        { theme: 'ホテル', ja: '今ならその店で何を変えますか？',       en: 'What would you do differently with that restaurant?' },
+        { theme: '家族',   ja: '今なら人生で何を変えますか？',         en: 'What would you do differently in your life?' },
+      ],
+    },
+    {
+      id: 'cp167', pattern: 'What surprised you the most?', ja_pattern: '一番驚いたことは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '起業して一番驚いたことは何ですか？',           en: 'What surprised you the most about starting a business?' },
+        { theme: 'ホテル', ja: 'そのホテルで一番驚いたことは何ですか？',       en: 'What surprised you the most about that hotel?' },
+        { theme: '家族',   ja: '親になって一番驚いたことは何ですか？',         en: 'What surprised you the most about becoming a parent?' },
+      ],
+    },
+    {
+      id: 'cp168', pattern: 'What do you enjoy most about…?', ja_pattern: '〜の何が一番好きですか？',
+      items: [
+        { theme: '仕事',   ja: '経営の何が一番好きですか？',             en: 'What do you enjoy most about running a business?' },
+        { theme: 'ホテル', ja: '料理の何が一番好きですか？',             en: 'What do you enjoy most about cooking?' },
+        { theme: '家族',   ja: '家族との時間の何が一番好きですか？',     en: 'What do you enjoy most about spending time with your family?' },
+      ],
+    },
+    {
+      id: 'cp169', pattern: 'What do you find most rewarding?', ja_pattern: '一番やりがいを感じるのは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '経営で一番やりがいを感じるのは何ですか？',           en: 'What do you find most rewarding about management?' },
+        { theme: 'ホテル', ja: 'レストラン経営で一番やりがいを感じるのは何ですか？', en: 'What do you find most rewarding about running restaurants?' },
+        { theme: '家族',   ja: '父親として一番やりがいを感じるのは何ですか？',       en: 'What do you find most rewarding about being a father?' },
+      ],
+    },
+    {
+      id: 'cp170', pattern: 'What would your ideal day look like?', ja_pattern: '理想の一日はどんな感じですか？',
+      items: [
+        { theme: '仕事',   ja: '理想の仕事の日はどんな感じですか？',     en: 'What would your ideal workday look like?' },
+        { theme: 'ホテル', ja: '理想の旅行の日はどんな感じですか？',     en: 'What would your ideal travel day look like?' },
+        { theme: '家族',   ja: '理想の休日はどんな感じですか？',         en: 'What would your ideal day off look like?' },
+      ],
+    },
+    {
+      id: 'cp171', pattern: "I've been thinking about…", ja_pattern: '最近〜について考えています。',
+      items: [
+        { theme: '仕事',   ja: '最近、組織づくりについて考えています。',           en: "I've been thinking about how to build stronger organizations." },
+        { theme: 'ホテル', ja: '最近、レストランの未来について考えています。',     en: "I've been thinking about the future of restaurants." },
+        { theme: '家族',   ja: '最近、これからの人生について考えています。',       en: "I've been thinking about the next chapter of my life." },
+      ],
+    },
+    {
+      id: 'cp172', pattern: "I'm curious about…", ja_pattern: '〜に興味があります。',
+      items: [
+        { theme: '仕事',   ja: '私はAIが経営に与える影響に興味があります。', en: "I'm curious about how AI will affect business." },
+        { theme: 'ホテル', ja: '私は新しいホテルの運営モデルに興味があります。', en: "I'm curious about new hotel operating models." },
+        { theme: '家族',   ja: '私は人が幸せになる条件に興味があります。',   en: "I'm curious about what makes people happy." },
+      ],
+    },
+    {
+      id: 'cp173', pattern: "I've always wondered…", ja_pattern: 'ずっと不思議に思っていました。',
+      items: [
+        { theme: '仕事',   ja: '私は優れた経営者の共通点をずっと不思議に思っていました。',         en: "I've always wondered what great entrepreneurs have in common." },
+        { theme: 'ホテル', ja: '私はなぜ人が特定のレストランに惹かれるのか不思議に思っていました。', en: "I've always wondered why people are drawn to certain restaurants." },
+        { theme: '家族',   ja: '私は人生で本当に大切なものは何かをずっと考えていました。',           en: "I've always wondered what truly matters in life." },
+      ],
+    },
+    {
+      id: 'cp174', pattern: 'What do you enjoy most about…?', ja_pattern: '〜の何が一番好きですか？',
+      items: [
+        { theme: '仕事',   ja: '経営の何が一番好きですか？',         en: 'What do you enjoy most about running a business?' },
+        { theme: 'ホテル', ja: '料理の何が一番好きですか？',         en: 'What do you enjoy most about cooking?' },
+        { theme: '家族',   ja: '父親であることの何が一番好きですか？', en: 'What do you enjoy most about being a father?' },
+      ],
+    },
+    {
+      id: 'cp175', pattern: 'What keeps you motivated?', ja_pattern: '何があなたの原動力ですか？',
+      items: [
+        { theme: '仕事',   ja: '何が経営を続ける原動力ですか？',     en: 'What keeps you motivated as a business leader?' },
+        { theme: 'ホテル', ja: '何が料理を続ける原動力ですか？',     en: 'What keeps you motivated as a chef?' },
+        { theme: '家族',   ja: '何が人生の原動力ですか？',           en: 'What keeps you motivated in life?' },
+      ],
+    },
+    {
+      id: 'cp176', pattern: 'What are you most excited about?', ja_pattern: '今一番楽しみにしていることは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '今一番楽しみにしている事業は何ですか？',         en: 'What are you most excited about in your business right now?' },
+        { theme: 'ホテル', ja: '今一番楽しみにしているプロジェクトは何ですか？', en: 'What are you most excited about in hospitality right now?' },
+        { theme: '家族',   ja: '今一番楽しみにしていることは何ですか？',         en: 'What are you most excited about these days?' },
+      ],
+    },
+    {
+      id: 'cp177', pattern: 'What would you like to achieve?', ja_pattern: '何を成し遂げたいですか？',
+      items: [
+        { theme: '仕事',   ja: '今後何を成し遂げたいですか？',                       en: 'What would you like to achieve in business?' },
+        { theme: 'ホテル', ja: 'レストランで何を成し遂げたいですか？',               en: 'What would you like to achieve through your restaurants?' },
+        { theme: '家族',   ja: '人生で何を成し遂げたいですか？',                     en: 'What would you like to achieve in life?' },
+      ],
+    },
+    {
+      id: 'cp178', pattern: 'What advice would you give?', ja_pattern: 'どんなアドバイスをしますか？',
+      items: [
+        { theme: '仕事',   ja: '若い経営者にどんなアドバイスをしますか？',     en: 'What advice would you give to young entrepreneurs?' },
+        { theme: 'ホテル', ja: '若い料理人にどんなアドバイスをしますか？',     en: 'What advice would you give to young chefs?' },
+        { theme: '家族',   ja: '若い頃の自分にどんなアドバイスをしますか？',   en: 'What advice would you give to your younger self?' },
+      ],
+    },
+    {
+      id: 'cp179', pattern: 'What are you trying to improve?', ja_pattern: '何を改善しようとしていますか？',
+      items: [
+        { theme: '仕事',   ja: '今、経営で何を改善しようとしていますか？',         en: 'What are you trying to improve in your business?' },
+        { theme: 'ホテル', ja: '今、サービスで何を改善しようとしていますか？',     en: 'What are you trying to improve in the guest experience?' },
+        { theme: '家族',   ja: '今、自分自身の何を改善しようとしていますか？',     en: 'What are you trying to improve about yourself?' },
+      ],
+    },
+    {
+      id: 'cp180', pattern: 'What would success look like for you?', ja_pattern: 'あなたにとって成功とはどんな状態ですか？',
+      items: [
+        { theme: '仕事',   ja: 'あなたにとって事業の成功とはどんな状態ですか？',       en: 'What would success look like for you in business?' },
+        { theme: 'ホテル', ja: 'あなたにとってレストランの成功とはどんな状態ですか？', en: 'What would success look like for you in hospitality?' },
+        { theme: '家族',   ja: 'あなたにとって人生の成功とはどんな状態ですか？',       en: 'What would success look like for you in life?' },
+      ],
+    },
+    {
+      id: 'cp181', pattern: 'What do you value most?', ja_pattern: 'あなたが最も大切にしているものは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '経営で最も大切にしているものは何ですか？',         en: 'What do you value most in business?' },
+        { theme: 'ホテル', ja: 'ホスピタリティで最も大切にしているものは何ですか？', en: 'What do you value most in hospitality?' },
+        { theme: '家族',   ja: '人生で最も大切にしているものは何ですか？',         en: 'What do you value most in life?' },
+      ],
+    },
+    {
+      id: 'cp182', pattern: 'What has had the biggest impact on you?', ja_pattern: 'あなたに最も大きな影響を与えたものは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '経営者として最も影響を受けた経験は何ですか？',     en: 'What has had the biggest impact on you as a business leader?' },
+        { theme: 'ホテル', ja: '料理人として最も影響を受けた経験は何ですか？',     en: 'What has had the biggest impact on you as a chef?' },
+        { theme: '家族',   ja: '人生で最も影響を受けた出来事は何ですか？',         en: 'What has had the biggest impact on your life?' },
+      ],
+    },
+    {
+      id: 'cp183', pattern: 'Who has influenced you the most?', ja_pattern: '最も影響を受けた人は誰ですか？',
+      items: [
+        { theme: '仕事',   ja: '経営者として最も影響を受けた人は誰ですか？',     en: 'Who has influenced you the most as an entrepreneur?' },
+        { theme: 'ホテル', ja: '料理人として最も影響を受けた人は誰ですか？',     en: 'Who has influenced you the most as a chef?' },
+        { theme: '家族',   ja: '人生で最も影響を受けた人は誰ですか？',           en: 'Who has influenced you the most in life?' },
+      ],
+    },
+    {
+      id: 'cp184', pattern: 'What are you most proud of?', ja_pattern: '最も誇りに思っていることは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '仕事で最も誇りに思っていることは何ですか？',     en: 'What are you most proud of in your career?' },
+        { theme: 'ホテル', ja: 'レストランで最も誇りに思っていることは何ですか？', en: 'What are you most proud of in your restaurants?' },
+        { theme: '家族',   ja: '人生で最も誇りに思っていることは何ですか？',     en: 'What are you most proud of in your life?' },
+      ],
+    },
+    {
+      id: 'cp185', pattern: 'What are you most grateful for?', ja_pattern: '最も感謝していることは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '仕事で最も感謝していることは何ですか？',         en: 'What are you most grateful for in your career?' },
+        { theme: 'ホテル', ja: 'レストランで最も感謝していることは何ですか？',   en: 'What are you most grateful for in hospitality?' },
+        { theme: '家族',   ja: '人生で最も感謝していることは何ですか？',         en: 'What are you most grateful for in life?' },
+      ],
+    },
+    {
+      id: 'cp186', pattern: 'What would you like people to remember about you?', ja_pattern: '人々にどのように覚えていてほしいですか？',
+      items: [
+        { theme: '仕事',   ja: '経営者としてどのように覚えていてほしいですか？',         en: 'What would you like people to remember about you as a business leader?' },
+        { theme: 'ホテル', ja: 'レストランを通じてどのように覚えていてほしいですか？',   en: 'What would you like guests to remember about you?' },
+        { theme: '家族',   ja: '人としてどのように覚えていてほしいですか？',             en: 'What would you like people to remember about you?' },
+      ],
+    },
+    {
+      id: 'cp187', pattern: 'What kind of legacy would you like to leave?', ja_pattern: 'どんな遺産を残したいですか？',
+      items: [
+        { theme: '仕事',   ja: 'どんな会社を残したいですか？',                 en: 'What kind of company would you like to leave behind?' },
+        { theme: 'ホテル', ja: 'どんなレストラン文化を残したいですか？',       en: 'What kind of restaurant culture would you like to leave behind?' },
+        { theme: '家族',   ja: 'どんな人生を次の世代に残したいですか？',       en: 'What kind of legacy would you like to leave behind?' },
+      ],
+    },
+    {
+      id: 'cp188', pattern: 'What would you tell your younger self?', ja_pattern: '若い頃の自分に何と言いますか？',
+      items: [
+        { theme: '仕事',   ja: '若い経営者だった自分に何と言いますか？',         en: 'What would you tell your younger self as an entrepreneur?' },
+        { theme: 'ホテル', ja: '料理人としての若い自分に何と言いますか？',       en: 'What would you tell your younger self as a chef?' },
+        { theme: '家族',   ja: '20代の自分に何と言いますか？',                   en: 'What would you tell your younger self in your twenties?' },
+      ],
+    },
+    {
+      id: 'cp189', pattern: 'What do you wish you had known earlier?', ja_pattern: 'もっと早く知っておきたかったことは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '経営についてもっと早く知りたかったことは何ですか？',           en: 'What do you wish you had known earlier about business?' },
+        { theme: 'ホテル', ja: 'レストラン経営についてもっと早く知りたかったことは何ですか？', en: 'What do you wish you had known earlier about restaurants?' },
+        { theme: '家族',   ja: '人生についてもっと早く知りたかったことは何ですか？',           en: 'What do you wish you had known earlier about life?' },
+      ],
+    },
+    {
+      id: 'cp190', pattern: 'If you could describe your life in one sentence,…', ja_pattern: '人生を一文で表現するとしたら〜',
+      items: [
+        { theme: '仕事',   ja: '経営人生を一文で表現するとしたら？',     en: 'If you could describe your business journey in one sentence,…' },
+        { theme: 'ホテル', ja: 'レストラン人生を一文で表現するとしたら？', en: 'If you could describe your restaurant journey in one sentence,…' },
+        { theme: '家族',   ja: '人生を一文で表現するとしたら？',         en: 'If you could describe your life in one sentence,…' },
+      ],
+    },
+    {
+      id: 'cp191', pattern: 'If you had all the money in the world,…', ja_pattern: 'もしお金が無限にあったら〜',
+      items: [
+        { theme: '仕事',   ja: 'もしお金が無限にあったら、どんな会社を作りますか？',       en: 'If you had all the money in the world, what kind of company would you build?' },
+        { theme: 'ホテル', ja: 'もしお金が無限にあったら、どんなレストランを作りますか？', en: 'If you had all the money in the world, what kind of restaurant would you create?' },
+        { theme: '家族',   ja: 'もしお金が無限にあったら、どんな人生を送りたいですか？',   en: 'If you had all the money in the world, what kind of life would you live?' },
+      ],
+    },
+    {
+      id: 'cp192', pattern: "If you didn't have to work,…", ja_pattern: 'もし働かなくてよかったら〜',
+      items: [
+        { theme: '仕事',   ja: 'もし働かなくてよかったら、それでも経営をしますか？',           en: "If you didn't have to work, would you still run a business?" },
+        { theme: 'ホテル', ja: 'もし働かなくてよかったら、それでもレストランに関わりますか？', en: "If you didn't have to work, would you still be involved in restaurants?" },
+        { theme: '家族',   ja: 'もし働かなくてよかったら、何をしますか？',                     en: "If you didn't have to work, what would you do?" },
+      ],
+    },
+    {
+      id: 'cp193', pattern: 'What does success mean to you?', ja_pattern: 'あなたにとって成功とは何ですか？',
+      items: [
+        { theme: '仕事',   ja: 'あなたにとって事業の成功とは何ですか？',       en: 'What does success mean to you in business?' },
+        { theme: 'ホテル', ja: 'あなたにとってレストランの成功とは何ですか？', en: 'What does success mean to you in hospitality?' },
+        { theme: '家族',   ja: 'あなたにとって人生の成功とは何ですか？',       en: 'What does success mean to you in life?' },
+      ],
+    },
+    {
+      id: 'cp194', pattern: 'What does happiness mean to you?', ja_pattern: 'あなたにとって幸せとは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '仕事において幸せとは何ですか？',         en: 'What does happiness mean to you in your work?' },
+        { theme: 'ホテル', ja: 'レストランにおいて幸せとは何ですか？',   en: 'What does happiness mean to you in hospitality?' },
+        { theme: '家族',   ja: 'あなたにとって幸せとは何ですか？',       en: 'What does happiness mean to you?' },
+      ],
+    },
+    {
+      id: 'cp195', pattern: 'What are you most curious about these days?', ja_pattern: '最近一番興味があることは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '最近一番興味がある経営テーマは何ですか？',         en: 'What are you most curious about in business these days?' },
+        { theme: 'ホテル', ja: '最近一番興味があるレストランはどこですか？',       en: 'What are you most curious about in the restaurant world these days?' },
+        { theme: '家族',   ja: '最近一番興味があることは何ですか？',               en: 'What are you most curious about these days?' },
+      ],
+    },
+    {
+      id: 'cp196', pattern: 'What are you trying to spend more time on?', ja_pattern: 'もっと時間を使いたいことは何ですか？',
+      items: [
+        { theme: '仕事',   ja: 'もっと時間を使いたい仕事は何ですか？',           en: 'What are you trying to spend more time on in business?' },
+        { theme: 'ホテル', ja: 'もっと時間を使いたいプロジェクトは何ですか？',   en: 'What are you trying to spend more time on in hospitality?' },
+        { theme: '家族',   ja: 'もっと時間を使いたいことは何ですか？',           en: 'What are you trying to spend more time on in life?' },
+      ],
+    },
+    {
+      id: 'cp197', pattern: 'What are you trying to spend less time on?', ja_pattern: '減らしたいことは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '減らしたい仕事は何ですか？',         en: 'What are you trying to spend less time on in business?' },
+        { theme: 'ホテル', ja: '減らしたい業務は何ですか？',         en: 'What are you trying to spend less time on in hospitality?' },
+        { theme: '家族',   ja: '人生で減らしたいことは何ですか？',   en: 'What are you trying to spend less time on in life?' },
+      ],
+    },
+    {
+      id: 'cp198', pattern: 'What would your perfect future look like?', ja_pattern: '理想の未来はどんな姿ですか？',
+      items: [
+        { theme: '仕事',   ja: '理想の会社はどんな姿ですか？',           en: 'What would your perfect future look like for your company?' },
+        { theme: 'ホテル', ja: '理想のレストランはどんな姿ですか？',     en: 'What would your perfect future look like for your restaurants?' },
+        { theme: '家族',   ja: '理想の未来はどんな姿ですか？',           en: 'What would your perfect future look like?' },
+      ],
+    },
+    {
+      id: 'cp199', pattern: 'What are you most excited about in the next ten years?', ja_pattern: '今後10年で最も楽しみにしていることは何ですか？',
+      items: [
+        { theme: '仕事',   ja: '今後10年で最も楽しみにしている仕事は何ですか？',         en: 'What are you most excited about in business over the next ten years?' },
+        { theme: 'ホテル', ja: '今後10年で最も楽しみにしているプロジェクトは何ですか？', en: 'What are you most excited about in hospitality over the next ten years?' },
+        { theme: '家族',   ja: '今後10年で最も楽しみにしていることは何ですか？',         en: 'What are you most excited about in the next ten years?' },
+      ],
+    },
+    {
+      id: 'cp200', pattern: 'If you could leave one message for the next generation,…', ja_pattern: '次の世代に一つだけ伝えるなら〜',
+      items: [
+        { theme: '仕事',   ja: '若い経営者に一つだけ伝えるなら何ですか？',     en: 'If you could leave one message for the next generation of entrepreneurs, what would it be?' },
+        { theme: 'ホテル', ja: '若い料理人に一つだけ伝えるなら何ですか？',     en: 'If you could leave one message for the next generation of chefs, what would it be?' },
+        { theme: '家族',   ja: '次の世代に一つだけ伝えるなら何ですか？',       en: 'If you could leave one message for the next generation, what would it be?' },
+      ],
+    },
   ];
 
   // ---------- 定型構文のレベル振り (英検目安) ----------
@@ -22299,6 +23139,18 @@
     cp071: 2, cp072: 3, cp073: 3, cp074: 2, cp075: 3, cp076: 4, cp077: 3, cp078: 4, cp079: 4, cp080: 3,
     cp081: 3, cp082: 4, cp083: 4, cp084: 3, cp085: 4, cp086: 4, cp087: 3, cp088: 3, cp089: 3, cp090: 3,
     cp091: 3, cp092: 3, cp093: 4, cp094: 4, cp095: 3, cp096: 3, cp097: 3, cp098: 3, cp099: 3, cp100: 3,
+    // Section 3 (101-150)
+    cp101: 3, cp102: 3, cp103: 3, cp104: 3, cp105: 3, cp106: 2, cp107: 3, cp108: 4, cp109: 3, cp110: 3,
+    cp111: 4, cp112: 3, cp113: 3, cp114: 4, cp115: 3, cp116: 3, cp117: 3, cp118: 3, cp119: 3, cp120: 3,
+    cp121: 4, cp122: 4, cp123: 4, cp124: 4, cp125: 4, cp126: 3, cp127: 3, cp128: 4, cp129: 4, cp130: 4,
+    cp131: 4, cp132: 4, cp133: 4, cp134: 3, cp135: 4, cp136: 3, cp137: 3, cp138: 3, cp139: 4, cp140: 3,
+    cp141: 3, cp142: 3, cp143: 3, cp144: 4, cp145: 4, cp146: 4, cp147: 3, cp148: 4, cp149: 4, cp150: 5,
+    // Section 4 (151-200)
+    cp151: 3, cp152: 3, cp153: 3, cp154: 3, cp155: 4, cp156: 3, cp157: 3, cp158: 4, cp159: 3, cp160: 3,
+    cp161: 3, cp162: 3, cp163: 4, cp164: 3, cp165: 3, cp166: 4, cp167: 4, cp168: 4, cp169: 4, cp170: 4,
+    cp171: 4, cp172: 3, cp173: 4, cp174: 4, cp175: 3, cp176: 4, cp177: 4, cp178: 4, cp179: 4, cp180: 4,
+    cp181: 3, cp182: 4, cp183: 4, cp184: 4, cp185: 4, cp186: 5, cp187: 5, cp188: 4, cp189: 4, cp190: 5,
+    cp191: 4, cp192: 4, cp193: 4, cp194: 3, cp195: 4, cp196: 4, cp197: 4, cp198: 5, cp199: 4, cp200: 5,
   };
 
   // 旧版では CONVO_PATTERNS を SENTENCES / SHADOWING_QA に自動マージしていたが、
