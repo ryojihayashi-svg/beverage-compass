@@ -64,7 +64,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 299;
+  const APP_VERSION = 300;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -150,10 +150,13 @@
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true,  hidden: true },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
     { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false, hidden: true },
-    { id: 'useful_phrases',     label: 'NativeCamp用',   desc: 'Repeat After Me · 主導権・要約・添削など',
-                                                                                          fullWidth: true, forLearner: true, forViewer: true,
+    { id: 'useful_phrases',     label: 'NativeCamp用',   desc: '15 セットの定型フレーズ',
+                                                                                          forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
-    { id: 'convo_patterns',     label: '定型構文',       desc: '50 構文 · 投資 / 不動産 / ホスピタリティの実戦英語',
+    { id: 'nativecamp_qa',      label: 'NativeCamp Q&A', desc: '質問 + OREO 4 文回答',
+                                                                                          forLearner: true, forViewer: true,
+                                                                                          forProfileIds: ['father'] },
+    { id: 'convo_patterns',     label: '定型構文',       desc: '200 構文 · 投資 / 不動産 / ホスピタリティの実戦英語',
                                                                                           fullWidth: true, forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
   ];
@@ -5740,6 +5743,64 @@
     },
   ];
   const USEFUL_PHRASE_SET_BY_ID = Object.fromEntries(USEFUL_PHRASE_SETS.map(s => [s.id, s]));
+
+  // ---------- NativeCamp Q&A (質問 + OREO 4 文の回答) ----------
+  // 1 問 = 質問 1 文 + 回答 4 文 (Opinion → Reason → Example → Opinion)。
+  // 講師から英語で質問が来た時に、4 文構造で深く答える練習用。
+  // role: 'O' = Opinion (主張)、'R' = Reason (理由)、'E' = Example (例)
+  // (4 文目も役割としては 'O' = 主張のまとめ)
+  const NATIVECAMP_QA = [
+    {
+      id: 'nq01', no: 1,
+      question: 'Why are you studying English?',
+      items: [
+        { role: 'O', en: 'English is essential for working with people from all over the world.' },
+        { role: 'R', en: 'Because as my business expands, the need for English continues to grow.' },
+        { role: 'E', en: 'In fact, many foreign customers visit my restaurants.' },
+        { role: 'O', en: "That's why English is an essential tool for me." },
+      ],
+    },
+    {
+      id: 'nq02', no: 2,
+      question: 'How long have you been studying English?',
+      items: [
+        { role: 'O', en: 'I have been studying English steadily for several years.' },
+        { role: 'R', en: 'Because I have always felt the need to study English, and I still see it as one of my personal challenges.' },
+        { role: 'E', en: 'In fact, I have many opportunities to talk with business partners and customers at work.' },
+        { role: 'O', en: "That's why I continue learning English every day." },
+      ],
+    },
+    {
+      id: 'nq03', no: 3,
+      question: 'Have you ever been abroad?',
+      items: [
+        { role: 'O', en: 'Yes, I travel abroad frequently.' },
+        { role: 'R', en: 'Because I believe those experiences help me grow and make my business better.' },
+        { role: 'E', en: 'In fact, I have already visited Taipei, New York, Hong Kong, and London this year.' },
+        { role: 'O', en: "That's why I will probably visit several more countries this year." },
+      ],
+    },
+    {
+      id: 'nq04', no: 4,
+      question: 'Which country would you like to visit?',
+      items: [
+        { role: 'O', en: 'I want to explore Spain more deeply.' },
+        { role: 'R', en: 'Because currently, I plan to open a new Spanish restaurant.' },
+        { role: 'E', en: 'For example, I want to learn about Spanish restaurant styles that are different from those in Japan.' },
+        { role: 'O', en: "That's why I am focusing on Spain." },
+      ],
+    },
+  ];
+  const NATIVECAMP_QA_BY_ID = Object.fromEntries(NATIVECAMP_QA.map(q => [q.id, q]));
+  // 役割バッジのラベル + 色
+  const NCQA_ROLE_LABEL = { O: 'Opinion', R: 'Reason', E: 'Example' };
+  function ncqaRoleColors(role) {
+    if (role === 'O') return { bg: '#3D6FA01A', fg: '#3D6FA0' };
+    if (role === 'R') return { bg: '#C97D3B1A', fg: '#C97D3B' };
+    if (role === 'E') return { bg: '#6E95601A', fg: '#6E9560' };
+    return { bg: 'transparent', fg: '#A09A8C' };
+  }
+
   const SCENE_LABELS = {
     school:    'School',
     cafeteria: 'Meal',
@@ -14523,6 +14584,7 @@
       else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
       else if (route.feature === 'useful_phrases')    body = e(UsefulPhrases,     { profile, onBack: back });
+      else if (route.feature === 'nativecamp_qa')     body = e(NativeCampQA,      { profile, onBack: back });
       else if (route.feature === 'convo_patterns')    body = e(ConvoPatterns,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
@@ -21022,6 +21084,306 @@
         header,
         rows,
       ),
+      controlBar,
+    );
+  }
+
+  // ---------- NativeCamp Q&A (質問 + OREO 4 文回答) ----------
+  // 講師から英語で質問が来た時に、Opinion → Reason → Example → Opinion の
+  // 4 文構造で深く答える練習。一覧 → タップで Q&A 1 問の練習画面に入る。
+  // 自動再生: 質問 → 4 つの回答を順に読み上げる。
+  function NativeCampQA({ profile, onBack }) {
+    const [qIdx, setQIdx] = useState(-1);  // -1 = list、0+ = 1 問の練習
+    return (qIdx < 0)
+      ? e(NativeCampQAList, {
+          profile, onBack,
+          onPickQA: (idx) => {
+            try {
+              if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(' ');
+                u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+                window.speechSynthesis.speak(u);
+              }
+            } catch {}
+            setQIdx(idx);
+          },
+        })
+      : e(NativeCampQAPractice, {
+          profile, qIdx,
+          onBackToList: () => setQIdx(-1),
+        });
+  }
+
+  // ----- 一覧画面 -----
+  function NativeCampQAList({ profile, onBack, onPickQA }) {
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'NativeCamp Q&A'),
+    );
+    return e('div', { style: pageStyle },
+      topBar,
+      e('div', { style: { padding: '4px 4px 18px' } },
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+        }, 'NativeCamp Q&A'),
+        e('div', {
+          style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
+        },
+          '質問 1 つに対して、',
+          e('strong', null, 'Opinion → Reason → Example → Opinion'),
+          ' の 4 文で答える練習。タップで自動再生開始。'),
+      ),
+      e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+        NATIVECAMP_QA.map((q, i) => {
+          const sentN = q.items.length;
+          return e('button', {
+            key: q.id,
+            onClick: () => onPickQA(i),
+            style: {
+              width: '100%', padding: '14px 16px', borderRadius: 14,
+              background: C.card, border: '1px solid ' + C.line,
+              cursor: 'pointer', textAlign: 'left',
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              fontFamily: 'inherit',
+            }
+          },
+            // 番号バッジ
+            e('div', {
+              style: {
+                flex: '0 0 auto',
+                width: 36, height: 36, borderRadius: 10,
+                background: profile.color + '14', color: profile.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
+              }
+            }, String(q.no).padStart(2, '0')),
+            // 本文 (質問 + 文数)
+            e('div', { style: { flex: 1, minWidth: 0 } },
+              e('div', {
+                style: { fontFamily: SERIF_READ, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.45 }
+              }, q.question),
+              e('div', {
+                style: { fontSize: 11.5, color: C.sub, marginTop: 6, fontFamily: SANS_UI, letterSpacing: '0.04em' }
+              }, '回答 ' + sentN + ' 文'),
+            ),
+            // 矢印
+            e('span', {
+              style: { fontSize: 18, color: profile.color, opacity: 0.7, flex: '0 0 auto', marginTop: 6 }
+            }, '›'),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ----- 練習画面 (1 問の中で 質問 + 4 文を順に自動再生) -----
+  function NativeCampQAPractice({ profile, qIdx, onBackToList }) {
+    const item = NATIVECAMP_QA[qIdx];
+    const [phase, setPhase]   = useState('q');    // 'q' | 'a0' | 'a1' | 'a2' | 'a3' | 'done'
+    const [playing, setPlaying] = useState(true);
+    const playSeq = useRef(0);
+    const sessionStartRef = useRef(Date.now());
+    const recordedDoneRef = useRef(false);
+
+    // 自動再生シーケンス
+    useEffect(() => {
+      if (!playing || !item) return;
+      const seq = ++playSeq.current;
+      let cancelled = false;
+      const timeouts = [];
+      const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
+      const speakEn = (text) => new Promise(resolve => {
+        if (cancelled || seq !== playSeq.current) { resolve(); return; }
+        if (!window.speechSynthesis) { resolve(); return; }
+        try { window.speechSynthesis.cancel(); } catch {}
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-GB';
+        u.rate = 0.95;
+        u.pitch = 1.0;
+        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
+        if (v) u.voice = v;
+        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
+        try { window.speechSynthesis.speak(u); } catch { resolve(); }
+      });
+
+      (async () => {
+        // 0.8 秒待つ → 質問 → 1.2 秒 → 回答 0,1,2,3 を順に → 完了
+        setPhase('q');
+        await sleep(800);
+        if (cancelled || seq !== playSeq.current) return;
+        await speakEn(item.question);
+        if (cancelled || seq !== playSeq.current) return;
+        await sleep(1200);
+        for (let i = 0; i < item.items.length; i++) {
+          if (cancelled || seq !== playSeq.current) return;
+          setPhase('a' + i);
+          await speakEn(item.items[i].en);
+          if (cancelled || seq !== playSeq.current) return;
+          if (i < item.items.length - 1) await sleep(700);
+        }
+        if (cancelled || seq !== playSeq.current) return;
+        await sleep(500);
+        setPhase('done');
+        setPlaying(false);
+        if (!recordedDoneRef.current) {
+          recordedDoneRef.current = true;
+          try {
+            db.recordTurn(profile.id, 'useful_phrases');
+            db.pushEvent(profile.id, {
+              kind: 'useful_phrases',
+              total: item.items.length + 1, correct: item.items.length + 1,
+              durationMs: Date.now() - sessionStartRef.current,
+              label: '#' + (item.no < 10 ? '0' + item.no : item.no) + ' ' + item.question,
+            });
+          } catch {}
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+    }, [playing, qIdx]);
+
+    useEffect(() => () => {
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, []);
+
+    const replay = () => {
+      recordedDoneRef.current = false;
+      sessionStartRef.current = Date.now();
+      setPhase('q');
+      setPlaying(true);
+    };
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 120px' };
+    if (!item) return null;
+
+    // 上部バー
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
+    },
+      e('button', { onClick: onBackToList,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        'NativeCamp Q&A · #' + String(item.no).padStart(2, '0')),
+    );
+
+    // 質問カード (大きめ、ハイライト時は色濃く)
+    const questionCard = e('div', {
+      style: {
+        background: phase === 'q' ? profile.color + '14' : C.card,
+        border: '1px solid ' + (phase === 'q' ? profile.color + '55' : C.line),
+        borderRadius: 14,
+        padding: '20px 18px',
+        marginBottom: 14,
+        display: 'flex', alignItems: 'center', gap: 12,
+        transition: 'background 0.2s ease, border-color 0.2s ease',
+      }
+    },
+      e('div', {
+        style: {
+          flex: '0 0 auto',
+          padding: '4px 10px', borderRadius: 999,
+          background: profile.color + '20', color: profile.color,
+          fontFamily: SANS_UI, fontSize: 11, fontWeight: 800,
+          letterSpacing: '0.06em',
+        }
+      }, 'Question'),
+      e('div', {
+        style: { flex: 1, fontFamily: SERIF_READ, fontSize: 18, color: C.text, lineHeight: 1.5 }
+      }, item.question),
+      e(SpeakerBtn, { onClick: () => speak(item.question), color: profile.color, size: 36 }),
+    );
+
+    // 回答カード × 4
+    const answerCards = item.items.map((it, i) => {
+      const isActive = phase === ('a' + i);
+      const colors = ncqaRoleColors(it.role);
+      const roleLabel = NCQA_ROLE_LABEL[it.role] || '';
+      return e('div', {
+        key: 'a' + i,
+        style: {
+          background: isActive ? profile.color + '0E' : C.card,
+          border: '1px solid ' + (isActive ? profile.color + '55' : C.line),
+          borderRadius: 14, padding: '14px 16px',
+          marginBottom: 10,
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          transition: 'background 0.2s ease, border-color 0.2s ease',
+        }
+      },
+        e('div', {
+          style: {
+            flex: '0 0 auto', marginTop: 2,
+            padding: '3px 8px', borderRadius: 6,
+            background: colors.bg, color: colors.fg,
+            fontFamily: SANS_UI, fontSize: 10.5, fontWeight: 800,
+            letterSpacing: '0.04em',
+            minWidth: 60, textAlign: 'center',
+          }
+        }, roleLabel),
+        e('div', {
+          style: { flex: 1, minWidth: 0, fontFamily: SERIF_READ, fontSize: 15.5, color: C.text, lineHeight: 1.55 }
+        }, it.en),
+        e(SpeakerBtn, { onClick: () => speak(it.en), color: profile.color, size: 30 }),
+      );
+    });
+
+    // 操作行 (再生/一時停止/もう一回)
+    const controlBar = e('div', {
+      style: {
+        position: 'fixed', left: 0, right: 0, bottom: 0,
+        padding: '12px 16px calc(12px + env(safe-area-inset-bottom))',
+        background: C.bg + 'F2',
+        borderTop: '1px solid ' + C.line,
+        display: 'flex', alignItems: 'center', gap: 10,
+        maxWidth: 480, margin: '0 auto',
+      }
+    },
+      e('button', {
+        onClick: () => {
+          // 前の問題に戻る
+          if (qIdx > 0) onBackToList();  // とりあえず list に戻す簡易動作
+        },
+        style: {
+          padding: '12px 16px', borderRadius: 12,
+          background: C.softer, color: C.sub,
+          border: '1px solid ' + C.line,
+          cursor: 'pointer',
+          fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+        }
+      }, '‹ 一覧'),
+      e('button', {
+        onClick: () => {
+          if (phase === 'done') replay();
+          else setPlaying(!playing);
+        },
+        style: {
+          flex: 1,
+          padding: '14px 0', borderRadius: 12,
+          background: profile.color, color: '#fff', border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+        }
+      }, phase === 'done' ? '▶ もう一回' : (playing ? '⏸ 一時停止' : '▶ 再生')),
+    );
+
+    return e('div', { style: pageStyle },
+      topBar,
+      questionCard,
+      e('div', { style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, letterSpacing: '0.08em', margin: '10px 4px 6px' } },
+        'YOUR ANSWER (OREO)'),
+      e('div', null, answerCards),
       controlBar,
     );
   }
