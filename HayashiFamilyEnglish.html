@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 319;
+  const APP_VERSION = 320;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1110,27 +1110,27 @@
     { id:'reject',      en:'reject',      ja:'拒絶する',                 pos:'verb', level:4, cat:'general', exEn:'He rejected the offer.',                    exJa:'彼は申し出を拒絶した。', exEn2:'We rejected the offer because the terms were unfair.', exJa2:'条件が不公平だったので、その提案を断った。' },
     { id:'retain',      en:'retain',      ja:'保持する',                 pos:'verb', level:4, cat:'general', exEn:'Retain your dignity.',                      exJa:'尊厳を保ちなさい。', exEn2:'It is cheaper to retain good staff than to hire new ones.', exJa2:'新規採用より良い人材の維持の方が安くつく。' },
     { id:'shift',       en:'shift',       ja:'変化させる',               pos:'verb', level:4, cat:'general', exEn:'Shift your focus.',                         exJa:'焦点を変えなさい。', exEn2:'Consumer tastes are shifting toward lighter food.', exJa2:'消費者の好みはより軽い料理へ変化している。' },
-    { id:'transmit',    en:'transmit',    ja:'伝える',                   pos:'verb', level:4, cat:'general', exEn:'Radios transmit signals.',                  exJa:'ラジオは信号を伝える。' },
-    { id:'undertake',   en:'undertake',   ja:'引き受ける',               pos:'verb', level:4, cat:'general', exEn:'She undertook the project.',                exJa:'彼女はプロジェクトを引き受けた。' },
-    { id:'acknowledge', en:'acknowledge', ja:'認める',                   pos:'verb', level:4, cat:'general', exEn:'I acknowledge my mistake.',                 exJa:'私は自分の過ちを認める。' },
-    { id:'associate',   en:'associate',   ja:'関連付ける',               pos:'verb', level:4, cat:'general', exEn:"Don't associate with bad people.",          exJa:'悪い人と付き合わないで。' },
-    { id:'contrast',    en:'contrast',    ja:'対比する',                 pos:'verb', level:4, cat:'general', exEn:'Contrast these two ideas.',                 exJa:'これら2つの考えを対比させて。' },
+    { id:'transmit',    en:'transmit',    ja:'伝える',                   pos:'verb', level:4, cat:'general', exEn:'Radios transmit signals.',                  exJa:'ラジオは信号を伝える。', exEn2:'A good manager transmits calm to the whole team.', exJa2:'良い店長は落ち着きをチーム全体に伝える。' },
+    { id:'undertake',   en:'undertake',   ja:'引き受ける',               pos:'verb', level:4, cat:'general', exEn:'She undertook the project.',                exJa:'彼女はプロジェクトを引き受けた。', exEn2:'We undertook a full renovation of the dining room.', exJa2:'ダイニングの全面改装を引き受けた。' },
+    { id:'acknowledge', en:'acknowledge', ja:'認める',                   pos:'verb', level:4, cat:'general', exEn:'I acknowledge my mistake.',                 exJa:'私は自分の過ちを認める。', exEn2:'I acknowledge that we made a mistake.', exJa2:'私たちがミスをしたことは認めます。' },
+    { id:'associate',   en:'associate',   ja:'関連付ける',               pos:'verb', level:4, cat:'general', exEn:"Don't associate with bad people.",          exJa:'悪い人と付き合わないで。', exEn2:'People associate our brand with quality.', exJa2:'人々は私たちのブランドを品質と結び付けている。' },
+    { id:'contrast',    en:'contrast',    ja:'対比する',                 pos:'verb', level:4, cat:'general', exEn:'Contrast these two ideas.',                 exJa:'これら2つの考えを対比させて。', exEn2:'The crisp skin contrasts with the soft meat.', exJa2:'パリッとした皮が柔らかい身と対照的だ。' },
     // L4 (continued) — academic nouns
-    { id:'attribute',   en:'attribute',   ja:'属性',                     pos:'noun', level:4, cat:'general', exEn:'Patience is a good attribute.',             exJa:'忍耐は良い属性だ。' },
-    { id:'barrier',     en:'barrier',     ja:'障壁',                     pos:'noun', level:4, cat:'general', exEn:'Language is a barrier.',                    exJa:'言語が障壁となる。' },
-    { id:'capacity',    en:'capacity',    ja:'容量・能力',               pos:'noun', level:4, cat:'general', exEn:'The room has a large capacity.',            exJa:'その部屋は大きな収容力がある。' },
-    { id:'characteristic',en:'characteristic',ja:'特徴',                 pos:'noun', level:4, cat:'general', exEn:'Friendliness is her characteristic.',       exJa:'親しみやすさが彼女の特徴。' },
-    { id:'component',   en:'component',   ja:'構成要素',                 pos:'noun', level:4, cat:'general', exEn:'Trust is a key component.',                 exJa:'信頼が重要な要素。' },
-    { id:'dimension',   en:'dimension',   ja:'次元',                     pos:'noun', level:4, cat:'general', exEn:'It has three dimensions.',                  exJa:'それは3次元を持つ。' },
-    { id:'distinction', en:'distinction', ja:'区別',                     pos:'noun', level:4, cat:'general', exEn:"There's a clear distinction.",               exJa:'明確な区別がある。' },
-    { id:'expansion',   en:'expansion',   ja:'拡大',                     pos:'noun', level:4, cat:'general', exEn:'Business expansion is risky.',              exJa:'事業拡大は危険だ。' },
-    { id:'factor',      en:'factor',      ja:'要因',                     pos:'noun', level:4, cat:'general', exEn:'Many factors affect success.',              exJa:'多くの要因が成功に影響する。' },
-    { id:'formula',     en:'formula',     ja:'公式',                     pos:'noun', level:4, cat:'general', exEn:'Memorize the formula.',                     exJa:'公式を暗記して。' },
-    { id:'hierarchy',   en:'hierarchy',   ja:'階層',                     pos:'noun', level:4, cat:'general', exEn:'The company has a strict hierarchy.',       exJa:'会社には厳しい階層がある。' },
-    { id:'implication', en:'implication', ja:'含意',                     pos:'noun', level:4, cat:'general', exEn:'Consider the implications.',                exJa:'含意を考慮して。' },
-    { id:'objective',   en:'objective',   ja:'目的',                     pos:'noun', level:4, cat:'general', exEn:'What is your objective?',                   exJa:'あなたの目的は何ですか？' },
-    { id:'outcome',     en:'outcome',     ja:'結果',                     pos:'noun', level:4, cat:'general', exEn:'The outcome was positive.',                 exJa:'結果は良好だった。' },
-    { id:'phenomenon',  en:'phenomenon',  ja:'現象',                     pos:'noun', level:4, cat:'general', exEn:"It's a strange phenomenon.",                exJa:'不思議な現象だ。' },
+    { id:'attribute',   en:'attribute',   ja:'属性',                     pos:'noun', level:4, cat:'general', exEn:'Patience is a good attribute.',             exJa:'忍耐は良い属性だ。', exEn2:'Consistency is the most important attribute of a chef.', exJa2:'安定感はシェフの最も重要な資質だ。' },
+    { id:'barrier',     en:'barrier',     ja:'障壁',                     pos:'noun', level:4, cat:'general', exEn:'Language is a barrier.',                    exJa:'言語が障壁となる。', exEn2:'Language is no longer a barrier for our team.', exJa2:'言葉はもはや私たちのチームの障壁ではない。' },
+    { id:'capacity',    en:'capacity',    ja:'容量・能力',               pos:'noun', level:4, cat:'general', exEn:'The room has a large capacity.',            exJa:'その部屋は大きな収容力がある。', exEn2:'The private room has a capacity of twelve.', exJa2:'個室の定員は 12 名だ。' },
+    { id:'characteristic',en:'characteristic',ja:'特徴',                 pos:'noun', level:4, cat:'general', exEn:'Friendliness is her characteristic.',       exJa:'親しみやすさが彼女の特徴。', exEn2:'Umami is a characteristic of Japanese cuisine.', exJa2:'うま味は日本料理の特徴だ。' },
+    { id:'component',   en:'component',   ja:'構成要素',                 pos:'noun', level:4, cat:'general', exEn:'Trust is a key component.',                 exJa:'信頼が重要な要素。', exEn2:'Trust is a key component of a strong team.', exJa2:'信頼は強いチームの重要な構成要素だ。' },
+    { id:'dimension',   en:'dimension',   ja:'次元',                     pos:'noun', level:4, cat:'general', exEn:'It has three dimensions.',                  exJa:'それは3次元を持つ。', exEn2:'The wine adds another dimension to the dish.', exJa2:'ワインが料理に新たな次元を加える。' },
+    { id:'distinction', en:'distinction', ja:'区別',                     pos:'noun', level:4, cat:'general', exEn:"There's a clear distinction.",               exJa:'明確な区別がある。', exEn2:'There is a clear distinction between service and hospitality.', exJa2:'サービスとホスピタリティには明確な違いがある。' },
+    { id:'expansion',   en:'expansion',   ja:'拡大',                     pos:'noun', level:4, cat:'general', exEn:'Business expansion is risky.',              exJa:'事業拡大は危険だ。', exEn2:'The expansion into Tokyo took three years.', exJa2:'東京への進出には 3 年かかった。' },
+    { id:'factor',      en:'factor',      ja:'要因',                     pos:'noun', level:4, cat:'general', exEn:'Many factors affect success.',              exJa:'多くの要因が成功に影響する。', exEn2:'Location is a major factor in a restaurant\'s success.', exJa2:'立地はレストランの成功の大きな要因だ。' },
+    { id:'formula',     en:'formula',     ja:'公式',                     pos:'noun', level:4, cat:'general', exEn:'Memorize the formula.',                     exJa:'公式を暗記して。', exEn2:'There is no magic formula for a great restaurant.', exJa2:'素晴らしい店を作る魔法の公式はない。' },
+    { id:'hierarchy',   en:'hierarchy',   ja:'階層',                     pos:'noun', level:4, cat:'general', exEn:'The company has a strict hierarchy.',       exJa:'会社には厳しい階層がある。', exEn2:'Our kitchen has a flat hierarchy.', exJa2:'うちの厨房は上下関係がフラットだ。' },
+    { id:'implication', en:'implication', ja:'含意',                     pos:'noun', level:4, cat:'general', exEn:'Consider the implications.',                exJa:'含意を考慮して。', exEn2:'The new law has implications for our business.', exJa2:'新しい法律は私たちの事業に影響を及ぼす。' },
+    { id:'objective',   en:'objective',   ja:'目的',                     pos:'noun', level:4, cat:'general', exEn:'What is your objective?',                   exJa:'あなたの目的は何ですか？', exEn2:'Our objective is to open three new restaurants.', exJa2:'私たちの目的は新店を 3 軒開くことだ。' },
+    { id:'outcome',     en:'outcome',     ja:'結果',                     pos:'noun', level:4, cat:'general', exEn:'The outcome was positive.',                 exJa:'結果は良好だった。', exEn2:'The outcome of the negotiation was positive.', exJa2:'交渉の結果は良好だった。' },
+    { id:'phenomenon',  en:'phenomenon',  ja:'現象',                     pos:'noun', level:4, cat:'general', exEn:"It's a strange phenomenon.",                exJa:'不思議な現象だ。', exEn2:'The queue outside became a local phenomenon.', exJa2:'店の前の行列は地元の名物現象になった。' },
     // L4 (continued) — adjectives
     { id:'ambitious',   en:'ambitious',   ja:'野心的な',                 pos:'adj',  level:4, cat:'general', exEn:'He is an ambitious person.',                exJa:'彼は野心的な人だ。' },
     { id:'crucial',     en:'crucial',     ja:'極めて重要な',             pos:'adj',  level:4, cat:'general', exEn:'This is a crucial moment.',                 exJa:'これは重要な瞬間だ。' },
