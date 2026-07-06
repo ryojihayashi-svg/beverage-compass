@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 322;
+  const APP_VERSION = 323;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1173,11 +1173,11 @@
     { id:'consistent',  en:'consistent',  ja:'一貫した',                 pos:'adj',  level:4, cat:'general', exEn:'Be consistent in your effort.',             exJa:'努力に一貫性を持って。', exEn2:'Great restaurants are consistent every single day.', exJa2:'素晴らしい店は毎日一貫している。' },
     { id:'diverse',     en:'diverse',     ja:'多様な',                   pos:'adj',  level:4, cat:'general', exEn:'Our team is diverse.',                      exJa:'私たちのチームは多様だ。', exEn2:'Our team is diverse, with staff from five countries.', exJa2:'私たちのチームは 5 か国のスタッフがいて多様だ。' },
     { id:'inclusive',   en:'inclusive',   ja:'包括的な',                 pos:'adj',  level:4, cat:'general', exEn:"It's an inclusive policy.",                 exJa:'包括的な方針だ。', exEn2:'The price is inclusive of service charge.', exJa2:'料金はサービス料込みだ。' },
-    { id:'profound2',   en:'meaningful',  ja:'意味のある',               pos:'adj',  level:4, cat:'general', exEn:'It was a meaningful talk.',                 exJa:'意味のある話だった。' },
-    { id:'remarkable',  en:'remarkable',  ja:'注目すべき',               pos:'adj',  level:4, cat:'general', exEn:'She made remarkable progress.',             exJa:'彼女は目覚ましい進歩を遂げた。' },
-    { id:'sophisticated',en:'sophisticated',ja:'洗練された',             pos:'adj',  level:4, cat:'general', exEn:'A sophisticated design.',                   exJa:'洗練されたデザイン。' },
-    { id:'strategic',   en:'strategic',   ja:'戦略的な',                 pos:'adj',  level:4, cat:'general', exEn:"It's a strategic move.",                    exJa:'戦略的な動きだ。' },
-    { id:'transparent', en:'transparent', ja:'透明な',                   pos:'adj',  level:4, cat:'general', exEn:'Be transparent about decisions.',           exJa:'決定について透明性を保って。' },
+    { id:'profound2',   en:'meaningful',  ja:'意味のある',               pos:'adj',  level:4, cat:'general', exEn:'It was a meaningful talk.',                 exJa:'意味のある話だった。', exEn2:'We want to create meaningful experiences for guests.', exJa2:'お客様にとって意味のある体験を作りたい。' },
+    { id:'remarkable',  en:'remarkable',  ja:'注目すべき',               pos:'adj',  level:4, cat:'general', exEn:'She made remarkable progress.',             exJa:'彼女は目覚ましい進歩を遂げた。', exEn2:'The team made remarkable progress this year.', exJa2:'チームは今年、目覚ましい進歩を遂げた。' },
+    { id:'sophisticated',en:'sophisticated',ja:'洗練された',             pos:'adj',  level:4, cat:'general', exEn:'A sophisticated design.',                   exJa:'洗練されたデザイン。', exEn2:'The wine list is sophisticated but approachable.', exJa2:'ワインリストは洗練されているが親しみやすい。' },
+    { id:'strategic',   en:'strategic',   ja:'戦略的な',                 pos:'adj',  level:4, cat:'general', exEn:"It's a strategic move.",                    exJa:'戦略的な動きだ。', exEn2:'Toranomon was a strategic choice for the new store.', exJa2:'虎ノ門は新店にとって戦略的な選択だった。' },
+    { id:'transparent', en:'transparent', ja:'透明な',                   pos:'adj',  level:4, cat:'general', exEn:'Be transparent about decisions.',           exJa:'決定について透明性を保って。', exEn2:'We keep our pricing transparent for guests.', exJa2:'お客様に対して価格を透明にしている。' },
     // L5 — advanced
     { id:'perspective', en:'perspective', ja:'視点',                     pos:'noun', level:5, cat:'general', exEn:'Try looking from a new perspective.',       exJa:'新しい視点で見てみてください。' },
     { id:'substantial', en:'substantial', ja:'相当な',                   pos:'adj',  level:5, cat:'general', exEn:'There was a substantial improvement.',      exJa:'相当な改善がありました。' },
@@ -1649,21 +1649,21 @@
     { id:'particular',     en:'particular',     ja:'特定の',             pos:'adj',  level:3, cat:'general', exEn:'I have no particular reason.',               exJa:'特に理由はない。', exEn2:'She\'s very particular about her coffee.', exJa2:'彼女はコーヒーにはとてもこだわる。' },
 
     // ============ L4 (slightly advanced) ============
-    { id:'promote',        en:'promote',        ja:'促進する・昇進させる', pos:'verb', level:4, cat:'general', exEn:'They promoted her to manager.',              exJa:'彼女はマネージャーに昇進した。' },
-    { id:'represent',      en:'represent',      ja:'代表する・表す',     pos:'verb', level:4, cat:'general', exEn:'She represents our school.',                  exJa:'彼女は私たちの学校を代表している。' },
-    { id:'tend',           en:'tend',           ja:'〜する傾向がある',   pos:'verb', level:4, cat:'general', exEn:'He tends to be late.',                        exJa:'彼は遅刻しがちだ。' },
-    { id:'vary',           en:'vary',           ja:'異なる・変化する',   pos:'verb', level:4, cat:'general', exEn:'Prices vary by region.',                      exJa:'価格は地域によって異なる。' },
-    { id:'assist',         en:'assist',         ja:'手伝う・補助する',   pos:'verb', level:4, cat:'work',    exEn:'Can you assist me with this report?',         exJa:'このレポートを手伝ってもらえますか？' },
-    { id:'combine',        en:'combine',        ja:'組み合わせる',       pos:'verb', level:4, cat:'general', exEn:'Combine the eggs and flour.',                 exJa:'卵と小麦粉を混ぜ合わせる。' },
-    { id:'conduct',        en:'conduct',        ja:'行う・指揮する',     pos:'verb', level:4, cat:'work',    exEn:'They conducted a survey.',                    exJa:'彼らは調査を実施した。' },
-    { id:'confront',       en:'confront',       ja:'直面する・立ち向かう', pos:'verb', level:4, cat:'general', exEn:'We must confront the problem honestly.',     exJa:'私たちは問題に正面から向き合わねばならない。' },
-    { id:'decline',        en:'decline',        ja:'減少する・断る',     pos:'verb', level:4, cat:'general', exEn:'Sales declined this year.',                   exJa:'今年は売上が減った。' },
-    { id:'define',         en:'define',         ja:'定義する',           pos:'verb', level:4, cat:'general', exEn:'Please define the term clearly.',             exJa:'その語をはっきり定義してください。' },
-    { id:'expose',         en:'expose',         ja:'さらす・暴く',       pos:'verb', level:4, cat:'general', exEn:'The film exposed the truth.',                 exJa:'その映画は真実を暴いた。' },
-    { id:'obtain',         en:'obtain',         ja:'入手する・得る',     pos:'verb', level:4, cat:'general', exEn:'You can obtain the form online.',             exJa:'用紙はオンラインで入手できる。' },
-    { id:'overcome',       en:'overcome',       ja:'克服する',           pos:'verb', level:4, cat:'general', exEn:'She overcame her fear.',                      exJa:'彼女は恐怖を克服した。' },
-    { id:'perceive',       en:'perceive',       ja:'知覚する・気づく',   pos:'verb', level:4, cat:'general', exEn:'I perceived a slight change.',                exJa:'私はわずかな変化に気づいた。' },
-    { id:'propose',        en:'propose',        ja:'提案する',           pos:'verb', level:4, cat:'general', exEn:'I propose a new plan.',                       exJa:'新しい計画を提案します。' },
+    { id:'promote',        en:'promote',        ja:'促進する・昇進させる', pos:'verb', level:4, cat:'general', exEn:'They promoted her to manager.',              exJa:'彼女はマネージャーに昇進した。', exEn2:'She was promoted to head chef last month.', exJa2:'彼女は先月、料理長に昇進した。' },
+    { id:'represent',      en:'represent',      ja:'代表する・表す',     pos:'verb', level:4, cat:'general', exEn:'She represents our school.',                  exJa:'彼女は私たちの学校を代表している。', exEn2:'This dish represents our philosophy.', exJa2:'この一皿は私たちの哲学を表している。' },
+    { id:'tend',           en:'tend',           ja:'〜する傾向がある',   pos:'verb', level:4, cat:'general', exEn:'He tends to be late.',                        exJa:'彼は遅刻しがちだ。', exEn2:'Guests tend to order the tasting menu on weekends.', exJa2:'週末はお客様がテイスティングメニューを頼む傾向がある。' },
+    { id:'vary',           en:'vary',           ja:'異なる・変化する',   pos:'verb', level:4, cat:'general', exEn:'Prices vary by region.',                      exJa:'価格は地域によって異なる。', exEn2:'The menu varies with the seasons.', exJa2:'メニューは季節によって変わる。' },
+    { id:'assist',         en:'assist',         ja:'手伝う・補助する',   pos:'verb', level:4, cat:'work',    exEn:'Can you assist me with this report?',         exJa:'このレポートを手伝ってもらえますか？', exEn2:'A sommelier will assist you with the pairing.', exJa2:'ソムリエがペアリングのお手伝いをします。' },
+    { id:'combine',        en:'combine',        ja:'組み合わせる',       pos:'verb', level:4, cat:'general', exEn:'Combine the eggs and flour.',                 exJa:'卵と小麦粉を混ぜ合わせる。', exEn2:'We combine French technique with Japanese ingredients.', exJa2:'フランスの技法と日本の食材を組み合わせている。' },
+    { id:'conduct',        en:'conduct',        ja:'行う・指揮する',     pos:'verb', level:4, cat:'work',    exEn:'They conducted a survey.',                    exJa:'彼らは調査を実施した。', exEn2:'We conduct staff meetings every Monday.', exJa2:'毎週月曜にスタッフミーティングを行っている。' },
+    { id:'confront',       en:'confront',       ja:'直面する・立ち向かう', pos:'verb', level:4, cat:'general', exEn:'We must confront the problem honestly.',     exJa:'私たちは問題に正面から向き合わねばならない。', exEn2:'We confronted the problem instead of avoiding it.', exJa2:'問題を避けずに正面から向き合った。' },
+    { id:'decline',        en:'decline',        ja:'減少する・断る',     pos:'verb', level:4, cat:'general', exEn:'Sales declined this year.',                   exJa:'今年は売上が減った。', exEn2:'I politely declined the investment offer.', exJa2:'その投資の申し出は丁重にお断りした。' },
+    { id:'define',         en:'define',         ja:'定義する',           pos:'verb', level:4, cat:'general', exEn:'Please define the term clearly.',             exJa:'その語をはっきり定義してください。', exEn2:'Service defines the character of a restaurant.', exJa2:'サービスがレストランの個性を決める。' },
+    { id:'expose',         en:'expose',         ja:'さらす・暴く',       pos:'verb', level:4, cat:'general', exEn:'The film exposed the truth.',                 exJa:'その映画は真実を暴いた。', exEn2:'Travel exposed me to new styles of hospitality.', exJa2:'旅が新しいホスピタリティのかたちに触れさせてくれた。' },
+    { id:'obtain',         en:'obtain',         ja:'入手する・得る',     pos:'verb', level:4, cat:'general', exEn:'You can obtain the form online.',             exJa:'用紙はオンラインで入手できる。', exEn2:'We finally obtained the licence for the new store.', exJa2:'ようやく新店の営業許可を取得した。' },
+    { id:'overcome',       en:'overcome',       ja:'克服する',           pos:'verb', level:4, cat:'general', exEn:'She overcame her fear.',                      exJa:'彼女は恐怖を克服した。', exEn2:'We overcame many difficulties in the first year.', exJa2:'1 年目に多くの困難を乗り越えた。' },
+    { id:'perceive',       en:'perceive',       ja:'知覚する・気づく',   pos:'verb', level:4, cat:'general', exEn:'I perceived a slight change.',                exJa:'私はわずかな変化に気づいた。', exEn2:'Guests perceive small details more than we think.', exJa2:'お客様は思った以上に細部に気づいている。' },
+    { id:'propose',        en:'propose',        ja:'提案する',           pos:'verb', level:4, cat:'general', exEn:'I propose a new plan.',                       exJa:'新しい計画を提案します。', exEn2:'I proposed a collaboration dinner to the chef.', exJa2:'シェフにコラボディナーを提案した。' },
     { id:'regulate',       en:'regulate',       ja:'規制する・調整する', pos:'verb', level:4, cat:'general', exEn:'The law regulates trade.',                    exJa:'法律が貿易を規制する。' },
     { id:'remove',         en:'remove',         ja:'取り除く',           pos:'verb', level:4, cat:'general', exEn:'Please remove your shoes.',                   exJa:'靴を脱いでください。' },
     { id:'request',        en:'request',        ja:'要求する',           pos:'verb', level:4, cat:'general', exEn:'I would like to request a refund.',           exJa:'返金を要求したい。' },
