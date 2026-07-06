@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 311;
+  const APP_VERSION = 312;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -5257,7 +5257,6 @@
     { id:'s725', level:4, grammar:'despite',                  ja:'年齢にもかかわらず、彼は毎日走っている。',                                             en:'Despite his age, he runs every day.' },
     { id:'s726', level:4, grammar:'regardless of',            ja:'天気に関係なく、私たちは出発する。',                                                   en:'We will leave regardless of the weather.' },
     { id:'s727', level:4, grammar:'otherwise',                ja:'急いで。さもないと遅れるよ。',                                                         en:'Hurry up; otherwise, we will be late.' },
-    { id:'s728', level:4, grammar:'It is no use + ing',       ja:'覆水盆に返らず。',                                                                     en:'It is no use crying over spilt milk.' },
     { id:'s729', level:4, grammar:'used to + 過去の習慣',     ja:'以前は人前で話すのが怖かった。',                                                       en:'I used to be afraid of public speaking.' },
 
     // ============ LV5 追加バッチ (s730-s754) ============
@@ -5271,11 +5270,9 @@
     { id:'s736', level:5, grammar:'idiom push comes to shove',ja:'いざというときには、私はあなたを支える。',                                            en:'When push comes to shove, I will support you.' },
     { id:'s737', level:5, grammar:'分裂文 not until',         ja:'夜中になって、ようやく彼は仕事を終えた。',                                            en:'It was not until midnight that he finished his work.' },
     { id:'s738', level:5, grammar:'分裂文 what',              ja:'彼がしたことは、すべての期待を超えていた。',                                          en:'What he did was beyond all expectations.' },
-    { id:'s739', level:5, grammar:'分詞構文 head held',       ja:'頭を高く上げて、彼女は部屋に入ってきた。',                                            en:'She walked into the room, head held high.' },
     { id:'s740', level:5, grammar:'be supposed to + 過分',    ja:'彼はもう着いているはずだ。',                                                          en:'He is supposed to have arrived by now.' },
     { id:'s741', level:5, grammar:'no less than',             ja:'100人もの人が、その講義に参加した。',                                                en:'No less than 100 people attended the lecture.' },
     { id:'s742', level:5, grammar:'none other than',          ja:'勝者は、ほかならぬ彼女だった。',                                                       en:'The winner was none other than her.' },
-    { id:'s743', level:5, grammar:'lest 仮定法',              ja:'赤ん坊を起こさないよう、彼はささやいた。',                                            en:'He whispered lest he should wake the baby.' },
     { id:'s744', level:5, grammar:'such ... that',            ja:'とても良い映画だったので、私は2回観た。',                                              en:'It was such a good film that I watched it twice.' },
     { id:'s745', level:5, grammar:'so ... that',              ja:'道がとても凍っていたので、私たちは歩けなかった。',                                    en:'The road was so icy that we could not walk.' },
     { id:'s746', level:5, grammar:'in addition to',           ja:'彼女は英語に加えて、フランス語も話します。',                                          en:'In addition to English, she speaks French.' },
@@ -5285,8 +5282,73 @@
     { id:'s750', level:5, grammar:'whatever 譲歩',            ja:'あなたが何を決めても、私は支持します。',                                              en:'Whatever you decide, I will support you.' },
     { id:'s751', level:5, grammar:'whoever 譲歩',             ja:'誰が電話してきても、私は外出中だと伝えてください。',                                  en:'Whoever calls, tell them I am out.' },
     { id:'s752', level:5, grammar:'wherever',                 ja:'あなたがどこへ行こうと、私はついていきます。',                                        en:'Wherever you go, I will follow.' },
-    { id:'s753', level:5, grammar:'proverb 友',               ja:'困った時の友こそ、真の友。',                                                           en:'A friend in need is a friend indeed.' },
     { id:'s754', level:5, grammar:'倒置 only when',           ja:'家族を失って初めて、私は時間の大切さを知った。',                                      en:'Only when I lost my family did I realise the value of time.' },
+
+    // ============ 構文×文法×熟語 凝縮バッチ (s800-s859) ============
+    // 1 文に「重要構文 + 文法事項 + 熟語」を詰め込んだ高効率教材。
+    // テーマはレストラン・ホテル・投資・家族・旅行 (実際に使う場面だけ)。
+    // ----- LV3 (s800-s829) -----
+    { id:'s800', level:3, grammar:'現在完了 × look forward to', ja:'私たちはずっと、あなたにお会いするのを楽しみにしてきました。', en:'We have been looking forward to meeting you.' },
+    { id:'s801', level:3, grammar:'不定詞 × come up with',      ja:'新しいメニューのアイデアを思いつくのは簡単ではありません。', en:'It is not easy to come up with new menu ideas.' },
+    { id:'s802', level:3, grammar:'動名詞 × give up',           ja:'彼は夢を諦めるつもりはありません。', en:'He has no intention of giving up his dream.' },
+    { id:'s803', level:3, grammar:'現在完了 × take care of',    ja:'私は 10 年間このお店の面倒を見てきました。', en:'I have taken care of this restaurant for ten years.' },
+    { id:'s804', level:3, grammar:'比較 × in time',             ja:'早く出れば、開店に間に合います。', en:'If we leave earlier, we will be in time for the opening.' },
+    { id:'s805', level:3, grammar:'受動態 × be known for',      ja:'この店はサービスの良さで知られています。', en:'This restaurant is known for its great service.' },
+    { id:'s806', level:3, grammar:'接続詞 × run out of',        ja:'ワインを切らしたので、追加で注文しました。', en:'Because we ran out of wine, we ordered more.' },
+    { id:'s807', level:3, grammar:'不定詞 × figure out',        ja:'原因を突き止めるのに時間がかかりました。', en:'It took time to figure out the cause.' },
+    { id:'s808', level:3, grammar:'動名詞 × put off',           ja:'決断を先延ばしにするのはやめましょう。', en:'Let\'s stop putting off the decision.' },
+    { id:'s809', level:3, grammar:'現在完了 × deal with',       ja:'私たちは多くの難しいお客様に対応してきました。', en:'We have dealt with many difficult customers.' },
+    { id:'s810', level:3, grammar:'比較 × get along with',      ja:'彼は誰よりもスタッフとうまくやっています。', en:'He gets along with the staff better than anyone.' },
+    { id:'s811', level:3, grammar:'不定詞 × be proud of',       ja:'私はこのチームを誇りに思うと言いたいです。', en:'I want to say that I am proud of this team.' },
+    { id:'s812', level:3, grammar:'接続詞 × at first',          ja:'最初は不安でしたが、今は自信があります。', en:'At first I was nervous, but now I am confident.' },
+    { id:'s813', level:3, grammar:'動名詞 × be interested in',  ja:'息子はホテルで働くことに興味を持っています。', en:'My son is interested in working at a hotel.' },
+    { id:'s814', level:3, grammar:'現在完了 × make a decision', ja:'私たちはまだ最終決定をしていません。', en:'We have not made a final decision yet.' },
+    { id:'s815', level:3, grammar:'不定詞 × keep in mind',      ja:'お客様第一を心に留めておくことが大切です。', en:'It is important to keep in mind that customers come first.' },
+    { id:'s816', level:3, grammar:'受動態 × set up',            ja:'この会社は 30 年前に設立されました。', en:'This company was set up thirty years ago.' },
+    { id:'s817', level:3, grammar:'接続詞 × after all',         ja:'心配しましたが、結局すべてうまくいきました。', en:'I was worried, but everything went well after all.' },
+    { id:'s818', level:3, grammar:'動名詞 × look after',        ja:'週末は子供たちの世話を楽しんでいます。', en:'I enjoy looking after my children on weekends.' },
+    { id:'s819', level:3, grammar:'比較 × more and more',       ja:'ますます多くの外国人のお客様が来ています。', en:'More and more foreign guests are coming.' },
+    { id:'s820', level:3, grammar:'不定詞 × on time',           ja:'時間通りに開店するために、私たちは早く来ます。', en:'We come early to open the restaurant on time.' },
+    { id:'s821', level:3, grammar:'現在完了 × so far',          ja:'今のところ、すべて計画通りに進んでいます。', en:'So far, everything has gone as planned.' },
+    { id:'s822', level:3, grammar:'接続詞 × as soon as',        ja:'決まり次第、すぐにお知らせします。', en:'I will let you know as soon as it is decided.' },
+    { id:'s823', level:3, grammar:'動名詞 × be good at',        ja:'彼女は人を笑顔にするのが得意です。', en:'She is good at making people smile.' },
+    { id:'s824', level:3, grammar:'不定詞 × make sure',         ja:'全員が理解しているか、必ず確認してください。', en:'Please make sure that everyone understands.' },
+    { id:'s825', level:3, grammar:'受動態 × be filled with',    ja:'その店はいつもお客様でいっぱいです。', en:'The restaurant is always filled with guests.' },
+    { id:'s826', level:3, grammar:'現在完了 × for a while',     ja:'彼とはしばらく会っていません。', en:'I have not seen him for a while.' },
+    { id:'s827', level:3, grammar:'比較 × as ... as possible',  ja:'できるだけ早くお返事します。', en:'I will reply as soon as possible.' },
+    { id:'s828', level:3, grammar:'不定詞 × take part in',      ja:'私たちはそのイベントに参加することにしました。', en:'We decided to take part in the event.' },
+    { id:'s829', level:3, grammar:'接続詞 × in the end',        ja:'意見は違いましたが、最後には合意しました。', en:'We disagreed, but we reached an agreement in the end.' },
+    // ----- LV4 (s830-s859) -----
+    { id:'s830', level:4, grammar:'関係代名詞 × carry out',     ja:'私たちが実行した計画は、大成功でした。', en:'The plan that we carried out was a great success.' },
+    { id:'s831', level:4, grammar:'仮定法過去 × take over',     ja:'もし私が引退したら、誰がこの事業を引き継ぐでしょうか。', en:'If I retired, who would take over this business?' },
+    { id:'s832', level:4, grammar:'分詞構文 × keep up with',    ja:'トレンドについていきながら、私たちは自分たちのスタイルを守っています。', en:'While keeping up with trends, we stay true to our own style.' },
+    { id:'s833', level:4, grammar:'should have × look into',    ja:'契約前に、もっと詳しく調べておくべきでした。', en:'We should have looked into it more carefully before signing.' },
+    { id:'s834', level:4, grammar:'関係副詞 × turn out',        ja:'そこは、想像以上に素晴らしい場所だと分かりました。', en:'It turned out to be a place where everything exceeded our expectations.' },
+    { id:'s835', level:4, grammar:'not only × but also',        ja:'彼は料理だけでなく、経営も学びました。', en:'He learned not only cooking but also management.' },
+    { id:'s836', level:4, grammar:'so that × in advance',       ja:'混乱を避けるため、事前にすべて準備しました。', en:'We prepared everything in advance so that we could avoid confusion.' },
+    { id:'s837', level:4, grammar:'受動態完了 × carry out',     ja:'その調査はすでに実施されています。', en:'The survey has already been carried out.' },
+    { id:'s838', level:4, grammar:'関係代名詞 × come across',   ja:'旅先で出会ったレストランが、私の考えを変えました。', en:'A restaurant that I came across while traveling changed my thinking.' },
+    { id:'s839', level:4, grammar:'仮定法 × in the long run',   ja:'もし品質に投資すれば、長期的には報われるでしょう。', en:'If we invested in quality, it would pay off in the long run.' },
+    { id:'s840', level:4, grammar:'分詞 × end up',              ja:'細部にこだわった結果、最高の店になりました。', en:'Focusing on details, we ended up with our best restaurant.' },
+    { id:'s841', level:4, grammar:'間接疑問 × take into account', ja:'コストをどう考慮すべきか、まだ検討中です。', en:'We are still discussing how we should take costs into account.' },
+    { id:'s842', level:4, grammar:'関係副詞 × make up for',     ja:'サービスが料理の遅れを補う場面を何度も見てきました。', en:'I have seen many moments where great service makes up for a slow kitchen.' },
+    { id:'s843', level:4, grammar:'現在完了進行 × work on',     ja:'私たちは半年間、新しいコンセプトに取り組み続けています。', en:'We have been working on the new concept for six months.' },
+    { id:'s844', level:4, grammar:'仮定法過去完了 × turn down', ja:'あの提案を断っていなかったら、今ごろ後悔していたでしょう。', en:'If I had not turned down that offer, I would have regretted it by now.' },
+    { id:'s845', level:4, grammar:'分詞構文 × take risks',      ja:'リスクを取りながらも、私たちは慎重に進みました。', en:'Taking risks, we still moved forward carefully.' },
+    { id:'s846', level:4, grammar:'関係代名詞 × rely on',       ja:'私が頼りにしているスタッフは、決して諦めません。', en:'The staff that I rely on never give up.' },
+    { id:'s847', level:4, grammar:'so ... that × run out of',   ja:'あまりに人気で、開店 1 時間で食材が切れました。', en:'It was so popular that we ran out of ingredients within an hour.' },
+    { id:'s848', level:4, grammar:'受動態 × look up to',        ja:'彼は若いシェフたちから尊敬されています。', en:'He is looked up to by young chefs.' },
+    { id:'s849', level:4, grammar:'間接疑問 × figure out',      ja:'なぜ売上が落ちたのか、ようやく突き止めました。', en:'We finally figured out why sales had dropped.' },
+    { id:'s850', level:4, grammar:'関係副詞 × feel at home',    ja:'お客様がくつろげる空間こそ、私たちが目指すものです。', en:'A space where guests feel at home is exactly what we aim for.' },
+    { id:'s851', level:4, grammar:'仮定法 × put ... first',     ja:'もし利益を最優先にしたら、この店の魅力は消えるでしょう。', en:'If we put profit first, this restaurant would lose its charm.' },
+    { id:'s852', level:4, grammar:'not until × pay off',        ja:'開店 3 年目になって初めて、努力が報われ始めました。', en:'It was not until our third year that the hard work started to pay off.' },
+    { id:'s853', level:4, grammar:'分詞 × compared to',         ja:'去年と比べて、外国人のお客様が倍増しました。', en:'Compared to last year, our foreign guests have doubled.' },
+    { id:'s854', level:4, grammar:'関係代名詞 × get through',   ja:'一緒に困難を乗り越えたチームは、簡単には崩れません。', en:'A team that has got through hard times together does not break easily.' },
+    { id:'s855', level:4, grammar:'現在完了 × in charge of',    ja:'彼女は 2 年間、予約の管理を任されています。', en:'She has been in charge of reservations for two years.' },
+    { id:'s856', level:4, grammar:'仮定法 × from scratch',      ja:'もう一度ゼロから始めるとしても、私は同じ道を選びます。', en:'Even if I had to start from scratch again, I would choose the same path.' },
+    { id:'s857', level:4, grammar:'so that × word of mouth',    ja:'口コミが広がるように、私たちは一皿一皿に心を込めます。', en:'We put our heart into every dish so that word of mouth spreads.' },
+    { id:'s858', level:4, grammar:'関係副詞 × behind the scenes', ja:'裏方が輝く職場こそ、良いサービスが生まれる場所です。', en:'A workplace where people shine behind the scenes is where great service is born.' },
+    { id:'s859', level:4, grammar:'受動態完了 × hand down',     ja:'この味は、父から私へと受け継がれてきました。', en:'This flavour has been handed down from my father to me.' },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
