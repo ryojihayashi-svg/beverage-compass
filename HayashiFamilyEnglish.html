@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 365;
+  const APP_VERSION = 366;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -16589,7 +16589,7 @@
   // finish line every few minutes.
   const VOCAB_SESSION_COUNT = 10;
   function VocabBrowse({ profile, onBack, forcedDirection }) {
-    const [direction, setDirection] = useState(forcedDirection || 'en2ja'); // 'en2ja' | 'ja2en'
+    const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' (話す方向・既定) | 'en2ja'
     const [selectedLevel, setSelectedLevel] = useState('auto');  // 'auto' | 1..5
     const [phase, setPhase]   = useState('intro');               // 'intro' | 'study' | 'done'
     const [queue, setQueue]   = useState([]);
@@ -16736,65 +16736,33 @@
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
             'レベルを選んで 10 問チャレンジしよう。'),
         ),
-        // Level picker
+        // レベルタブ — テンポ単語 / サイクル英作文と同じセグメント型に統一
+        // (v366)。以前は縦並びのカード 6 枚で、他の練習と操作感が違った。
         e('div', {
           style: {
-            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
-            letterSpacing: '0.16em', textTransform: 'uppercase',
-            color: C.sub, marginBottom: 10, paddingLeft: 4,
+            display: 'flex', gap: 6, marginBottom: 8,
+            background: C.softer, border: '1px solid ' + C.line,
+            borderRadius: 12, padding: 4,
           }
-        }, 'レベルを選ぶ'),
-        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 } },
-          levelOpts.map(opt => {
-            const isActive = selectedLevel === opt.value;
-            return e('button', {
-              key: 'lv_' + opt.value,
-              onClick: () => setSelectedLevel(opt.value),
-              style: {
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 14px', borderRadius: 14, textAlign: 'left',
-                background: isActive ? profile.color + '14' : C.card,
-                border: '1px solid ' + (isActive ? profile.color : C.line),
-                cursor: 'pointer',
-              }
-            },
-              e('div', { style: { flex: 1, minWidth: 0 } },
-                e('div', { style: { fontSize: 15, fontWeight: 700, color: C.text } }, opt.label),
-                e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } }, opt.desc),
-              ),
-              isActive && e('div', { style: { fontSize: 16, color: profile.color, flexShrink: 0, fontWeight: 700 } }, '✓'),
-            );
-          })
+        },
+          levelOpts.map(opt => e('button', {
+            key: 'lv_' + opt.value,
+            onClick: () => setSelectedLevel(opt.value),
+            style: {
+              flex: opt.value === 'auto' ? 1.6 : 1, padding: '8px 0', borderRadius: 9,
+              background: selectedLevel === opt.value ? profile.color : 'transparent',
+              color: selectedLevel === opt.value ? '#fff' : C.sub,
+              border: 'none', cursor: 'pointer',
+              fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
+            }
+          }, opt.value === 'auto' ? 'おまかせ' : 'LV' + opt.value)),
         ),
-        // Direction picker (hidden when the tile already chose a direction)
-        !forcedDirection && e('div', {
-          style: {
-            fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
-            letterSpacing: '0.16em', textTransform: 'uppercase',
-            color: C.sub, marginBottom: 10, paddingLeft: 4,
-          }
-        }, '方向を選ぶ'),
-        !forcedDirection && e('div', { style: { display: 'flex', gap: 8, marginBottom: 22 } },
-          [
-            { value: 'en2ja', label: '英語 → 日本語', desc: '英語を見て意味を答える' },
-            { value: 'ja2en', label: '日本語 → 英語', desc: '日本語を見て英語を答える' },
-          ].map(opt => {
-            const isActive = direction === opt.value;
-            return e('button', {
-              key: 'dir_' + opt.value,
-              onClick: () => setDirection(opt.value),
-              style: {
-                flex: 1, padding: '12px 10px', borderRadius: 14, textAlign: 'left',
-                background: isActive ? profile.color + '14' : C.card,
-                border: '1px solid ' + (isActive ? profile.color : C.line),
-                cursor: 'pointer',
-              }
-            },
-              e('div', { style: { fontSize: 13, fontWeight: 700, color: C.text } }, opt.label),
-              e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2 } }, opt.desc),
-            );
-          })
-        ),
+        // 選択中レベルの説明
+        e('div', {
+          style: { fontSize: 12.5, color: C.sub, marginBottom: 16, paddingLeft: 4, lineHeight: 1.6 }
+        }, (levelOpts.find(o => o.value === selectedLevel) || levelOpts[0]).desc),
+        // 方向トグル — 共有コンポーネント (テンポ単語 / サイクル英作文と同一)
+        !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection }),
         // Start
         e('button', {
           onClick: startSession,
