@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 310;
+  const APP_VERSION = 311;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21406,6 +21406,50 @@
     );
   }
 
+  // ---------- 完走のご褒美演出 (紙吹雪) ----------
+  // ユニット / セットを完璧に終えたときに舞う。子供の「another one!」を誘う。
+  function Confetti({ count }) {
+    const pieces = useMemo(() => {
+      const colors = ['#C97D3B', '#6E9560', '#3D6FA0', '#C97A8A', '#D4A22F', '#8B6914'];
+      return Array.from({ length: count || 40 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 0.7,
+        dur: 2.2 + Math.random() * 1.8,
+        size: 7 + Math.random() * 7,
+        color: colors[i % colors.length],
+        rot: Math.random() * 360,
+      }));
+    }, []);
+    return e('div', {
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        pointerEvents: 'none', overflow: 'hidden', zIndex: 999,
+      }
+    },
+      e('style', null,
+        '@keyframes hfeConfettiFall{0%{transform:translateY(-8vh) rotate(0deg);opacity:1}' +
+        '100%{transform:translateY(105vh) rotate(720deg);opacity:.55}}'),
+      pieces.map((p, i) => e('div', {
+        key: i,
+        style: {
+          position: 'absolute', top: 0, left: p.left + '%',
+          width: p.size, height: p.size * 0.62,
+          background: p.color, borderRadius: 2,
+          transform: 'rotate(' + p.rot + 'deg)',
+          animation: 'hfeConfettiFall ' + p.dur + 's ease-in ' + p.delay + 's forwards',
+        }
+      })),
+    );
+  }
+  // 完走時の褒め言葉 (子供向けにランダムで変える)
+  const PRAISE_LINES = [
+    'すごい！その調子！', 'かんぺき！天才！', 'ナイスファイト！',
+    '今日もレベルアップ！', 'やるじゃん！', '英語の神が見てるよ！',
+  ];
+  function pickPraise() {
+    return PRAISE_LINES[Math.floor(Math.random() * PRAISE_LINES.length)];
+  }
+
   // ---------- テンポ単語 (キクタン式チャンツ学習) ----------
   // 「キクタン」のチャンツ (英語 → 日本語 → 英語 のリズム再生) を再現。
   // 10 語 = 1 ユニット。レベル → ユニットを選ぶ → チャンツ自動再生 →
@@ -21835,6 +21879,7 @@
     // ===== 完了画面 =====
     const knownN = results.filter(r => r.isKnown).length;
     return e('div', { style: pageStyle },
+      knownN === words.length && e(Confetti, null),
       topBar,
       e('div', {
         style: {
@@ -21851,7 +21896,7 @@
         }, '覚えた ' + knownN + ' / ' + words.length + ' 語',
           e('br'),
           knownN === words.length
-            ? '全部覚えました。すごい！'
+            ? pickPraise()
             : '「まだ」の単語は間違い復習にも入りました。'),
       ),
       e('div', {
@@ -22105,6 +22150,7 @@
       const okN = results.filter(r => r.ok).length;
       const perfect = okN === sentences.length;
       return e('div', { style: pageStyle },
+        perfect && e(Confetti, null),
         topBar,
         e('div', {
           style: {
@@ -22122,7 +22168,7 @@
             'スラスラ言えた ' + okN + ' / ' + sentences.length + ' 文',
             e('br'),
             perfect
-              ? 'このセットは完璧です。次のセットへ！'
+              ? pickPraise() + ' 次のセットへ！'
               : 'もう 1 周すると、反射のスピードが上がります。'),
         ),
         e('div', {
