@@ -13,12 +13,13 @@
 // behaviour needs to invalidate previously-cached files.
 // ============================================================================
 
-const CACHE_VERSION = 'hfe-v306-2026-05-26';
+const CACHE_VERSION = 'hfe-v307-2026-07-06';
 
 // Files to proactively cache on install. Everything else is cached lazily
 // the first time it's requested while online.
 const PRECACHE_URLS = [
   './HayashiFamilyEnglish.html',
+  './manifest.json',
   './hfe-icon.svg',
   './hfe-icon-180.png',
   './hfe-icon-192.png',

@@ -1,16 +1,13 @@
 {
-  "name": "Beverage Compass",
-  "short_name": "BC",
-  "start_url": ".",
+  "name": "林ファミリー English",
+  "short_name": "English",
+  "start_url": "./HayashiFamilyEnglish.html",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#F6F4F0",
-  "theme_color": "#8B6914",
+  "theme_color": "#7A6F60",
   "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "hfe-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "hfe-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
