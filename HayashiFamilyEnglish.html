@@ -14413,15 +14413,12 @@
       hiddenItems: loadHiddenItems(),
       _localUpdatedAt: new Date().toISOString(),
     };
-    // Mirror the Anthropic API key through this same shared row (gated to
-    // the family by Supabase RLS), but only when this device actually has
-    // a key set locally. Pushing `apiKey: ''` on a fresh install would
-    // clobber the working key that's already in cloud, locking everyone
-    // out of AI features. To EXPLICITLY clear the key everywhere, the
-    // user does a save with an empty key — saveApiKey() detects that
-    // case and pushes an explicit empty string then.
-    const k = loadApiKey();
-    if (k) out.apiKey = k;
+    // SECURITY: API キーは絶対にこの行に含めない。このアプリの HTML は
+    // GitHub Pages で公開されており、接続情報だけで member_state を読める
+    // ため、クラウドに置いたキーは第三者にも読める。キーは各端末の
+    // localStorage のみに保存する (端末ごとに設定画面で 1 回貼り付ける)。
+    // この関数が apiKey を含めないこと自体が、過去に置かれたキーを
+    // 次回 push で行ごと上書き消去するスクラブにもなっている。
     return out;
   }
   function pushFamilySharedState() {
@@ -14493,8 +14490,10 @@
   //             have one for the same id (the active editor's intent
   //             wins over a remote stale copy)
   //   avatars : same convention as names
-  //   apiKey  : prefer non-empty; if both non-empty, take local (the
-  //             user just typed something on this device)
+  //   apiKey  : ローカル優先で「読む」だけ (旧バージョンがクラウドに置いた
+  //             キーの引き取り用の互換コード)。書き戻しは絶対にしない —
+  //             buildFamilySharedState が apiKey を含まないので、hydrate 末尾の
+  //             push で旧キーはクラウドから消える。
   function mergePhotosArrays(a, b) {
     const seen = new Set();
     const out = [];
@@ -14693,9 +14692,10 @@
       if (k) localStorage.setItem(AI_KEY_STORAGE, k);
       else   localStorage.removeItem(AI_KEY_STORAGE);
     } catch (err) { console.warn('saveApiKey failed', err); }
-    // Mirror the key through the family-shared cloud row so the other
-    // four devices pick it up automatically on next boot, instead of
-    // every member having to paste it themselves.
+    // キーはこの端末の localStorage のみ (クラウド同期しない — 公開リポジトリ
+    // なので誰でも読めてしまう)。ここで push しておくと、過去にクラウドへ
+    // 置かれたキーが即座にスクラブされる (buildFamilySharedState は
+    // apiKey を含まないため、行ごと上書きで消える)。
     try {
       stampFamilySharedLocal();
       pushFamilySharedState();
