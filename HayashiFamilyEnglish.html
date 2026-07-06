@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 359;
+  const APP_VERSION = 362;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -107,7 +107,7 @@
   // level: 1=英検5/4級, 2=4/3級, 3=3/準2級, 4=2級, 5=準1級
   const PROFILES = [
     { id: 'father', name: '林亮治',   subtitle: '英検3級レベル',            emoji: '', color: C.brand, role: 'learner', level: 3 },
-    { id: 'mother', name: '歩み',     subtitle: '英検4級・応援担当',        emoji: '', color: C.brand, role: 'learner', level: 2, isCheerleader: true },
+    { id: 'mother', name: '歩み',     subtitle: '英検4級',                  emoji: '', color: C.brand, role: 'learner', level: 2 },
     { id: 'son1',   name: 'なるみち', subtitle: '高2・英検3級',             emoji: '', color: C.brand, role: 'learner', level: 3 },
     { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '', color: C.brand, role: 'learner', level: 2 },
     { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '', color: C.brand, role: 'learner', level: 1 },
@@ -134,6 +134,7 @@
   //
   // forProfileIds — このプロフィールでだけタイルを出す。useful_phrases は
   // 父 (NativeCamp 受講中) のみに見せる。
+  // forViewer — 旧・観覧モードの名残り (v362 でモード自体を削除、現在は未使用)。
   const FEATURES = [
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
@@ -15114,6 +15115,7 @@
       else if (route.feature === 'tempo_vocab')       body = e(TempoVocab,        { profile, onBack: back });
       else if (route.feature === 'cycle_composition') body = e(CycleComposition,  { profile, onBack: back });
       else if (route.feature === 'mysent')            body = e(MySentenceNote,    { profile, onBack: back });
+      else if (route.feature === 'records')           body = e(RecordsScreen,     { profile, onBack: back });
       else if (route.feature === 'convo_patterns')    body = e(ConvoPatterns,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
       return wrap(body);
@@ -15203,7 +15205,6 @@
 
   function ProfileCard({ profile, onClick }) {
     const [pressed, setPressed] = useState(false);
-    const isViewer = profile.role === 'viewer';
     const avatar = getAvatar(profile);
     const stats = computeStats(profile.id);
     // Most recent activity event — used to show "X時間前に Y分勉強" so
@@ -15274,14 +15275,6 @@
               letterSpacing: '0.04em',
             }
           }, profileEikenLabel(profile.id) + ' レベル'),
-          isViewer && e('span', {
-            style: {
-              fontSize: 12, fontWeight: 600,
-              padding: '2px 8px', borderRadius: 999,
-              background: profile.color + '1F', color: profile.color,
-              letterSpacing: '0.08em',
-            }
-          }, '観覧'),
         ),
         // Stat strip: 覚えた / 連続 / 学習時間
         e('div', {
@@ -15382,11 +15375,10 @@
 
   // ---------- English Learning Home ----------
   function EnglishHome({ profile, onBackToProfiles, onPickFeature }) {
-    const isViewer = profile.role === 'viewer';
     const visibleFeatures = FEATURES.filter(f => {
       if (f.hidden) return false;
       if (Array.isArray(f.forProfileIds) && !f.forProfileIds.includes(profile.id)) return false;
-      return isViewer ? f.forViewer : f.forLearner;
+      return f.forLearner;
     });
     // Bumps to force a re-render after dismissing the graduation
     // banner — the queue is read fresh on every render.
@@ -15395,7 +15387,7 @@
     // Today's guided path. Generated once per day, persisted, and
     // reconciled on every render so empty mistake-review slots auto-
     // skip themselves the moment there's nothing to review.
-    const path = !isViewer ? getOrCreateTodaysPath(profile) : null;
+    const path = getOrCreateTodaysPath(profile);
     if (path) reconcilePath(path, profile);
     const currentIdx = currentPathStep(path);
     const totalSteps = path ? path.steps.length : 0;
@@ -15776,7 +15768,17 @@
                 );
               })(),
             )
-          : e('div', null,
+          // バナー全体がボタン — 「次は◯◯」を読んだその指でそのまま開始
+          // できる。以前は表示だけで、下のタイル群から光っているタイルを
+          // 探す必要があった (レビュー指摘)。
+          : e('button', {
+              onClick: () => onPickFeature(currentStepId),
+              style: {
+                display: 'block', width: '100%', textAlign: 'left',
+                background: 'transparent', border: 'none', padding: 0,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }
+            },
               e('div', {
                 style: {
                   display: 'flex', alignItems: 'center', gap: 8,
@@ -15792,13 +15794,24 @@
                 }, doneSteps + ' / ' + totalSteps),
               ),
               e('div', {
-                style: { fontSize: 14, color: C.text, lineHeight: 1.6, fontWeight: 600 }
+                style: { fontSize: 14, color: C.text, lineHeight: 1.6, fontWeight: 600,
+                         display: 'flex', alignItems: 'center', gap: 6 }
               },
-                '次は ',
+                e('span', { style: { flex: 1 } },
+                  '次は ',
+                  e('span', {
+                    style: { color: profile.color, fontWeight: 800 }
+                  }, '「' + (PATH_STEP_LABEL[currentStepId] || currentStepId) + '」'),
+                  ' をやろう。',
+                ),
                 e('span', {
-                  style: { color: profile.color, fontWeight: 800 }
-                }, '「' + (PATH_STEP_LABEL[currentStepId] || currentStepId) + '」'),
-                ' をやろう。',
+                  style: {
+                    flex: '0 0 auto', fontFamily: SANS_UI, fontSize: 12,
+                    fontWeight: 800, color: profile.color,
+                    background: profile.color + '14',
+                    padding: '5px 12px', borderRadius: 999,
+                  }
+                }, 'はじめる ›'),
               ),
               // Tiny dot row: filled = done, empty = remaining, ring = current.
               e('div', {
@@ -15887,7 +15900,7 @@
       // ----- その他のツール (普段は使わないが、たまに必要なもの) -----
       // 翻訳ノート・リーディング理解・レベル診断テストはメインのタイルから
       // 外し、ここから到達する。viewer は翻訳ノートのみ。
-      !isViewer && e('div', {
+      e('div', {
         style: {
           marginTop: 22, paddingTop: 14,
           borderTop: '1px solid ' + C.line,
@@ -15902,6 +15915,7 @@
         }, 'その他のツール'),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 0 } },
           [
+            { id: 'records',         label: '学習の記録',         desc: '7 日間の活動表とセッションログ' },
             { id: 'saved_translate', label: '翻訳ノート',         desc: 'AI翻訳で★保存した文を復習' },
             { id: 'reading',         label: 'リーディング理解',   desc: '長文を読んで 4 択 3 問' },
             { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜2 級・段階式' },
@@ -15931,34 +15945,24 @@
           )),
         ),
       ),
-      isViewer && e('div', {
-        style: {
-          marginTop: 22, paddingTop: 14,
-          borderTop: '1px solid ' + C.line,
-        }
-      },
-        e('button', {
-          onClick: () => onPickFeature('saved_translate'),
-          style: {
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '14px 4px',
-            background: 'transparent', border: 'none',
-            cursor: 'pointer', textAlign: 'left', width: '100%',
-            fontFamily: 'inherit',
-          }
-        },
-          e('div', { style: { flex: 1, minWidth: 0 } },
-            e('div', { style: { fontSize: 14.5, color: C.text, fontWeight: 600 } }, '翻訳ノート'),
-            e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 2, lineHeight: 1.5 } },
-              'AI翻訳で★保存した文を復習'),
-          ),
-          e('span', { style: { fontSize: 18, color: C.sub, opacity: 0.6 } }, '›'),
-        ),
-      ),
 
-      // 7-day activity panel — date columns × activity rows. Replaces the
-      // previous bare grid with a quick at-a-glance look at how many turns
-      // each activity has clocked over the last week.
+    );
+  }
+
+  // ---------- 学習の記録 (7日間の活動 + セッションログ) ----------
+  // 以前はホーム下部に常設していたが、ホームが 4〜5 画面分の長さになって
+  // いたため独立画面へ移動 (レビュー指摘)。「その他のツール」から開く。
+  function RecordsScreen({ profile, onBack }) {
+    return e('div', {
+      style: { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' }
+    },
+      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
+        e('button', { onClick: onBack,
+          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+        }, '‹'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          '学習の記録'),
+      ),
       e(ActivityPanel, { profile }),
       e(SessionLog,    { profile }),
     );
@@ -16947,9 +16951,7 @@
   }
 
   // Compact "今日 N問 / 連続 N日 / 累計 N正解" strip for the active learner.
-  // Returns null for viewer profiles (mother) since they don't study.
   function ProgressChips({ profile, includeTotal, style }) {
-    if (profile.role === 'viewer') return null;
     const stats = computeStats(profile.id);
     const today = (db.getDailyStats(profile.id)[db.todayKey(profile.id)] || {});
     const todayAttempts = today.attempts || 0;
@@ -17915,413 +17917,6 @@
 
     return null;
   }
-
-  // ---------- Family Ranking ----------
-
-  // ---------- Message Compose Form (cheerleader → recipient) ----------
-  function MessageCompose({ sender, onCancel, onSubmit }) {
-    const [toId, setToId]         = useState('');                 // '' === whole family
-    const [body, setBody]         = useState('');
-    const [hue, setHue]           = useState('rose');
-    const [unlockCond, setUnlock] = useState('open_now');
-    const [imageUrl, setImageUrl] = useState(null);
-    const [imgErr, setImgErr]     = useState('');
-    const [voiceUrl, setVoiceUrl] = useState(null);
-    const [voiceErr, setVoiceErr] = useState('');
-    const [recording, setRecording] = useState(false);   // boolean
-    const [recordSec, setRecordSec] = useState(0);
-    const fileInputRef            = useRef(null);
-    const recorderRef             = useRef(null);
-    const recordTimerRef          = useRef(null);
-
-    async function pickImage(file) {
-      if (!file) return;
-      setImgErr('');
-      try {
-        const dataUrl = await compressImageToDataUrl(file, 800, 0.75);
-        // localStorage limit guard: ~5MB total, so cap a single photo at ~1MB base64.
-        if (dataUrl.length > 1_400_000) {
-          setImgErr('写真が大きすぎます。別の写真を試してください。');
-          return;
-        }
-        setImageUrl(dataUrl);
-      } catch (err) {
-        setImgErr('写真を読み込めませんでした。');
-      }
-    }
-
-    async function startRecording() {
-      setVoiceErr('');
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setVoiceErr('この端末は録音に対応していません。');
-        return;
-      }
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
-        const recorder = new MediaRecorder(stream, mimeType ? { mimeType, audioBitsPerSecond: 24000 } : {});
-        const chunks = [];
-        recorder.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
-        recorder.onstop = () => {
-          stream.getTracks().forEach(t => t.stop());
-          if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
-          setRecording(false);
-          const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
-          if (blob.size > 600_000) {
-            setVoiceErr('録音が大きすぎます。短く録り直してください。');
-            return;
-          }
-          const reader = new FileReader();
-          reader.onloadend = () => setVoiceUrl(reader.result);
-          reader.onerror = () => setVoiceErr('録音の読み込みに失敗しました。');
-          reader.readAsDataURL(blob);
-        };
-        recorderRef.current = recorder;
-        recorder.start();
-        setRecording(true);
-        setRecordSec(0);
-        recordTimerRef.current = setInterval(() => {
-          setRecordSec(s => {
-            const next = s + 1;
-            if (next >= 15) stopRecording();
-            return next;
-          });
-        }, 1000);
-      } catch (err) {
-        setVoiceErr('マイクの許可が必要です。');
-      }
-    }
-    function stopRecording() {
-      if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-        try { recorderRef.current.stop(); } catch {}
-      }
-    }
-    function clearVoice() {
-      setVoiceUrl(null);
-      setVoiceErr('');
-    }
-
-    const recipients = PROFILES.filter(p => p.id !== sender.id);  // can address anyone but self
-    const HUES = [
-      { id: 'rose',   color: C.rose,   label: 'ピンク' },
-      { id: 'orange', color: C.accent, label: 'オレンジ' },
-      { id: 'sun',    color: C.sun,    label: 'イエロー' },
-      { id: 'ocean',  color: C.ocean,  label: 'ブルー' },
-      { id: 'forest', color: C.forest, label: 'グリーン' },
-    ];
-    const UNLOCKS = [
-      { id: 'open_now',         label: 'すぐに開ける' },
-      { id: 'session_complete', label: '今日の20問クリアで開く' },
-      { id: 'streak_3',         label: '3日連続クリアで開く' },
-      { id: 'streak_7',         label: '7日連続クリアで開く' },
-    ];
-
-    const canSubmit = body.trim().length > 0;
-
-    function submit() {
-      if (!canSubmit) return;
-      const now = new Date().toISOString();
-      const msg = {
-        id:               'usr_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-        fromMemberId:     sender.id,
-        toMemberId:       toId || null,
-        message:          body.trim(),
-        imageHue:         hue,
-        imageUrl:         imageUrl || null,
-        voiceUrl:         voiceUrl || null,
-        createdAt:        now,
-        unlockedAt:       unlockCond === 'open_now' ? now : null,
-        unlockCondition:  unlockCond,
-      };
-      onSubmit(msg);
-    }
-
-    return e('div', { style: pageStyle },
-      // Top bar
-      e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
-        e('button', { onClick: onCancel,
-          style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
-        }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-          '応援メッセージに戻る'),
-      ),
-
-      // Header
-      e('div', { style: { padding: '8px 4px 22px' } },
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.2 }
-        }, '応援を作る'),
-        e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-          '誰に、どんな言葉を、いつ届けますか？'),
-      ),
-
-      // ----- Recipient -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, '宛先'),
-        e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-          e('button', {
-            onClick: () => setToId(''),
-            style: chipButtonStyle(toId === '', sender.color),
-          }, '家族みんな'),
-          recipients.map(r => e('button', {
-            key: r.id, onClick: () => setToId(r.id),
-            style: chipButtonStyle(toId === r.id, r.color),
-          }, getDisplayName(r))),
-        ),
-      ),
-
-      // ----- Message body -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, 'メッセージ'),
-        e('textarea', {
-          value: body,
-          onChange: (ev) => setBody(ev.target.value),
-          placeholder: '今日もよくがんばってるね。\n大好きだよ。',
-          rows: 4,
-          style: {
-            width: '100%', padding: '14px 16px', borderRadius: 14,
-            border: '1px solid ' + C.line, background: C.card,
-            fontSize: 15, fontFamily: 'inherit', color: C.text,
-            lineHeight: 1.6, resize: 'vertical', outline: 'none',
-            minHeight: 100,
-          }
-        }),
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, marginTop: 6, textAlign: 'right' }
-        }, body.length + ' 文字'),
-      ),
-
-      // ----- Photo (optional) -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, '写真（あれば）'),
-        // Hidden file input
-        e('input', {
-          ref: fileInputRef,
-          type: 'file',
-          accept: 'image/*',
-          style: { display: 'none' },
-          onChange: (ev) => { const f = ev.target.files && ev.target.files[0]; pickImage(f); ev.target.value = ''; },
-        }),
-        imageUrl
-          // Preview with remove
-          ? e('div', {
-              style: {
-                position: 'relative', borderRadius: 16, overflow: 'hidden',
-                border: '1px solid ' + C.line,
-              }
-            },
-              e('img', {
-                src: imageUrl,
-                style: { display: 'block', width: '100%', maxHeight: 260, objectFit: 'cover' },
-              }),
-              e('button', {
-                onClick: () => setImageUrl(null),
-                title: '写真を削除',
-                style: {
-                  position: 'absolute', top: 8, right: 8,
-                  width: 32, height: 32, borderRadius: 999,
-                  background: 'rgba(0,0,0,0.55)', color: '#fff',
-                  border: 'none', fontSize: 14, lineHeight: 1, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }
-              }, '✕'),
-            )
-          // Picker placeholder
-          : e('button', {
-              onClick: () => fileInputRef.current && fileInputRef.current.click(),
-              style: {
-                width: '100%', padding: '24px 16px', borderRadius: 16,
-                background: C.softer, border: '1px dashed ' + C.line,
-                color: C.sub, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-              }
-            },
-              e('div', null, '写真を選ぶ'),
-              e('div', { style: { fontSize: 12.5, opacity: 0.7 } },
-                '豚・ご飯・弟・なんでも'),
-            ),
-        imgErr && e('div', {
-          style: { marginTop: 8, fontSize: 12, color: C.danger }
-        }, imgErr),
-      ),
-
-      // ----- Voice (optional, max 15s) -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, '音声メッセージ（最大15秒）'),
-        voiceUrl
-          ? e('div', {
-              style: {
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '14px 16px', borderRadius: 14,
-                background: C.softer, border: '1px solid ' + C.line,
-              }
-            },
-              e('audio', {
-                src: voiceUrl, controls: true,
-                style: { flex: 1, height: 36, maxWidth: 'calc(100% - 60px)' },
-              }),
-              e('button', {
-                onClick: clearVoice,
-                title: '録音を削除',
-                style: {
-                  width: 32, height: 32, borderRadius: 999,
-                  background: 'rgba(0,0,0,0.55)', color: '#fff',
-                  border: 'none', fontSize: 14, lineHeight: 1, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
-                }
-              }, '✕'),
-            )
-          : recording
-            ? e('button', {
-                onClick: stopRecording,
-                style: {
-                  width: '100%', padding: '20px 16px', borderRadius: 14,
-                  background: '#FFE9E5', border: '1px solid ' + C.danger,
-                  color: C.danger, fontSize: 14, fontWeight: 700,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                  cursor: 'pointer',
-                }
-              },
-                e('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                  e('div', {
-                    style: {
-                      width: 12, height: 12, borderRadius: 999,
-                      background: C.danger, opacity: 0.9,
-                    }
-                  }),
-                  e('span', null, '録音中... ' + recordSec + 's / 15s'),
-                ),
-                e('div', { style: { fontSize: 12.5, opacity: 0.75 } }, 'タップで停止'),
-              )
-            : e('button', {
-                onClick: startRecording,
-                style: {
-                  width: '100%', padding: '24px 16px', borderRadius: 14,
-                  background: C.softer, border: '1px dashed ' + C.line,
-                  color: C.sub, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                }
-              },
-                e('div', null, '音声を録音'),
-                e('div', { style: { fontSize: 12.5, opacity: 0.7 } },
-                  '15秒まで・声で温度が伝わる'),
-              ),
-        voiceErr && e('div', {
-          style: { marginTop: 8, fontSize: 12, color: C.danger }
-        }, voiceErr),
-      ),
-
-      // ----- Hue -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, 'カードの色'),
-        e('div', { style: { display: 'flex', gap: 10 } },
-          HUES.map(h => e('button', {
-            key: h.id, onClick: () => setHue(h.id),
-            title: h.label,
-            style: {
-              width: 40, height: 40, borderRadius: 999,
-              background: 'linear-gradient(135deg, ' + h.color + ' 0%, ' + h.color + 'AA 100%)',
-              border: hue === h.id ? '3px solid ' + C.text : '3px solid ' + C.card,
-              boxShadow: hue === h.id
-                ? '0 0 0 2px ' + h.color + '55, 0 4px 10px ' + h.color + '44'
-                : '0 2px 6px rgba(42,37,32,0.08)',
-              cursor: 'pointer', transition: 'all .2s ease',
-            }
-          })),
-        ),
-      ),
-
-      // ----- Unlock condition -----
-      e('div', { style: { marginBottom: 22 } },
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, fontWeight: 700, letterSpacing: '0.1em', marginBottom: 10 }
-        }, 'いつ開けられる？'),
-        e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          UNLOCKS.map(u => e('button', {
-            key: u.id, onClick: () => setUnlock(u.id),
-            style: {
-              padding: '12px 14px', borderRadius: 12, textAlign: 'left',
-              background: unlockCond === u.id ? sender.color + '14' : C.card,
-              border: '1px solid ' + (unlockCond === u.id ? sender.color : C.line),
-              color: C.text, fontSize: 13, fontWeight: 600,
-              transition: 'all .2s ease',
-            }
-          },
-            e('span', {
-              style: {
-                display: 'inline-block', width: 16, height: 16, borderRadius: 999,
-                marginRight: 10, verticalAlign: 'middle',
-                background: unlockCond === u.id ? sender.color : 'transparent',
-                border: '2px solid ' + (unlockCond === u.id ? sender.color : C.line),
-              }
-            }),
-            u.label,
-          )),
-        ),
-      ),
-
-      // ----- Actions -----
-      e('div', { style: { display: 'flex', gap: 10 } },
-        e('button', {
-          onClick: onCancel,
-          style: {
-            flex: 1, padding: '14px 0', borderRadius: 14,
-            background: C.card, color: C.sub, border: '1px solid ' + C.line,
-            fontSize: 14, fontWeight: 600,
-          }
-        }, 'キャンセル'),
-        e('button', {
-          onClick: submit,
-          disabled: !canSubmit,
-          style: {
-            flex: 2, padding: '14px 0', borderRadius: 14,
-            background: canSubmit ? sender.color : C.line,
-            color: '#fff', border: '1px solid ' + (canSubmit ? sender.color : C.line),
-            fontSize: 14, fontWeight: 700,
-            boxShadow: canSubmit ? '0 6px 16px ' + sender.color + '55' : 'none',
-            cursor: canSubmit ? 'pointer' : 'not-allowed',
-          }
-        }, '送る'),
-      ),
-    );
-  }
-
-  function chipButtonStyle(active, color) {
-    return {
-      padding: '8px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
-      background: active ? color + '14' : C.card,
-      color: active ? color : C.sub,
-      border: '1px solid ' + (active ? color : C.line),
-      transition: 'all .2s ease', cursor: 'pointer',
-    };
-  }
-
-  // ---------- Support Messages (cheerleader can compose; learners react) ----------
-
-  function unlockLabel(cond) {
-    switch (cond) {
-      case 'session_complete': return '今日の20問をクリアで開く';
-      case 'streak_3':         return '3日連続でクリアで開く';
-      case 'streak_7':         return '7日連続でクリアで開く';
-      default:                 return '開封条件あり';
-    }
-  }
-
-  // Stub for future Supabase-backed cross-member reaction display.
-  function myReactionFromOthers(_messageId, _memberId) { return null; }
 
   // ---------- Sprint Composition (瞬間英作文) ----------
   // Picks ~10 sentences near the member's level, runs a Daily20-style flow:
