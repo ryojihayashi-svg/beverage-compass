@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 364;
+  const APP_VERSION = 365;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -19901,6 +19901,74 @@
       location.reload();
     }
 
+    // ----- バックアップ (書き出し / 読み込み) -----
+    // hfe_* の localStorage をまるごと JSON 1 ファイルにする。進捗・間違い・
+    // 統計・名前・写真・外した問題すべてが対象。API キーだけは含めない
+    // (ファイルを誰かに渡しても金銭的リスクがないように)。
+    // 読み込みは端末のデータを上書きしたあと再起動 → 起動時の hydrate が
+    // クラウドと union マージするので、クラウド側の新しい進捗は消えない。
+    const BACKUP_EXCLUDE = new Set([AI_KEY_STORAGE, OPENAI_KEY_STORAGE]);
+    const [backupMsg, setBackupMsg] = useState('');
+    function buildBackupObject() {
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || k.indexOf('hfe_') !== 0 || BACKUP_EXCLUDE.has(k)) continue;
+        data[k] = localStorage.getItem(k);
+      }
+      return {
+        _kind: 'hfe-backup',
+        _appVersion: APP_VERSION,
+        _exportedAt: new Date().toISOString(),
+        data,
+      };
+    }
+    function exportBackup() {
+      try {
+        const obj = buildBackupObject();
+        const stamp = new Date().toISOString().slice(0, 10);
+        const filename = 'hayashi-english-backup-' + stamp + '.json';
+        const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch {} }, 4000);
+        setBackupMsg('書き出しました (' + Object.keys(obj.data).length + ' 項目) — ファイルは「ファイル」アプリ等に保存されます');
+      } catch (err) {
+        setBackupMsg('書き出しに失敗: ' + ((err && err.message) || err));
+      }
+    }
+    function importBackup(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';   // 同じファイルをもう一度選べるように
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const obj = JSON.parse(String(reader.result));
+          if (!obj || obj._kind !== 'hfe-backup' || !obj.data || typeof obj.data !== 'object') {
+            setBackupMsg('このファイルは 林ファミリー English のバックアップではありません');
+            return;
+          }
+          const n = Object.keys(obj.data).length;
+          const when = (obj._exportedAt || '不明').slice(0, 10);
+          if (!confirm('バックアップを読み込みますか？\n\n保存日: ' + when + '\n項目数: ' + n + '\n\nこの端末の学習データはバックアップの内容で上書きされ、アプリが再起動します。')) return;
+          for (const k of Object.keys(obj.data)) {
+            if (k.indexOf('hfe_') !== 0 || BACKUP_EXCLUDE.has(k)) continue;
+            if (typeof obj.data[k] !== 'string') continue;
+            try { localStorage.setItem(k, obj.data[k]); } catch {}
+          }
+          location.reload();
+        } catch (err) {
+          setBackupMsg('読み込みに失敗: ' + ((err && err.message) || err));
+        }
+      };
+      reader.readAsText(file);
+    }
+
     return e('div', { style: pageStyle },
       // Top bar — back + reload button on the right
       e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 } },
@@ -20616,6 +20684,53 @@
                 }, '×'),
               )),
             ),
+      ),
+
+      // ----- バックアップ -----
+      e('div', { style: { marginTop: 32 } },
+        e('div', {
+          style: {
+            fontFamily: SANS_UI, fontSize: 12, fontWeight: 600,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: C.sub, marginBottom: 10, paddingLeft: 4,
+          }
+        }, 'バックアップ'),
+        e('div', {
+          style: {
+            background: C.card, border: '1px solid ' + C.line,
+            borderRadius: 14, padding: '14px 16px',
+          }
+        },
+          e('div', { style: { fontSize: 13, color: C.sub, lineHeight: 1.7, marginBottom: 12 } },
+            '家族全員の学習データ (進捗・間違い・統計・名前・写真) を 1 つのファイルに書き出せます。端末の故障や誤操作に備えて、ときどき書き出しておくと安心です。API キーはファイルに含まれません。'),
+          e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            e('button', {
+              onClick: exportBackup,
+              style: {
+                padding: '13px 0', borderRadius: 12,
+                background: C.accent, color: '#fff', border: 'none',
+                fontSize: 13.5, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+              }
+            }, '書き出す'),
+            e('label', {
+              style: {
+                padding: '13px 0', borderRadius: 12, textAlign: 'center',
+                background: C.softer, color: C.text, border: '1px solid ' + C.line,
+                fontSize: 13.5, fontWeight: 700, fontFamily: SANS_UI, cursor: 'pointer',
+              }
+            },
+              '読み込む',
+              e('input', {
+                type: 'file', accept: '.json,application/json',
+                onChange: importBackup,
+                style: { display: 'none' },
+              }),
+            ),
+          ),
+          backupMsg && e('div', {
+            style: { marginTop: 10, fontSize: 12.5, color: C.sub, lineHeight: 1.6 }
+          }, backupMsg),
+        ),
       ),
 
       // ----- Danger zone: full data reset -----
