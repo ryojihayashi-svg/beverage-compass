@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 351;
+  const APP_VERSION = 352;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -22796,6 +22796,22 @@
       ],
     },
     // Section 5 以降をここに追加していく。
+    {
+      no: 5,
+      title: 'Section 5',
+      subtitle: '接客・おもてなし英語',
+      description:
+        '自分の店に来た外国人ゲストを迎える「ホスト側」の英語。お迎え → ご案内 → ' +
+        '料理・ワイン説明 → リクエスト対応 → お見送り。50 構文 × 3 例 = 150 文。',
+      patternIds: [
+        'cp201','cp202','cp203','cp204','cp205','cp206','cp207','cp208','cp209','cp210',
+        'cp211','cp212','cp213','cp214','cp215','cp216','cp217','cp218','cp219','cp220',
+        'cp221','cp222','cp223','cp224','cp225','cp226','cp227','cp228','cp229','cp230',
+        'cp231','cp232','cp233','cp234','cp235','cp236','cp237','cp238','cp239','cp240',
+        'cp241','cp242','cp243','cp244','cp245','cp246','cp247','cp248','cp249','cp250',
+      ],
+    },
+    // Section 6 以降をここに追加していく。
   ];
 
   // セクションに属するパターンの数を数えるユーティリティ。
@@ -24807,6 +24823,411 @@
         { theme: '家族',   ja: '次の世代に一つだけ伝えるなら何ですか？',       en: 'If you could leave one message for the next generation, what would it be?' },
       ],
     },
+
+    // ============ Section 5: 接客・おもてなし英語 (201-250) ============
+    // 自分の店に来た外国人ゲストを迎えるための「ホスト側」の英語。
+    // お迎え → ご案内 → 料理・ワイン説明 → リクエスト対応 → お見送り の流れ。
+    // theme: 迎える / 説明する / 応える の 3 場面。
+    {
+      id: 'cp201', pattern: 'Welcome to …', ja_pattern: 'ようこそ〜へ',
+      items: [
+        { theme: '迎える', ja: 'ようこそお越しくださいました。お待ちしておりました。', en: 'Welcome! We have been expecting you.' },
+        { theme: '説明する', ja: '当店へようこそ。本日が初めてのご来店ですか？', en: 'Welcome to our restaurant. Is this your first visit?' },
+        { theme: '応える', ja: 'おかえりなさいませ。またお会いできて嬉しいです。', en: 'Welcome back! It is wonderful to see you again.' },
+      ],
+    },
+    {
+      id: 'cp202', pattern: 'May I take …?', ja_pattern: '〜をお預かりしましょうか？',
+      items: [
+        { theme: '迎える', ja: 'コートをお預かりしましょうか？', en: 'May I take your coat?' },
+        { theme: '説明する', ja: 'お荷物をお預かりしましょうか？', en: 'May I take your bags?' },
+        { theme: '応える', ja: 'ご注文をお伺いしてもよろしいですか？', en: 'May I take your order?' },
+      ],
+    },
+    {
+      id: 'cp203', pattern: 'Right this way, please.', ja_pattern: 'こちらへどうぞ',
+      items: [
+        { theme: '迎える', ja: 'こちらへどうぞ。お席にご案内します。', en: 'Right this way, please. I will show you to your table.' },
+        { theme: '説明する', ja: '窓際のお席をご用意しました。こちらへどうぞ。', en: 'We have prepared a table by the window. Right this way, please.' },
+        { theme: '応える', ja: '個室のご用意ができました。こちらへどうぞ。', en: 'Your private room is ready. Right this way, please.' },
+      ],
+    },
+    {
+      id: 'cp204', pattern: 'Would you care for …?', ja_pattern: '〜はいかがですか？ (丁寧)',
+      items: [
+        { theme: '迎える', ja: '食前酒はいかがですか？', en: 'Would you care for an aperitif?' },
+        { theme: '説明する', ja: 'お食事の前にシャンパンはいかがですか？', en: 'Would you care for some champagne before your meal?' },
+        { theme: '応える', ja: '食後にコーヒーか紅茶はいかがですか？', en: 'Would you care for coffee or tea after your meal?' },
+      ],
+    },
+    {
+      id: 'cp205', pattern: 'Tonight we are serving …', ja_pattern: '本日は〜をご用意しています',
+      items: [
+        { theme: '迎える', ja: '本日は 8 品のテイスティングメニューをご用意しています。', en: 'Tonight we are serving an eight-course tasting menu.' },
+        { theme: '説明する', ja: '本日は島根直送の旬の魚をご用意しています。', en: 'Tonight we are serving seasonal fish delivered straight from Shimane.' },
+        { theme: '応える', ja: '本日は特別に、シェフおまかせコースをご用意しています。', en: "Tonight we are serving a special chef's omakase course." },
+      ],
+    },
+    {
+      id: 'cp206', pattern: 'This dish features …', ja_pattern: 'この料理は〜が主役です',
+      items: [
+        { theme: '迎える', ja: 'この料理は今朝届いた雲丹が主役です。', en: 'This dish features sea urchin that arrived this morning.' },
+        { theme: '説明する', ja: 'この一皿は地元農家の野菜が主役です。', en: 'This dish features vegetables from local farmers.' },
+        { theme: '応える', ja: 'このデザートは宮崎のマンゴーが主役です。', en: 'This dessert features mango from Miyazaki.' },
+      ],
+    },
+    {
+      id: 'cp207', pattern: 'I recommend …', ja_pattern: '〜がおすすめです',
+      items: [
+        { theme: '迎える', ja: '初めてでしたら、おまかせコースがおすすめです。', en: 'If this is your first visit, I recommend the omakase course.' },
+        { theme: '説明する', ja: 'この料理には白ワインをおすすめします。', en: 'I recommend a white wine with this dish.' },
+        { theme: '応える', ja: 'お急ぎでしたら、ランチセットがおすすめです。', en: 'If you are in a hurry, I recommend the lunch set.' },
+      ],
+    },
+    {
+      id: 'cp208', pattern: 'How would you like …?', ja_pattern: '〜はどのようにいたしますか？',
+      items: [
+        { theme: '迎える', ja: 'ステーキの焼き加減はいかがいたしますか？', en: 'How would you like your steak?' },
+        { theme: '説明する', ja: 'お水は常温と冷たいもの、どちらにいたしますか？', en: 'How would you like your water, room temperature or chilled?' },
+        { theme: '応える', ja: 'コーヒーはどのようにいたしますか？', en: 'How would you like your coffee?' },
+      ],
+    },
+    {
+      id: 'cp209', pattern: 'Is everything to your liking?', ja_pattern: 'お料理はいかがですか？',
+      items: [
+        { theme: '迎える', ja: 'お料理はお口に合いますか？', en: 'Is everything to your liking?' },
+        { theme: '説明する', ja: 'お席の温度は快適ですか？', en: 'Is the room temperature to your liking?' },
+        { theme: '応える', ja: 'ワインはお好みに合っていますか？', en: 'Is the wine to your liking?' },
+      ],
+    },
+    {
+      id: 'cp210', pattern: 'Please take your time.', ja_pattern: 'ごゆっくりどうぞ',
+      items: [
+        { theme: '迎える', ja: 'ごゆっくりお楽しみください。', en: 'Please take your time and enjoy.' },
+        { theme: '説明する', ja: 'メニューはごゆっくりお選びください。', en: 'Please take your time with the menu.' },
+        { theme: '応える', ja: 'お急ぎにならず、ごゆっくりどうぞ。', en: 'There is no rush. Please take your time.' },
+      ],
+    },
+    {
+      id: 'cp211', pattern: 'Allow me to …', ja_pattern: '私が〜いたします',
+      items: [
+        { theme: '迎える', ja: '本日のメニューをご説明いたします。', en: "Allow me to explain tonight's menu." },
+        { theme: '説明する', ja: 'ワインをお注ぎいたします。', en: 'Allow me to pour your wine.' },
+        { theme: '応える', ja: 'タクシーをお呼びいたします。', en: 'Allow me to call a taxi for you.' },
+      ],
+    },
+    {
+      id: 'cp212', pattern: 'Would you prefer … or …?', ja_pattern: '〜と〜、どちらがよろしいですか？',
+      items: [
+        { theme: '迎える', ja: 'カウンターとテーブル、どちらがよろしいですか？', en: 'Would you prefer the counter or a table?' },
+        { theme: '説明する', ja: '赤ワインと白ワイン、どちらがよろしいですか？', en: 'Would you prefer red or white wine?' },
+        { theme: '応える', ja: 'お会計はご一緒と別々、どちらがよろしいですか？', en: 'Would you prefer to pay together or separately?' },
+      ],
+    },
+    {
+      id: 'cp213', pattern: 'It comes with …', ja_pattern: '〜が付いています',
+      items: [
+        { theme: '迎える', ja: 'このコースには食前酒が付いています。', en: 'This course comes with an aperitif.' },
+        { theme: '説明する', ja: 'ステーキにはサラダとスープが付いています。', en: 'The steak comes with a salad and soup.' },
+        { theme: '応える', ja: 'ランチにはコーヒーが付いています。', en: 'Lunch comes with coffee.' },
+      ],
+    },
+    {
+      id: 'cp214', pattern: 'Do you have any allergies?', ja_pattern: 'アレルギーはございますか？',
+      items: [
+        { theme: '迎える', ja: '何かアレルギーはございますか？', en: 'Do you have any allergies?' },
+        { theme: '説明する', ja: '苦手な食材はございますか？', en: 'Is there anything you cannot eat?' },
+        { theme: '応える', ja: '貝類のアレルギーはございますか？', en: 'Do you have any shellfish allergies?' },
+      ],
+    },
+    {
+      id: 'cp215', pattern: 'I will check with the kitchen.', ja_pattern: '厨房に確認いたします',
+      items: [
+        { theme: '迎える', ja: '厨房に確認して、すぐに戻ります。', en: 'I will check with the kitchen and be right back.' },
+        { theme: '説明する', ja: 'グルテン抜きで作れるか、厨房に確認いたします。', en: 'I will check with the kitchen if we can make it gluten-free.' },
+        { theme: '応える', ja: 'お時間がどれくらいかかるか、厨房に確認いたします。', en: 'I will check with the kitchen how long it will take.' },
+      ],
+    },
+    {
+      id: 'cp216', pattern: 'My apologies for …', ja_pattern: '〜につきましてお詫び申し上げます',
+      items: [
+        { theme: '迎える', ja: 'お待たせして申し訳ございません。', en: 'My apologies for keeping you waiting.' },
+        { theme: '説明する', ja: '手違いがあり、申し訳ございません。', en: 'My apologies for the mix-up.' },
+        { theme: '応える', ja: '騒がしくて申し訳ございません。', en: 'My apologies for the noise.' },
+      ],
+    },
+    {
+      id: 'cp217', pattern: 'Let me bring you …', ja_pattern: '〜をお持ちいたします',
+      items: [
+        { theme: '迎える', ja: 'すぐに新しいお皿をお持ちいたします。', en: 'Let me bring you a fresh plate right away.' },
+        { theme: '説明する', ja: 'おしぼりをお持ちいたします。', en: 'Let me bring you a hot towel.' },
+        { theme: '応える', ja: 'お子様用の椅子をお持ちいたします。', en: 'Let me bring you a high chair for your child.' },
+      ],
+    },
+    {
+      id: 'cp218', pattern: 'Is this your first time trying …?', ja_pattern: '〜は初めてですか？',
+      items: [
+        { theme: '迎える', ja: '和牛は初めてですか？', en: 'Is this your first time trying wagyu?' },
+        { theme: '説明する', ja: '日本酒は初めてですか？', en: 'Is this your first time trying sake?' },
+        { theme: '応える', ja: '白子は初めてですか？とても繊細な味です。', en: 'Is this your first time trying shirako? It has a very delicate flavour.' },
+      ],
+    },
+    {
+      id: 'cp219', pattern: 'It pairs beautifully with …', ja_pattern: '〜と相性抜群です',
+      items: [
+        { theme: '迎える', ja: 'この日本酒はお刺身と相性抜群です。', en: 'This sake pairs beautifully with the sashimi.' },
+        { theme: '説明する', ja: 'このシャブリは牡蠣と相性抜群です。', en: 'This Chablis pairs beautifully with oysters.' },
+        { theme: '応える', ja: 'このソースはお肉と相性抜群です。', en: 'This sauce pairs beautifully with the meat.' },
+      ],
+    },
+    {
+      id: 'cp220', pattern: 'Shall I …?', ja_pattern: '〜いたしましょうか？',
+      items: [
+        { theme: '迎える', ja: 'お写真をお撮りしましょうか？', en: 'Shall I take a photo for you?' },
+        { theme: '説明する', ja: 'ワインをもう一杯お持ちしましょうか？', en: 'Shall I bring you another glass of wine?' },
+        { theme: '応える', ja: 'デザートメニューをお持ちしましょうか？', en: 'Shall I bring the dessert menu?' },
+      ],
+    },
+    {
+      id: 'cp221', pattern: 'How was everything?', ja_pattern: 'お料理はいかがでしたか？',
+      items: [
+        { theme: '迎える', ja: '本日のお料理はいかがでしたか？', en: 'How was everything tonight?' },
+        { theme: '説明する', ja: 'メインディッシュはいかがでしたか？', en: 'How was the main course?' },
+        { theme: '応える', ja: '初めての日本料理はいかがでしたか？', en: 'How was your first Japanese meal?' },
+      ],
+    },
+    {
+      id: 'cp222', pattern: 'We look forward to serving you again.', ja_pattern: 'またのお越しをお待ちしております',
+      items: [
+        { theme: '迎える', ja: 'またのお越しを心よりお待ちしております。', en: 'We look forward to serving you again soon.' },
+        { theme: '説明する', ja: '次は季節の変わり目にぜひ。またお待ちしております。', en: 'Please come back when the seasons change. We look forward to serving you again.' },
+        { theme: '応える', ja: '東京にお戻りの際は、ぜひまたお立ち寄りください。', en: 'When you return to Tokyo, we look forward to serving you again.' },
+      ],
+    },
+    {
+      id: 'cp223', pattern: 'Mind your step.', ja_pattern: '足元にお気をつけください',
+      items: [
+        { theme: '迎える', ja: '段差がございます。足元にお気をつけください。', en: 'There is a step here. Mind your step.' },
+        { theme: '説明する', ja: '階段が急です。足元にお気をつけください。', en: 'The stairs are steep. Mind your step.' },
+        { theme: '応える', ja: '床が濡れています。足元にお気をつけください。', en: 'The floor is wet. Mind your step.' },
+      ],
+    },
+    {
+      id: 'cp224', pattern: 'On behalf of …', ja_pattern: '〜を代表して',
+      items: [
+        { theme: '迎える', ja: 'スタッフ一同を代表して、御礼申し上げます。', en: 'On behalf of all our staff, thank you very much.' },
+        { theme: '説明する', ja: '店を代表して、お詫び申し上げます。', en: 'On behalf of the restaurant, I sincerely apologize.' },
+        { theme: '応える', ja: 'シェフを代表して、感謝をお伝えします。', en: 'On behalf of the chef, I want to express our gratitude.' },
+      ],
+    },
+    {
+      id: 'cp225', pattern: 'Was everything satisfactory?', ja_pattern: 'ご満足いただけましたか？',
+      items: [
+        { theme: '迎える', ja: 'ご滞在はご満足いただけましたか？', en: 'Was everything satisfactory during your stay?' },
+        { theme: '説明する', ja: 'お食事はご満足いただけましたか？', en: 'Was the meal satisfactory?' },
+        { theme: '応える', ja: 'サービスはご満足いただけましたか？', en: 'Was the service satisfactory?' },
+      ],
+    },
+    {
+      id: 'cp226', pattern: 'Could I interest you in …?', ja_pattern: '〜はいかがでしょう？ (提案)',
+      items: [
+        { theme: '迎える', ja: '食後のデザートワインはいかがでしょう？', en: 'Could I interest you in a dessert wine?' },
+        { theme: '説明する', ja: '本日入荷したチーズはいかがでしょう？', en: 'Could I interest you in some cheese that arrived today?' },
+        { theme: '応える', ja: 'お土産に当店のオリジナルソースはいかがでしょう？', en: 'Could I interest you in our original sauce as a souvenir?' },
+      ],
+    },
+    {
+      id: 'cp227', pattern: 'The chef would like to …', ja_pattern: 'シェフが〜したいと申しております',
+      items: [
+        { theme: '迎える', ja: 'シェフがご挨拶に伺いたいと申しております。', en: 'The chef would like to come and say hello.' },
+        { theme: '説明する', ja: 'シェフが特別な一皿をお出ししたいと申しております。', en: 'The chef would like to offer you a special dish.' },
+        { theme: '応える', ja: 'シェフが感謝をお伝えしたいと申しております。', en: 'The chef would like to express his thanks.' },
+      ],
+    },
+    {
+      id: 'cp228', pattern: 'This is on the house.', ja_pattern: '当店からのサービスです',
+      items: [
+        { theme: '迎える', ja: 'こちらは当店からのサービスです。', en: 'This is on the house.' },
+        { theme: '説明する', ja: 'お誕生日のお祝いに、デザートは当店からのサービスです。', en: 'For your birthday, the dessert is on the house.' },
+        { theme: '応える', ja: 'お待たせしたお詫びに、一杯目は当店からのサービスです。', en: 'To apologize for the wait, the first drink is on the house.' },
+      ],
+    },
+    {
+      id: 'cp229', pattern: 'Please let me know if …', ja_pattern: '〜でしたらお知らせください',
+      items: [
+        { theme: '迎える', ja: '何か必要でしたら、お知らせください。', en: 'Please let me know if you need anything.' },
+        { theme: '説明する', ja: 'お寒いようでしたら、お知らせください。', en: 'Please let me know if you feel cold.' },
+        { theme: '応える', ja: 'ペースが速すぎるようでしたら、お知らせください。', en: 'Please let me know if the pace is too fast.' },
+      ],
+    },
+    {
+      id: 'cp230', pattern: 'We can arrange …', ja_pattern: '〜を手配できます',
+      items: [
+        { theme: '迎える', ja: 'お帰りのタクシーを手配できます。', en: 'We can arrange a taxi for your return.' },
+        { theme: '説明する', ja: '記念日のケーキを手配できます。', en: 'We can arrange a cake for your anniversary.' },
+        { theme: '応える', ja: '大人数のご宴会も手配できます。', en: 'We can arrange banquets for large groups.' },
+      ],
+    },
+    {
+      id: 'cp231', pattern: 'How many in your party?', ja_pattern: '何名様ですか？',
+      items: [
+        { theme: '迎える', ja: '何名様でいらっしゃいますか？', en: 'How many in your party?' },
+        { theme: '説明する', ja: '本日は何名様のご予約ですか？', en: 'How many are in your reservation today?' },
+        { theme: '応える', ja: '後から何名様かいらっしゃいますか？', en: 'How many more will be joining you?' },
+      ],
+    },
+    {
+      id: 'cp232', pattern: 'Your table will be ready in …', ja_pattern: 'お席のご用意まで〜ほどです',
+      items: [
+        { theme: '迎える', ja: 'お席のご用意まで 10 分ほどです。', en: 'Your table will be ready in about ten minutes.' },
+        { theme: '説明する', ja: 'お席のご用意まで、バーでお待ちいただけます。', en: 'Your table will be ready soon — you are welcome to wait at the bar.' },
+        { theme: '応える', ja: '間もなくお席のご用意ができます。', en: 'Your table will be ready shortly.' },
+      ],
+    },
+    {
+      id: 'cp233', pattern: 'I am afraid …', ja_pattern: '申し訳ございませんが〜',
+      items: [
+        { theme: '迎える', ja: '申し訳ございませんが、本日は満席です。', en: 'I am afraid we are fully booked tonight.' },
+        { theme: '説明する', ja: '申し訳ございませんが、その品は売り切れました。', en: 'I am afraid that item is sold out.' },
+        { theme: '応える', ja: '申し訳ございませんが、テラス席は雨のため閉めております。', en: 'I am afraid the terrace is closed due to rain.' },
+      ],
+    },
+    {
+      id: 'cp234', pattern: 'Would you like me to explain …?', ja_pattern: '〜をご説明しましょうか？',
+      items: [
+        { theme: '迎える', ja: 'メニューをご説明しましょうか？', en: 'Would you like me to explain the menu?' },
+        { theme: '説明する', ja: 'この料理の食べ方をご説明しましょうか？', en: 'Would you like me to explain how to eat this dish?' },
+        { theme: '応える', ja: '日本酒の種類をご説明しましょうか？', en: 'Would you like me to explain the different types of sake?' },
+      ],
+    },
+    {
+      id: 'cp235', pattern: 'It is best enjoyed …', ja_pattern: '〜で召し上がるのが一番です',
+      items: [
+        { theme: '迎える', ja: 'こちらは熱いうちに召し上がるのが一番です。', en: 'It is best enjoyed while hot.' },
+        { theme: '説明する', ja: 'まずはそのまま、次にソースと一緒にどうぞ。', en: 'It is best enjoyed plain first, then with the sauce.' },
+        { theme: '応える', ja: 'この日本酒は冷やで召し上がるのが一番です。', en: 'This sake is best enjoyed chilled.' },
+      ],
+    },
+    {
+      id: 'cp236', pattern: 'Everything is made in-house.', ja_pattern: 'すべて自家製です',
+      items: [
+        { theme: '迎える', ja: 'パンもデザートも、すべて自家製です。', en: 'The bread and desserts are all made in-house.' },
+        { theme: '説明する', ja: 'このソースは自家製です。', en: 'This sauce is made in-house.' },
+        { theme: '応える', ja: '麺も自家製です。毎朝打っています。', en: 'The noodles are made in-house. We make them fresh every morning.' },
+      ],
+    },
+    {
+      id: 'cp237', pattern: 'We source … from …', ja_pattern: '〜は〜から仕入れています',
+      items: [
+        { theme: '迎える', ja: '魚は毎朝豊洲から仕入れています。', en: 'We source our fish from Toyosu every morning.' },
+        { theme: '説明する', ja: '野菜は島根の契約農家から仕入れています。', en: 'We source our vegetables from partner farms in Shimane.' },
+        { theme: '応える', ja: 'ワインは生産者から直接仕入れています。', en: 'We source our wines directly from the producers.' },
+      ],
+    },
+    {
+      id: 'cp238', pattern: 'Feel free to …', ja_pattern: 'ご自由に〜してください',
+      items: [
+        { theme: '迎える', ja: 'ご自由にお写真をお撮りください。', en: 'Feel free to take photos.' },
+        { theme: '説明する', ja: '何でもご自由にお尋ねください。', en: 'Feel free to ask us anything.' },
+        { theme: '応える', ja: 'お好きなお席にご自由にどうぞ。', en: 'Feel free to sit wherever you like.' },
+      ],
+    },
+    {
+      id: 'cp239', pattern: 'How is the pace of the meal?', ja_pattern: 'お料理のペースはいかがですか？',
+      items: [
+        { theme: '迎える', ja: 'お料理のペースはいかがですか？', en: 'How is the pace of the meal?' },
+        { theme: '説明する', ja: '次の一皿まで少しお時間をおきましょうか？', en: 'Shall we give you a little more time before the next course?' },
+        { theme: '応える', ja: '少しペースを上げましょうか？', en: 'Would you like us to speed up the pace a little?' },
+      ],
+    },
+    {
+      id: 'cp240', pattern: 'May I clear your plates?', ja_pattern: 'お皿をお下げしてもよろしいですか？',
+      items: [
+        { theme: '迎える', ja: 'お皿をお下げしてもよろしいですか？', en: 'May I clear your plates?' },
+        { theme: '説明する', ja: 'お済みでしたら、グラスをお下げいたします。', en: 'If you are finished, may I clear your glasses?' },
+        { theme: '応える', ja: 'こちらはまだお使いになりますか？', en: 'Are you still working on this?' },
+      ],
+    },
+    {
+      id: 'cp241', pattern: 'It has been an honour to serve you.', ja_pattern: 'おもてなしできて光栄でした',
+      items: [
+        { theme: '迎える', ja: '本日はおもてなしできて光栄でした。', en: 'It has been an honour to serve you tonight.' },
+        { theme: '説明する', ja: '記念日のお手伝いができて光栄でした。', en: 'It has been an honour to be part of your anniversary.' },
+        { theme: '応える', ja: '遠くからお越しいただき、光栄でした。', en: 'It has been an honour to welcome you from so far away.' },
+      ],
+    },
+    {
+      id: 'cp242', pattern: 'Watch out for the bones.', ja_pattern: '骨にお気をつけください',
+      items: [
+        { theme: '迎える', ja: '小骨にお気をつけください。', en: 'Watch out for the small bones.' },
+        { theme: '説明する', ja: 'お皿が熱いのでお気をつけください。', en: 'Watch out — the plate is very hot.' },
+        { theme: '応える', ja: '殻が付いておりますので、お気をつけください。', en: 'Watch out for the shell.' },
+      ],
+    },
+    {
+      id: 'cp243', pattern: 'Compliments of the chef.', ja_pattern: 'シェフからの一皿です',
+      items: [
+        { theme: '迎える', ja: 'こちらはシェフからの一皿です。', en: 'This is compliments of the chef.' },
+        { theme: '説明する', ja: 'シェフからのお祝いの一皿です。', en: 'A celebration dish, compliments of the chef.' },
+        { theme: '応える', ja: '常連のお客様へ、シェフからの一皿です。', en: 'For our regular guests — compliments of the chef.' },
+      ],
+    },
+    {
+      id: 'cp244', pattern: 'Did you save room for dessert?', ja_pattern: 'デザートは別腹ですか？',
+      items: [
+        { theme: '迎える', ja: 'デザートのお腹は残っていますか？', en: 'Did you save room for dessert?' },
+        { theme: '説明する', ja: '本日のデザートは 3 種類ございます。', en: 'We have three desserts today — did you save room?' },
+        { theme: '応える', ja: '軽めのデザートもご用意できます。', en: 'We can prepare something light if you saved a little room.' },
+      ],
+    },
+    {
+      id: 'cp245', pattern: 'How do I get to …?', ja_pattern: '〜への行き方は？ (道案内に答える)',
+      items: [
+        { theme: '迎える', ja: '駅へは、この道をまっすぐ 5 分です。', en: 'To get to the station, go straight down this road for five minutes.' },
+        { theme: '説明する', ja: 'お手洗いは階段を降りて右手です。', en: 'The restroom is down the stairs and on your right.' },
+        { theme: '応える', ja: '2 号店へは、タクシーで 10 分ほどです。', en: 'Our second restaurant is about ten minutes away by taxi.' },
+      ],
+    },
+    {
+      id: 'cp246', pattern: 'We accept …', ja_pattern: '〜がご利用いただけます',
+      items: [
+        { theme: '迎える', ja: '各種クレジットカードがご利用いただけます。', en: 'We accept all major credit cards.' },
+        { theme: '説明する', ja: '電子マネーもご利用いただけます。', en: 'We also accept mobile payments.' },
+        { theme: '応える', ja: '申し訳ございません、現金のみのご利用となります。', en: 'I am sorry, we accept cash only.' },
+      ],
+    },
+    {
+      id: 'cp247', pattern: 'Could you write a review?', ja_pattern: 'レビューをお願いできますか？',
+      items: [
+        { theme: '迎える', ja: 'もしよろしければ、レビューをお願いできますか？', en: 'If you enjoyed your meal, could you write a review?' },
+        { theme: '説明する', ja: 'お写真の投稿も大歓迎です。', en: 'We would love it if you shared your photos.' },
+        { theme: '応える', ja: 'ご意見はサービス改善の参考にさせていただきます。', en: 'Your feedback helps us improve our service.' },
+      ],
+    },
+    {
+      id: 'cp248', pattern: 'Safe travels!', ja_pattern: '良いご旅行を！',
+      items: [
+        { theme: '迎える', ja: '良いご旅行を！お気をつけて。', en: 'Safe travels! Take care.' },
+        { theme: '説明する', ja: '日本のご滞在をお楽しみください。', en: 'Enjoy the rest of your stay in Japan. Safe travels!' },
+        { theme: '応える', ja: 'お戻りの飛行機、お気をつけて。', en: 'Safe travels on your flight home!' },
+      ],
+    },
+    {
+      id: 'cp249', pattern: 'It means a lot to us.', ja_pattern: '私たちにとって何よりの喜びです',
+      items: [
+        { theme: '迎える', ja: 'そのお言葉、私たちにとって何よりの喜びです。', en: 'Your kind words mean a lot to us.' },
+        { theme: '説明する', ja: '再びお越しいただけたこと、何よりの喜びです。', en: 'Your coming back means a lot to us.' },
+        { theme: '応える', ja: 'ご友人をご紹介いただき、何よりの喜びです。', en: 'Your introducing your friends means a lot to us.' },
+      ],
+    },
+    {
+      id: 'cp250', pattern: 'We hope to see you again soon.', ja_pattern: 'またすぐにお会いできますように',
+      items: [
+        { theme: '迎える', ja: 'またすぐにお会いできることを願っております。', en: 'We hope to see you again soon.' },
+        { theme: '説明する', ja: '次の季節のメニューでお会いしましょう。', en: 'We hope to see you again for the next seasonal menu.' },
+        { theme: '応える', ja: '次回はご家族もご一緒に。お待ちしております。', en: 'Next time, please bring your family. We hope to see you again soon.' },
+      ],
+    },
   ];
 
   // ---------- 定型構文のレベル振り (英検目安) ----------
@@ -24840,6 +25261,12 @@
     cp171: 4, cp172: 3, cp173: 4, cp174: 4, cp175: 3, cp176: 4, cp177: 4, cp178: 4, cp179: 4, cp180: 4,
     cp181: 3, cp182: 4, cp183: 4, cp184: 4, cp185: 4, cp186: 5, cp187: 5, cp188: 4, cp189: 4, cp190: 5,
     cp191: 4, cp192: 4, cp193: 4, cp194: 3, cp195: 4, cp196: 4, cp197: 4, cp198: 5, cp199: 4, cp200: 5,
+    // Section 5 (201-250) — 接客英語は言い回しが定型なので LV2-3 中心
+    cp201: 2, cp202: 2, cp203: 2, cp204: 3, cp205: 3, cp206: 3, cp207: 2, cp208: 2, cp209: 3, cp210: 2,
+    cp211: 3, cp212: 3, cp213: 2, cp214: 2, cp215: 3, cp216: 3, cp217: 2, cp218: 3, cp219: 3, cp220: 2,
+    cp221: 2, cp222: 3, cp223: 2, cp224: 4, cp225: 3, cp226: 4, cp227: 3, cp228: 3, cp229: 2, cp230: 3,
+    cp231: 2, cp232: 3, cp233: 3, cp234: 3, cp235: 3, cp236: 2, cp237: 3, cp238: 2, cp239: 3, cp240: 2,
+    cp241: 4, cp242: 2, cp243: 3, cp244: 3, cp245: 3, cp246: 2, cp247: 3, cp248: 2, cp249: 3, cp250: 2,
   };
 
   // 旧版では CONVO_PATTERNS を SENTENCES / SHADOWING_QA に自動マージしていたが、
