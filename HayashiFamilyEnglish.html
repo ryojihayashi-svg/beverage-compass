@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 315;
+  const APP_VERSION = 316;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1024,29 +1024,29 @@
     { id:'expand',      en:'expand',      ja:'拡大する',                 pos:'verb', level:4, cat:'general', exEn:'The company expanded overseas.',            exJa:'会社は海外に拡大した。', exEn2:'We plan to expand the business overseas.', exJa2:'事業を海外に拡大する計画だ。' },
     { id:'indicate',    en:'indicate',    ja:'示す',                     pos:'verb', level:4, cat:'general', exEn:'The data indicates a problem.',             exJa:'データは問題があることを示している。', exEn2:'The numbers indicate that demand is growing.', exJa2:'数字は需要が伸びていることを示している。' },
     { id:'interpret',   en:'interpret',   ja:'解釈する・通訳する',       pos:'verb', level:4, cat:'general', exEn:'How do you interpret this poem?',           exJa:'この詩をどう解釈しますか？', exEn2:'She interpreted for us during the meeting.', exJa2:'会議中、彼女が通訳してくれた。' },
-    { id:'investigate', en:'investigate', ja:'調査する',                 pos:'verb', level:4, cat:'general', exEn:'The police investigated the case.',         exJa:'警察は事件を調査した。' },
-    { id:'observe',     en:'observe',     ja:'観察する',                 pos:'verb', level:4, cat:'general', exEn:'Scientists observe stars.',                 exJa:'科学者は星を観察します。' },
-    { id:'perform',     en:'perform',     ja:'演じる・実行する',         pos:'verb', level:4, cat:'general', exEn:'The actors performed beautifully.',         exJa:'俳優たちは見事に演じた。' },
-    { id:'preserve',    en:'preserve',    ja:'保存する',                 pos:'verb', level:4, cat:'general', exEn:'We must preserve nature.',                  exJa:'私たちは自然を保護しなければならない。' },
-    { id:'respond',     en:'respond',     ja:'応答する',                 pos:'verb', level:4, cat:'general', exEn:'Please respond to my email.',               exJa:'私のメールに返信してください。' },
-    { id:'reveal',      en:'reveal',      ja:'明らかにする',             pos:'verb', level:4, cat:'general', exEn:'The truth was revealed.',                   exJa:'真実が明らかにされた。' },
+    { id:'investigate', en:'investigate', ja:'調査する',                 pos:'verb', level:4, cat:'general', exEn:'The police investigated the case.',         exJa:'警察は事件を調査した。', exEn2:'We investigated why sales dropped in June.', exJa2:'6 月に売上が落ちた理由を調査した。' },
+    { id:'observe',     en:'observe',     ja:'観察する',                 pos:'verb', level:4, cat:'general', exEn:'Scientists observe stars.',                 exJa:'科学者は星を観察します。', exEn2:'I love observing how guests react to each dish.', exJa2:'お客様が一皿一皿にどう反応するかを観察するのが好きだ。' },
+    { id:'perform',     en:'perform',     ja:'演じる・実行する',         pos:'verb', level:4, cat:'general', exEn:'The actors performed beautifully.',         exJa:'俳優たちは見事に演じた。', exEn2:'The new team performed better than expected.', exJa2:'新しいチームは期待以上の成果を出した。' },
+    { id:'preserve',    en:'preserve',    ja:'保存する',                 pos:'verb', level:4, cat:'general', exEn:'We must preserve nature.',                  exJa:'私たちは自然を保護しなければならない。', exEn2:'We want to preserve the traditional flavours.', exJa2:'伝統の味を守りたい。' },
+    { id:'respond',     en:'respond',     ja:'応答する',                 pos:'verb', level:4, cat:'general', exEn:'Please respond to my email.',               exJa:'私のメールに返信してください。', exEn2:'Please respond to the guest\'s request quickly.', exJa2:'お客様の要望には素早く対応してください。' },
+    { id:'reveal',      en:'reveal',      ja:'明らかにする',             pos:'verb', level:4, cat:'general', exEn:'The truth was revealed.',                   exJa:'真実が明らかにされた。', exEn2:'The chef revealed the secret of his sauce.', exJa2:'シェフがソースの秘密を明かしてくれた。' },
     // L4 (continued) — academic nouns
-    { id:'authority',   en:'authority',   ja:'権威・当局',               pos:'noun', level:4, cat:'general', exEn:'He is an authority on history.',            exJa:'彼は歴史の権威です。' },
-    { id:'context',     en:'context',     ja:'文脈',                     pos:'noun', level:4, cat:'general', exEn:'It depends on the context.',                exJa:'文脈によります。' },
-    { id:'element',     en:'element',     ja:'要素',                     pos:'noun', level:4, cat:'general', exEn:'Trust is a key element.',                   exJa:'信頼は重要な要素だ。' },
-    { id:'function',    en:'function',    ja:'機能',                     pos:'noun', level:4, cat:'general', exEn:'What is the function of this?',             exJa:'これの機能は何ですか？' },
-    { id:'principle',   en:'principle',   ja:'原則',                     pos:'noun', level:4, cat:'general', exEn:'Honesty is my principle.',                  exJa:'正直は私の原則です。' },
-    { id:'procedure',   en:'procedure',   ja:'手順',                     pos:'noun', level:4, cat:'general', exEn:'Follow the correct procedure.',             exJa:'正しい手順に従ってください。' },
-    { id:'structure',   en:'structure',   ja:'構造',                     pos:'noun', level:4, cat:'general', exEn:'The building has a complex structure.',     exJa:'その建物は複雑な構造を持っている。' },
-    { id:'theory',      en:'theory',      ja:'理論',                     pos:'noun', level:4, cat:'general', exEn:'In theory, it should work.',                exJa:'理論的には、うまくいくはずだ。' },
+    { id:'authority',   en:'authority',   ja:'権威・当局',               pos:'noun', level:4, cat:'general', exEn:'He is an authority on history.',            exJa:'彼は歴史の権威です。', exEn2:'He is an authority on natural wine.', exJa2:'彼は自然派ワインの権威だ。' },
+    { id:'context',     en:'context',     ja:'文脈',                     pos:'noun', level:4, cat:'general', exEn:'It depends on the context.',                exJa:'文脈によります。', exEn2:'In a business context, timing is everything.', exJa2:'ビジネスの文脈では、タイミングがすべてだ。' },
+    { id:'element',     en:'element',     ja:'要素',                     pos:'noun', level:4, cat:'general', exEn:'Trust is a key element.',                   exJa:'信頼は重要な要素だ。', exEn2:'Service is the most important element of hospitality.', exJa2:'サービスはホスピタリティの最も重要な要素だ。' },
+    { id:'function',    en:'function',    ja:'機能',                     pos:'noun', level:4, cat:'general', exEn:'What is the function of this?',             exJa:'これの機能は何ですか？', exEn2:'This room also functions as a private dining space.', exJa2:'この部屋は個室ダイニングとしても機能する。' },
+    { id:'principle',   en:'principle',   ja:'原則',                     pos:'noun', level:4, cat:'general', exEn:'Honesty is my principle.',                  exJa:'正直は私の原則です。', exEn2:'Quality first — that is our basic principle.', exJa2:'品質第一、それが私たちの基本原則だ。' },
+    { id:'procedure',   en:'procedure',   ja:'手順',                     pos:'noun', level:4, cat:'general', exEn:'Follow the correct procedure.',             exJa:'正しい手順に従ってください。', exEn2:'We simplified the reservation procedure.', exJa2:'予約の手順を簡素化した。' },
+    { id:'structure',   en:'structure',   ja:'構造',                     pos:'noun', level:4, cat:'general', exEn:'The building has a complex structure.',     exJa:'その建物は複雑な構造を持っている。', exEn2:'We changed the structure of the company.', exJa2:'会社の構造を変えた。' },
+    { id:'theory',      en:'theory',      ja:'理論',                     pos:'noun', level:4, cat:'general', exEn:'In theory, it should work.',                exJa:'理論的には、うまくいくはずだ。', exEn2:'In theory it works, but reality is different.', exJa2:'理論上はうまくいくが、現実は違う。' },
     // L4 (continued) — adjective
-    { id:'complex',     en:'complex',     ja:'複雑な',                   pos:'adj',  level:4, cat:'general', exEn:'This is a complex problem.',                exJa:'これは複雑な問題だ。' },
+    { id:'complex',     en:'complex',     ja:'複雑な',                   pos:'adj',  level:4, cat:'general', exEn:'This is a complex problem.',                exJa:'これは複雑な問題だ。', exEn2:'Running two businesses is more complex than I thought.', exJa2:'2 つの事業を経営するのは思ったより複雑だ。' },
     // L4 (continued) — verbs
-    { id:'adapt',       en:'adapt',       ja:'適応する',                 pos:'verb', level:4, cat:'general', exEn:'We must adapt to change.',                  exJa:'私たちは変化に適応しなければならない。' },
-    { id:'adjust',      en:'adjust',      ja:'調整する',                 pos:'verb', level:4, cat:'general', exEn:'Adjust the volume.',                        exJa:'音量を調整して。' },
-    { id:'assess',      en:'assess',      ja:'評価する',                 pos:'verb', level:4, cat:'general', exEn:'Teachers assess students.',                 exJa:'先生は生徒を評価する。' },
-    { id:'assume',      en:'assume',      ja:'仮定する',                 pos:'verb', level:4, cat:'general', exEn:"Don't assume things.",                      exJa:'物事を勝手に仮定しないで。' },
-    { id:'attain',      en:'attain',      ja:'到達する・達成する',       pos:'verb', level:4, cat:'general', exEn:'He attained his goal.',                     exJa:'彼は目標を達成した。' },
+    { id:'adapt',       en:'adapt',       ja:'適応する',                 pos:'verb', level:4, cat:'general', exEn:'We must adapt to change.',                  exJa:'私たちは変化に適応しなければならない。', exEn2:'Good chefs adapt quickly to new ingredients.', exJa2:'良いシェフは新しい食材にすぐ適応する。' },
+    { id:'adjust',      en:'adjust',      ja:'調整する',                 pos:'verb', level:4, cat:'general', exEn:'Adjust the volume.',                        exJa:'音量を調整して。', exEn2:'We adjusted the menu prices this spring.', exJa2:'この春、メニュー価格を調整した。' },
+    { id:'assess',      en:'assess',      ja:'評価する',                 pos:'verb', level:4, cat:'general', exEn:'Teachers assess students.',                 exJa:'先生は生徒を評価する。', exEn2:'We need to assess the risk before investing.', exJa2:'投資の前にリスクを評価する必要がある。' },
+    { id:'assume',      en:'assume',      ja:'仮定する',                 pos:'verb', level:4, cat:'general', exEn:"Don't assume things.",                      exJa:'物事を勝手に仮定しないで。', exEn2:'Let\'s assume the construction takes six months.', exJa2:'工事に半年かかると仮定しよう。' },
+    { id:'attain',      en:'attain',      ja:'到達する・達成する',       pos:'verb', level:4, cat:'general', exEn:'He attained his goal.',                     exJa:'彼は目標を達成した。', exEn2:'She attained her goal of opening her own shop.', exJa2:'彼女は自分の店を持つという目標を達成した。' },
     { id:'challenge',   en:'challenge',   ja:'挑戦する',                 pos:'verb', level:4, cat:'general', exEn:'Try to challenge yourself.',                exJa:'自分自身に挑戦してみて。' },
     { id:'classify',    en:'classify',    ja:'分類する',                 pos:'verb', level:4, cat:'general', exEn:'Classify these books.',                     exJa:'これらの本を分類して。' },
     { id:'clarify',     en:'clarify',     ja:'明確にする',               pos:'verb', level:4, cat:'general', exEn:'Please clarify your point.',                exJa:'要点を明確にしてください。' },
