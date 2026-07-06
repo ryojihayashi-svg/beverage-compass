@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 353;
+  const APP_VERSION = 354;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -22908,6 +22908,22 @@
       ],
     },
     // Section 6 以降をここに追加していく。
+    {
+      no: 6,
+      title: 'Section 6',
+      subtitle: '旅行・出張英語',
+      description:
+        '台北・NY・香港・ロンドン — 海外へ出かける「旅する側」の英語。' +
+        '空港・機内 → ホテル → 街とレストラン。50 構文 × 3 例 = 150 文。',
+      patternIds: [
+        'cp251','cp252','cp253','cp254','cp255','cp256','cp257','cp258','cp259','cp260',
+        'cp261','cp262','cp263','cp264','cp265','cp266','cp267','cp268','cp269','cp270',
+        'cp271','cp272','cp273','cp274','cp275','cp276','cp277','cp278','cp279','cp280',
+        'cp281','cp282','cp283','cp284','cp285','cp286','cp287','cp288','cp289','cp290',
+        'cp291','cp292','cp293','cp294','cp295','cp296','cp297','cp298','cp299','cp300',
+      ],
+    },
+    // Section 7 以降をここに追加していく。
   ];
 
   // セクションに属するパターンの数を数えるユーティリティ。
@@ -25324,6 +25340,410 @@
         { theme: '応える', ja: '次回はご家族もご一緒に。お待ちしております。', en: 'Next time, please bring your family. We hope to see you again soon.' },
       ],
     },
+
+    // ============ Section 6: 旅行・出張英語 (251-300) ============
+    // 台北・NY・香港・ロンドンへ頻繁に出かける「旅する側」の英語。
+    // theme: 移動 / ホテル / 街で の 3 場面。
+    {
+      id: 'cp251', pattern: 'I have a reservation under …', ja_pattern: '〜の名前で予約しています',
+      items: [
+        { theme: '移動', ja: 'ハヤシの名前で予約しています。', en: 'I have a reservation under Hayashi.' },
+        { theme: 'ホテル', ja: '今夜 2 泊で予約しています。', en: 'I have a reservation for two nights starting tonight.' },
+        { theme: '街で', ja: '8 時に 2 名で予約しています。', en: 'I have a reservation for two at eight.' },
+      ],
+    },
+    {
+      id: 'cp252', pattern: 'Could I get a late checkout?', ja_pattern: 'レイトチェックアウトはできますか？',
+      items: [
+        { theme: '移動', ja: '搭乗時間を遅らせることはできますか？', en: 'Could I get a later flight?' },
+        { theme: 'ホテル', ja: 'レイトチェックアウトはできますか？', en: 'Could I get a late checkout?' },
+        { theme: '街で', ja: '窓際の席にしてもらえますか？', en: 'Could I get a table by the window?' },
+      ],
+    },
+    {
+      id: 'cp253', pattern: 'How long does it take to …?', ja_pattern: '〜までどのくらいかかりますか？',
+      items: [
+        { theme: '移動', ja: '空港まではどのくらいかかりますか？', en: 'How long does it take to get to the airport?' },
+        { theme: 'ホテル', ja: 'ホテルから駅までどのくらいかかりますか？', en: 'How long does it take to walk to the station from the hotel?' },
+        { theme: '街で', ja: '料理はどのくらいかかりますか？', en: 'How long does it take for the food to arrive?' },
+      ],
+    },
+    {
+      id: 'cp254', pattern: 'Is breakfast included?', ja_pattern: '朝食は含まれていますか？',
+      items: [
+        { theme: '移動', ja: '機内食は含まれていますか？', en: 'Is a meal included on this flight?' },
+        { theme: 'ホテル', ja: '朝食は含まれていますか？', en: 'Is breakfast included?' },
+        { theme: '街で', ja: 'サービス料は含まれていますか？', en: 'Is the service charge included?' },
+      ],
+    },
+    {
+      id: 'cp255', pattern: 'Could you recommend …?', ja_pattern: '〜のおすすめを教えてもらえますか？',
+      items: [
+        { theme: '移動', ja: '空港で時間を潰せる場所のおすすめはありますか？', en: 'Could you recommend a good place to spend time at the airport?' },
+        { theme: 'ホテル', ja: 'この近くのおすすめのレストランを教えてもらえますか？', en: 'Could you recommend a good restaurant nearby?' },
+        { theme: '街で', ja: '地元の人が行く店のおすすめはありますか？', en: 'Could you recommend a place where locals go?' },
+      ],
+    },
+    {
+      id: 'cp256', pattern: "I'd like to check in.", ja_pattern: 'チェックインをお願いします',
+      items: [
+        { theme: '移動', ja: 'チェックインをお願いします。窓側の席は空いていますか？', en: "I'd like to check in. Is a window seat available?" },
+        { theme: 'ホテル', ja: 'チェックインをお願いします。荷物を先に預けられますか？', en: "I'd like to check in. Can I leave my bags first?" },
+        { theme: '街で', ja: '予約の確認をお願いします。', en: "I'd like to confirm my reservation." },
+      ],
+    },
+    {
+      id: 'cp257', pattern: 'Where can I find …?', ja_pattern: '〜はどこにありますか？',
+      items: [
+        { theme: '移動', ja: 'タクシー乗り場はどこにありますか？', en: 'Where can I find the taxi stand?' },
+        { theme: 'ホテル', ja: 'ジムはどこにありますか？', en: 'Where can I find the gym?' },
+        { theme: '街で', ja: 'この住所はどこにありますか？', en: 'Where can I find this address?' },
+      ],
+    },
+    {
+      id: 'cp258', pattern: 'Do you take credit cards?', ja_pattern: 'クレジットカードは使えますか？',
+      items: [
+        { theme: '移動', ja: 'このタクシーはカードで払えますか？', en: 'Do you take credit cards in this taxi?' },
+        { theme: 'ホテル', ja: 'デポジットはカードで払えますか？', en: 'Can I pay the deposit by credit card?' },
+        { theme: '街で', ja: 'カードは使えますか？現金しかだめですか？', en: 'Do you take credit cards, or is it cash only?' },
+      ],
+    },
+    {
+      id: 'cp259', pattern: 'Could you keep my luggage?', ja_pattern: '荷物を預かってもらえますか？',
+      items: [
+        { theme: '移動', ja: 'この荷物は機内に持ち込めますか？', en: 'Can I take this bag as carry-on?' },
+        { theme: 'ホテル', ja: 'チェックアウト後も荷物を預かってもらえますか？', en: 'Could you keep my luggage after checkout?' },
+        { theme: '街で', ja: 'コートを預かってもらえますか？', en: 'Could you keep my coat?' },
+      ],
+    },
+    {
+      id: 'cp260', pattern: "What time does … open?", ja_pattern: '〜は何時に開きますか？',
+      items: [
+        { theme: '移動', ja: 'ラウンジは何時に開きますか？', en: 'What time does the lounge open?' },
+        { theme: 'ホテル', ja: '朝食は何時から何時までですか？', en: 'What time does breakfast start and end?' },
+        { theme: '街で', ja: 'この市場は何時に開きますか？', en: 'What time does this market open?' },
+      ],
+    },
+    {
+      id: 'cp261', pattern: "I'm here on business.", ja_pattern: '仕事で来ています',
+      items: [
+        { theme: '移動', ja: '仕事で 4 日間滞在します。', en: "I'm here on business for four days." },
+        { theme: 'ホテル', ja: '出張で来ています。領収書をもらえますか？', en: "I'm here on business. Could I get a receipt?" },
+        { theme: '街で', ja: 'レストランの視察で来ています。', en: "I'm here on business, visiting restaurants." },
+      ],
+    },
+    {
+      id: 'cp262', pattern: 'Could you call me a taxi?', ja_pattern: 'タクシーを呼んでもらえますか？',
+      items: [
+        { theme: '移動', ja: '空港行きのタクシーを呼んでもらえますか？', en: 'Could you call me a taxi to the airport?' },
+        { theme: 'ホテル', ja: '明朝 6 時にタクシーをお願いできますか？', en: 'Could you book a taxi for six tomorrow morning?' },
+        { theme: '街で', ja: '帰りのタクシーを呼んでもらえますか？', en: 'Could you call me a taxi for the way back?' },
+      ],
+    },
+    {
+      id: 'cp263', pattern: 'Is it within walking distance?', ja_pattern: '歩いて行ける距離ですか？',
+      items: [
+        { theme: '移動', ja: '乗り継ぎのゲートは歩いて行ける距離ですか？', en: 'Is the connecting gate within walking distance?' },
+        { theme: 'ホテル', ja: 'そのレストランはここから歩いて行けますか？', en: 'Is the restaurant within walking distance from here?' },
+        { theme: '街で', ja: '美術館までは歩いて行ける距離ですか？', en: 'Is the museum within walking distance?' },
+      ],
+    },
+    {
+      id: 'cp264', pattern: "I'd like to extend my stay.", ja_pattern: '滞在を延長したいのですが',
+      items: [
+        { theme: '移動', ja: '帰りの便を 1 日遅らせたいのですが。', en: "I'd like to push my return flight back a day." },
+        { theme: 'ホテル', ja: '滞在をもう 1 泊延長したいのですが。', en: "I'd like to extend my stay by one more night." },
+        { theme: '街で', ja: '席をもう少し長く使ってもいいですか？', en: 'Could we stay at the table a little longer?' },
+      ],
+    },
+    {
+      id: 'cp265', pattern: 'The Wi-Fi is not working.', ja_pattern: 'Wi-Fi がつながりません',
+      items: [
+        { theme: '移動', ja: '機内 Wi-Fi がつながりません。', en: 'The in-flight Wi-Fi is not working.' },
+        { theme: 'ホテル', ja: '部屋の Wi-Fi がつながりません。', en: 'The Wi-Fi in my room is not working.' },
+        { theme: '街で', ja: 'Wi-Fi のパスワードを教えてもらえますか？', en: 'Could I get the Wi-Fi password?' },
+      ],
+    },
+    {
+      id: 'cp266', pattern: 'Could I have a wake-up call?', ja_pattern: 'モーニングコールをお願いできますか？',
+      items: [
+        { theme: '移動', ja: '搭乗前に呼んでもらえますか？', en: 'Could you call me before boarding?' },
+        { theme: 'ホテル', ja: '朝 6 時にモーニングコールをお願いできますか？', en: 'Could I have a wake-up call at six?' },
+        { theme: '街で', ja: '料理が来たら教えてもらえますか？', en: 'Could you let me know when the food is ready?' },
+      ],
+    },
+    {
+      id: 'cp267', pattern: 'What do you recommend for a first-timer?', ja_pattern: '初めてなら何がおすすめですか？',
+      items: [
+        { theme: '移動', ja: 'この街が初めてなら、どこへ行くべきですか？', en: 'What do you recommend for a first-timer in this city?' },
+        { theme: 'ホテル', ja: 'このホテルの一番の魅力は何ですか？', en: 'What do you recommend most about this hotel?' },
+        { theme: '街で', ja: '初めてなら何を注文すべきですか？', en: 'What do you recommend for a first-timer here?' },
+      ],
+    },
+    {
+      id: 'cp268', pattern: 'How much is the fare to …?', ja_pattern: '〜までの料金はいくらですか？',
+      items: [
+        { theme: '移動', ja: '市内までの料金はいくらですか？', en: 'How much is the fare to the city centre?' },
+        { theme: 'ホテル', ja: '空港送迎はいくらですか？', en: 'How much is the airport transfer?' },
+        { theme: '街で', ja: 'ここから駅までいくらくらいですか？', en: 'How much is the fare from here to the station?' },
+      ],
+    },
+    {
+      id: 'cp269', pattern: 'Keep the change.', ja_pattern: 'お釣りは取っておいてください',
+      items: [
+        { theme: '移動', ja: 'お釣りは取っておいてください。', en: 'Keep the change.' },
+        { theme: 'ホテル', ja: 'これはあなたに。ありがとう。', en: 'This is for you. Thank you.' },
+        { theme: '街で', ja: '素晴らしいサービスでした。これはチップです。', en: 'The service was wonderful. This is for you.' },
+      ],
+    },
+    {
+      id: 'cp270', pattern: 'Could you take our picture?', ja_pattern: '写真を撮ってもらえますか？',
+      items: [
+        { theme: '移動', ja: 'すみません、写真を撮ってもらえますか？', en: 'Excuse me, could you take our picture?' },
+        { theme: 'ホテル', ja: 'この景色と一緒に撮ってもらえますか？', en: 'Could you take our picture with this view?' },
+        { theme: '街で', ja: '料理と一緒に撮ってもらえますか？', en: 'Could you take our picture with the food?' },
+      ],
+    },
+    {
+      id: 'cp271', pattern: "I think there's a mistake on the bill.", ja_pattern: '請求に間違いがあるようです',
+      items: [
+        { theme: '移動', ja: '請求額が予約時と違うようです。', en: 'I think the charge is different from my booking.' },
+        { theme: 'ホテル', ja: 'ミニバーは使っていません。請求に間違いがあるようです。', en: "I didn't use the minibar. I think there's a mistake on the bill." },
+        { theme: '街で', ja: 'これは注文していません。確認してもらえますか？', en: "I don't think we ordered this. Could you check?" },
+      ],
+    },
+    {
+      id: 'cp272', pattern: 'Could you speak more slowly?', ja_pattern: 'もう少しゆっくり話してもらえますか？',
+      items: [
+        { theme: '移動', ja: 'すみません、もう少しゆっくり話してもらえますか？', en: 'Sorry, could you speak more slowly?' },
+        { theme: 'ホテル', ja: 'もう一度言ってもらえますか？', en: 'Could you say that again, please?' },
+        { theme: '街で', ja: '英語が完璧ではないので、ゆっくりお願いします。', en: 'My English is not perfect, so please speak slowly.' },
+      ],
+    },
+    {
+      id: 'cp273', pattern: "I'm allergic to …", ja_pattern: '〜のアレルギーがあります',
+      items: [
+        { theme: '移動', ja: 'ナッツのアレルギーがあります。', en: "I'm allergic to nuts." },
+        { theme: 'ホテル', ja: '羽毛アレルギーがあります。枕を替えてもらえますか？', en: "I'm allergic to feathers. Could you change the pillows?" },
+        { theme: '街で', ja: '甲殻類のアレルギーがあります。この料理は大丈夫ですか？', en: "I'm allergic to shellfish. Is this dish safe for me?" },
+      ],
+    },
+    {
+      id: 'cp274', pattern: 'Is this seat taken?', ja_pattern: 'この席は空いていますか？',
+      items: [
+        { theme: '移動', ja: 'この席は空いていますか？', en: 'Is this seat taken?' },
+        { theme: 'ホテル', ja: 'このソファを使ってもいいですか？', en: 'May I use this sofa?' },
+        { theme: '街で', ja: 'カウンターに座ってもいいですか？', en: 'May I sit at the counter?' },
+      ],
+    },
+    {
+      id: 'cp275', pattern: "What's the local specialty?", ja_pattern: 'この土地の名物は何ですか？',
+      items: [
+        { theme: '移動', ja: 'この地方の名物は何ですか？', en: "What's the local specialty here?" },
+        { theme: 'ホテル', ja: '朝食で地元の名物は食べられますか？', en: 'Can I try any local specialties at breakfast?' },
+        { theme: '街で', ja: 'この店の看板料理は何ですか？', en: "What's the signature dish here?" },
+      ],
+    },
+    {
+      id: 'cp276', pattern: 'Could I see the wine list?', ja_pattern: 'ワインリストを見せてもらえますか？',
+      items: [
+        { theme: '移動', ja: '機内のドリンクメニューを見せてもらえますか？', en: 'Could I see the drink menu?' },
+        { theme: 'ホテル', ja: 'バーのワインリストを見せてもらえますか？', en: 'Could I see the wine list at the bar?' },
+        { theme: '街で', ja: 'グラスで頼めるワインはありますか？', en: 'Do you have any wines by the glass?' },
+      ],
+    },
+    {
+      id: 'cp277', pattern: "I'll have what they're having.", ja_pattern: 'あの人と同じものをください',
+      items: [
+        { theme: '移動', ja: '隣の方と同じものをください。', en: "I'll have what they're having." },
+        { theme: 'ホテル', ja: 'おすすめと同じでお願いします。', en: "I'll go with your recommendation." },
+        { theme: '街で', ja: '人気のメニューと同じものをください。', en: "I'll have the most popular dish." },
+      ],
+    },
+    {
+      id: 'cp278', pattern: 'Could you wrap this up?', ja_pattern: '包んでもらえますか？',
+      items: [
+        { theme: '移動', ja: 'これは割れ物です。包んでもらえますか？', en: 'This is fragile. Could you wrap it up?' },
+        { theme: 'ホテル', ja: 'お土産用に包んでもらえますか？', en: 'Could you wrap this as a gift?' },
+        { theme: '街で', ja: '残りを持ち帰りにできますか？', en: 'Could I take the rest to go?' },
+      ],
+    },
+    {
+      id: 'cp279', pattern: "I'm just looking, thank you.", ja_pattern: '見ているだけです、ありがとう',
+      items: [
+        { theme: '移動', ja: '見ているだけです。ありがとう。', en: "I'm just looking, thank you." },
+        { theme: 'ホテル', ja: '少し考えます。ありがとう。', en: 'Let me think about it. Thank you.' },
+        { theme: '街で', ja: 'また後で来ます。ありがとう。', en: "I'll come back later. Thank you." },
+      ],
+    },
+    {
+      id: 'cp280', pattern: 'Do you ship internationally?', ja_pattern: '海外発送はできますか？',
+      items: [
+        { theme: '移動', ja: 'これは日本へ発送できますか？', en: 'Could you ship this to Japan?' },
+        { theme: 'ホテル', ja: 'ホテルから荷物を発送できますか？', en: 'Can I ship a package from the hotel?' },
+        { theme: '街で', ja: 'このワインは海外発送できますか？', en: 'Do you ship this wine internationally?' },
+      ],
+    },
+    {
+      id: 'cp281', pattern: 'What time should I be there?', ja_pattern: '何時に行けばいいですか？',
+      items: [
+        { theme: '移動', ja: '搭乗の何分前に行けばいいですか？', en: 'How early should I be at the gate?' },
+        { theme: 'ホテル', ja: '朝食は何時に行くのがおすすめですか？', en: 'What time should I come for breakfast to avoid the crowd?' },
+        { theme: '街で', ja: '開店前に並んだ方がいいですか？', en: 'Should I line up before opening?' },
+      ],
+    },
+    {
+      id: 'cp282', pattern: 'Could I get a receipt?', ja_pattern: '領収書をもらえますか？',
+      items: [
+        { theme: '移動', ja: '領収書をもらえますか？会社名で。', en: 'Could I get a receipt, made out to my company?' },
+        { theme: 'ホテル', ja: '明細付きの領収書をもらえますか？', en: 'Could I get an itemized receipt?' },
+        { theme: '街で', ja: 'カードの控えと領収書をもらえますか？', en: 'Could I get the card slip and a receipt?' },
+      ],
+    },
+    {
+      id: 'cp283', pattern: "I'm lost. Could you help me?", ja_pattern: '道に迷いました。助けてもらえますか？',
+      items: [
+        { theme: '移動', ja: 'ゲートが見つかりません。助けてもらえますか？', en: "I can't find my gate. Could you help me?" },
+        { theme: 'ホテル', ja: 'ホテルへの帰り道が分かりません。', en: "I'm lost. Could you point me back to the hotel?" },
+        { theme: '街で', ja: 'この地図のどこにいるか教えてもらえますか？', en: 'Could you show me where I am on this map?' },
+      ],
+    },
+    {
+      id: 'cp284', pattern: 'Is it safe to walk around here at night?', ja_pattern: '夜にこの辺りを歩いても安全ですか？',
+      items: [
+        { theme: '移動', ja: '夜遅くの移動は安全ですか？', en: 'Is it safe to travel late at night?' },
+        { theme: 'ホテル', ja: '夜にこの辺りを歩いても安全ですか？', en: 'Is it safe to walk around here at night?' },
+        { theme: '街で', ja: 'この道を通って帰っても大丈夫ですか？', en: 'Is it safe to take this street back?' },
+      ],
+    },
+    {
+      id: 'cp285', pattern: 'Could you charge my phone?', ja_pattern: '充電させてもらえますか？',
+      items: [
+        { theme: '移動', ja: 'この席にコンセントはありますか？', en: 'Is there a power outlet at this seat?' },
+        { theme: 'ホテル', ja: '変換プラグを借りられますか？', en: 'Could I borrow a power adapter?' },
+        { theme: '街で', ja: '携帯を充電させてもらえますか？', en: 'Could you charge my phone?' },
+      ],
+    },
+    {
+      id: 'cp286', pattern: "I'd like to exchange money.", ja_pattern: '両替をしたいのですが',
+      items: [
+        { theme: '移動', ja: '両替所はどこにありますか？', en: 'Where can I exchange money?' },
+        { theme: 'ホテル', ja: 'フロントで両替はできますか？', en: 'Can I exchange money at the front desk?' },
+        { theme: '街で', ja: 'このお札を崩してもらえますか？', en: 'Could you break this bill for me?' },
+      ],
+    },
+    {
+      id: 'cp287', pattern: 'What is this made of?', ja_pattern: 'これは何でできていますか？',
+      items: [
+        { theme: '移動', ja: 'この機内食には何が入っていますか？', en: 'What is in this in-flight meal?' },
+        { theme: 'ホテル', ja: 'このアメニティは何でできていますか？', en: 'What is this amenity made of?' },
+        { theme: '街で', ja: 'このソースは何でできていますか？', en: 'What is this sauce made of?' },
+      ],
+    },
+    {
+      id: 'cp288', pattern: 'Could we get separate checks?', ja_pattern: '会計を別々にできますか？',
+      items: [
+        { theme: '移動', ja: '座席は別々でも大丈夫です。', en: 'Separate seats are fine for us.' },
+        { theme: 'ホテル', ja: '部屋代と食事代を分けて精算できますか？', en: 'Could you split the room and dining charges?' },
+        { theme: '街で', ja: '会計を別々にできますか？', en: 'Could we get separate checks?' },
+      ],
+    },
+    {
+      id: 'cp289', pattern: 'Do I need to book in advance?', ja_pattern: '事前予約は必要ですか？',
+      items: [
+        { theme: '移動', ja: 'ラウンジは事前予約が必要ですか？', en: 'Do I need to book the lounge in advance?' },
+        { theme: 'ホテル', ja: 'スパは事前予約が必要ですか？', en: 'Do I need to book the spa in advance?' },
+        { theme: '街で', ja: 'この店は予約なしでも入れますか？', en: 'Can I get in without a reservation?' },
+      ],
+    },
+    {
+      id: 'cp290', pattern: 'That was amazing. My compliments to the chef.', ja_pattern: '素晴らしかったです。シェフによろしく',
+      items: [
+        { theme: '移動', ja: '快適なフライトでした。ありがとう。', en: 'That was a wonderful flight. Thank you.' },
+        { theme: 'ホテル', ja: '素晴らしい滞在でした。スタッフの皆さんによろしく。', en: 'That was an amazing stay. My compliments to the staff.' },
+        { theme: '街で', ja: '素晴らしかったです。シェフによろしくお伝えください。', en: 'That was amazing. My compliments to the chef.' },
+      ],
+    },
+    {
+      id: 'cp291', pattern: 'Could I leave a message for …?', ja_pattern: '〜に伝言をお願いできますか？',
+      items: [
+        { theme: '移動', ja: '同行者に伝言をお願いできますか？', en: 'Could I leave a message for my colleague?' },
+        { theme: 'ホテル', ja: '支配人に伝言をお願いできますか？', en: 'Could I leave a message for the manager?' },
+        { theme: '街で', ja: 'オーナーに感謝を伝えてもらえますか？', en: 'Could you pass my thanks to the owner?' },
+      ],
+    },
+    {
+      id: 'cp292', pattern: "I didn't catch that.", ja_pattern: '聞き取れませんでした',
+      items: [
+        { theme: '移動', ja: 'アナウンスが聞き取れませんでした。何と言っていましたか？', en: "I didn't catch the announcement. What did it say?" },
+        { theme: 'ホテル', ja: 'すみません、お名前を聞き取れませんでした。', en: "Sorry, I didn't catch your name." },
+        { theme: '街で', ja: '最後の部分が聞き取れませんでした。', en: "I didn't catch the last part." },
+      ],
+    },
+    {
+      id: 'cp293', pattern: 'Is there a pharmacy nearby?', ja_pattern: '近くに薬局はありますか？',
+      items: [
+        { theme: '移動', ja: '空港に薬局はありますか？', en: 'Is there a pharmacy in the airport?' },
+        { theme: 'ホテル', ja: '近くに 24 時間営業の薬局はありますか？', en: 'Is there a 24-hour pharmacy nearby?' },
+        { theme: '街で', ja: 'この近くにコンビニはありますか？', en: 'Is there a convenience store around here?' },
+      ],
+    },
+    {
+      id: 'cp294', pattern: 'My flight was delayed.', ja_pattern: '飛行機が遅れました',
+      items: [
+        { theme: '移動', ja: '飛行機が 2 時間遅れました。', en: 'My flight was delayed by two hours.' },
+        { theme: 'ホテル', ja: '到着が遅れます。部屋は確保しておいてもらえますか？', en: 'My arrival will be late. Could you hold my room?' },
+        { theme: '街で', ja: '遅れてすみません。飛行機が遅延しました。', en: 'Sorry for being late. My flight was delayed.' },
+      ],
+    },
+    {
+      id: 'cp295', pattern: 'Could you write it down?', ja_pattern: '書いてもらえますか？',
+      items: [
+        { theme: '移動', ja: '乗り換えの経路を書いてもらえますか？', en: 'Could you write down the transfer route?' },
+        { theme: 'ホテル', ja: 'ホテルの住所をカードに書いてもらえますか？', en: "Could you write down the hotel's address on a card?" },
+        { theme: '街で', ja: 'その店の名前を書いてもらえますか？', en: 'Could you write down the name of that restaurant?' },
+      ],
+    },
+    {
+      id: 'cp296', pattern: 'What are your hours?', ja_pattern: '営業時間は？',
+      items: [
+        { theme: '移動', ja: 'このラウンジの営業時間は？', en: 'What are the lounge hours?' },
+        { theme: 'ホテル', ja: 'プールは何時まで使えますか？', en: 'Until what time can I use the pool?' },
+        { theme: '街で', ja: 'ラストオーダーは何時ですか？', en: 'What time is last order?' },
+      ],
+    },
+    {
+      id: 'cp297', pattern: 'This is my first time in …', ja_pattern: '〜は初めてです',
+      items: [
+        { theme: '移動', ja: 'ロンドンは初めてです。楽しみです。', en: 'This is my first time in London. I am excited.' },
+        { theme: 'ホテル', ja: 'このホテルは初めてです。評判を聞いて来ました。', en: 'This is my first time at this hotel. I heard great things.' },
+        { theme: '街で', ja: 'この店は初めてです。おすすめをお願いします。', en: 'This is my first time here. I will trust your recommendation.' },
+      ],
+    },
+    {
+      id: 'cp298', pattern: 'Could you look after this for a moment?', ja_pattern: '少しの間これを見ていてもらえますか？',
+      items: [
+        { theme: '移動', ja: '少しの間、席を見ていてもらえますか？', en: 'Could you watch my seat for a moment?' },
+        { theme: 'ホテル', ja: '鍵を預かっておいてもらえますか？', en: 'Could you hold my key for a while?' },
+        { theme: '街で', ja: '荷物を席に置いても大丈夫ですか？', en: 'Is it okay to leave my bag at the table?' },
+      ],
+    },
+    {
+      id: 'cp299', pattern: 'I really enjoyed my stay.', ja_pattern: 'とても良い滞在でした',
+      items: [
+        { theme: '移動', ja: '快適な旅でした。ありがとうございました。', en: 'I really enjoyed the journey. Thank you.' },
+        { theme: 'ホテル', ja: 'とても良い滞在でした。また必ず来ます。', en: 'I really enjoyed my stay. I will definitely come back.' },
+        { theme: '街で', ja: '最高の夜でした。友人にも勧めます。', en: 'I really enjoyed the evening. I will recommend this place to my friends.' },
+      ],
+    },
+    {
+      id: 'cp300', pattern: 'See you next time in …', ja_pattern: '次は〜で会いましょう',
+      items: [
+        { theme: '移動', ja: '次は東京で会いましょう。', en: 'See you next time in Tokyo.' },
+        { theme: 'ホテル', ja: '次に来る時もこのホテルに泊まります。', en: 'I will stay here again next time. See you then.' },
+        { theme: '街で', ja: '今度は私の店に来てください。東京で会いましょう。', en: 'Next time, come to my restaurant. See you in Tokyo.' },
+      ],
+    },
   ];
 
   // ---------- 定型構文のレベル振り (英検目安) ----------
@@ -25363,6 +25783,12 @@
     cp221: 2, cp222: 3, cp223: 2, cp224: 4, cp225: 3, cp226: 4, cp227: 3, cp228: 3, cp229: 2, cp230: 3,
     cp231: 2, cp232: 3, cp233: 3, cp234: 3, cp235: 3, cp236: 2, cp237: 3, cp238: 2, cp239: 3, cp240: 2,
     cp241: 4, cp242: 2, cp243: 3, cp244: 3, cp245: 3, cp246: 2, cp247: 3, cp248: 2, cp249: 3, cp250: 2,
+    // Section 6 (251-300) — 旅行英語も定型なので LV2-3 中心
+    cp251: 2, cp252: 3, cp253: 2, cp254: 2, cp255: 3, cp256: 2, cp257: 2, cp258: 2, cp259: 3, cp260: 2,
+    cp261: 3, cp262: 2, cp263: 3, cp264: 3, cp265: 2, cp266: 3, cp267: 3, cp268: 2, cp269: 2, cp270: 2,
+    cp271: 3, cp272: 2, cp273: 3, cp274: 2, cp275: 3, cp276: 2, cp277: 3, cp278: 3, cp279: 2, cp280: 3,
+    cp281: 3, cp282: 3, cp283: 2, cp284: 3, cp285: 2, cp286: 3, cp287: 2, cp288: 3, cp289: 3, cp290: 3,
+    cp291: 3, cp292: 3, cp293: 2, cp294: 3, cp295: 2, cp296: 2, cp297: 2, cp298: 3, cp299: 2, cp300: 2,
   };
 
   // ---------- Section 5 (接客英語) の「迎える」フレーズをシャドーイングにも ----------
