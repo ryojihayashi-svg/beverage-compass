@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 309;
+  const APP_VERSION = 310;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -13574,9 +13574,120 @@
     return voices.find(langMatchPref) || null;
   }
 
+  // ---------- 高品質 TTS (OpenAI 音声合成 — 任意アップグレード) ----------
+  // 端末内蔵の音声は「平坦」になりがちなので、OpenAI の TTS を使って
+  // PROGRIT 級の自然な音声を出せるようにする。
+  //   - 設定画面で OpenAI API キーを登録すると自動で有効になる
+  //   - 一度合成した音声は Cache API に保存 → 2 回目以降は無料・オフライン可
+  //   - キー未設定 / オフライン / エラー時は従来の端末 TTS にフォールバック
+  const OPENAI_KEY_STORAGE = 'hfe_openai_key_v1';
+  function loadOpenAIKey() {
+    try { return localStorage.getItem(OPENAI_KEY_STORAGE) || ''; } catch { return ''; }
+  }
+  function saveOpenAIKey(k) {
+    try {
+      if (k) localStorage.setItem(OPENAI_KEY_STORAGE, k);
+      else   localStorage.removeItem(OPENAI_KEY_STORAGE);
+    } catch (err) { console.warn('saveOpenAIKey failed', err); }
+  }
+  const HQ_TTS_CACHE  = 'hfe-tts-v1';
+  const HQ_TTS_VOICE  = 'nova';   // 温かみのある女性ボイス
+  let _hqAudio = null;
+  function hqStop() {
+    if (_hqAudio) { try { _hqAudio.pause(); } catch {} _hqAudio = null; }
+  }
+  async function hqFetchAudio(text, speed) {
+    const spd = Math.max(0.5, Math.min(2, speed || 1));
+    const keyStr = HQ_TTS_VOICE + '|' + spd + '|' + text;
+    let h = 0;
+    for (let i = 0; i < keyStr.length; i++) h = (h * 31 + keyStr.charCodeAt(i)) | 0;
+    const cacheUrl = 'https://hfe-tts.cache/' + Math.abs(h) + '-' + keyStr.length + '-' + spd;
+    let cache = null;
+    try { cache = await caches.open(HQ_TTS_CACHE); } catch {}
+    if (cache) {
+      const hit = await cache.match(cacheUrl);
+      if (hit) return await hit.blob();
+    }
+    const key = loadOpenAIKey();
+    if (!key) throw new Error('no-key');
+    const res = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini-tts', voice: HQ_TTS_VOICE,
+        input: text, speed: spd, response_format: 'mp3',
+      }),
+    });
+    if (!res.ok) throw new Error('tts-' + res.status);
+    const blob = await res.blob();
+    if (cache) {
+      try { await cache.put(cacheUrl, new Response(blob, { headers: { 'Content-Type': 'audio/mpeg' } })); } catch {}
+    }
+    return blob;
+  }
+  function hqPlayBlob(blob) {
+    return new Promise((resolve, reject) => {
+      try {
+        const url = URL.createObjectURL(blob);
+        const a = new Audio(url);
+        _hqAudio = a;
+        const done = (fn) => () => {
+          URL.revokeObjectURL(url);
+          if (_hqAudio === a) _hqAudio = null;
+          fn();
+        };
+        a.onended = done(resolve);
+        a.onerror = done(() => reject(new Error('play')));
+        a.play().catch(err => { URL.revokeObjectURL(url); reject(err); });
+      } catch (err) { reject(err); }
+    });
+  }
+  // 発話の統一入口。英語 + OpenAI キーあり → 高品質音声、それ以外 → 端末 TTS。
+  // 返り値の Promise は発話終了で resolve する (自動再生シーケンスで使える)。
+  // opts: { lang, rate (HQ側 0.5-2), deviceRate (端末TTS側) }
+  async function speakSmart(text, opts) {
+    opts = opts || {};
+    const lang = opts.lang || 'en-GB';
+    const online = typeof navigator === 'undefined' || navigator.onLine !== false;
+    if (lang.slice(0, 2) === 'en' && loadOpenAIKey()) {
+      try {
+        hqStop();
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+        // キャッシュ命中ならオフラインでも成功する。ミス時のみネット必須。
+        const blob = await hqFetchAudio(text, opts.rate || 1.0);
+        await hqPlayBlob(blob);
+        return;
+      } catch (err) {
+        if (!online) { /* オフライン: 端末 TTS へ */ }
+        // その他のエラーも端末 TTS にフォールバック
+      }
+    }
+    await new Promise((resolve) => {
+      if (!('speechSynthesis' in window)) { resolve(); return; }
+      try { window.speechSynthesis.cancel(); } catch {}
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = opts.deviceRate || 0.95;
+      u.pitch = 1.0;
+      const v = lang.slice(0, 2) === 'ja'
+        ? getBestVoice('ja-JP')
+        : (getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en'));
+      if (v) u.voice = v;
+      u.onend = resolve;
+      u.onerror = resolve;
+      try { window.speechSynthesis.speak(u); } catch { resolve(); }
+    });
+  }
+
   function speak(text) {
+    // 高品質 TTS が有効なら fire-and-forget で speakSmart に委譲。
+    if (loadOpenAIKey()) {
+      speakSmart(text, { lang: 'en-US', rate: 1.0 }).catch(() => {});
+      return;
+    }
     if (!('speechSynthesis' in window)) return;
     try {
+      hqStop();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'en-US';
       u.rate = 0.95;
@@ -19445,6 +19556,30 @@
     const [photoMsg, setPhotoMsg] = useState('');   // transient success message
     const [photoBusy, setPhotoBusy] = useState(false);
     const photoInputRef = useRef(null);
+    // 高品質音声 (OpenAI TTS) のキー管理
+    const [openaiKey, setOpenaiKey] = useState(() => loadOpenAIKey());
+    const [openaiKeyVisible, setOpenaiKeyVisible] = useState(false);
+    const [openaiMsg, setOpenaiMsg] = useState('');
+    const [openaiTestBusy, setOpenaiTestBusy] = useState(false);
+    function saveOpenAIKeyNow() {
+      saveOpenAIKey(openaiKey.trim());
+      setOpenaiMsg('保存しました');
+      setTimeout(() => setOpenaiMsg(''), 2500);
+    }
+    async function testOpenAIKeyNow() {
+      setOpenaiTestBusy(true);
+      setOpenaiMsg('');
+      try {
+        saveOpenAIKey(openaiKey.trim());
+        await hqFetchAudio('Hello! This is a voice test.', 1.0);
+        await speakSmart('Hello! This is a voice test.', { lang: 'en-US' });
+        setOpenaiMsg('接続 OK — この声で再生されます');
+      } catch (err) {
+        setOpenaiMsg('接続エラー: ' + ((err && err.message) || err));
+      } finally {
+        setOpenaiTestBusy(false);
+      }
+    }
     // Cloud diagnostic: lets the user check whether photos are still
     // in Supabase even when localStorage looks empty. Surfaces the gap
     // so a "restore from cloud" tap can put them back.
@@ -19928,6 +20063,74 @@
             ),
           );
         }),
+      ),
+
+      // ----- Section: 高品質音声 (OpenAI TTS) -----
+      e('div', {
+        style: {
+          fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 600,
+          letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: C.sub, marginBottom: 12, paddingLeft: 4,
+        }
+      }, '高品質音声 (OpenAI API Key)'),
+      e('div', {
+        style: {
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 14, padding: '14px 16px', marginBottom: 22,
+        }
+      },
+        e('div', {
+          style: { fontSize: 12.5, color: C.sub, lineHeight: 1.7, marginBottom: 12 }
+        }, 'キーを入れると、シャドーイングなどの読み上げがネイティブ級の自然な音声になります。一度再生した音声は端末に保存され、2 回目以降は無料・オフラインでも再生できます。未設定でも今まで通り端末の音声で動きます。'),
+        e('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+          e('input', {
+            type: openaiKeyVisible ? 'text' : 'password',
+            value: openaiKey,
+            onChange: (ev) => setOpenaiKey(ev.target.value),
+            placeholder: 'sk-...',
+            spellCheck: false,
+            autoComplete: 'off',
+            style: {
+              flex: 1, padding: '10px 12px', fontSize: 13,
+              fontFamily: 'monospace', color: C.text,
+              background: C.softer, border: '1px solid ' + C.line,
+              borderRadius: 10, outline: 'none', minWidth: 0,
+            }
+          }),
+          e('button', {
+            onClick: () => setOpenaiKeyVisible(v => !v),
+            style: {
+              width: 40, height: 40, borderRadius: 10,
+              background: C.softer, border: '1px solid ' + C.line,
+              color: C.sub, cursor: 'pointer', flexShrink: 0,
+            }
+          }, openaiKeyVisible ? '隠す' : '表示'),
+        ),
+        e('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+          e('button', {
+            onClick: saveOpenAIKeyNow,
+            style: {
+              padding: '8px 16px', borderRadius: 10,
+              background: C.gold, color: '#fff',
+              border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            }
+          }, 'キーを保存'),
+          e('button', {
+            onClick: testOpenAIKeyNow,
+            disabled: openaiTestBusy,
+            style: {
+              padding: '8px 16px', borderRadius: 10,
+              background: openaiTestBusy ? C.softer : C.card,
+              color: openaiTestBusy ? C.sub : C.text,
+              border: '1px solid ' + (openaiTestBusy ? C.line : C.brand),
+              fontSize: 12, fontWeight: 700,
+              cursor: openaiTestBusy ? 'default' : 'pointer',
+            }
+          }, openaiTestBusy ? 'テスト中…' : '声を聞いてみる'),
+          openaiMsg && e('div', {
+            style: { fontSize: 12, color: openaiMsg.indexOf('エラー') >= 0 ? C.danger : C.success, fontWeight: 600 }
+          }, openaiMsg),
+        ),
       ),
 
       // ----- Section: AI チャット -----
@@ -27910,13 +28113,6 @@
       let cancelled = false;
       let timeoutId = null;
 
-      const u = new SpeechSynthesisUtterance(current.en);
-      u.lang = 'en-GB';
-      u.rate = speedConfig.rate;
-      u.pitch = 1.0;
-      const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-      if (_v) u.voice = _v;
-      u.onstart = () => { if (!cancelled) setIsSpeaking(true); };
       const finish = () => {
         if (cancelled) return;
         setIsSpeaking(false);
@@ -27947,16 +28143,20 @@
           }
         }, speedConfig.pauseMs);
       };
-      u.onend = finish;
-      u.onerror = finish;
 
-      // Stop anything in flight, then play.
-      try { window.speechSynthesis.cancel(); } catch {}
-      try { window.speechSynthesis.speak(u);   } catch {}
+      // speakSmart: OpenAI キーがあれば高品質音声 (キャッシュ付き)、
+      // なければ従来の端末 TTS。終了で resolve → finish()。
+      setIsSpeaking(true);
+      speakSmart(current.en, {
+        lang: 'en-GB',
+        rate: speedConfig.rate,
+        deviceRate: speedConfig.rate,
+      }).then(finish).catch(finish);
 
       return () => {
         cancelled = true;
         if (timeoutId) clearTimeout(timeoutId);
+        hqStop();
         try { window.speechSynthesis.cancel(); } catch {}
         setIsSpeaking(false);
       };
