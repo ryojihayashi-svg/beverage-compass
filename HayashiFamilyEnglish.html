@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 341;
+  const APP_VERSION = 342;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -2004,33 +2004,33 @@
     { id:'impulse',      en:'impulse',      ja:'衝動',         pos:'noun', level:5, cat:'general', exEn:'I bought it on impulse.',                   exJa:'衝動でそれを買った。', exEn2:'I bought the painting for the restaurant on impulse.', exJa2:'店に飾る絵を衝動買いしてしまった。' },
     { id:'induce',       en:'induce',       ja:'引き起こす',   pos:'verb', level:5, cat:'general', exEn:'Stress can induce headaches.',              exJa:'ストレスは頭痛を引き起こすことがある。', exEn2:'Soft music induces a relaxed dining pace.', exJa2:'静かな音楽がゆったりした食事のペースを生む。' },
     { id:'inhibit',      en:'inhibit',      ja:'抑制する',     pos:'verb', level:5, cat:'general', exEn:'Fear inhibits creativity.',                 exJa:'恐怖は創造性を抑える。', exEn2:'Fear of failure inhibits creativity.', exJa2:'失敗への恐れは創造性を抑制する。' },
-    { id:'initiate',     en:'initiate',     ja:'始める',       pos:'verb', level:5, cat:'general', exEn:'They initiated the program.',               exJa:'彼らはそのプログラムを開始した。' },
-    { id:'inquire',      en:'inquire',      ja:'尋ねる',       pos:'verb', level:5, cat:'general', exEn:'He inquired about the price.',              exJa:'彼は値段について尋ねた。' },
+    { id:'initiate',     en:'initiate',     ja:'始める',       pos:'verb', level:5, cat:'general', exEn:'They initiated the program.',               exJa:'彼らはそのプログラムを開始した。', exEn2:'We initiated talks with a hotel operator.', exJa2:'ホテル運営会社との協議を開始した。' },
+    { id:'inquire',      en:'inquire',      ja:'尋ねる',       pos:'verb', level:5, cat:'general', exEn:'He inquired about the price.',              exJa:'彼は値段について尋ねた。', exEn2:'Many guests inquired about private dining.', exJa2:'多くのお客様が個室について問い合わせてきた。' },
     { id:'inspect',      en:'inspect',      ja:'検査する',     pos:'verb', level:4, cat:'general', exEn:'They inspect the goods carefully.',         exJa:'彼らは商品を慎重に検査する。', exEn2:'The kitchen is inspected every morning.', exJa2:'厨房は毎朝点検されている。' },
-    { id:'integrate',    en:'integrate',    ja:'統合する',     pos:'verb', level:5, cat:'general', exEn:'We must integrate the systems.',            exJa:'システムを統合しなければならない。' },
-    { id:'intense',      en:'intense',      ja:'激しい',       pos:'adj',  level:5, cat:'general', exEn:'The training was intense.',                 exJa:'訓練は激しかった。' },
+    { id:'integrate',    en:'integrate',    ja:'統合する',     pos:'verb', level:5, cat:'general', exEn:'We must integrate the systems.',            exJa:'システムを統合しなければならない。', exEn2:'We integrated the wine business into the restaurant group.', exJa2:'ワイン事業をレストラングループに統合した。' },
+    { id:'intense',      en:'intense',      ja:'激しい',       pos:'adj',  level:5, cat:'general', exEn:'The training was intense.',                 exJa:'訓練は激しかった。', exEn2:'The competition for good locations is intense.', exJa2:'良い立地をめぐる競争は熾烈だ。' },
 
     // ============ Target 1900 (Round 9) → LV4-5 ============
-    { id:'integrity',    en:'integrity',    ja:'誠実さ・完全性', pos:'noun', level:5, cat:'general', exEn:'A leader needs integrity.',               exJa:'リーダーには誠実さが必要だ。' },
-    { id:'intimate',     en:'intimate',     ja:'親密な',       pos:'adj',  level:5, cat:'general', exEn:'They had an intimate dinner.',              exJa:'彼らは親密な夕食を共にした。' },
-    { id:'invade',       en:'invade',       ja:'侵略する',     pos:'verb', level:5, cat:'general', exEn:'Tourists invaded the small town.',          exJa:'観光客が小さな町に押し寄せた。' },
+    { id:'integrity',    en:'integrity',    ja:'誠実さ・完全性', pos:'noun', level:5, cat:'general', exEn:'A leader needs integrity.',               exJa:'リーダーには誠実さが必要だ。', exEn2:'We hire for integrity first, skills second.', exJa2:'採用は誠実さが第一、スキルは第二だ。' },
+    { id:'intimate',     en:'intimate',     ja:'親密な',       pos:'adj',  level:5, cat:'general', exEn:'They had an intimate dinner.',              exJa:'彼らは親密な夕食を共にした。', exEn2:'The bar has an intimate, quiet atmosphere.', exJa2:'そのバーは親密で静かな雰囲気だ。' },
+    { id:'invade',       en:'invade',       ja:'侵略する',     pos:'verb', level:5, cat:'general', exEn:'Tourists invaded the small town.',          exJa:'観光客が小さな町に押し寄せた。', exEn2:'Cheap imitations invaded the market.', exJa2:'安価な模倣品が市場に流れ込んだ。' },
     { id:'isolate',      en:'isolate',      ja:'孤立させる',   pos:'verb', level:4, cat:'general', exEn:'They isolated the patient.',                exJa:'彼らは患者を隔離した。', exEn2:'Don\'t isolate the kitchen from the service team.', exJa2:'厨房をサービスチームから切り離してはいけない。' },
-    { id:'keen',         en:'keen',         ja:'熱心な・鋭い', pos:'adj',  level:5, cat:'general', exEn:'She is keen to learn.',                     exJa:'彼女は学ぶ意欲が強い。' },
-    { id:'legacy',       en:'legacy',       ja:'遺産',         pos:'noun', level:5, cat:'general', exEn:'He left a great legacy.',                   exJa:'彼は素晴らしい遺産を残した。' },
-    { id:'legitimate',   en:'legitimate',   ja:'正当な',       pos:'adj',  level:5, cat:'general', exEn:'They have legitimate concerns.',            exJa:'彼らには正当な懸念がある。' },
-    { id:'liable',       en:'liable',       ja:'責任のある・しがちな', pos:'adj',  level:5, cat:'general', exEn:'They are liable for damages.', exJa:'彼らには損害の責任がある。' },
-    { id:'linger',       en:'linger',       ja:'居残る',       pos:'verb', level:5, cat:'general', exEn:'She lingered in the doorway.',              exJa:'彼女は戸口でぐずぐずしていた。' },
-    { id:'literal',      en:'literal',      ja:'文字通りの',   pos:'adj',  level:5, cat:'general', exEn:'A literal translation sounds odd.',         exJa:'直訳は不自然に聞こえる。' },
+    { id:'keen',         en:'keen',         ja:'熱心な・鋭い', pos:'adj',  level:5, cat:'general', exEn:'She is keen to learn.',                     exJa:'彼女は学ぶ意欲が強い。', exEn2:'She has a keen eye for good design.', exJa2:'彼女は良いデザインを見抜く鋭い目を持つ。' },
+    { id:'legacy',       en:'legacy',       ja:'遺産',         pos:'noun', level:5, cat:'general', exEn:'He left a great legacy.',                   exJa:'彼は素晴らしい遺産を残した。', exEn2:'My father\'s restaurant is a legacy I want to honour.', exJa2:'父の店は大切に受け継ぎたい遺産だ。' },
+    { id:'legitimate',   en:'legitimate',   ja:'正当な',       pos:'adj',  level:5, cat:'general', exEn:'They have legitimate concerns.',            exJa:'彼らには正当な懸念がある。', exEn2:'That is a legitimate concern about the budget.', exJa2:'予算についてのもっともな懸念だ。' },
+    { id:'liable',       en:'liable',       ja:'責任のある・しがちな', pos:'adj',  level:5, cat:'general', exEn:'They are liable for damages.', exJa:'彼らには損害の責任がある。', exEn2:'The owner is liable for kitchen safety.', exJa2:'厨房の安全にはオーナーが責任を負う。' },
+    { id:'linger',       en:'linger',       ja:'居残る',       pos:'verb', level:5, cat:'general', exEn:'She lingered in the doorway.',              exJa:'彼女は戸口でぐずぐずしていた。', exEn2:'Guests linger over coffee long after dessert.', exJa2:'デザートの後もお客様はコーヒーでゆっくり過ごす。' },
+    { id:'literal',      en:'literal',      ja:'文字通りの',   pos:'adj',  level:5, cat:'general', exEn:'A literal translation sounds odd.',         exJa:'直訳は不自然に聞こえる。', exEn2:'Farm-to-table has a literal meaning for us.', exJa2:'私たちにとって farm-to-table は文字通りの意味だ。' },
     { id:'loyal',        en:'loyal',        ja:'忠実な',       pos:'adj',  level:4, cat:'general', exEn:'He is a loyal friend.',                     exJa:'彼は忠実な友人だ。', exEn2:'Loyal guests are the foundation of our business.', exJa2:'常連のお客様が私たちの事業の土台だ。' },
-    { id:'manifest',     en:'manifest',     ja:'明らかにする・現れる', pos:'verb', level:5, cat:'general', exEn:'Anger manifested in his face.', exJa:'怒りが彼の顔に表れた。' },
-    { id:'manipulate',   en:'manipulate',   ja:'操作する',     pos:'verb', level:5, cat:'general', exEn:"Don't manipulate the data.",                exJa:'データを操作するな。' },
+    { id:'manifest',     en:'manifest',     ja:'明らかにする・現れる', pos:'verb', level:5, cat:'general', exEn:'Anger manifested in his face.', exJa:'怒りが彼の顔に表れた。', exEn2:'Our philosophy manifests in every small detail.', exJa2:'私たちの哲学は細部のすべてに現れる。' },
+    { id:'manipulate',   en:'manipulate',   ja:'操作する',     pos:'verb', level:5, cat:'general', exEn:"Don't manipulate the data.",                exJa:'データを操作するな。', exEn2:'Never manipulate reviews — earn them.', exJa2:'レビューを操作せず、実力で獲得すること。' },
     { id:'mature',       en:'mature',       ja:'成熟した',     pos:'adj',  level:4, cat:'general', exEn:'She is very mature for her age.',           exJa:'彼女は年齢の割に大人びている。', exEn2:'The team has matured a lot over three years.', exJa2:'チームは 3 年間で大きく成熟した。' },
     { id:'meaningful',   en:'meaningful',   ja:'意味のある',   pos:'adj',  level:4, cat:'general', exEn:'They had a meaningful talk.',               exJa:'彼らは意味のある会話を交わした。', exEn2:'We had a meaningful conversation about the future.', exJa2:'将来について有意義な話ができた。' },
-    { id:'migrate',      en:'migrate',      ja:'移動する',     pos:'verb', level:5, cat:'general', exEn:'Birds migrate south in winter.',            exJa:'鳥は冬に南へ渡る。' },
-    { id:'mimic',        en:'mimic',        ja:'真似る',       pos:'verb', level:5, cat:'general', exEn:'Parrots can mimic speech.',                 exJa:'オウムは話を真似できる。' },
-    { id:'mock',         en:'mock',         ja:'からかう',     pos:'verb', level:5, cat:'general', exEn:"Don't mock his accent.",                    exJa:'彼の訛りをからかうな。' },
-    { id:'mutual',       en:'mutual',       ja:'相互の',       pos:'adj',  level:5, cat:'general', exEn:'We have mutual respect.',                   exJa:'お互いに尊敬し合っている。' },
-    { id:'navigate',     en:'navigate',     ja:'操縦する・進む', pos:'verb', level:5, cat:'general', exEn:'It is hard to navigate this city.',     exJa:'この街を歩き回るのは難しい。' },
+    { id:'migrate',      en:'migrate',      ja:'移動する',     pos:'verb', level:5, cat:'general', exEn:'Birds migrate south in winter.',            exJa:'鳥は冬に南へ渡る。', exEn2:'Young chefs migrate to Tokyo for opportunities.', exJa2:'若いシェフたちはチャンスを求めて東京へ移る。' },
+    { id:'mimic',        en:'mimic',        ja:'真似る',       pos:'verb', level:5, cat:'general', exEn:'Parrots can mimic speech.',                 exJa:'オウムは話を真似できる。', exEn2:'Competitors mimic our menu but not our spirit.', exJa2:'競合はメニューを真似ても精神までは真似できない。' },
+    { id:'mock',         en:'mock',         ja:'からかう',     pos:'verb', level:5, cat:'general', exEn:"Don't mock his accent.",                    exJa:'彼の訛りをからかうな。', exEn2:'Never mock a guest\'s wine choice.', exJa2:'お客様のワイン選びを決して笑ってはいけない。' },
+    { id:'mutual',       en:'mutual',       ja:'相互の',       pos:'adj',  level:5, cat:'general', exEn:'We have mutual respect.',                   exJa:'お互いに尊敬し合っている。', exEn2:'Our partnership is built on mutual respect.', exJa2:'私たちの提携は相互の敬意の上に成り立っている。' },
+    { id:'navigate',     en:'navigate',     ja:'操縦する・進む', pos:'verb', level:5, cat:'general', exEn:'It is hard to navigate this city.',     exJa:'この街を歩き回るのは難しい。', exEn2:'We navigated the pandemic without closing a store.', exJa2:'1 店舗も閉めずにパンデミックを乗り切った。' },
     { id:'neglect',      en:'neglect',      ja:'怠る',         pos:'verb', level:5, cat:'general', exEn:'He neglected his duties.',                  exJa:'彼は職務を怠った。' },
     { id:'notion',       en:'notion',       ja:'観念・概念',   pos:'noun', level:5, cat:'general', exEn:'I have no notion of his plan.',             exJa:'彼の計画の見当もつかない。' },
     { id:'notorious',    en:'notorious',    ja:'悪名高い',     pos:'adj',  level:5, cat:'general', exEn:'The area is notorious for crime.',          exJa:'その地域は犯罪で悪名高い。' },
