@@ -12318,6 +12318,23 @@
   // twice in the same day shows the same plan. Mistake review steps only
   // show up when there ARE mistakes; otherwise they're skipped.
   const DAILY_PATH_KEY = (memberId) => 'hfe_daily_path_v1_' + memberId;
+  // 4 択の選択肢を問題ごとにシャッフルして返す ({...q, choices, answer})。
+  // 問題データは正解が 1〜2 番目に偏って作られているため、表示時に並べ
+  // 替えて位置バイアスを消す。シードは問題 id なので、再レンダー・別日・
+  // 別端末でも同じ問題は常に同じ並び (診断テストの復習画面が、テスト中に
+  // 選んだ選択肢の index をそのまま照合できるのはこの決定論のおかげ)。
+  function shuffledQuizChoices(q) {
+    if (!q || !Array.isArray(q.choices)) return q;
+    const seed = String(q.id || q.q || q.choices.join('|'));
+    const rand = _mulberry32(_hashCode(seed + ':choices'));
+    const idxs = q.choices.map((_, i) => i);
+    for (let i = idxs.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      const t = idxs[i]; idxs[i] = idxs[j]; idxs[j] = t;
+    }
+    return { ...q, choices: idxs.map(i => q.choices[i]), answer: idxs.indexOf(q.answer) };
+  }
+
   function _hashCode(s) {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
@@ -30715,10 +30732,10 @@
     const lesson = activeId ? LESSON_BY_ID[activeId] : null;
     const quizSet = (() => {
       if (!lesson) return [];
-      if (!retryWrongOnly) return lesson.quiz;
+      if (!retryWrongOnly) return lesson.quiz.map(shuffledQuizChoices);
       // After "復習する" is tapped, drill only the questions that were wrong
       const wrongIds = new Set(results.filter(r => !r.correct).map(r => r.q));
-      return lesson.quiz.filter(q => wrongIds.has(q.q));
+      return lesson.quiz.filter(q => wrongIds.has(q.q)).map(shuffledQuizChoices);
     })();
     const currentQ = quizSet[qIndex] || null;
     const lastQ    = qIndex >= quizSet.length - 1;
@@ -31436,7 +31453,7 @@
         const j = Math.floor(Math.random() * (i + 1));
         const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
       }
-      const q = pool.slice(0, LISTENING_SESSION_COUNT);
+      const q = pool.slice(0, LISTENING_SESSION_COUNT).map(shuffledQuizChoices);
       if (q.length === 0) return;
       setQueue(q);
       setIndex(0);
@@ -31807,7 +31824,7 @@
       const qs = (READING_QUESTIONS && READING_QUESTIONS[p.id]) || [];
       if (qs.length === 0) return;
       setPassage(p);
-      setQuestions(qs);
+      setQuestions(qs.map(shuffledQuizChoices));
       setQIndex(0);
       setChosen(null);
       setResults([]);
@@ -32222,7 +32239,7 @@
       // 「次のステージ」遷移ではリセットしない (既出題は引かない)。
       if (num === 0) usedIdsRef.current = new Set();
       const stage = DIAG_STAGES[num];
-      const qs    = buildStageQuestions(stage, usedIdsRef.current);
+      const qs    = buildStageQuestions(stage, usedIdsRef.current).map(shuffledQuizChoices);
       for (const q of qs) usedIdsRef.current.add(q.id);
       setStageIdx(num);
       setQuestions(qs);
@@ -32819,9 +32836,11 @@
                 stageAnswers.map((a, aIdx) => {
                   // 該当する問題を pool から逆引き
                   const findQ = (id, section) => {
-                    if (section === 'listening') return LISTENING_DIAG_POOL.find(x => x.id === id);
-                    if (section === 'reading')   return READING_DIAG_POOL.find(x => x.id === id);
-                    return DIAGNOSTIC_POOL.find(x => x.id === id);
+                    const raw = section === 'listening' ? LISTENING_DIAG_POOL.find(x => x.id === id)
+                              : section === 'reading'   ? READING_DIAG_POOL.find(x => x.id === id)
+                              :                            DIAGNOSTIC_POOL.find(x => x.id === id);
+                    // テスト中と同じ決定論シャッフルを通す — a.selected の index が一致する
+                    return raw ? shuffledQuizChoices(raw) : raw;
                   };
                   const q = findQ(a.id, a.section);
                   if (!q) return null;
