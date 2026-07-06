@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 332;
+  const APP_VERSION = 333;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -2342,38 +2342,38 @@
     { id:'apology',      en:'apology',      ja:'謝罪',             pos:'noun', level:3, cat:'general', exEn:'Please accept my apology.',                 exJa:'お詫びを受け入れてください。', exEn2:'I owe you an apology.', exJa2:'お詫びしなければなりません。' },
     { id:'arouse',       en:'arouse',       ja:'引き起こす',       pos:'verb', level:5, cat:'general', exEn:'The story aroused public interest.',        exJa:'その話は世間の関心を呼んだ。' },
     { id:'astonish',     en:'astonish',     ja:'驚かせる',         pos:'verb', level:5, cat:'general', exEn:'His skill astonished us.',                  exJa:'彼の腕前に驚いた。' },
-    { id:'attendance',   en:'attendance',   ja:'出席',             pos:'noun', level:4, cat:'school',  exEn:'Attendance is mandatory.',                  exJa:'出席は必須です。' },
+    { id:'attendance',   en:'attendance',   ja:'出席',             pos:'noun', level:4, cat:'school',  exEn:'Attendance is mandatory.',                  exJa:'出席は必須です。', exEn2:'Attendance at the staff meeting is required.', exJa2:'スタッフミーティングへの出席は必須だ。' },
     { id:'attorney',     en:'attorney',     ja:'弁護士',           pos:'noun', level:5, cat:'work',    exEn:'I need to talk to my attorney.',            exJa:'弁護士と話す必要がある。' },
-    { id:'beverage',     en:'beverage',     ja:'飲料',             pos:'noun', level:4, cat:'general', exEn:'They serve hot beverages.',                 exJa:'温かい飲み物を出している。' },
-    { id:'blend',        en:'blend',        ja:'混ぜる',           pos:'verb', level:4, cat:'general', exEn:'Blend the ingredients well.',               exJa:'材料をよく混ぜて。' },
-    { id:'boost',        en:'boost',        ja:'押し上げる',       pos:'verb', level:4, cat:'general', exEn:'The news boosted morale.',                  exJa:'その知らせで士気が上がった。' },
+    { id:'beverage',     en:'beverage',     ja:'飲料',             pos:'noun', level:4, cat:'general', exEn:'They serve hot beverages.',                 exJa:'温かい飲み物を出している。', exEn2:'Our beverage list focuses on natural wines.', exJa2:'うちのドリンクリストは自然派ワイン中心だ。' },
+    { id:'blend',        en:'blend',        ja:'混ぜる',           pos:'verb', level:4, cat:'general', exEn:'Blend the ingredients well.',               exJa:'材料をよく混ぜて。', exEn2:'This tea is a blend of five herbs.', exJa2:'このお茶は 5 種類のハーブのブレンドだ。' },
+    { id:'boost',        en:'boost',        ja:'押し上げる',       pos:'verb', level:4, cat:'general', exEn:'The news boosted morale.',                  exJa:'その知らせで士気が上がった。', exEn2:'The award boosted the whole team\'s morale.', exJa2:'受賞がチーム全体の士気を押し上げた。' },
     { id:'brilliant',    en:'brilliant',    ja:'輝かしい・優秀な', pos:'adj',  level:3, cat:'general', exEn:'She is a brilliant scientist.',             exJa:'彼女は優秀な科学者だ。', exEn2:'The idea is brilliant!', exJa2:'そのアイデアは素晴らしい！' },
-    { id:'bury',         en:'bury',         ja:'埋める',           pos:'verb', level:4, cat:'general', exEn:'They buried the treasure.',                 exJa:'彼らは宝を埋めた。' },
+    { id:'bury',         en:'bury',         ja:'埋める',           pos:'verb', level:4, cat:'general', exEn:'They buried the treasure.',                 exJa:'彼らは宝を埋めた。', exEn2:'Don\'t bury a mistake — learn from it.', exJa2:'ミスを隠さず、そこから学べ。' },
     { id:'calculate',    en:'calculate',    ja:'計算する',         pos:'verb', level:3, cat:'general', exEn:'Calculate the total cost.',                 exJa:'合計費用を計算して。', exEn2:'I calculated the risk and decided to go.', exJa2:'リスクを計算した上で行くことにした。' },
-    { id:'charity',      en:'charity',      ja:'慈善',             pos:'noun', level:4, cat:'general', exEn:'They donated to charity.',                  exJa:'彼らは慈善団体に寄付した。' },
+    { id:'charity',      en:'charity',      ja:'慈善',             pos:'noun', level:4, cat:'general', exEn:'They donated to charity.',                  exJa:'彼らは慈善団体に寄付した。', exEn2:'We host a charity dinner every December.', exJa2:'毎年 12 月にチャリティディナーを開いている。' },
     { id:'chronic',      en:'chronic',      ja:'慢性の',           pos:'adj',  level:5, cat:'general', exEn:'He has a chronic illness.',                 exJa:'彼は慢性の病気を抱えている。' },
     { id:'collide',      en:'collide',      ja:'衝突する',         pos:'verb', level:5, cat:'general', exEn:'The two cars collided.',                    exJa:'2 台の車が衝突した。' },
-    { id:'commute',      en:'commute',      ja:'通勤する',         pos:'verb', level:4, cat:'work',    exEn:'I commute by train.',                       exJa:'電車で通勤している。' },
-    { id:'concrete',     en:'concrete',     ja:'具体的な',         pos:'adj',  level:4, cat:'general', exEn:'Give me a concrete example.',               exJa:'具体例をください。' },
-    { id:'confess',      en:'confess',      ja:'告白する',         pos:'verb', level:4, cat:'general', exEn:'He confessed his mistake.',                 exJa:'彼は自分の過ちを告白した。' },
+    { id:'commute',      en:'commute',      ja:'通勤する',         pos:'verb', level:4, cat:'work',    exEn:'I commute by train.',                       exJa:'電車で通勤している。', exEn2:'I commute between Yutenji and Toranomon.', exJa2:'祐天寺と虎ノ門の間を行き来している。' },
+    { id:'concrete',     en:'concrete',     ja:'具体的な',         pos:'adj',  level:4, cat:'general', exEn:'Give me a concrete example.',               exJa:'具体例をください。', exEn2:'Give me a concrete plan with numbers.', exJa2:'数字の入った具体的な計画を出してほしい。' },
+    { id:'confess',      en:'confess',      ja:'告白する',         pos:'verb', level:4, cat:'general', exEn:'He confessed his mistake.',                 exJa:'彼は自分の過ちを告白した。', exEn2:'I confess I knew nothing about wine at first.', exJa2:'正直に言うと、最初はワインのことを何も知らなかった。' },
     { id:'convene',      en:'convene',      ja:'招集する',         pos:'verb', level:5, cat:'work',    exEn:'They convened a meeting.',                  exJa:'彼らは会議を招集した。' },
-    { id:'council',      en:'council',      ja:'評議会',           pos:'noun', level:4, cat:'work',    exEn:'The council made a decision.',              exJa:'評議会は決定を下した。' },
-    { id:'curriculum',   en:'curriculum',   ja:'カリキュラム',     pos:'noun', level:4, cat:'school',  exEn:'The curriculum is challenging.',            exJa:'カリキュラムは挑戦的だ。' },
+    { id:'council',      en:'council',      ja:'評議会',           pos:'noun', level:4, cat:'work',    exEn:'The council made a decision.',              exJa:'評議会は決定を下した。', exEn2:'The city council approved the terrace seating.', exJa2:'市議会がテラス席を承認した。' },
+    { id:'curriculum',   en:'curriculum',   ja:'カリキュラム',     pos:'noun', level:4, cat:'school',  exEn:'The curriculum is challenging.',            exJa:'カリキュラムは挑戦的だ。', exEn2:'We built a training curriculum for new staff.', exJa2:'新人向けの研修カリキュラムを作った。' },
     { id:'deceive',      en:'deceive',      ja:'だます',           pos:'verb', level:5, cat:'general', exEn:"Don't deceive your friends.",               exJa:'友達をだましてはいけない。' },
-    { id:'destination',  en:'destination',  ja:'目的地',           pos:'noun', level:4, cat:'general', exEn:'What is your destination?',                 exJa:'目的地はどこですか？' },
+    { id:'destination',  en:'destination',  ja:'目的地',           pos:'noun', level:4, cat:'general', exEn:'What is your destination?',                 exJa:'目的地はどこですか？', exEn2:'Our goal is to be a destination restaurant.', exJa2:'目的地になるレストランを目指している。' },
     { id:'devastate',    en:'devastate',    ja:'壊滅させる',       pos:'verb', level:5, cat:'general', exEn:'The storm devastated the village.',         exJa:'嵐が村を壊滅させた。' },
     { id:'dilemma',      en:'dilemma',      ja:'ジレンマ',         pos:'noun', level:5, cat:'general', exEn:'I am in a dilemma.',                        exJa:'板挟みになっている。' },
     { id:'enforce',      en:'enforce',      ja:'施行する',         pos:'verb', level:5, cat:'general', exEn:'The police enforce the law.',               exJa:'警察は法律を施行する。' },
     { id:'exceed',       en:'exceed',       ja:'超える',           pos:'verb', level:5, cat:'general', exEn:"Don't exceed the speed limit.",             exJa:'制限速度を超えないで。' },
-    { id:'feedback',     en:'feedback',     ja:'フィードバック',   pos:'noun', level:4, cat:'work',    exEn:'I value your feedback.',                    exJa:'あなたの意見を大切にしています。' },
+    { id:'feedback',     en:'feedback',     ja:'フィードバック',   pos:'noun', level:4, cat:'work',    exEn:'I value your feedback.',                    exJa:'あなたの意見を大切にしています。', exEn2:'Honest feedback from guests helps us improve.', exJa2:'お客様の率直な意見が私たちの改善に役立つ。' },
     { id:'flourish',     en:'flourish',     ja:'繁栄する',         pos:'verb', level:5, cat:'general', exEn:'The business flourished.',                  exJa:'事業は繁栄した。' },
-    { id:'fragile',      en:'fragile',      ja:'壊れやすい',       pos:'adj',  level:4, cat:'general', exEn:'Handle it carefully; it is fragile.',       exJa:'慎重に扱って。壊れやすいから。' },
+    { id:'fragile',      en:'fragile',      ja:'壊れやすい',       pos:'adj',  level:4, cat:'general', exEn:'Handle it carefully; it is fragile.',       exJa:'慎重に扱って。壊れやすいから。', exEn2:'These glasses are fragile — handle with care.', exJa2:'このグラスは割れやすいので丁寧に扱って。' },
     { id:'gratitude',    en:'gratitude',    ja:'感謝',             pos:'noun', level:5, cat:'general', exEn:'I have deep gratitude for your help.',      exJa:'あなたの助けに深く感謝しています。' },
     { id:'heritage',     en:'heritage',     ja:'遺産',             pos:'noun', level:5, cat:'general', exEn:'It is part of our cultural heritage.',      exJa:'それは私たちの文化遺産だ。' },
-    { id:'incident',     en:'incident',     ja:'出来事・事件',     pos:'noun', level:4, cat:'general', exEn:'There was an incident at the station.',     exJa:'駅で事件があった。' },
+    { id:'incident',     en:'incident',     ja:'出来事・事件',     pos:'noun', level:4, cat:'general', exEn:'There was an incident at the station.',     exJa:'駅で事件があった。', exEn2:'We reviewed the incident and changed our process.', exJa2:'その出来事を検証し、手順を変えた。' },
     { id:'launch',       en:'launch',       ja:'始める・発射する', pos:'verb', level:3, cat:'work',    exEn:'They launched a new product.',              exJa:'彼らは新製品を発売した。', exEn2:'The rocket will launch tomorrow.', exJa2:'ロケットは明日発射される。' },
     { id:'notable',      en:'notable',      ja:'注目すべき',       pos:'adj',  level:5, cat:'general', exEn:'It was a notable achievement.',             exJa:'それは注目すべき業績だった。' },
-    { id:'penalty',      en:'penalty',      ja:'罰',               pos:'noun', level:4, cat:'general', exEn:'There is a penalty for late payment.',      exJa:'遅延には罰金があります。' },
+    { id:'penalty',      en:'penalty',      ja:'罰',               pos:'noun', level:4, cat:'general', exEn:'There is a penalty for late payment.',      exJa:'遅延には罰金があります。', exEn2:'There is a penalty for late cancellations.', exJa2:'直前キャンセルにはペナルティがある。' },
   ];
 
   // ---------- Vocab synonyms ----------
