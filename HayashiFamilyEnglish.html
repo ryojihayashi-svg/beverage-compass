@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 356;
+  const APP_VERSION = 357;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -137,18 +137,18 @@
   const FEATURES = [
     { id: 'shadowing',          label: 'シャドーイング',  desc: '聞いて即真似する音読練習',  forLearner: true, forViewer: false },
     { id: 'phrases',            label: 'Daily English',  desc: '',                          forLearner: true, forViewer: false },
-    { id: 'vocab_ja2en',        label: '単語学習',       desc: '日本語 → 英語',             forLearner: true, forViewer: false },
-    { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true  },
+    { id: 'vocab_ja2en',        label: '単語学習',       desc: '日→英 / 英→日を選んで 10 問', forLearner: true, forViewer: true  },
+    { id: 'vocab_en2ja',        label: '単語学習',       desc: '英語 → 日本語',             forLearner: true, forViewer: true, hidden: true },
     { id: 'tempo_vocab',        label: 'テンポ単語',     desc: 'キクタン式 · 聞いて覚える 10 語ユニット', forLearner: true, forViewer: false },
-    { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false },
-    { id: 'cycle_composition',  label: 'サイクル英作文', desc: '同じ 10 文をスラスラ言えるまで回す', forLearner: true, forViewer: false },
+    { id: 'composition_ja2en',  label: '瞬間英作文',     desc: '日本語 → 英語',             forLearner: true, forViewer: false, hidden: true },
+    { id: 'cycle_composition',  label: 'サイクル英作文', desc: '10 文をスラスラ言えるまで回す · 日→英 / 英→日', forLearner: true, forViewer: false },
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false, hidden: true },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',         forLearner: true, forViewer: true  },
     { id: 'comp_test',          label: 'AI英作文テスト', desc: '週1回 · 3問だけ · AI採点',  forLearner: true, forViewer: false },
     { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢', forLearner: true, forViewer: false },
-    { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false },
+    { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false, hidden: true },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true,  hidden: true },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
@@ -5187,45 +5187,21 @@
     // 引用元は EN/JA の末尾に括弧書きで付与。
 
     // ----- 偉人 -----
-    { id:'s647', level:3, grammar:'名言・Anne Frank',         ja:'幸せな人は、他の人も幸せにする。(アンネ・フランク)',                                  en:'Whoever is happy will make others happy too. (Anne Frank)' },
-    { id:'s648', level:3, grammar:'名言・Edison',             ja:'天才とは1パーセントのひらめきと99パーセントの努力である。(エジソン)',                  en:'Genius is one percent inspiration and ninety-nine percent perspiration. (Edison)' },
-    { id:'s649', level:3, grammar:'名言・Einstein',           ja:'想像力は知識より大切だ。(アインシュタイン)',                                          en:'Imagination is more important than knowledge. (Einstein)' },
-    { id:'s650', level:3, grammar:'名言・Gandhi',             ja:'世界に望む変化に、自分自身がなりなさい。(ガンジー)',                                  en:'Be the change you wish to see in the world. (Gandhi)' },
-    { id:'s651', level:4, grammar:'名言・Mother Teresa',      ja:'偉大なことができないなら、小さなことを大きな愛をもってしなさい。(マザー・テレサ)',     en:'If you cannot do great things, do small things with great love. (Mother Teresa)' },
     { id:'s652', level:2, grammar:'名言・Walt Disney',        ja:'夢見ることができれば、実現できる。(ウォルト・ディズニー)',                            en:'If you can dream it, you can do it. (Walt Disney)' },
-    { id:'s654', level:4, grammar:'名言・Mandela',            ja:'教育は、世界を変えるために使える最強の武器だ。(マンデラ)',                            en:'Education is the most powerful weapon you can use to change the world. (Nelson Mandela)' },
     { id:'s655', level:2, grammar:'名言・Steve Jobs',         ja:'ハングリーであれ。愚かであれ。(スティーブ・ジョブズ)',                                en:'Stay hungry, stay foolish. (Steve Jobs)' },
-    { id:'s656', level:4, grammar:'名言・Confucius',          ja:'止まらない限り、どれだけゆっくり進んでも構わない。(孔子)',                            en:'It does not matter how slowly you go as long as you do not stop. (Confucius)' },
-    { id:'s657', level:4, grammar:'名言・Aristotle',          ja:'卓越とは行為ではなく、習慣である。(アリストテレス)',                                  en:'Excellence is not an act, but a habit. (Aristotle)' },
     { id:'s658', level:2, grammar:'名言・Clark',              ja:'少年よ、大志を抱け。(クラーク博士)',                                                  en:'Boys, be ambitious! (William S. Clark)' },
-    { id:'s659', level:3, grammar:'名言・Picasso',            ja:'子供はみな芸術家だ。(ピカソ)',                                                        en:'Every child is an artist. (Picasso)' },
 
     // ----- サッカー選手 -----
-    { id:'s661', level:3, grammar:'名言・Ronaldo',            ja:'努力をしない才能は、何ものでもない。(クリスティアーノ・ロナウド)',                    en:'Talent without working hard is nothing. (Cristiano Ronaldo)' },
-    { id:'s662', level:3, grammar:'名言・Messi',              ja:'何かを十分に愛しているなら、どんなことも乗り越えられる。(メッシ)',                    en:'You can overcome anything if you love something enough. (Lionel Messi)' },
-    { id:'s663', level:2, grammar:'名言・Pelé',               ja:'成功は偶然ではない。(ペレ)',                                                          en:'Success is no accident. (Pelé)' },
-    { id:'s666', level:2, grammar:'名言・Beckham',            ja:'サッカーは私が愛するものだ。(ベッカム)',                                              en:'Football is something I love. (David Beckham)' },
 
     // ----- 政治家 -----
-    { id:'s669', level:2, grammar:'名言・Lincoln',            ja:'何になるにしても、良い者になれ。(リンカーン)',                                        en:'Whatever you are, be a good one. (Abraham Lincoln)' },
     { id:'s671', level:1, grammar:'名言・Obama',              ja:'そう、私たちならできる。(オバマ)',                                                    en:'Yes, we can. (Barack Obama)' },
-    { id:'s674', level:4, grammar:'名言・JFK',                ja:'国があなたに何をしてくれるかではなく、あなたが国に何ができるかを問いなさい。(ケネディ)',  en:'Ask not what your country can do for you — ask what you can do for your country. (John F. Kennedy)' },
     { id:'s675', level:1, grammar:'名言・MLK',                ja:'私には夢がある。(キング牧師)',                                                        en:'I have a dream. (Martin Luther King Jr.)' },
-    { id:'s676', level:3, grammar:'名言・Theodore Roosevelt', ja:'できると信じれば、半分は達成したも同然だ。(セオドア・ルーズベルト)',                  en:"Believe you can and you're halfway there. (Theodore Roosevelt)" },
 
     // ----- ユーモア -----
-    { id:'s682', level:4, grammar:'名言・Henry Ford',         ja:'できると思おうと、できないと思おうと、あなたは正しい。(ヘンリー・フォード)',         en:"Whether you think you can or you think you can't, you're right. (Henry Ford)" },
-    { id:'s685', level:3, grammar:'名言・Oscar Wilde',        ja:'自分自身でいなさい。他はみんな、もう取られている。(オスカー・ワイルド)',           en:'Be yourself; everyone else is already taken. (Oscar Wilde)' },
 
     // ----- 経営者 -----
-    { id:'s688', level:2, grammar:'名言・松下幸之助',          ja:'お客様第一。(松下幸之助)',                                                            en:'Customers come first. (Konosuke Matsushita)' },
 
     // ----- スポーツ -----
-    { id:'s691', level:4, grammar:'名言・Michael Jordan',     ja:'私は人生で何度も何度も失敗してきた。だからこそ成功できる。(マイケル・ジョーダン)',     en:"I've failed over and over again in my life, and that is why I succeed. (Michael Jordan)" },
-    { id:'s692', level:3, grammar:'名言・Lombardi',           ja:'勝者は決して諦めず、諦める者は決して勝たない。(ヴィンス・ロンバルディ)',              en:'Winners never quit, and quitters never win. (Vince Lombardi)' },
-    { id:'s693', level:3, grammar:'名言・Muhammad Ali',       ja:'蝶のように舞い、蜂のように刺す。(モハメド・アリ)',                                    en:'Float like a butterfly, sting like a bee. (Muhammad Ali)' },
-    { id:'s694', level:3, grammar:'名言・Gretzky',            ja:'打たないシュートは100パーセント入らない。(ウェイン・グレツキー)',                    en:"You miss 100% of the shots you don't take. (Wayne Gretzky)" },
-    { id:'s695', level:2, grammar:'名言・Bruce Lee',          ja:'水になりなさい、友よ。(ブルース・リー)',                                              en:'Be water, my friend. (Bruce Lee)' },
 
     // ============ LV4 追加バッチ (s700-s729) ============
     // 関係詞・受動態・助動詞の完了形・分詞修飾・接続詞 をカバー
@@ -6417,20 +6393,9 @@
 
     // 偉人の名言 (15) — 短くて誰もが知っているものだけ。
     { id:'qt01', level:2, tag:'quote', ja:'少年よ、大志を抱け！',                                                                en:'Boys, be ambitious!' },
-    { id:'qt02', level:3, tag:'quote', ja:'想像力は知識より重要だ。',                                                          en:'Imagination is more important than knowledge.' },
-    { id:'qt03', level:3, tag:'quote', ja:'天才とは1%のひらめきと99%の汗だ。',                                                  en:'Genius is one percent inspiration and ninety-nine percent perspiration.' },
-    { id:'qt08', level:3, tag:'quote', ja:'世界に望む変化に、自分自身がなりなさい。',                                          en:'Be the change you wish to see in the world.' },
-    { id:'qt12', level:4, tag:'quote', ja:'教育は、世界を変えるために使える最強の武器だ。',                                  en:'Education is the most powerful weapon which you can use to change the world.' },
-    { id:'qt16', level:4, tag:'quote', ja:'9,000本以上のシュートを外し、何度も失敗した。だから私は成功した。',               en:"I've missed more than 9,000 shots in my career. I've failed over and over again. And that is why I succeed." },
-    { id:'qt17', level:2, tag:'quote', ja:'蝶のように舞い、蜂のように刺せ。',                                                  en:'Float like a butterfly, sting like a bee.' },
-    { id:'qt18', level:3, tag:'quote', ja:'努力なしの才能は、何ものでもない。',                                                en:'Talent without working hard is nothing.' },
-    { id:'qt19', level:2, tag:'quote', ja:'打たないシュートは100%入らない。',                                                  en:"You miss 100% of the shots you don't take." },
     { id:'qt26', level:1, tag:'quote', ja:'我々はできる。',                                                                    en:'Yes, we can.' },
-    { id:'qt27', level:4, tag:'quote', ja:'国があなたに何をしてくれるかではなく、あなたが国に何ができるかを問いなさい。',     en:'Ask not what your country can do for you, ask what you can do for your country.' },
-    { id:'qt29', level:2, tag:'quote', ja:'決して、決して、決して諦めてはならない。',                                          en:'Never, never, never give up.' },
     { id:'qt31', level:1, tag:'quote', ja:'私には夢がある。',                                                                  en:'I have a dream.' },
     { id:'qt36', level:2, tag:'quote', ja:'ハングリーであれ、愚かであれ。',                                                    en:'Stay hungry, stay foolish.' },
-    { id:'qt50', level:3, tag:'quote', ja:'自分自身でいなさい。他の人はもう取られている。',                                  en:'Be yourself; everyone else is already taken.' },
 
     // ============ 必修デイリー英会話 100 (tag:'daily') ============
     // 「絶対に出る」日常会話フレーズ。挨拶・自己紹介・体調・週末・
@@ -12387,7 +12352,7 @@
     // 2. Daily English warm-up (40% of the time)
     if (rand() < 0.4) out.push({ id: 'phrases' });
     // 3 + 5. Two main inputs in random order
-    const main = ['vocab_ja2en', 'composition_ja2en'];
+    const main = ['vocab_ja2en', 'cycle_composition'];
     if (rand() < 0.5) main.reverse();
     out.push({ id: main[0] });
     // Mistake review slots are always part of the plan; reconcilePath
@@ -12397,16 +12362,13 @@
     out.push({ id: 'mistakes' });
     // 6. リスニング理解 — どのレベルでも触れる (内容は自動でレベル調整)
     out.push({ id: 'listening' });
-    // 7. リーディング理解 — 同上
-    out.push({ id: 'reading' });
     // 8. AI 英作文テスト — 上のレベルは 週2 (火/金)、下のレベルは 週1 (水)
     const compTestDays = isAdvanced ? [2, 5] : [3];
     if (compTestDays.includes(dayOfWeek)) out.push({ id: 'comp_test' });
     // 9. 1分英語解説 (50% if there's an unfinished lesson)
     if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
-    // 10. ボーナスラウンド (反対方向の単語学習) — チカチカが長く続くように。
-    //   composition_en2ja タイルは廃止したので、vocab だけ反対方向にする。
-    if (main.includes('vocab_ja2en')) out.push({ id: 'vocab_en2ja' });
+    // 10. ボーナスラウンド — テンポ単語 (キクタン式) で締める。
+    out.push({ id: 'tempo_vocab' });
     if (rand() < 0.5 && !main.includes('shadowing')) out.push({ id: 'shadowing' });
     return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
   }
@@ -15099,7 +15061,7 @@
       let body;
       if      (route.feature === 'phrases')           body = e(DailyPhrases,      { profile, onBack: back });
       else if (route.feature === 'random_test')       body = e(RandomTest,        { profile, onBack: back });
-      else if (route.feature === 'vocab_ja2en')       body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'ja2en' });
+      else if (route.feature === 'vocab_ja2en')       body = e(VocabBrowse,       { profile, onBack: back });
       else if (route.feature === 'vocab_en2ja')       body = e(VocabBrowse,       { profile, onBack: back, forcedDirection: 'en2ja' });
       else if (route.feature === 'composition_ja2en') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'ja2en' });
       else if (route.feature === 'composition_en2ja') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
@@ -15417,8 +15379,8 @@
         perpetualCurrentId = 'mistakes';
       } else {
         // 日付に応じて巡回 (vocab → composition → listening → reading → shadowing)
-        const rotation = ['vocab_ja2en', 'composition_ja2en',
-                          'listening',   'reading',          'shadowing'];
+        const rotation = ['vocab_ja2en', 'cycle_composition',
+                          'listening',   'tempo_vocab',      'shadowing'];
         const dayNum = new Date().getDate();
         perpetualCurrentId = rotation[dayNum % rotation.length];
       }
@@ -15437,8 +15399,10 @@
         if (tileId === stepId) return true;
         if ((tileId === 'vocab_ja2en' || tileId === 'vocab_en2ja') &&
             (stepId === 'vocab_ja2en' || stepId === 'vocab_en2ja')) return true;
-        if ((tileId === 'composition_ja2en' || tileId === 'composition_en2ja') &&
-            (stepId === 'composition_ja2en' || stepId === 'composition_en2ja')) return true;
+        const compGroup = (x) => x === 'composition_ja2en' || x === 'composition_en2ja' || x === 'cycle_composition';
+        if (compGroup(tileId) && compGroup(stepId)) return true;
+        const vocabGroup = (x) => x === 'vocab_ja2en' || x === 'vocab_en2ja' || x === 'tempo_vocab';
+        if (vocabGroup(tileId) && vocabGroup(stepId)) return true;
         return false;
       };
       // 完走後の「もう一回」ターゲット — 完走しても止めずにここを光らせる。
@@ -15896,8 +15860,8 @@
       ),
 
       // ----- その他のツール (普段は使わないが、たまに必要なもの) -----
-      // 翻訳ノート (saved_translate) と レベル診断テスト (diagnostic) は
-      // メインの 12 タイルから外し、ここから到達する。viewer は翻訳ノートのみ。
+      // 翻訳ノート・リーディング理解・レベル診断テストはメインのタイルから
+      // 外し、ここから到達する。viewer は翻訳ノートのみ。
       !isViewer && e('div', {
         style: {
           marginTop: 22, paddingTop: 14,
@@ -15914,6 +15878,7 @@
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 0 } },
           [
             { id: 'saved_translate', label: '翻訳ノート',         desc: 'AI翻訳で★保存した文を復習' },
+            { id: 'reading',         label: 'リーディング理解',   desc: '長文を読んで 4 択 3 問' },
             { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜2 級・段階式' },
           ].map((row, i, arr) => e('button', {
             key: row.id,
@@ -22037,6 +22002,7 @@
             durationMs: Date.now() - sessionStartRef.current,
             label: 'テンポ単語 LV' + level + ' Unit ' + (unitIdx + 1),
           });
+          markPathStepDone(profile, 'tempo_vocab');
         } catch {}
       } else {
         setCheckIdx(checkIdx + 1);
@@ -22491,6 +22457,7 @@
             durationMs: Date.now() - sessionStartRef.current,
             label: 'サイクル英作文 LV' + level + ' Set ' + (setIdx + 1) + ' (' + cycle + ' 周目)',
           });
+          markPathStepDone(profile, 'composition_ja2en');
         } catch {}
       } else {
         setIdx2(idx + 1);
