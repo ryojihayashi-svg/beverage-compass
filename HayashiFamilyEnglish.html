@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 318;
+  const APP_VERSION = 319;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1089,27 +1089,27 @@
     { id:'critical',    en:'critical',    ja:'批判的な・重要な',         pos:'adj',  level:4, cat:'general', exEn:"It's a critical decision.",                 exJa:'重要な決定だ。', exEn2:'The first three months are critical for a new restaurant.', exJa2:'新店にとって最初の 3 ヶ月が重要だ。' },
     { id:'dominant',    en:'dominant',    ja:'支配的な',                 pos:'adj',  level:4, cat:'general', exEn:'He has a dominant personality.',            exJa:'彼は支配的な性格だ。', exEn2:'The dominant flavour in this dish is yuzu.', exJa2:'この料理の主役の味は柚子だ。' },
     { id:'effective',   en:'effective',   ja:'効果的な',                 pos:'adj',  level:4, cat:'general', exEn:'This is an effective method.',              exJa:'これは効果的な方法だ。', exEn2:'Word of mouth is the most effective marketing.', exJa2:'口コミが最も効果的なマーケティングだ。' },
-    { id:'efficient',   en:'efficient',   ja:'効率的な',                 pos:'adj',  level:4, cat:'general', exEn:'We need an efficient system.',              exJa:'私たちは効率的なシステムが必要だ。' },
-    { id:'extensive',   en:'extensive',   ja:'広範囲の',                 pos:'adj',  level:4, cat:'general', exEn:'Extensive research is needed.',             exJa:'広範囲の研究が必要だ。' },
-    { id:'fundamental', en:'fundamental', ja:'根本的な',                 pos:'adj',  level:4, cat:'general', exEn:'Honesty is fundamental.',                   exJa:'誠実さは根本的だ。' },
-    { id:'inherent',    en:'inherent',    ja:'本質的な',                 pos:'adj',  level:4, cat:'general', exEn:'Risk is inherent in this job.',             exJa:'リスクはこの仕事に本質的だ。' },
-    { id:'relevant',    en:'relevant',    ja:'関連した',                 pos:'adj',  level:4, cat:'general', exEn:'Is this relevant?',                         exJa:'これは関係ある？' },
+    { id:'efficient',   en:'efficient',   ja:'効率的な',                 pos:'adj',  level:4, cat:'general', exEn:'We need an efficient system.',              exJa:'私たちは効率的なシステムが必要だ。', exEn2:'The new kitchen layout is much more efficient.', exJa2:'新しい厨房レイアウトはずっと効率的だ。' },
+    { id:'extensive',   en:'extensive',   ja:'広範囲の',                 pos:'adj',  level:4, cat:'general', exEn:'Extensive research is needed.',             exJa:'広範囲の研究が必要だ。', exEn2:'He has extensive experience in fine dining.', exJa2:'彼はファインダイニングでの豊富な経験を持つ。' },
+    { id:'fundamental', en:'fundamental', ja:'根本的な',                 pos:'adj',  level:4, cat:'general', exEn:'Honesty is fundamental.',                   exJa:'誠実さは根本的だ。', exEn2:'Hospitality is fundamental to everything we do.', exJa2:'ホスピタリティは私たちのすべての活動の根本だ。' },
+    { id:'inherent',    en:'inherent',    ja:'本質的な',                 pos:'adj',  level:4, cat:'general', exEn:'Risk is inherent in this job.',             exJa:'リスクはこの仕事に本質的だ。', exEn2:'Every new business has inherent risks.', exJa2:'新しい事業には本質的なリスクが伴う。' },
+    { id:'relevant',    en:'relevant',    ja:'関連した',                 pos:'adj',  level:4, cat:'general', exEn:'Is this relevant?',                         exJa:'これは関係ある？', exEn2:'Is this data relevant to our decision?', exJa2:'このデータは私たちの判断に関係ありますか？' },
     // L4 (continued) — academic verbs
-    { id:'advise',      en:'advise',      ja:'助言する',                 pos:'verb', level:4, cat:'general', exEn:'I advise you to study.',                    exJa:'私は勉強するよう助言します。' },
-    { id:'anticipate',  en:'anticipate',  ja:'予想する',                 pos:'verb', level:4, cat:'general', exEn:'We anticipate good results.',               exJa:'私たちは良い結果を予想する。' },
-    { id:'arise',       en:'arise',       ja:'生じる',                   pos:'verb', level:4, cat:'general', exEn:'Problems may arise.',                       exJa:'問題が生じるかもしれない。' },
-    { id:'derive',      en:'derive',      ja:'由来する',                 pos:'verb', level:4, cat:'general', exEn:'The word derives from Latin.',              exJa:'その単語はラテン語に由来する。' },
-    { id:'distinguish', en:'distinguish', ja:'区別する',                 pos:'verb', level:4, cat:'general', exEn:'Distinguish right from wrong.',             exJa:'善悪を区別しなさい。' },
-    { id:'exhibit',     en:'exhibit',     ja:'示す・展示する',           pos:'verb', level:4, cat:'general', exEn:'The museum exhibits art.',                  exJa:'美術館が芸術を展示する。' },
-    { id:'eliminate',   en:'eliminate',   ja:'排除する',                 pos:'verb', level:4, cat:'general', exEn:'Eliminate the bad habit.',                  exJa:'悪い習慣を排除して。' },
-    { id:'encounter',   en:'encounter',   ja:'遭遇する',                 pos:'verb', level:4, cat:'general', exEn:'I encountered a problem.',                  exJa:'私は問題に遭遇した。' },
-    { id:'imply',       en:'imply',       ja:'暗示する',                 pos:'verb', level:4, cat:'general', exEn:'Are you implying something?',               exJa:'何か暗示してる？' },
-    { id:'modify',      en:'modify',      ja:'修正する',                 pos:'verb', level:4, cat:'general', exEn:'Modify the design.',                        exJa:'デザインを修正して。' },
-    { id:'occur',       en:'occur',       ja:'起こる',                   pos:'verb', level:4, cat:'general', exEn:'Accidents occur sometimes.',                exJa:'事故は時々起こる。' },
-    { id:'refer',       en:'refer',       ja:'言及する・参照する',       pos:'verb', level:4, cat:'general', exEn:'Refer to the manual.',                      exJa:'マニュアルを参照して。' },
-    { id:'reject',      en:'reject',      ja:'拒絶する',                 pos:'verb', level:4, cat:'general', exEn:'He rejected the offer.',                    exJa:'彼は申し出を拒絶した。' },
-    { id:'retain',      en:'retain',      ja:'保持する',                 pos:'verb', level:4, cat:'general', exEn:'Retain your dignity.',                      exJa:'尊厳を保ちなさい。' },
-    { id:'shift',       en:'shift',       ja:'変化させる',               pos:'verb', level:4, cat:'general', exEn:'Shift your focus.',                         exJa:'焦点を変えなさい。' },
+    { id:'advise',      en:'advise',      ja:'助言する',                 pos:'verb', level:4, cat:'general', exEn:'I advise you to study.',                    exJa:'私は勉強するよう助言します。', exEn2:'My banker advised me to wait a few months.', exJa2:'銀行の担当者に数ヶ月待つよう助言された。' },
+    { id:'anticipate',  en:'anticipate',  ja:'予想する',                 pos:'verb', level:4, cat:'general', exEn:'We anticipate good results.',               exJa:'私たちは良い結果を予想する。', exEn2:'We anticipate strong demand in December.', exJa2:'12 月は強い需要を見込んでいる。' },
+    { id:'arise',       en:'arise',       ja:'生じる',                   pos:'verb', level:4, cat:'general', exEn:'Problems may arise.',                       exJa:'問題が生じるかもしれない。', exEn2:'If any problem arises, call me anytime.', exJa2:'問題が起きたら、いつでも電話して。' },
+    { id:'derive',      en:'derive',      ja:'由来する',                 pos:'verb', level:4, cat:'general', exEn:'The word derives from Latin.',              exJa:'その単語はラテン語に由来する。', exEn2:'The name of the restaurant derives from my hometown.', exJa2:'店名は私の故郷に由来している。' },
+    { id:'distinguish', en:'distinguish', ja:'区別する',                 pos:'verb', level:4, cat:'general', exEn:'Distinguish right from wrong.',             exJa:'善悪を区別しなさい。', exEn2:'Great service distinguishes us from other restaurants.', exJa2:'優れたサービスが私たちを他店と区別する。' },
+    { id:'exhibit',     en:'exhibit',     ja:'示す・展示する',           pos:'verb', level:4, cat:'general', exEn:'The museum exhibits art.',                  exJa:'美術館が芸術を展示する。', exEn2:'The chef exhibits great calm under pressure.', exJa2:'そのシェフはプレッシャーの中でも見事な冷静さを見せる。' },
+    { id:'eliminate',   en:'eliminate',   ja:'排除する',                 pos:'verb', level:4, cat:'general', exEn:'Eliminate the bad habit.',                  exJa:'悪い習慣を排除して。', exEn2:'We eliminated three dishes from the menu.', exJa2:'メニューから 3 品を外した。' },
+    { id:'encounter',   en:'encounter',   ja:'遭遇する',                 pos:'verb', level:4, cat:'general', exEn:'I encountered a problem.',                  exJa:'私は問題に遭遇した。', exEn2:'I encountered an amazing wine in Burgundy.', exJa2:'ブルゴーニュで素晴らしいワインに出会った。' },
+    { id:'imply',       en:'imply',       ja:'暗示する',                 pos:'verb', level:4, cat:'general', exEn:'Are you implying something?',               exJa:'何か暗示してる？', exEn2:'His silence implied that he disagreed.', exJa2:'彼の沈黙は不賛成を暗示していた。' },
+    { id:'modify',      en:'modify',      ja:'修正する',                 pos:'verb', level:4, cat:'general', exEn:'Modify the design.',                        exJa:'デザインを修正して。', exEn2:'We modified the recipe for Japanese tastes.', exJa2:'日本人の好みに合わせてレシピを修正した。' },
+    { id:'occur',       en:'occur',       ja:'起こる',                   pos:'verb', level:4, cat:'general', exEn:'Accidents occur sometimes.',                exJa:'事故は時々起こる。', exEn2:'The best ideas often occur to me while traveling.', exJa2:'最高のアイデアは旅の途中で浮かぶことが多い。' },
+    { id:'refer',       en:'refer',       ja:'言及する・参照する',       pos:'verb', level:4, cat:'general', exEn:'Refer to the manual.',                      exJa:'マニュアルを参照して。', exEn2:'Please refer to the manual for details.', exJa2:'詳細はマニュアルを参照してください。' },
+    { id:'reject',      en:'reject',      ja:'拒絶する',                 pos:'verb', level:4, cat:'general', exEn:'He rejected the offer.',                    exJa:'彼は申し出を拒絶した。', exEn2:'We rejected the offer because the terms were unfair.', exJa2:'条件が不公平だったので、その提案を断った。' },
+    { id:'retain',      en:'retain',      ja:'保持する',                 pos:'verb', level:4, cat:'general', exEn:'Retain your dignity.',                      exJa:'尊厳を保ちなさい。', exEn2:'It is cheaper to retain good staff than to hire new ones.', exJa2:'新規採用より良い人材の維持の方が安くつく。' },
+    { id:'shift',       en:'shift',       ja:'変化させる',               pos:'verb', level:4, cat:'general', exEn:'Shift your focus.',                         exJa:'焦点を変えなさい。', exEn2:'Consumer tastes are shifting toward lighter food.', exJa2:'消費者の好みはより軽い料理へ変化している。' },
     { id:'transmit',    en:'transmit',    ja:'伝える',                   pos:'verb', level:4, cat:'general', exEn:'Radios transmit signals.',                  exJa:'ラジオは信号を伝える。' },
     { id:'undertake',   en:'undertake',   ja:'引き受ける',               pos:'verb', level:4, cat:'general', exEn:'She undertook the project.',                exJa:'彼女はプロジェクトを引き受けた。' },
     { id:'acknowledge', en:'acknowledge', ja:'認める',                   pos:'verb', level:4, cat:'general', exEn:'I acknowledge my mistake.',                 exJa:'私は自分の過ちを認める。' },
