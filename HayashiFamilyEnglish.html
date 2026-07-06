@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 358;
+  const APP_VERSION = 359;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -12395,13 +12395,26 @@
     saveTodaysPath(profile, p);
     return p;
   }
+  // 同系統の練習はどれをやってもパスのステップを満たす:
+  // 単語系 (vocab_ja2en / vocab_en2ja / tempo_vocab)、
+  // 英作文系 (composition_ja2en / composition_en2ja / cycle_composition)。
+  // タイルのハイライト (pathStatusFor) と完了マーク (markPathStepDone) の
+  // 両方がこの 1 つの判定を使う。
+  function pathStepMatches(aId, bId) {
+    if (aId === bId) return true;
+    const compGroup  = (x) => x === 'composition_ja2en' || x === 'composition_en2ja' || x === 'cycle_composition';
+    if (compGroup(aId) && compGroup(bId)) return true;
+    const vocabGroup = (x) => x === 'vocab_ja2en' || x === 'vocab_en2ja' || x === 'tempo_vocab';
+    if (vocabGroup(aId) && vocabGroup(bId)) return true;
+    return false;
+  }
   // Mark the FIRST undone step matching `featureId` as done. Two
   // 'mistakes' steps in the same path get knocked off in sequence —
   // first review session clears step 3, the second clears step 5.
   function markPathStepDone(profile, featureId) {
     const p = loadTodaysPath(profile);
     if (!p) return;
-    const i = p.steps.findIndex(s => s.id === featureId && !s.doneAt);
+    const i = p.steps.findIndex(s => pathStepMatches(featureId, s.id) && !s.doneAt);
     if (i < 0) return;
     p.steps[i].doneAt = Date.now();
     saveTodaysPath(profile, p);
@@ -12436,6 +12449,8 @@
     vocab_en2ja:       '単語学習',
     composition_ja2en: '瞬間英作文',
     composition_en2ja: '瞬間英作文',
+    cycle_composition: 'サイクル英作文',
+    tempo_vocab:       'テンポ単語',
     mistakes:          '間違い復習',
     english_lessons:   '1分英語解説',
     shadowing:         'シャドーイング',
@@ -15397,16 +15412,7 @@
       // Direction-aware match: a tile for 'vocab_en2ja' lights up when
       // the path's next step is 'vocab_ja2en' too, so the user can
       // satisfy a 単語学習 step from either direction.
-      const matchesGeneric = (tileId, stepId) => {
-        if (tileId === stepId) return true;
-        if ((tileId === 'vocab_ja2en' || tileId === 'vocab_en2ja') &&
-            (stepId === 'vocab_ja2en' || stepId === 'vocab_en2ja')) return true;
-        const compGroup = (x) => x === 'composition_ja2en' || x === 'composition_en2ja' || x === 'cycle_composition';
-        if (compGroup(tileId) && compGroup(stepId)) return true;
-        const vocabGroup = (x) => x === 'vocab_ja2en' || x === 'vocab_en2ja' || x === 'tempo_vocab';
-        if (vocabGroup(tileId) && vocabGroup(stepId)) return true;
-        return false;
-      };
+      const matchesGeneric = pathStepMatches;
       // 完走後の「もう一回」ターゲット — 完走しても止めずにここを光らせる。
       if (allDone && perpetualCurrentId &&
           matchesGeneric(featureId, perpetualCurrentId)) {
