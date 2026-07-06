@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 312;
+  const APP_VERSION = 313;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -5349,6 +5349,47 @@
     { id:'s857', level:4, grammar:'so that × word of mouth',    ja:'口コミが広がるように、私たちは一皿一皿に心を込めます。', en:'We put our heart into every dish so that word of mouth spreads.' },
     { id:'s858', level:4, grammar:'関係副詞 × behind the scenes', ja:'裏方が輝く職場こそ、良いサービスが生まれる場所です。', en:'A workplace where people shine behind the scenes is where great service is born.' },
     { id:'s859', level:4, grammar:'受動態完了 × hand down',     ja:'この味は、父から私へと受け継がれてきました。', en:'This flavour has been handed down from my father to me.' },
+
+    // ============ ファインダイニング英語 (s860-s895) ============
+    // 一流シェフ (ダニエル・カルバートのような) との実際の会話を想定した
+    // レストラン英語。構文×熟語の凝縮設計は s800 バッチと同じ。
+    // 後段の IIFE でシャドーイングにも同じ文が流れる (内容リンク)。
+    { id:'s860', level:3, grammar:'挨拶 × honour',              ja:'お会いできて光栄です。あなたの料理の大ファンです。', en:"It's an honour to meet you. I'm a big fan of your cooking." },
+    { id:'s861', level:3, grammar:'現在完了 × since',           ja:'オープン以来、ずっとこの店に来たいと思っていました。', en:'I have wanted to visit this restaurant since it opened.' },
+    { id:'s862', level:3, grammar:'疑問文 × inspiration',       ja:'この一皿のインスピレーションはどこから来たのですか？', en:'Where did the inspiration for this dish come from?' },
+    { id:'s863', level:4, grammar:'関係代名詞 × source',        ja:'あなたが仕入れている生産者について教えてください。', en:'Tell me about the producers that you source from.' },
+    { id:'s864', level:3, grammar:'比較 × texture',             ja:'この食感は今まで食べたどの料理とも違います。', en:'This texture is different from anything I have ever eaten.' },
+    { id:'s865', level:4, grammar:'間接疑問 × balance',         ja:'酸味と甘みのバランスをどう決めているのか気になります。', en:'I wonder how you decide the balance between acidity and sweetness.' },
+    { id:'s866', level:3, grammar:'不定詞 × pair with',         ja:'この料理に合わせるワインを選んでいただけますか？', en:'Could you choose a wine to pair with this dish?' },
+    { id:'s867', level:4, grammar:'仮定法 × tasting menu',      ja:'もし私が東京で店を開くなら、テイスティングメニューを軸にします。', en:'If I opened a restaurant in Tokyo, I would build it around a tasting menu.' },
+    { id:'s868', level:3, grammar:'現在完了 × seasonality',     ja:'日本の季節感は、私の料理観を変えてきました。', en:'Japanese seasonality has changed the way I think about food.' },
+    { id:'s869', level:4, grammar:'関係副詞 × atmosphere',      ja:'お客様が緊張しない空気こそ、私たちが一番大切にしているものです。', en:'An atmosphere where guests never feel tense is what we value most.' },
+    { id:'s870', level:3, grammar:'動名詞 × behind',            ja:'この皿の裏にある考え方を聞かせてください。', en:'I would love to hear the thinking behind this plate.' },
+    { id:'s871', level:4, grammar:'not only × sourcing',        ja:'味だけでなく、仕入れの哲学にも感銘を受けました。', en:'I was impressed not only by the flavour but also by your sourcing philosophy.' },
+    { id:'s872', level:3, grammar:'疑問文 × favourite',         ja:'東京で一番好きなレストランはどこですか？', en:'What is your favourite restaurant in Tokyo?' },
+    { id:'s873', level:4, grammar:'現在完了進行 × refine',      ja:'私たちは 1 年かけてこの一皿を磨き続けています。', en:'We have been refining this dish for a year.' },
+    { id:'s874', level:3, grammar:'不定詞 × try',               ja:'ぜひ私の店にも食べに来てください。', en:'I would love for you to come and try my restaurant.' },
+    { id:'s875', level:4, grammar:'間接疑問 × consistency',     ja:'毎晩同じクオリティをどう保っているのか、ぜひ知りたいです。', en:'I would really like to know how you maintain the same quality every night.' },
+    { id:'s876', level:3, grammar:'比較 × simple',              ja:'最高の料理は、意外なほどシンプルなことが多いですね。', en:'The best dishes are often surprisingly simple.' },
+    { id:'s877', level:4, grammar:'関係代名詞 × trust',         ja:'長年信頼している魚屋から、毎朝直接仕入れています。', en:'We buy directly every morning from a fishmonger that we have trusted for years.' },
+    { id:'s878', level:3, grammar:'現在完了 × career',          ja:'あなたのキャリアの中で、一番の転機は何でしたか？', en:'What has been the biggest turning point in your career?' },
+    { id:'s879', level:4, grammar:'仮定法 × collaborate',       ja:'いつか一緒にコラボディナーができたら嬉しいです。', en:'It would be wonderful if we could do a collaboration dinner someday.' },
+    { id:'s880', level:3, grammar:'動名詞 × plating',           ja:'盛り付けはご自身でされているのですか？', en:'Do you do the plating yourself?' },
+    { id:'s881', level:4, grammar:'分詞構文 × stay true',       ja:'流行を意識しつつも、自分のスタイルに忠実でいたいです。', en:'While being aware of trends, I want to stay true to my own style.' },
+    { id:'s882', level:3, grammar:'疑問文 × team',              ja:'厨房のチームは何名ですか？', en:'How many people do you have in the kitchen?' },
+    { id:'s883', level:4, grammar:'現在完了 × philosophy',      ja:'あなたの哲学は、私の店づくりに大きな影響を与えてきました。', en:'Your philosophy has had a big influence on how I build my restaurants.' },
+    { id:'s884', level:3, grammar:'不定詞 × recommend',         ja:'今夜のおすすめを教えていただけますか？', en:'Could you tell me what you recommend tonight?' },
+    { id:'s885', level:4, grammar:'so that × memorable',        ja:'お客様の記憶に残るように、最後の一皿には物語を込めます。', en:'We put a story into the final dish so that guests remember the evening.' },
+    { id:'s886', level:3, grammar:'比較 × ingredient',          ja:'日本の食材はフランスのものと同じくらい素晴らしいと思います。', en:'I think Japanese ingredients are as wonderful as French ones.' },
+    { id:'s887', level:4, grammar:'関係副詞 × silence',         ja:'サービスが静かに進む瞬間こそ、完璧が生まれる時です。', en:'Moments where the service flows in silence are when perfection happens.' },
+    { id:'s888', level:3, grammar:'現在完了 × respect',         ja:'あなたの仕事ぶりには、ずっと敬意を抱いてきました。', en:'I have always had great respect for the way you work.' },
+    { id:'s889', level:4, grammar:'間接疑問 × next',            ja:'次にどんな挑戦を考えているのか、伺ってもいいですか？', en:'May I ask what challenge you are thinking about next?' },
+    { id:'s890', level:3, grammar:'不定詞 × thank',             ja:'素晴らしい夜をありがとうございました。また必ず来ます。', en:'Thank you for a wonderful evening. I will definitely come back.' },
+    { id:'s891', level:4, grammar:'仮定法過去完了 × meet',      ja:'もっと早くあなたに出会っていたら、私の店は違うものになっていたでしょう。', en:'If I had met you earlier, my restaurants would have turned out differently.' },
+    { id:'s892', level:3, grammar:'動名詞 × look forward',      ja:'次の季節のメニューを楽しみにしています。', en:'I am looking forward to your next seasonal menu.' },
+    { id:'s893', level:4, grammar:'not until × understand',     ja:'自分で店を持って初めて、サービスの重みを理解しました。', en:'It was not until I owned a restaurant that I understood the weight of service.' },
+    { id:'s894', level:3, grammar:'疑問文 × advice',            ja:'若い料理人に一つだけアドバイスするとしたら何ですか？', en:'If you could give young chefs one piece of advice, what would it be?' },
+    { id:'s895', level:4, grammar:'関係代名詞 × dream',         ja:'世界中の人が訪れたくなる店を作るのが、私たちの夢です。', en:'Our dream is to build a restaurant that people around the world want to visit.' },
   ];
   const SENTENCE_BY_ID = Object.fromEntries(SENTENCES.map(s => [s.id, s]));
 
@@ -6547,6 +6588,22 @@
       };
       SENTENCES.push(entry);
       SENTENCE_BY_ID[entry.id] = entry;
+    }
+  })();
+
+  // ---------- ファインダイニング英語 (s860-s895) をシャドーイングにも ----------
+  // 瞬間英作文と同じ文をシャドーイングでも練習できるようにする (内容リンク)。
+  // pullShadowingIntoSentences の後に実行するので二重ミラーは起きない。
+  (function pushFineDiningIntoShadowing() {
+    for (const s of SENTENCES) {
+      const n = parseInt((s.id || '').replace('s', ''), 10);
+      if (!(n >= 860 && n <= 895)) continue;
+      SHADOWING_QA.push({
+        id: 'fd_' + s.id,
+        level: s.level,
+        ja: s.ja,
+        en: s.en,
+      });
     }
   })();
 
