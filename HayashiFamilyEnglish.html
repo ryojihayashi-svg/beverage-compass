@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 320;
+  const APP_VERSION = 321;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1132,27 +1132,27 @@
     { id:'outcome',     en:'outcome',     ja:'結果',                     pos:'noun', level:4, cat:'general', exEn:'The outcome was positive.',                 exJa:'結果は良好だった。', exEn2:'The outcome of the negotiation was positive.', exJa2:'交渉の結果は良好だった。' },
     { id:'phenomenon',  en:'phenomenon',  ja:'現象',                     pos:'noun', level:4, cat:'general', exEn:"It's a strange phenomenon.",                exJa:'不思議な現象だ。', exEn2:'The queue outside became a local phenomenon.', exJa2:'店の前の行列は地元の名物現象になった。' },
     // L4 (continued) — adjectives
-    { id:'ambitious',   en:'ambitious',   ja:'野心的な',                 pos:'adj',  level:4, cat:'general', exEn:'He is an ambitious person.',                exJa:'彼は野心的な人だ。' },
-    { id:'crucial',     en:'crucial',     ja:'極めて重要な',             pos:'adj',  level:4, cat:'general', exEn:'This is a crucial moment.',                 exJa:'これは重要な瞬間だ。' },
-    { id:'ethical',     en:'ethical',     ja:'倫理的な',                 pos:'adj',  level:4, cat:'general', exEn:'Make ethical choices.',                     exJa:'倫理的な選択をしなさい。' },
-    { id:'ideal',       en:'ideal',       ja:'理想的な',                 pos:'adj',  level:4, cat:'general', exEn:"It's an ideal situation.",                  exJa:'それは理想的な状況だ。' },
-    { id:'neutral',     en:'neutral',     ja:'中立の',                   pos:'adj',  level:4, cat:'general', exEn:'Stay neutral.',                             exJa:'中立でいなさい。' },
-    { id:'optimal',     en:'optimal',     ja:'最適な',                   pos:'adj',  level:4, cat:'general', exEn:'Find the optimal solution.',                exJa:'最適な解決策を見つけて。' },
-    { id:'predictable', en:'predictable', ja:'予測可能な',               pos:'adj',  level:4, cat:'general', exEn:'His behavior is predictable.',              exJa:'彼の行動は予測可能だ。' },
-    { id:'rational',    en:'rational',    ja:'合理的な',                 pos:'adj',  level:4, cat:'general', exEn:'Make a rational decision.',                 exJa:'合理的な決定をして。' },
-    { id:'robust',      en:'robust',      ja:'頑丈な',                   pos:'adj',  level:4, cat:'general', exEn:'This system is robust.',                    exJa:'このシステムは頑丈だ。' },
-    { id:'subtle',      en:'subtle',      ja:'微妙な',                   pos:'adj',  level:4, cat:'general', exEn:"There's a subtle difference.",              exJa:'微妙な違いがある。' },
-    { id:'sustainable', en:'sustainable', ja:'持続可能な',               pos:'adj',  level:4, cat:'general', exEn:'We need sustainable energy.',               exJa:'私たちは持続可能なエネルギーが必要だ。' },
-    { id:'traditional', en:'traditional', ja:'伝統的な',                 pos:'adj',  level:4, cat:'general', exEn:'She wears traditional clothing.',           exJa:'彼女は伝統衣装を着る。' },
-    { id:'ultimate',    en:'ultimate',    ja:'究極の',                   pos:'adj',  level:4, cat:'general', exEn:"What's your ultimate goal?",                exJa:'あなたの究極の目標は？' },
-    { id:'unique',      en:'unique',      ja:'独特の',                   pos:'adj',  level:4, cat:'general', exEn:'Each person is unique.',                    exJa:'各人がユニークだ。' },
-    { id:'vulnerable',  en:'vulnerable',  ja:'弱い・脆弱な',             pos:'adj',  level:4, cat:'general', exEn:'Children are vulnerable.',                  exJa:'子供は弱い立場にある。' },
+    { id:'ambitious',   en:'ambitious',   ja:'野心的な',                 pos:'adj',  level:4, cat:'general', exEn:'He is an ambitious person.',                exJa:'彼は野心的な人だ。', exEn2:'Opening three restaurants in one year is ambitious.', exJa2:'1 年で 3 店舗の出店は野心的だ。' },
+    { id:'crucial',     en:'crucial',     ja:'極めて重要な',             pos:'adj',  level:4, cat:'general', exEn:'This is a crucial moment.',                 exJa:'これは重要な瞬間だ。', exEn2:'The chef\'s first impression is crucial for guests.', exJa2:'シェフの第一印象はお客様にとって極めて重要だ。' },
+    { id:'ethical',     en:'ethical',     ja:'倫理的な',                 pos:'adj',  level:4, cat:'general', exEn:'Make ethical choices.',                     exJa:'倫理的な選択をしなさい。', exEn2:'We choose suppliers with ethical practices.', exJa2:'倫理的な取り組みをしている仕入先を選んでいる。' },
+    { id:'ideal',       en:'ideal',       ja:'理想的な',                 pos:'adj',  level:4, cat:'general', exEn:"It's an ideal situation.",                  exJa:'それは理想的な状況だ。', exEn2:'This corner space is ideal for a wine bar.', exJa2:'この角地はワインバーに理想的だ。' },
+    { id:'neutral',     en:'neutral',     ja:'中立の',                   pos:'adj',  level:4, cat:'general', exEn:'Stay neutral.',                             exJa:'中立でいなさい。', exEn2:'I stayed neutral during the discussion.', exJa2:'議論の間、私は中立を保った。' },
+    { id:'optimal',     en:'optimal',     ja:'最適な',                   pos:'adj',  level:4, cat:'general', exEn:'Find the optimal solution.',                exJa:'最適な解決策を見つけて。', exEn2:'We are looking for the optimal opening date.', exJa2:'最適なオープン日を探している。' },
+    { id:'predictable', en:'predictable', ja:'予測可能な',               pos:'adj',  level:4, cat:'general', exEn:'His behavior is predictable.',              exJa:'彼の行動は予測可能だ。', exEn2:'Sales in December are fairly predictable.', exJa2:'12 月の売上はかなり予測しやすい。' },
+    { id:'rational',    en:'rational',    ja:'合理的な',                 pos:'adj',  level:4, cat:'general', exEn:'Make a rational decision.',                 exJa:'合理的な決定をして。', exEn2:'It was a rational decision based on the numbers.', exJa2:'数字に基づいた合理的な判断だった。' },
+    { id:'robust',      en:'robust',      ja:'頑丈な',                   pos:'adj',  level:4, cat:'general', exEn:'This system is robust.',                    exJa:'このシステムは頑丈だ。', exEn2:'We built a robust system for reservations.', exJa2:'予約のための頑健な仕組みを作った。' },
+    { id:'subtle',      en:'subtle',      ja:'微妙な',                   pos:'adj',  level:4, cat:'general', exEn:"There's a subtle difference.",              exJa:'微妙な違いがある。', exEn2:'The yuzu adds a subtle aroma to the dish.', exJa2:'柚子が料理にほのかな香りを加える。' },
+    { id:'sustainable', en:'sustainable', ja:'持続可能な',               pos:'adj',  level:4, cat:'general', exEn:'We need sustainable energy.',               exJa:'私たちは持続可能なエネルギーが必要だ。', exEn2:'We aim to run a sustainable business.', exJa2:'持続可能な事業運営を目指している。' },
+    { id:'traditional', en:'traditional', ja:'伝統的な',                 pos:'adj',  level:4, cat:'general', exEn:'She wears traditional clothing.',           exJa:'彼女は伝統衣装を着る。', exEn2:'We serve traditional dishes with a modern touch.', exJa2:'現代的なひねりを加えた伝統料理を出している。' },
+    { id:'ultimate',    en:'ultimate',    ja:'究極の',                   pos:'adj',  level:4, cat:'general', exEn:"What's your ultimate goal?",                exJa:'あなたの究極の目標は？', exEn2:'The ultimate goal is a restaurant loved for 100 years.', exJa2:'究極の目標は 100 年愛される店だ。' },
+    { id:'unique',      en:'unique',      ja:'独特の',                   pos:'adj',  level:4, cat:'general', exEn:'Each person is unique.',                    exJa:'各人がユニークだ。', exEn2:'Every restaurant needs a unique story.', exJa2:'どの店にも独自の物語が必要だ。' },
+    { id:'vulnerable',  en:'vulnerable',  ja:'弱い・脆弱な',             pos:'adj',  level:4, cat:'general', exEn:'Children are vulnerable.',                  exJa:'子供は弱い立場にある。', exEn2:'New restaurants are vulnerable in their first year.', exJa2:'新店は 1 年目が最も脆弱だ。' },
     // L4 (continued) — verbs / nouns / adjectives
-    { id:'allocate',    en:'allocate',    ja:'割り当てる',               pos:'verb', level:4, cat:'general', exEn:'Allocate the budget wisely.',               exJa:'予算を賢く配分して。' },
-    { id:'assemble',    en:'assemble',    ja:'集める・組み立てる',       pos:'verb', level:4, cat:'general', exEn:'Assemble the team here.',                   exJa:'チームをここに集めて。' },
-    { id:'compile',     en:'compile',     ja:'編集する',                 pos:'verb', level:4, cat:'general', exEn:'Compile the report.',                       exJa:'レポートをまとめて。' },
-    { id:'cultivate',   en:'cultivate',   ja:'育てる・耕す',             pos:'verb', level:4, cat:'general', exEn:'Cultivate good habits.',                    exJa:'良い習慣を育てなさい。' },
-    { id:'designate',   en:'designate',   ja:'指定する',                 pos:'verb', level:4, cat:'general', exEn:'She was designated leader.',                exJa:'彼女がリーダーに指名された。' },
+    { id:'allocate',    en:'allocate',    ja:'割り当てる',               pos:'verb', level:4, cat:'general', exEn:'Allocate the budget wisely.',               exJa:'予算を賢く配分して。', exEn2:'We allocated more budget to staff training.', exJa2:'スタッフ研修により多くの予算を割り当てた。' },
+    { id:'assemble',    en:'assemble',    ja:'集める・組み立てる',       pos:'verb', level:4, cat:'general', exEn:'Assemble the team here.',                   exJa:'チームをここに集めて。', exEn2:'We assembled a great opening team.', exJa2:'素晴らしいオープニングチームを編成した。' },
+    { id:'compile',     en:'compile',     ja:'編集する',                 pos:'verb', level:4, cat:'general', exEn:'Compile the report.',                       exJa:'レポートをまとめて。', exEn2:'I compiled a list of the best suppliers.', exJa2:'最高の仕入先リストをまとめた。' },
+    { id:'cultivate',   en:'cultivate',   ja:'育てる・耕す',             pos:'verb', level:4, cat:'general', exEn:'Cultivate good habits.',                    exJa:'良い習慣を育てなさい。', exEn2:'It takes years to cultivate loyal customers.', exJa2:'常連のお客様を育てるには何年もかかる。' },
+    { id:'designate',   en:'designate',   ja:'指定する',                 pos:'verb', level:4, cat:'general', exEn:'She was designated leader.',                exJa:'彼女がリーダーに指名された。', exEn2:'This table is designated for VIP guests.', exJa2:'このテーブルは VIP のお客様用に指定されている。' },
     { id:'diminish',    en:'diminish',    ja:'減少する',                 pos:'verb', level:4, cat:'general', exEn:'His power diminished.',                     exJa:'彼の力は減少した。' },
     { id:'foster',      en:'foster',      ja:'育成する',                 pos:'verb', level:4, cat:'general', exEn:'Foster creativity in children.',            exJa:'子供の創造性を育てる。' },
     { id:'incorporate', en:'incorporate', ja:'組み込む',                 pos:'verb', level:4, cat:'general', exEn:'Incorporate feedback.',                     exJa:'フィードバックを取り入れて。' },
