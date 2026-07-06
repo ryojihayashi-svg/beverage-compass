@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Hayashi Family">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Hayashi Family</title>
+<link rel="manifest" href="manifest.json">
 <!-- iOS reliably renders only PNG for apple-touch-icon, even on iOS 16+. -->
 <link rel="apple-touch-icon" sizes="180x180" href="hfe-icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="hfe-icon-192.png">
@@ -64,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 306;
+  const APP_VERSION = 307;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
