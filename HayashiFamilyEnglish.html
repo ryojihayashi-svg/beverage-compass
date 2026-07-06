@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 336;
+  const APP_VERSION = 337;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1243,26 +1243,26 @@
     { id:'benevolent',   en:'benevolent',   ja:'慈悲深い',                 pos:'adj',  level:5, cat:'general', exEn:'A benevolent leader is rare.',              exJa:'慈悲深い指導者は珍しい。', exEn2:'He is a benevolent mentor to young chefs.', exJa2:'彼は若いシェフたちの温かい指導者だ。' },
     { id:'coalesce',     en:'coalesce',     ja:'合体する',                 pos:'verb', level:5, cat:'general', exEn:'The groups coalesced.',                     exJa:'集団が合体した。', exEn2:'Different ideas coalesced into one strong concept.', exJa2:'様々なアイデアが一つの強いコンセプトにまとまった。' },
     { id:'concur',       en:'concur',       ja:'同意する',                 pos:'verb', level:5, cat:'general', exEn:'I concur with your view.',                  exJa:'あなたの見解に同意する。', exEn2:'I concur with your assessment of the location.', exJa2:'立地についてのあなたの評価に同意します。' },
-    { id:'condone',      en:'condone',      ja:'大目に見る',               pos:'verb', level:5, cat:'general', exEn:"We don't condone violence.",                exJa:'暴力を大目には見ない。' },
-    { id:'dichotomy',    en:'dichotomy',    ja:'二分法',                   pos:'noun', level:5, cat:'general', exEn:"It's a false dichotomy.",                   exJa:'それは誤った二分法だ。' },
-    { id:'enigma',       en:'enigma',       ja:'謎',                       pos:'noun', level:5, cat:'general', exEn:'His past is an enigma.',                    exJa:'彼の過去は謎だ。' },
-    { id:'ephemeral',    en:'ephemeral',    ja:'はかない',                 pos:'adj',  level:5, cat:'general', exEn:'Beauty is ephemeral.',                      exJa:'美ははかない。' },
-    { id:'esoteric',     en:'esoteric',     ja:'難解な',                   pos:'adj',  level:5, cat:'general', exEn:'His writing is esoteric.',                  exJa:'彼の文章は難解だ。' },
-    { id:'fervent',      en:'fervent',      ja:'熱烈な',                   pos:'adj',  level:5, cat:'general', exEn:'She has a fervent belief.',                 exJa:'彼女は熱烈な信念を持つ。' },
-    { id:'frivolous',    en:'frivolous',    ja:'軽薄な',                   pos:'adj',  level:5, cat:'general', exEn:"Don't make frivolous excuses.",             exJa:'軽薄な言い訳をしないで。' },
-    { id:'impeccable',   en:'impeccable',   ja:'完璧な',                   pos:'adj',  level:5, cat:'general', exEn:'Her manners are impeccable.',               exJa:'彼女の礼儀は完璧だ。' },
-    { id:'intrinsic',    en:'intrinsic',    ja:'本質的な',                 pos:'adj',  level:5, cat:'general', exEn:'It has intrinsic value.',                   exJa:'それは本質的価値を持つ。' },
-    { id:'magnitude',    en:'magnitude',    ja:'規模',                     pos:'noun', level:5, cat:'general', exEn:'The magnitude is enormous.',                exJa:'規模は莫大だ。' },
-    { id:'nostalgic',    en:'nostalgic',    ja:'懐かしい',                 pos:'adj',  level:5, cat:'general', exEn:'I feel nostalgic for childhood.',           exJa:'子供時代を懐かしく感じる。' },
-    { id:'ostensible',   en:'ostensible',   ja:'表向きの',                 pos:'adj',  level:5, cat:'general', exEn:'His ostensible reason was work.',           exJa:'表向きの理由は仕事だった。' },
-    { id:'perpetual',    en:'perpetual',    ja:'永続的な',                 pos:'adj',  level:5, cat:'general', exEn:'She lives in perpetual fear.',              exJa:'彼女は永続的な恐怖の中で生きる。' },
-    { id:'pragmatic',    en:'pragmatic',    ja:'実用的な',                 pos:'adj',  level:5, cat:'general', exEn:'Be pragmatic, not idealistic.',             exJa:'理想的ではなく実用的になりなさい。' },
-    { id:'proliferate',  en:'proliferate',  ja:'急増する',                 pos:'verb', level:5, cat:'general', exEn:'Mistakes proliferated quickly.',            exJa:'間違いが急速に広がった。' },
-    { id:'reciprocal',   en:'reciprocal',   ja:'相互の',                   pos:'adj',  level:5, cat:'general', exEn:'Trust must be reciprocal.',                 exJa:'信頼は相互的でなければならない。' },
-    { id:'redundant',    en:'redundant',    ja:'余分の',                   pos:'adj',  level:5, cat:'general', exEn:'This sentence is redundant.',               exJa:'この文は余分だ。' },
-    { id:'salient',      en:'salient',      ja:'顕著な',                   pos:'adj',  level:5, cat:'general', exEn:'The salient point is cost.',                exJa:'顕著な点はコストだ。' },
-    { id:'tacit',        en:'tacit',        ja:'暗黙の',                   pos:'adj',  level:5, cat:'general', exEn:"There's a tacit agreement.",                exJa:'暗黙の合意がある。' },
-    { id:'trivial',      en:'trivial',      ja:'ささいな',                 pos:'adj',  level:5, cat:'general', exEn:"It's a trivial matter.",                    exJa:'ささいな問題だ。' },
+    { id:'condone',      en:'condone',      ja:'大目に見る',               pos:'verb', level:5, cat:'general', exEn:"We don't condone violence.",                exJa:'暴力を大目には見ない。', exEn2:'We never condone rude behaviour toward staff.', exJa2:'スタッフへの無礼な振る舞いは決して容認しない。' },
+    { id:'dichotomy',    en:'dichotomy',    ja:'二分法',                   pos:'noun', level:5, cat:'general', exEn:"It's a false dichotomy.",                   exJa:'それは誤った二分法だ。', exEn2:'There is a false dichotomy between profit and quality.', exJa2:'利益と品質の二者択一は誤った考えだ。' },
+    { id:'enigma',       en:'enigma',       ja:'謎',                       pos:'noun', level:5, cat:'general', exEn:'His past is an enigma.',                    exJa:'彼の過去は謎だ。', exEn2:'Why that restaurant failed remains an enigma.', exJa2:'あの店がなぜ失敗したかは今も謎だ。' },
+    { id:'ephemeral',    en:'ephemeral',    ja:'はかない',                 pos:'adj',  level:5, cat:'general', exEn:'Beauty is ephemeral.',                      exJa:'美ははかない。', exEn2:'Cherry blossoms remind us that beauty is ephemeral.', exJa2:'桜は美のはかなさを思い出させてくれる。' },
+    { id:'esoteric',     en:'esoteric',     ja:'難解な',                   pos:'adj',  level:5, cat:'general', exEn:'His writing is esoteric.',                  exJa:'彼の文章は難解だ。', exEn2:'Avoid esoteric wine terms with new guests.', exJa2:'初めてのお客様に難解なワイン用語は避けること。' },
+    { id:'fervent',      en:'fervent',      ja:'熱烈な',                   pos:'adj',  level:5, cat:'general', exEn:'She has a fervent belief.',                 exJa:'彼女は熱烈な信念を持つ。', exEn2:'He is a fervent supporter of local farmers.', exJa2:'彼は地元農家の熱烈な支援者だ。' },
+    { id:'frivolous',    en:'frivolous',    ja:'軽薄な',                   pos:'adj',  level:5, cat:'general', exEn:"Don't make frivolous excuses.",             exJa:'軽薄な言い訳をしないで。', exEn2:'A frivolous complaint should still be handled politely.', exJa2:'軽薄なクレームにも丁寧に対応すべきだ。' },
+    { id:'impeccable',   en:'impeccable',   ja:'完璧な',                   pos:'adj',  level:5, cat:'general', exEn:'Her manners are impeccable.',               exJa:'彼女の礼儀は完璧だ。', exEn2:'The service at that hotel was impeccable.', exJa2:'あのホテルのサービスは完璧だった。' },
+    { id:'intrinsic',    en:'intrinsic',    ja:'本質的な',                 pos:'adj',  level:5, cat:'general', exEn:'It has intrinsic value.',                   exJa:'それは本質的価値を持つ。', exEn2:'Craftsmanship has intrinsic value beyond money.', exJa2:'職人技にはお金を超えた本質的な価値がある。' },
+    { id:'magnitude',    en:'magnitude',    ja:'規模',                     pos:'noun', level:5, cat:'general', exEn:'The magnitude is enormous.',                exJa:'規模は莫大だ。', exEn2:'We underestimated the magnitude of the project.', exJa2:'プロジェクトの規模を過小評価していた。' },
+    { id:'nostalgic',    en:'nostalgic',    ja:'懐かしい',                 pos:'adj',  level:5, cat:'general', exEn:'I feel nostalgic for childhood.',           exJa:'子供時代を懐かしく感じる。', exEn2:'This dish makes me nostalgic for my hometown.', exJa2:'この料理は故郷を懐かしく思い出させる。' },
+    { id:'ostensible',   en:'ostensible',   ja:'表向きの',                 pos:'adj',  level:5, cat:'general', exEn:'His ostensible reason was work.',           exJa:'表向きの理由は仕事だった。', exEn2:'The ostensible reason was cost, but the truth was politics.', exJa2:'表向きの理由はコストだったが、実際は社内政治だった。' },
+    { id:'perpetual',    en:'perpetual',    ja:'永続的な',                 pos:'adj',  level:5, cat:'general', exEn:'She lives in perpetual fear.',              exJa:'彼女は永続的な恐怖の中で生きる。', exEn2:'Improvement must be perpetual, not occasional.', exJa2:'改善は時々ではなく、絶え間なく続けるものだ。' },
+    { id:'pragmatic',    en:'pragmatic',    ja:'実用的な',                 pos:'adj',  level:5, cat:'general', exEn:'Be pragmatic, not idealistic.',             exJa:'理想的ではなく実用的になりなさい。', exEn2:'We took a pragmatic approach to the renovation.', exJa2:'改装には実用的なアプローチを取った。' },
+    { id:'proliferate',  en:'proliferate',  ja:'急増する',                 pos:'verb', level:5, cat:'general', exEn:'Mistakes proliferated quickly.',            exJa:'間違いが急速に広がった。', exEn2:'Cafes have proliferated in this neighbourhood.', exJa2:'この界隈ではカフェが急増した。' },
+    { id:'reciprocal',   en:'reciprocal',   ja:'相互の',                   pos:'adj',  level:5, cat:'general', exEn:'Trust must be reciprocal.',                 exJa:'信頼は相互的でなければならない。', exEn2:'We have a reciprocal relationship with our suppliers.', exJa2:'仕入先とは持ちつ持たれつの関係だ。' },
+    { id:'redundant',    en:'redundant',    ja:'余分の',                   pos:'adj',  level:5, cat:'general', exEn:'This sentence is redundant.',               exJa:'この文は余分だ。', exEn2:'We removed redundant steps from the service flow.', exJa2:'サービスの流れから余分な工程を省いた。' },
+    { id:'salient',      en:'salient',      ja:'顕著な',                   pos:'adj',  level:5, cat:'general', exEn:'The salient point is cost.',                exJa:'顕著な点はコストだ。', exEn2:'The salient point is that guests keep returning.', exJa2:'重要な点はお客様がリピートしてくれていることだ。' },
+    { id:'tacit',        en:'tacit',        ja:'暗黙の',                   pos:'adj',  level:5, cat:'general', exEn:"There's a tacit agreement.",                exJa:'暗黙の合意がある。', exEn2:'There is a tacit understanding among the regulars.', exJa2:'常連客の間には暗黙の了解がある。' },
+    { id:'trivial',      en:'trivial',      ja:'ささいな',                 pos:'adj',  level:5, cat:'general', exEn:"It's a trivial matter.",                    exJa:'ささいな問題だ。', exEn2:'No detail is trivial in fine dining.', exJa2:'ファインダイニングにささいなことなど無い。' },
     // L5 (continued) — sophisticated (final 20)
     { id:'acumen',       en:'acumen',       ja:'鋭敏さ・洞察力',           pos:'noun', level:5, cat:'general', exEn:'She has business acumen.',                  exJa:'彼女はビジネスの鋭敏さを持つ。' },
     { id:'adept',        en:'adept',        ja:'熟達した',                 pos:'adj',  level:5, cat:'general', exEn:"He's adept at chess.",                      exJa:'彼はチェスに熟達している。' },
