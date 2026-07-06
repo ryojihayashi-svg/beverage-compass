@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 355;
+  const APP_VERSION = 356;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -21769,6 +21769,34 @@
     return units;
   }
 
+  // ----- 共通: 出題方向トグル (日→英 / 英→日) -----
+  // 「話せる」ためには日→英 (自分で英語を作る方向) が核心。
+  // テンポ単語・サイクル英作文・定型構文の練習で共用する。
+  function DirectionToggle({ profile, direction, onChange }) {
+    const cell = (id, label) => e('button', {
+      key: id,
+      onClick: () => onChange(id),
+      style: {
+        flex: 1, padding: '8px 0',
+        background: direction === id ? profile.color : 'transparent',
+        color: direction === id ? '#fff' : C.sub,
+        border: 'none', cursor: 'pointer',
+        fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
+      }
+    }, label);
+    return e('div', {
+      style: {
+        display: 'flex',
+        background: C.softer, border: '1px solid ' + C.line,
+        borderRadius: 10, overflow: 'hidden',
+        marginBottom: 14,
+      }
+    },
+      cell('ja2en', '日 → 英'),
+      cell('en2ja', '英 → 日'),
+    );
+  }
+
   function TempoVocab({ profile, onBack }) {
     const [level, setLevel]     = useState(profile.level || 1);
     const [unitIdx, setUnitIdx] = useState(-1);   // -1 = ユニット一覧
@@ -21900,6 +21928,7 @@
   // ----- チャンツ再生 + 確認テスト -----
   function TempoVocabPractice({ profile, level, unitIdx, words, onBackToList, onNextUnit }) {
     const [screen, setScreen]   = useState('chant');  // 'chant' | 'check' | 'done'
+    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja'
     const [wIdx, setWIdx]       = useState(0);
     const [chantPhase, setChantPhase] = useState('en1'); // 'en1' | 'ja' | 'en2'
     const [playing, setPlaying] = useState(true);
@@ -21935,18 +21964,35 @@
         try { window.speechSynthesis.speak(u); } catch { resolve(); }
       });
       (async () => {
-        setChantPhase('en1');
-        await sleep(350);
-        await speakOnce(w.en, 'en-GB');
-        if (cancelled || seq !== playSeq.current) return;
-        setChantPhase('ja');
-        await sleep(250);
         // 日本語は「・」区切りの多義語を最初の意味だけ読む (テンポ重視)
-        await speakOnce((w.ja || '').split('・')[0], 'ja-JP');
-        if (cancelled || seq !== playSeq.current) return;
-        setChantPhase('en2');
-        await sleep(250);
-        await speakOnce(w.en, 'en-GB');
+        const jaText = (w.ja || '').split('・')[0];
+        if (direction === 'ja2en') {
+          // 日→英チャンツ: JA → (自分で英語を思い浮かべる間) → EN → EN
+          setChantPhase('ja');
+          await sleep(350);
+          await speakOnce(jaText, 'ja-JP');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en1');
+          await sleep(650);
+          await speakOnce(w.en, 'en-GB');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en2');
+          await sleep(250);
+          await speakOnce(w.en, 'en-GB');
+        } else {
+          // 英→日チャンツ (キクタン式): EN → JA → EN
+          setChantPhase('en1');
+          await sleep(350);
+          await speakOnce(w.en, 'en-GB');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('ja');
+          await sleep(250);
+          await speakOnce(jaText, 'ja-JP');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en2');
+          await sleep(250);
+          await speakOnce(w.en, 'en-GB');
+        }
         if (cancelled || seq !== playSeq.current) return;
         await sleep(550);
         if (cancelled || seq !== playSeq.current) return;
@@ -21965,7 +22011,7 @@
         timeouts.forEach(clearTimeout);
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
-    }, [screen, playing, wIdx]);
+    }, [screen, playing, wIdx, direction]);
 
     useEffect(() => () => {
       try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
@@ -21975,7 +22021,7 @@
     const markCheck = (isKnown) => {
       const w = words[checkIdx];
       if (!w) return;
-      try { db.recordAnswer(profile.id, w.id, isKnown, { direction: 'en2ja' }); } catch {}
+      try { db.recordAnswer(profile.id, w.id, isKnown, { direction }); } catch {}
       const nextResults = results.concat([{ id: w.id, isKnown }]);
       setResults(nextResults);
       setRevealed(false);
@@ -21987,7 +22033,7 @@
             kind: 'vocab',
             total: words.length,
             correct: nextResults.filter(r => r.isKnown).length,
-            direction: 'en2ja',
+            direction,
             durationMs: Date.now() - sessionStartRef.current,
             label: 'テンポ単語 LV' + level + ' Unit ' + (unitIdx + 1),
           });
@@ -22020,6 +22066,10 @@
       if (!w) return null;
       return e('div', { style: pageStyle },
         topBar,
+        e(DirectionToggle, {
+          profile, direction,
+          onChange: (d) => { setDirection(d); setChantPhase(d === 'ja2en' ? 'ja' : 'en1'); setPlaying(true); },
+        }),
         // 進捗バー
         e('div', {
           style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: 22 }
@@ -22062,7 +22112,7 @@
         e('div', {
           style: { display: 'flex', justifyContent: 'center', gap: 10, marginTop: 18 }
         },
-          ['en1', 'ja', 'en2'].map(p => e('div', {
+          (direction === 'ja2en' ? ['ja', 'en1', 'en2'] : ['en1', 'ja', 'en2']).map(p => e('div', {
             key: p,
             style: {
               width: 10, height: 10, borderRadius: 999,
@@ -22125,39 +22175,59 @@
             }
           }),
         ),
+        e(DirectionToggle, {
+          profile, direction,
+          onChange: (d) => { setDirection(d); setRevealed(false); },
+        }),
         e('div', {
           style: { fontSize: 12, color: C.sub, fontFamily: SANS_UI, letterSpacing: '0.08em', marginBottom: 10, textAlign: 'center' }
-        }, '確認テスト — 意味を思い出せたら「覚えた」'),
-        // 出題カード (EN → タップで JA)
+        }, direction === 'ja2en'
+            ? '確認テスト — 英語で言えたら「覚えた」'
+            : '確認テスト — 意味を思い出せたら「覚えた」'),
+        // 出題カード (方向に応じて EN/JA を出し分け)
         e('div', {
           style: {
             background: C.card, border: '1px solid ' + C.line,
             borderRadius: 18, padding: '38px 22px', textAlign: 'center',
           }
         },
-          e('div', {
-            style: { fontFamily: SERIF_READ, fontSize: 34, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-          }, w.en),
-          e('div', { style: { marginTop: 8 } },
+          direction === 'ja2en'
+            ? e('div', {
+                style: { fontFamily: SERIF, fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1.4 }
+              }, w.ja)
+            : e('div', {
+                style: { fontFamily: SERIF_READ, fontSize: 34, fontWeight: 700, color: C.text, lineHeight: 1.3 }
+              }, w.en),
+          direction === 'en2ja' && e('div', { style: { marginTop: 8 } },
             e(SpeakerBtn, { onClick: () => speak(w.en), color: profile.color, size: 34 }),
           ),
-          revealed && e('div', {
-            style: { fontSize: 20, color: C.text, marginTop: 16, lineHeight: 1.5 }
-          }, w.ja),
+          revealed && (direction === 'ja2en'
+            ? e('div', {
+                style: { fontFamily: SERIF_READ, fontSize: 30, fontWeight: 700, color: C.text, marginTop: 16, lineHeight: 1.3 }
+              }, w.en)
+            : e('div', {
+                style: { fontSize: 20, color: C.text, marginTop: 16, lineHeight: 1.5 }
+              }, w.ja)),
+          revealed && direction === 'ja2en' && e('div', { style: { marginTop: 8 } },
+            e(SpeakerBtn, { onClick: () => speak(w.en), color: profile.color, size: 34 }),
+          ),
           revealed && w.exEn && e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 14, lineHeight: 1.6, fontFamily: SERIF_READ }
           }, w.exEn, e('br'), w.exJa),
         ),
         !revealed
           ? e('button', {
-              onClick: () => setRevealed(true),
+              onClick: () => {
+                setRevealed(true);
+                if (direction === 'ja2en') { try { speak(w.en); } catch {} }
+              },
               style: {
                 width: '100%', marginTop: 20,
                 padding: '16px 0', borderRadius: 12,
                 background: profile.color, color: '#fff', border: 'none', cursor: 'pointer',
                 fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
               }
-            }, '意味を表示')
+            }, direction === 'ja2en' ? '答えを表示 + 発音' : '意味を表示')
           : e('div', {
               style: { marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }
             },
@@ -22390,6 +22460,7 @@
   // ----- サイクル練習 (10 文 × n 周) -----
   function CycleCompositionPractice({ profile, level, setIdx, sentences, onBackToList, onNextSet }) {
     const [cycle, setCycle]       = useState(1);
+    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja'
     const [idx, setIdx2]          = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);   // このサイクルの ○×
@@ -22400,7 +22471,7 @@
 
     const reveal = () => {
       setRevealed(true);
-      try { speak(cur.en); } catch {}
+      if (direction === 'ja2en') { try { speak(cur.en); } catch {} }
     };
     const mark = (ok) => {
       if (!cur) return;
@@ -22416,7 +22487,7 @@
             kind: 'composition',
             total: sentences.length,
             correct: nextResults.filter(r => r.ok).length,
-            direction: 'ja2en',
+            direction,
             durationMs: Date.now() - sessionStartRef.current,
             label: 'サイクル英作文 LV' + level + ' Set ' + (setIdx + 1) + ' (' + cycle + ' 周目)',
           });
@@ -22522,6 +22593,10 @@
     if (!cur) return null;
     return e('div', { style: pageStyle },
       topBar,
+      e(DirectionToggle, {
+        profile, direction,
+        onChange: (d) => { setDirection(d); setRevealed(false); },
+      }),
       e('div', {
         style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: 20 }
       },
@@ -22536,7 +22611,7 @@
         style: { fontSize: 12, color: C.sub, fontFamily: SANS_UI, textAlign: 'center', marginBottom: 10 }
       },
         cycle === 1 ? '1 周目 — じっくり考えて OK' : cycle + ' 周目 — 反射で言えるか？'),
-      // 日本語カード
+      // 出題カード (方向に応じて JA / EN)
       e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
@@ -22545,9 +22620,16 @@
           alignItems: 'center', justifyContent: 'center',
         }
       },
-        e('div', {
-          style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.55 }
-        }, cur.ja),
+        direction === 'ja2en'
+          ? e('div', {
+              style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.55 }
+            }, cur.ja)
+          : e('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+              e('div', {
+                style: { fontFamily: SERIF_READ, fontSize: 21, color: C.text, lineHeight: 1.5 }
+              }, cur.en),
+              e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 34 }),
+            ),
       ),
       // 答え (revealed)
       revealed && e('div', {
@@ -22559,13 +22641,15 @@
       },
         e('div', { style: { flex: 1, minWidth: 0 } },
           e('div', {
-            style: { fontFamily: SERIF_READ, fontSize: 19, color: C.text, lineHeight: 1.5 }
-          }, cur.en),
+            style: direction === 'ja2en'
+              ? { fontFamily: SERIF_READ, fontSize: 19, color: C.text, lineHeight: 1.5 }
+              : { fontFamily: SERIF, fontSize: 19, color: C.text, lineHeight: 1.6 }
+          }, direction === 'ja2en' ? cur.en : cur.ja),
           cur.grammar && e('div', {
             style: { fontSize: 11.5, color: C.sub, marginTop: 6, fontFamily: SANS_UI }
           }, cur.grammar),
         ),
-        e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 38 }),
+        direction === 'ja2en' && e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 38 }),
       ),
       // ボタン
       !revealed
@@ -22577,7 +22661,7 @@
               background: profile.color, color: '#fff', border: 'none', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
             }
-          }, '答えを表示 + 発音')
+          }, direction === 'ja2en' ? '答えを表示 + 発音' : '意味を表示')
         : e('div', {
             style: { marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }
           },
@@ -26633,6 +26717,7 @@
     }, [profile.id, order, seed, tick, section]);
 
     const [idx, setIdx]             = useState(0);
+    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja'
     const [revealed, setRevealed]   = useState(false);
     const [solvedInChunk, setSolved] = useState(0);
     const [showChunkPrompt, setShowChunkPrompt] = useState(false);
@@ -26643,7 +26728,7 @@
 
     const reveal = () => {
       setRevealed(true);
-      try { speak(cur.en); } catch {}
+      if (direction === 'ja2en') { try { speak(cur.en); } catch {} }
     };
     const mark = (isCorrect) => {
       if (!cur) return;
@@ -26789,19 +26874,31 @@
                     }, cur.theme)
                   : e(ConvoKindChip, { kind: cur.kind }),
               ),
-              // 日本語 + 右上の × 削除
+              // 方向トグル (日→英 / 英→日)
+              e(DirectionToggle, {
+                profile, direction,
+                onChange: (d) => { setDirection(d); setRevealed(false); },
+              }),
+              // 出題カード + 右上の × 削除
               e('div', {
                 style: {
                   position: 'relative',
                   background: C.card, border: '1px solid ' + C.line,
-                  borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: (cur.theme || (cur.kind && cur.kind !== 'example')) ? 4 : 12,
+                  borderRadius: 14, padding: '24px 38px 24px 18px', marginTop: 4,
                   textAlign: 'center', minHeight: 88,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                 }
               },
-                e('div', {
-                  style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
-                }, cur.ja),
+                direction === 'ja2en'
+                  ? e('div', {
+                      style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.5 }
+                    }, cur.ja)
+                  : e('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                      e('div', {
+                        style: { fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+                      }, cur.en),
+                      e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 34 }),
+                    ),
                 e(ConvoDeleteBtn, {
                   onConfirm: () => {
                     hideConvoSentence(cur.id);
@@ -26810,7 +26907,7 @@
                   }
                 }),
               ),
-              // 英語 (revealed のときだけ)
+              // 答え (revealed のときだけ、方向に応じて EN / JA)
               revealed && e('div', {
                 style: {
                   background: profile.color + '0E', border: '1px solid ' + profile.color + '33',
@@ -26819,9 +26916,11 @@
                 }
               },
                 e('div', {
-                  style: { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
-                }, cur.en),
-                e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
+                  style: direction === 'ja2en'
+                    ? { flex: 1, fontFamily: SERIF_READ, fontSize: 20, color: C.text, lineHeight: 1.5 }
+                    : { flex: 1, fontFamily: SERIF, fontSize: 19, color: C.text, lineHeight: 1.6 }
+                }, direction === 'ja2en' ? cur.en : cur.ja),
+                direction === 'ja2en' && e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 40 }),
               ),
               // パターン名は答えが出てから下に出す
               revealed && e(ConvoPatternFootnote, {
@@ -26843,7 +26942,7 @@
                         cursor: 'pointer',
                         fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
                       }
-                    }, '答えを表示 + 発音'),
+                    }, direction === 'ja2en' ? '答えを表示 + 発音' : '意味を表示'),
                   )
                 : e('div', {
                     style: {
