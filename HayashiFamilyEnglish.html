@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 339;
+  const APP_VERSION = 340;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -1697,7 +1697,7 @@
     { id:'undermine',      en:'undermine',      ja:'損なう・蝕む',       pos:'verb', level:5, cat:'general', exEn:'Stress can undermine your health.',           exJa:'ストレスは健康を蝕むことがある。', exEn2:'Gossip undermines trust within a team.', exJa2:'陰口はチーム内の信頼を蝕む。' },
     { id:'validate',       en:'validate',       ja:'検証する・有効にする', pos:'verb', level:5, cat:'general', exEn:'They validate the data carefully.',         exJa:'彼らはデータを慎重に検証する。', exEn2:'The award validated years of quiet work.', exJa2:'その賞は地道な年月の仕事を証明してくれた。' },
     { id:'compensate',     en:'compensate',     ja:'補償する・補う',     pos:'verb', level:5, cat:'general', exEn:'Hard work compensated for his lack of talent.', exJa:'努力が才能不足を補った。', exEn2:'Great service can compensate for a small space.', exJa2:'優れたサービスは狭い空間を補うことができる。' },
-    { id:'procrastinate',  en:'procrastinate',  ja:'先延ばしする',       pos:'verb', level:5, cat:'general', exEn:"Don't procrastinate; start now.",             exJa:'先延ばしせず、今始めなさい。' },
+    { id:'procrastinate',  en:'procrastinate',  ja:'先延ばしする',       pos:'verb', level:5, cat:'general', exEn:"Don't procrastinate; start now.",             exJa:'先延ばしせず、今始めなさい。', exEn2:'Don\'t procrastinate on difficult conversations.', exJa2:'難しい話し合いを先延ばしにしないこと。' },
 
     // ============ L4 形容詞・副詞 ============
     { id:'reliable',       en:'reliable',       ja:'信頼できる',         pos:'adj',  level:4, cat:'general', exEn:'He is a reliable friend.',                    exJa:'彼は信頼できる友人だ。', exEn2:'A reliable supplier is worth more than a cheap one.', exJa2:'信頼できる仕入先は安い仕入先より価値がある。' },
@@ -1707,11 +1707,11 @@
     { id:'apparently',     en:'apparently',     ja:'どうやら〜らしい',   pos:'adv',  level:4, cat:'general', exEn:'Apparently, the meeting was cancelled.',      exJa:'どうやら会議は中止になったらしい。', exEn2:'Apparently, the chef trained in Paris.', exJa2:'どうやらそのシェフはパリで修業したらしい。' },
 
     // ============ L5 形容詞・副詞 ============
-    { id:'subsequently',   en:'subsequently',   ja:'その後',             pos:'adv',  level:5, cat:'general', exEn:'He resigned and subsequently moved abroad.',  exJa:'彼は辞職し、その後海外へ移った。' },
-    { id:'consequently',   en:'consequently',   ja:'その結果',           pos:'adv',  level:5, cat:'general', exEn:'The bridge collapsed; consequently, traffic was diverted.', exJa:'橋が崩落し、その結果交通が迂回された。' },
-    { id:'invariably',     en:'invariably',     ja:'いつも例外なく',     pos:'adv',  level:5, cat:'general', exEn:'He invariably arrives early.',                exJa:'彼は決まって早く到着する。' },
-    { id:'predominantly',  en:'predominantly',  ja:'主に',               pos:'adv',  level:5, cat:'general', exEn:'The audience was predominantly young.',       exJa:'観客は主に若者だった。' },
-    { id:'profoundly',     en:'profoundly',     ja:'深く・大いに',       pos:'adv',  level:5, cat:'general', exEn:'I am profoundly grateful for your help.',     exJa:'あなたの助けに深く感謝している。' },
+    { id:'subsequently',   en:'subsequently',   ja:'その後',             pos:'adv',  level:5, cat:'general', exEn:'He resigned and subsequently moved abroad.',  exJa:'彼は辞職し、その後海外へ移った。', exEn2:'He trained in Paris and subsequently opened his own place.', exJa2:'彼はパリで修業し、その後自分の店を開いた。' },
+    { id:'consequently',   en:'consequently',   ja:'その結果',           pos:'adv',  level:5, cat:'general', exEn:'The bridge collapsed; consequently, traffic was diverted.', exJa:'橋が崩落し、その結果交通が迂回された。', exEn2:'We raised quality; consequently, guests returned.', exJa2:'品質を上げた結果、お客様が戻ってきた。' },
+    { id:'invariably',     en:'invariably',     ja:'いつも例外なく',     pos:'adv',  level:5, cat:'general', exEn:'He invariably arrives early.',                exJa:'彼は決まって早く到着する。', exEn2:'Great restaurants invariably have great teams.', exJa2:'素晴らしい店には例外なく素晴らしいチームがある。' },
+    { id:'predominantly',  en:'predominantly',  ja:'主に',               pos:'adv',  level:5, cat:'general', exEn:'The audience was predominantly young.',       exJa:'観客は主に若者だった。', exEn2:'Our guests are predominantly local regulars.', exJa2:'お客様は主に地元の常連だ。' },
+    { id:'profoundly',     en:'profoundly',     ja:'深く・大いに',       pos:'adv',  level:5, cat:'general', exEn:'I am profoundly grateful for your help.',     exJa:'あなたの助けに深く感謝している。', exEn2:'That mentor profoundly changed my career.', exJa2:'あの師匠は私のキャリアを大きく変えた。' },
 
     // ============ Target 1200 不足語 (Round 1) → LV3 ============
     { id:'activity',     en:'activity',     ja:'活動',         pos:'noun', level:3, cat:'general', exEn:'After-school activities are popular here.', exJa:'放課後の活動はここでは人気だ。', exEn2:'Walking is my favourite activity.', exJa2:'ウォーキングは私のお気に入りの活動だ。' },
@@ -1955,26 +1955,26 @@
     { id:'address',      en:'address',      ja:'対処する・住所', pos:'verb', level:4, cat:'general', exEn:'We must address this issue.',           exJa:'この問題に対処しなければならない。',
       exEn2:'Please write your address here.',              exJa2:'ここに住所を書いてください。' },
     { id:'anxiety',      en:'anxiety',      ja:'不安',         pos:'noun', level:4, cat:'general', exEn:'She felt great anxiety.',                   exJa:'彼女はひどく不安を感じた。', exEn2:'Opening night always brings some anxiety.', exJa2:'オープン初日はいつも多少の不安がある。' },
-    { id:'assert',       en:'assert',       ja:'断言する',     pos:'verb', level:5, cat:'general', exEn:'He asserted his innocence.',                exJa:'彼は無実を断言した。' },
+    { id:'assert',       en:'assert',       ja:'断言する',     pos:'verb', level:5, cat:'general', exEn:'He asserted his innocence.',                exJa:'彼は無実を断言した。', exEn2:'She asserted that the plan was too risky.', exJa2:'彼女はその計画はリスクが高すぎると断言した。' },
     { id:'assign',       en:'assign',       ja:'割り当てる',   pos:'verb', level:4, cat:'work',    exEn:'She was assigned a new role.',              exJa:'彼女は新しい役割を割り当てられた。', exEn2:'Each station is assigned to one chef.', exJa2:'各持ち場は一人のシェフに割り当てられている。' },
     { id:'assure',       en:'assure',       ja:'保証する',     pos:'verb', level:4, cat:'general', exEn:'I assure you it is safe.',                  exJa:'安全だと保証します。', exEn2:'I assure you the quality will not change.', exJa2:'品質は変わらないとお約束します。' },
-    { id:'authentic',    en:'authentic',    ja:'本物の',       pos:'adj',  level:5, cat:'general', exEn:'This is authentic Japanese cuisine.',       exJa:'これは本物の日本料理だ。' },
-    { id:'bias',         en:'bias',         ja:'偏見',         pos:'noun', level:5, cat:'general', exEn:'We must avoid bias in our judgement.',      exJa:'判断に偏見を持ち込んではいけない。' },
+    { id:'authentic',    en:'authentic',    ja:'本物の',       pos:'adj',  level:5, cat:'general', exEn:'This is authentic Japanese cuisine.',       exJa:'これは本物の日本料理だ。', exEn2:'We serve authentic Sichuan dishes.', exJa2:'本場の四川料理を提供している。' },
+    { id:'bias',         en:'bias',         ja:'偏見',         pos:'noun', level:5, cat:'general', exEn:'We must avoid bias in our judgement.',      exJa:'判断に偏見を持ち込んではいけない。', exEn2:'Try to judge the dish without bias.', exJa2:'先入観なしにその料理を評価してみて。' },
     { id:'bother',       en:'bother',       ja:'悩ます',       pos:'verb', level:4, cat:'general', exEn:'I hate to bother you.',                     exJa:'お手数をかけて申し訳ない。', exEn2:'Sorry to bother you, but may I change my reservation?', exJa2:'お手数ですが、予約を変更してもいいですか？' },
-    { id:'cease',        en:'cease',        ja:'やめる',       pos:'verb', level:5, cat:'general', exEn:'The rain finally ceased.',                  exJa:'雨はようやくやんだ。' },
-    { id:'cherish',      en:'cherish',      ja:'大切にする',   pos:'verb', level:5, cat:'general', exEn:'I cherish my family memories.',             exJa:'家族の思い出を大切にしている。' },
+    { id:'cease',        en:'cease',        ja:'やめる',       pos:'verb', level:5, cat:'general', exEn:'The rain finally ceased.',                  exJa:'雨はようやくやんだ。', exEn2:'The old shop ceased operations last year.', exJa2:'その老舗は昨年営業をやめた。' },
+    { id:'cherish',      en:'cherish',      ja:'大切にする',   pos:'verb', level:5, cat:'general', exEn:'I cherish my family memories.',             exJa:'家族の思い出を大切にしている。', exEn2:'I cherish the memories of my first restaurant.', exJa2:'最初の店の思い出を大切にしている。' },
     { id:'circumstance', en:'circumstance', ja:'状況',         pos:'noun', level:4, cat:'general', exEn:'Under the circumstances, we agreed.',       exJa:'状況を踏まえて、私たちは同意した。', exEn2:'Under the circumstances, we made the right choice.', exJa2:'あの状況では正しい選択をしたと思う。' },
     { id:'collapse',     en:'collapse',     ja:'崩壊する',     pos:'verb', level:4, cat:'general', exEn:'The old building collapsed.',               exJa:'古い建物が崩壊した。', exEn2:'Without cash flow, even good restaurants collapse.', exJa2:'資金繰りがなければ良い店でも潰れる。' },
-    { id:'comprehend',   en:'comprehend',   ja:'理解する',     pos:'verb', level:5, cat:'general', exEn:"I cannot comprehend his decision.",         exJa:'彼の決定が理解できない。' },
-    { id:'compromise',   en:'compromise',   ja:'妥協する',     pos:'verb', level:5, cat:'general', exEn:'They reached a compromise.',                exJa:'彼らは妥協に達した。' },
-    { id:'conceal',      en:'conceal',      ja:'隠す',         pos:'verb', level:5, cat:'general', exEn:'She tried to conceal her smile.',           exJa:'彼女は笑いを隠そうとした。' },
-    { id:'concede',      en:'concede',      ja:'認める',       pos:'verb', level:5, cat:'general', exEn:'He conceded that he was wrong.',            exJa:'彼は自分が間違っていたと認めた。' },
-    { id:'condemn',      en:'condemn',      ja:'非難する・有罪宣告', pos:'verb', level:5, cat:'general', exEn:'They condemned the violence.',     exJa:'彼らは暴力を強く非難した。' },
-    { id:'conserve',     en:'conserve',     ja:'保存する',     pos:'verb', level:5, cat:'general', exEn:'We must conserve energy.',                  exJa:'エネルギーを節約しなければならない。' },
-    { id:'considerable', en:'considerable', ja:'かなりの',     pos:'adj',  level:5, cat:'general', exEn:'There was considerable damage.',            exJa:'かなりの被害があった。' },
+    { id:'comprehend',   en:'comprehend',   ja:'理解する',     pos:'verb', level:5, cat:'general', exEn:"I cannot comprehend his decision.",         exJa:'彼の決定が理解できない。', exEn2:'It took time to comprehend the scale of the project.', exJa2:'プロジェクトの規模を理解するのに時間がかかった。' },
+    { id:'compromise',   en:'compromise',   ja:'妥協する',     pos:'verb', level:5, cat:'general', exEn:'They reached a compromise.',                exJa:'彼らは妥協に達した。', exEn2:'Never compromise on food safety.', exJa2:'食の安全に妥協してはいけない。' },
+    { id:'conceal',      en:'conceal',      ja:'隠す',         pos:'verb', level:5, cat:'general', exEn:'She tried to conceal her smile.',           exJa:'彼女は笑いを隠そうとした。', exEn2:'A good host conceals the effort behind the service.', exJa2:'良いホストはサービスの裏の苦労を見せない。' },
+    { id:'concede',      en:'concede',      ja:'認める',       pos:'verb', level:5, cat:'general', exEn:'He conceded that he was wrong.',            exJa:'彼は自分が間違っていたと認めた。', exEn2:'I concede that the price was too ambitious.', exJa2:'価格設定が強気すぎたことは認める。' },
+    { id:'condemn',      en:'condemn',      ja:'非難する・有罪宣告', pos:'verb', level:5, cat:'general', exEn:'They condemned the violence.',     exJa:'彼らは暴力を強く非難した。', exEn2:'The industry condemned the fake reviews.', exJa2:'業界はやらせレビューを非難した。' },
+    { id:'conserve',     en:'conserve',     ja:'保存する',     pos:'verb', level:5, cat:'general', exEn:'We must conserve energy.',                  exJa:'エネルギーを節約しなければならない。', exEn2:'We conserve energy with new kitchen equipment.', exJa2:'新しい厨房機器で省エネしている。' },
+    { id:'considerable', en:'considerable', ja:'かなりの',     pos:'adj',  level:5, cat:'general', exEn:'There was considerable damage.',            exJa:'かなりの被害があった。', exEn2:'Opening in Tokyo requires considerable capital.', exJa2:'東京での出店にはかなりの資本が要る。' },
     { id:'consult',      en:'consult',      ja:'相談する',     pos:'verb', level:4, cat:'general', exEn:'Consult your doctor first.',                exJa:'まず医師に相談しなさい。', exEn2:'I consulted a lawyer before signing the lease.', exJa2:'賃貸契約の前に弁護士に相談した。' },
-    { id:'contradict',   en:'contradict',   ja:'矛盾する',     pos:'verb', level:5, cat:'general', exEn:'His actions contradict his words.',         exJa:'彼の行動は言葉と矛盾している。' },
-    { id:'convey',       en:'convey',       ja:'伝える',       pos:'verb', level:5, cat:'general', exEn:'Words cannot convey my joy.',               exJa:'言葉では喜びを伝えきれない。' },
+    { id:'contradict',   en:'contradict',   ja:'矛盾する',     pos:'verb', level:5, cat:'general', exEn:'His actions contradict his words.',         exJa:'彼の行動は言葉と矛盾している。', exEn2:'The numbers contradict the pessimistic forecast.', exJa2:'数字は悲観的な予測と矛盾している。' },
+    { id:'convey',       en:'convey',       ja:'伝える',       pos:'verb', level:5, cat:'general', exEn:'Words cannot convey my joy.',               exJa:'言葉では喜びを伝えきれない。', exEn2:'A single dish can convey a whole story.', exJa2:'一皿が一つの物語全体を伝えることがある。' },
     { id:'coordinate',   en:'coordinate',   ja:'調整する',     pos:'verb', level:5, cat:'work',    exEn:'She coordinates the team.',                 exJa:'彼女がチームを調整している。' },
     { id:'correspond',   en:'correspond',   ja:'一致する・文通する', pos:'verb', level:5, cat:'general', exEn:'These figures correspond to last year.', exJa:'これらの数字は去年と一致する。' },
     { id:'dedicate',     en:'dedicate',     ja:'捧げる',       pos:'verb', level:5, cat:'general', exEn:'She dedicated her life to art.',            exJa:'彼女は人生を芸術に捧げた。' },
