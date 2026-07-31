@@ -1,9 +1,8 @@
 # 一時的な復旧用ワークフロー
 #
 # 2026-07-28 にリポジトリを一時 Private 化した際に GitHub Pages が自動停止した。
-# このワークフローは Pages サイトを再作成し、可能なら元の
-# 「Deploy from a branch (main / root)」設定に戻す。無理な場合は
-# Actions 経由デプロイで main の内容を公開する。復旧確認後は削除してよい。
+# このワークフローは Pages サイトを再作成し、元の
+# 「Deploy from a branch (main / root)」設定に戻す。復旧確認後は削除してよい。
 name: Enable GitHub Pages
 
 on:
@@ -14,34 +13,18 @@ on:
 permissions:
   contents: read
   pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   enable-pages:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # デプロイするのは main の内容 (このブランチの内容ではなく)
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
       - name: Enable Pages site
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
-      # 元の「Deploy from a branch」設定に戻せるか試す。
-      # 戻せれば以後は従来どおり main への push で自動公開される。
-      - name: Try restoring 'deploy from branch (main / root)'
-        id: legacy
+      # 元の「Deploy from a branch (main / root)」設定に復元し、初回ビルドを要求
+      - name: Restore 'deploy from branch (main / root)' and request build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -55,27 +38,20 @@ jobs:
           echo "PUT /pages -> $code"
           cat /tmp/resp.json || true
           case "$code" in
-            2*)
-              echo "ok=true" >> "$GITHUB_OUTPUT"
-              # 初回ビルドをリクエスト
-              curl -s -X POST \
-                -H "Authorization: Bearer $GH_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/$REPO/pages/builds" || true
-              ;;
-            *)
-              echo "ok=false" >> "$GITHUB_OUTPUT"
-              ;;
+            2*) echo "Restored legacy branch deploy." ;;
+            *) echo "Could not switch to legacy build."; exit 1 ;;
           esac
+          curl -s -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/pages/builds" || true
 
-      # legacy 復元に失敗した場合のみ: Actions 経由で main の内容をデプロイ
-      - name: Upload site artifact
-        if: steps.legacy.outputs.ok != 'true'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        if: steps.legacy.outputs.ok != 'true'
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Verify Pages status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          curl -s \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/pages"
