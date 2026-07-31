@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 375;
+  const APP_VERSION = 376;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -13183,6 +13183,21 @@
       this.save(memberId, s);
     },
 
+    // ---------- テンポ単語の周回カウント ----------
+    // ユニットを最後 (確認テスト完了) までやった回数を
+    // 'lv<レベル>u<ユニット番号>' ごとに記録する。
+    // 一覧画面の ○○○ (10 個) の塗りつぶし表示に使う。
+    getTempoRuns(memberId) {
+      return this.load(memberId).tempoRuns || {};
+    },
+    recordTempoRun(memberId, level, unitIdx) {
+      const s = this.load(memberId);
+      if (!s.tempoRuns) s.tempoRuns = {};
+      const k = 'lv' + level + 'u' + unitIdx;
+      s.tempoRuns[k] = (s.tempoRuns[k] || 0) + 1;
+      this.save(memberId, s);
+    },
+
     // ---------- リスニング理解の正解記録 ----------
     // 一度正解した問題はもう出ないように、正解 ID のセットを記録する。
     // 不正解は記録しない (= 再出題対象)。
@@ -22123,9 +22138,10 @@
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
         'テンポ単語'),
     );
-    // 進捗: ユニット内の mastered 数
+    // 進捗: ユニット内の mastered 数 + 周回カウント (○ 10 個の塗りつぶし)
     const state = db.load(profile.id);
     const vocabProg = state.vocab || {};
+    const tempoRuns = state.tempoRuns || {};
     return e('div', { style: pageStyle },
       topBar,
       e('div', { style: { padding: '4px 4px 14px' } },
@@ -22200,6 +22216,25 @@
                   e('div', {
                     style: { fontSize: 11.5, color: full ? C.success : C.sub, marginTop: 5, fontFamily: SANS_UI }
                   }, '覚えた ' + masteredN + ' / ' + words.length),
+                  // 周回マーカー: やった回数だけ ○ を塗りつぶす (10 個)
+                  (() => {
+                    const runs = tempoRuns['lv' + level + 'u' + i] || 0;
+                    return e('div', {
+                      style: { display: 'flex', alignItems: 'center', gap: 4.5, marginTop: 7 }
+                    },
+                      Array.from({ length: 10 }, (_, d) => e('div', {
+                        key: 'r' + d,
+                        style: {
+                          width: 9, height: 9, borderRadius: 999, boxSizing: 'border-box',
+                          background: d < runs ? profile.color : 'transparent',
+                          border: '1.5px solid ' + (d < runs ? profile.color : C.line),
+                        }
+                      })),
+                      runs > 10 && e('span', {
+                        style: { fontSize: 10.5, color: C.sub, fontFamily: SANS_UI, marginLeft: 2 }
+                      }, runs + '回'),
+                    );
+                  })(),
                 ),
                 e('span', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
               );
@@ -22312,6 +22347,7 @@
         setScreen('done');
         try {
           db.recordTurn(profile.id, 'vocab');
+          db.recordTempoRun(profile.id, level, unitIdx);
           db.pushEvent(profile.id, {
             kind: 'vocab',
             total: words.length,
