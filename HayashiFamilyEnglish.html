@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 376;
+  const APP_VERSION = 377;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -13184,9 +13184,11 @@
     },
 
     // ---------- テンポ単語の周回カウント ----------
-    // ユニットを最後 (確認テスト完了) までやった回数を
+    // ユニットを最後 (確認テスト完了) までやった回数と最終実施日時を
     // 'lv<レベル>u<ユニット番号>' ごとに記録する。
-    // 一覧画面の ○○○ (10 個) の塗りつぶし表示に使う。
+    // 一覧画面の ○○○ (10 個) の塗りつぶしと「次はこれ」のおすすめに使う。
+    // v376 は数値のみで保存していたため、読む側は number / {count,lastAt}
+    // の両形式を許容する (tempoRunCount / tempoRunLastAt で正規化)。
     getTempoRuns(memberId) {
       return this.load(memberId).tempoRuns || {};
     },
@@ -13194,7 +13196,9 @@
       const s = this.load(memberId);
       if (!s.tempoRuns) s.tempoRuns = {};
       const k = 'lv' + level + 'u' + unitIdx;
-      s.tempoRuns[k] = (s.tempoRuns[k] || 0) + 1;
+      const prev = s.tempoRuns[k];
+      const count = (typeof prev === 'number' ? prev : (prev && prev.count) || 0) + 1;
+      s.tempoRuns[k] = { count, lastAt: new Date().toISOString() };
       this.save(memberId, s);
     },
 
@@ -22122,8 +22126,42 @@
       profile, level, unitIdx,
       words: units[unitIdx] || [],
       onBackToList: () => setUnitIdx(-1),
-      onNextUnit: unitIdx + 1 < units.length ? () => setUnitIdx(unitIdx + 1) : null,
+      // 完了画面の「次へ」もおすすめ (新規 3 : 復習 1) に従う。
+      // 完了時点で tempoRuns は記録済みなので、読み直せば次の推薦が出る。
+      onNextUnit: units.length > 1 ? () => {
+        const rec = pickNextTempoUnit(units, db.getTempoRuns(profile.id), level);
+        if (rec && rec.idx !== unitIdx) setUnitIdx(rec.idx);
+        else setUnitIdx((unitIdx + 1) % units.length);
+      } : null,
     });
+  }
+
+  // tempoRuns のエントリ正規化 (v376 の number 形式と {count,lastAt} 形式の両対応)
+  function tempoRunCount(v)  { return typeof v === 'number' ? v : (v && v.count) || 0; }
+  function tempoRunLastAt(v) { return (v && v.lastAt) || ''; }
+
+  // ----- 「次はこれ」のおすすめユニット選定 -----
+  // 方針: 新しいユニットを 3 つ進めるごとに 1 回、古いユニットに戻って復習する。
+  //   - レベル内の合計周回数 totalRuns の 4 サイクル目 (%4 === 3) が復習の番
+  //   - 新規 = まだ 1 回もやっていないユニットのうち先頭
+  //   - 復習 = やった回数が少ない順、同数なら最後にやってから時間が空いている順
+  //   - 全ユニット制覇後はずっと復習モード
+  // 戻り値: { idx, why: 'new' | 'review' } | null
+  function pickNextTempoUnit(units, tempoRuns, level) {
+    if (!units.length) return null;
+    const entries = units.map((_, i) => {
+      const v = tempoRuns['lv' + level + 'u' + i];
+      return { idx: i, count: tempoRunCount(v), lastAt: tempoRunLastAt(v) };
+    });
+    const fresh = entries.filter(en => en.count === 0);
+    const done  = entries.filter(en => en.count > 0);
+    const pickReview = () => done.slice().sort((a, b) =>
+      (a.count - b.count) || (a.lastAt < b.lastAt ? -1 : a.lastAt > b.lastAt ? 1 : 0))[0];
+    if (!fresh.length) return { idx: pickReview().idx, why: 'review' };
+    if (!done.length)  return { idx: fresh[0].idx, why: 'new' };
+    const totalRuns = entries.reduce((sum, en) => sum + en.count, 0);
+    if (totalRuns % 4 === 3) return { idx: pickReview().idx, why: 'review' };
+    return { idx: fresh[0].idx, why: 'new' };
   }
 
   // ----- ユニット一覧 (レベルタブ + 10 語ずつのユニットカード) -----
@@ -22142,6 +22180,8 @@
     const state = db.load(profile.id);
     const vocabProg = state.vocab || {};
     const tempoRuns = state.tempoRuns || {};
+    // 「次はこれ」— 新規 3 : 復習 1 のサイクルでおすすめを決める
+    const rec = pickNextTempoUnit(units, tempoRuns, level);
     return e('div', { style: pageStyle },
       topBar,
       e('div', { style: { padding: '4px 4px 14px' } },
@@ -22172,6 +22212,48 @@
           }
         }, 'LV' + lv)),
       ),
+      // 「次はこれ」おすすめカード
+      rec && (() => {
+        const recWords = units[rec.idx];
+        const recMastered = recWords.filter(w =>
+          vocabProg[w.id] && vocabProg[w.id].status === 'mastered').length;
+        const recRuns = tempoRunCount(tempoRuns['lv' + level + 'u' + rec.idx]);
+        return e('button', {
+          onClick: () => onPickUnit(rec.idx),
+          style: {
+            width: '100%', padding: '16px 18px', borderRadius: 16,
+            background: profile.color + '10',
+            border: '1.5px solid ' + profile.color + '55',
+            cursor: 'pointer', textAlign: 'left', marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 14,
+            fontFamily: 'inherit',
+          }
+        },
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            e('div', {
+              style: {
+                fontSize: 11, fontWeight: 800, color: profile.color,
+                fontFamily: SANS_UI, letterSpacing: '0.1em', marginBottom: 5,
+              }
+            }, rec.why === 'new' ? '👉 次はこれ — 新しいユニット' : '🔁 次はこれ — 復習の番'),
+            e('div', {
+              style: { fontSize: 17, fontWeight: 800, color: C.text, fontFamily: SANS_UI }
+            }, 'Unit ' + (rec.idx + 1)),
+            e('div', {
+              style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.5 }
+            }, rec.why === 'new'
+                ? '新しい 10 語に挑戦。3 ユニット進んだら復習に戻るよ。'
+                : '覚えた ' + recMastered + ' / ' + recWords.length + ' · これまで ' + recRuns + ' 回 — 忘れる前にもう 1 周。'),
+          ),
+          e('div', {
+            style: {
+              flex: '0 0 auto', padding: '10px 16px', borderRadius: 999,
+              background: profile.color, color: '#fff',
+              fontFamily: SANS_UI, fontSize: 13, fontWeight: 800,
+            }
+          }, 'はじめる ›'),
+        );
+      })(),
       // ユニット一覧
       units.length === 0
         ? e('div', {
@@ -22207,8 +22289,18 @@
                 }, full ? '✓' : (i + 1)),
                 e('div', { style: { flex: 1, minWidth: 0 } },
                   e('div', {
-                    style: { fontSize: 15, fontWeight: 700, color: C.text, fontFamily: SANS_UI }
-                  }, 'Unit ' + (i + 1)),
+                    style: { fontSize: 15, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                             display: 'flex', alignItems: 'center', gap: 8 }
+                  },
+                    'Unit ' + (i + 1),
+                    rec && rec.idx === i && e('span', {
+                      style: {
+                        fontSize: 10, fontWeight: 800, color: profile.color,
+                        background: profile.color + '16',
+                        padding: '2px 8px', borderRadius: 999, letterSpacing: '0.06em',
+                      }
+                    }, rec.why === 'new' ? '次はこれ' : '復習の番'),
+                  ),
                   e('div', {
                     style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.5,
                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
@@ -22218,7 +22310,7 @@
                   }, '覚えた ' + masteredN + ' / ' + words.length),
                   // 周回マーカー: やった回数だけ ○ を塗りつぶす (10 個)
                   (() => {
-                    const runs = tempoRuns['lv' + level + 'u' + i] || 0;
+                    const runs = tempoRunCount(tempoRuns['lv' + level + 'u' + i]);
                     return e('div', {
                       style: { display: 'flex', alignItems: 'center', gap: 4.5, marginTop: 7 }
                     },
@@ -22630,7 +22722,7 @@
             background: profile.color, color: '#fff', border: 'none',
             cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
           }
-        }, '次のユニット ›'),
+        }, 'おすすめの次へ ›'),
       ),
     );
   }
