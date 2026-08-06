@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 376;
+  const APP_VERSION = 377;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -6201,6 +6201,139 @@
     },
   ];
   const NATIVECAMP_QA_BY_ID = Object.fromEntries(NATIVECAMP_QA.map(q => [q.id, q]));
+
+  // ---------- NativeCamp Q&A 日本語訳 (JP 表示モード用) ----------
+  // 「日本語だけを見て英文がスラスラ出てくるか」の暗記チェックに使う。
+  // 英文は亮治さん本人の作成物なので触らず、訳だけこの別表で持ち、
+  // 下の forEach で実行時にオブジェクトへ合体させる。
+  const NATIVECAMP_QA_JA = {
+    nq01: { q: 'なぜ英語を勉強しているのですか？', items: [
+      '私はいろいろな国の人と仕事をしているので、英語を勉強しています。',
+      '事業が成長するにつれて、海外のお客様やビジネスパートナーとやりとりする機会が増えています。',
+      '実際、私のレストランには毎日多くの外国人のお客様が来られます。',
+      'だから、私にとって英語は欠かせません。',
+    ] },
+    nq02: { q: 'どのくらいの期間、英語を勉強していますか？', items: [
+      '私は数年間、英語を勉強しています。',
+      'ずっと英語力を上げる必要を感じてきたからです。',
+      '実際、仕事でビジネスパートナーやお客様とやりとりする機会が多くあります。',
+      'だから、毎日英語の学習を続けています。',
+    ] },
+    nq03: { q: '海外に行ったことはありますか？', items: [
+      'はい、頻繁に海外へ行きます。',
+      'そうした経験が自分を成長させ、事業をより良くしてくれると信じているからです。',
+      '実際、今年はすでに台北、ニューヨーク、香港、ロンドンを訪れました。',
+      'だから、今年はさらにいくつかの国を訪れる予定です。',
+    ] },
+    nq04: { q: 'どの国に行ってみたいですか？', items: [
+      'スペインをもっと深く知るために訪れたいです。',
+      '新しいスペイン料理店を開く計画があるからです。',
+      '本場のスペイン料理、レストラン文化、食事のスタイルをもっと学びたいです。',
+      'だから、次に訪れたい国はスペインです。',
+    ] },
+    nq05: { q: '一番思い出に残っている旅行は何ですか？', items: [
+      '一番思い出に残っているのは、友人たちとのヨーロッパ旅行です。',
+      '日常では味わえない、特別な経験がいくつもできたからです。',
+      '例えばスペインでは、午後1時から4時まで長いランチを楽しみ、夜8時ごろから夕食が始まりました。',
+      'だから当時はへとへとでした。でも振り返れば、忘れられない旅です。',
+    ] },
+    nq06: { q: 'お仕事は何をされていますか？', items: [
+      '私は東京と島根でレストランを経営していて、ホテルマネジメント会社にも関わっています。',
+      '父が島根で中華料理店を経営していたので、私は自然に飲食業界に入りました。',
+      '私は中華料理、日本料理、フランス料理など、さまざまなスタイルのレストランを展開してきました。',
+      'だから、毎日好きな仕事を楽しめて幸せだと感じています。',
+    ] },
+    nq07: { q: 'どのくらいの期間、働いていますか？', items: [
+      '私は飲食業界で 30 年以上働いています。',
+      '高校を卒業してから東京に出て、中華料理店で料理人として働き始めました。',
+      'その頃、2 軒の中華料理店で経験を積み、24 歳のときに島根へ戻りました。',
+      'そういうわけで、以前は料理人でしたが、今はオーナーとして複数のレストランを経営しています。',
+    ] },
+    nq08: { q: 'なぜこの仕事を選んだのですか？', items: [
+      '中華料理店を営む家に生まれたので、この仕事を選びました。',
+      '両親が働く姿を見て育ったので、大きな影響を受けました。',
+      '中学生のころから店の手伝いを始めました。この経験から多くを学びました。',
+      'だから、自然にこの仕事を選んだのです。',
+    ] },
+    nq09: { q: '仕事で一番好きなことは何ですか？', items: [
+      'お客様にもスタッフにも心地よいレストランを作ることが好きです。',
+      '実現はとても難しいですが、それがレストランにとって一番大切なことだと信じています。',
+      '例えば、お客様が満足してくださっても、スタッフが疲弊していては商売を続けられません。',
+      'だから、お客様とスタッフの両方が心地よく過ごせるレストランを作りたいのです。',
+    ] },
+    nq10: { q: '仕事で一番難しいことは何ですか？', items: [
+      'スタッフ一人ひとりと組織のバランスを取るのが難しいです。',
+      'みんな価値観や考え方が違うからです。',
+      '例えば、料理人とサービススタッフでは、考え方も目標も違うことがよくあります。',
+      'だから、良い関係を築いて強いチームを作るのは難しいのです。',
+    ] },
+    nq11: { q: '自由な時間には何をしていますか？', items: [
+      '自由な時間には、よくレストランやホテルを訪れます。',
+      'そうした経験が、次の事業のアイデアをくれるからです。',
+      '例えば海外に行くと、新しいスタイルのサービスやデザインを体験できます。',
+      'だから、私の仕事と趣味は深くつながっています。',
+    ] },
+    nq12: { q: '趣味はありますか？', items: [
+      '実は、これといった趣味はありません。',
+      '仕事と趣味が深くつながっているからです。',
+      '例えば、音楽や家具やアートが好きで、それらはすべて仕事に影響しています。',
+      'だから、趣味が仕事になったことをとても幸運に感じています。',
+    ] },
+    nq13: { q: '次にやってみたい趣味はありますか？', items: [
+      'またスキーを始めようと思っています。',
+      'スイスからイタリアまで続く、とても長いスキーコースがあると聞いたからです。',
+      '同時に、日本のいろいろなスキー場にも行ってみたいです。',
+      'だから、またスキーを始めて、人生をもっと楽しみたいのです。',
+    ] },
+    nq14: { q: '出身はどちらですか？', items: [
+      '島根県の出身です。',
+      '美しい自然のある、静かな土地です。',
+      '実は、日本で一番人口が少ない県です。',
+      'だから、とても穏やかで暮らしやすい場所だと思います。',
+    ] },
+    nq15: { q: '人生で達成したい目標はありますか？', items: [
+      '世界一のレストランを作ることを目指しています。',
+      '美しい場所を作るのが好きだからです。',
+      '実は、その目標を実現するために新しいレストランを開く予定です。',
+      'だから、このプロジェクトに集中しています。',
+    ] },
+    nq16: { q: '人生で一番大変だった瞬間は何ですか？', items: [
+      '正直、思い当たることがありません。',
+      '解決策さえ見つけられれば、どんな問題も一時的なものだと信じているからです。',
+      '例えば、ほぼ完成していたレストランの工事を、一からやり直したことがあります。',
+      '振り返ってみると、過去に大変なことは無かったように思います。',
+    ] },
+    nq17: { q: 'ご自分の性格をどう表現しますか？', items: [
+      '私の性格には、優しさと厳しさの両方があります。',
+      'それがビジネスには大切だと信じているからです。',
+      '実際、人からこう言われたことがあります。厳しすぎると人は離れていき、優しすぎると人は怠けてしまう、と。',
+      'だから、私は両面を持っているのです。',
+    ] },
+    nq18: { q: '人生で一番誇りに思うことは何ですか？', items: [
+      '一番誇りに思うのは、スタッフが幸せになっていくのを実感できることです。',
+      '周りの人を幸せにするという考えを大切にしているからです。',
+      'スタッフが成長でき、十分に稼げて、実りある人生を送れる職場を作ろうとしています。',
+      'だから、それが私の目標であり誇りなのです。',
+    ] },
+    nq19: { q: '人生で一番後悔していることは何ですか？', items: [
+      '一番の後悔は、学生時代にもっと英語を勉強しておくべきだったことです。',
+      'そうしていれば、多くのビジネスチャンスをつかめたはずです。',
+      '例えば、上海や香港などの中華圏に事業を広げる機会があったかもしれません。',
+      'だから、今は英語をもっと必死に勉強しています。',
+    ] },
+    nq20: { q: 'あなたの国の社会問題は何ですか？', items: [
+      '日本の一番大きな社会問題は、人口減少だと思います。',
+      '人口が減るにつれて、経済成長は難しくなります。',
+      '例えば島根では、将来存続できないかもしれない地方の集落があります。',
+      'だから、日本政府はこの人口減少問題に向き合っているのです。',
+    ] },
+  };
+  NATIVECAMP_QA.forEach((q) => {
+    const t = NATIVECAMP_QA_JA[q.id];
+    if (!t) return;
+    q.questionJa = t.q;
+    q.items.forEach((it, i) => { it.ja = t.items[i] || ''; });
+  });
   // 役割バッジのラベル + 色
   const NCQA_ROLE_LABEL = { O: 'Opinion', R: 'Reason', E: 'Example' };
   function ncqaRoleColors(role) {
@@ -23660,6 +23793,12 @@
     const item = NATIVECAMP_QA[qIdx];
     const [phase, setPhase]   = useState('q');    // 'q' | 'a0' | 'a1' | 'a2' | 'a3' | 'done'
     const [playing, setPlaying] = useState(true);
+    // 表示言語。'en' = 英語 (音声つき自動再生)、'ja' = 日本語訳のみ。
+    // JP は「日本語を見て英文がスラスラ出てくるか」の暗記チェック用なので、
+    // 切り替えたら自動再生は止める (音声は不要)。
+    const [lang, setLang] = useState('en');
+    const jaReady = !!item && !!item.questionJa;
+    const showJa = lang === 'ja' && jaReady;
     const playSeq = useRef(0);
     const sessionStartRef = useRef(Date.now());
     const recordedDoneRef = useRef(false);
@@ -23751,6 +23890,35 @@
         'NativeCamp Q&A · #' + String(item.no).padStart(2, '0')),
     );
 
+    // EN / JP 表示切り替え
+    const langToggle = jaReady && e('div', {
+      style: {
+        display: 'flex',
+        background: C.softer, border: '1px solid ' + C.line,
+        borderRadius: 10, overflow: 'hidden',
+        marginBottom: 14,
+      }
+    },
+      [['en', 'EN'], ['ja', 'JP']].map(([id, label]) => e('button', {
+        key: id,
+        onClick: () => {
+          setLang(id);
+          if (id === 'ja') {
+            setPlaying(false);
+            try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+          }
+        },
+        style: {
+          flex: 1, padding: '8px 0',
+          background: lang === id ? profile.color : 'transparent',
+          color: lang === id ? '#fff' : C.sub,
+          border: 'none', cursor: 'pointer',
+          fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
+          letterSpacing: '0.08em',
+        }
+      }, label)),
+    );
+
     // 質問カード (大きめ、ハイライト時は色濃く)
     const questionCard = e('div', {
       style: {
@@ -23773,9 +23941,12 @@
         }
       }, 'Question'),
       e('div', {
-        style: { flex: 1, fontFamily: SERIF_READ, fontSize: 18, color: C.text, lineHeight: 1.5 }
-      }, item.question),
-      e(SpeakerBtn, { onClick: () => speak(item.question), color: profile.color, size: 36 }),
+        style: {
+          flex: 1, fontFamily: showJa ? 'inherit' : SERIF_READ,
+          fontSize: showJa ? 16.5 : 18, color: C.text, lineHeight: showJa ? 1.7 : 1.5,
+        }
+      }, showJa ? item.questionJa : item.question),
+      !showJa && e(SpeakerBtn, { onClick: () => speak(item.question), color: profile.color, size: 36 }),
     );
 
     // 回答カード × 4
@@ -23805,9 +23976,13 @@
           }
         }, roleLabel),
         e('div', {
-          style: { flex: 1, minWidth: 0, fontFamily: SERIF_READ, fontSize: 15.5, color: C.text, lineHeight: 1.55 }
-        }, it.en),
-        e(SpeakerBtn, { onClick: () => speak(it.en), color: profile.color, size: 30 }),
+          style: {
+            flex: 1, minWidth: 0,
+            fontFamily: showJa ? 'inherit' : SERIF_READ,
+            fontSize: showJa ? 14.5 : 15.5, color: C.text, lineHeight: showJa ? 1.75 : 1.55,
+          }
+        }, (showJa && it.ja) ? it.ja : it.en),
+        !showJa && e(SpeakerBtn, { onClick: () => speak(it.en), color: profile.color, size: 30 }),
       );
     });
 
@@ -23835,23 +24010,32 @@
           fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
         }
       }, '‹ 一覧'),
-      e('button', {
-        onClick: () => {
-          if (phase === 'done') replay();
-          else setPlaying(!playing);
-        },
-        style: {
-          flex: 1,
-          padding: '14px 0', borderRadius: 12,
-          background: profile.color, color: '#fff', border: 'none',
-          cursor: 'pointer',
-          fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
-        }
-      }, phase === 'done' ? '▶ もう一回' : (playing ? '⏸ 一時停止' : '▶ 再生')),
+      showJa
+        ? e('div', {
+            style: {
+              flex: 1, textAlign: 'center', padding: '14px 0',
+              color: C.sub, fontSize: 13, fontFamily: SANS_UI, fontWeight: 600,
+              lineHeight: 1.4,
+            }
+          }, '日本語を見て、英文を思い出して声に出そう')
+        : e('button', {
+            onClick: () => {
+              if (phase === 'done') replay();
+              else setPlaying(!playing);
+            },
+            style: {
+              flex: 1,
+              padding: '14px 0', borderRadius: 12,
+              background: profile.color, color: '#fff', border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+            }
+          }, phase === 'done' ? '▶ もう一回' : (playing ? '⏸ 一時停止' : '▶ 再生')),
     );
 
     return e('div', { style: pageStyle },
       topBar,
+      langToggle,
       questionCard,
       e('div', { style: { fontSize: 11, color: C.sub, fontFamily: SANS_UI, letterSpacing: '0.08em', margin: '10px 4px 6px' } },
         'YOUR ANSWER (OREO)'),
