@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 380;
+  const APP_VERSION = 381;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -16239,41 +16239,36 @@
     // Pick one phrase per day so the same phrase appears all day for one
     // member. Mix profile.id into the seed so different members can see
     // different phrases on the same day.
-    // 定型構文タイルを持つプロフィール (父) は CONVO_PATTERNS の全例文
-    // (Part A の items + Part B の質問・回答) から日替わりで 1 文。
-    // 構文名は .pattern に入れてカードに小さく表示する。
-    // それ以外の家族は従来どおり DAILY_PHRASES から。
+    // 亮治さん (father) と なるみち (son1) は「今日の定型構文」— 主役は
+    // 例文ではなく定型表現そのもの (I'd rather … — 〜する方がいい)。
+    // 例文は 1 つだけ下に添える。他の家族は従来どおり DAILY_PHRASES。
+    const CONVO_DAILY_MEMBERS = ['father', 'son1'];
     const todayPhrase = useMemo(() => {
-      const convoFeat = FEATURE_BY_ID['convo_patterns'];
-      const hasConvo = !!(convoFeat && Array.isArray(convoFeat.forProfileIds) &&
-                          convoFeat.forProfileIds.includes(profile.id));
-      let pool = DAILY_PHRASES;
-      if (hasConvo) {
-        const out = [];
-        for (const p of CONVO_PATTERNS) {
-          const label = p.pattern + (p.ja_pattern ? ' — ' + p.ja_pattern : '');
-          if (Array.isArray(p.items)) {
-            for (const it of p.items) {
-              if (it && it.en && it.ja) out.push({ en: it.en, ja: it.ja, pattern: label });
-            }
-          }
-          if (Array.isArray(p.qa)) {
-            for (const s of p.qa) {
-              for (const k of ['question', 'positive', 'neutral', 'negative']) {
-                const v = s && s[k];
-                if (v && v.en && v.ja) out.push({ en: v.en, ja: v.ja, pattern: label });
-              }
-            }
-          }
-        }
-        if (out.length > 0) pool = out;
-      }
-      if (!pool.length) return null;
       const day = new Date();
       const seedStr = day.getFullYear() + '-' + day.getMonth() + '-' + day.getDate() + '-' + profile.id;
       let h = 0;
       for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) | 0;
-      return pool[Math.abs(h) % pool.length];
+      const seed = Math.abs(h);
+
+      if (CONVO_DAILY_MEMBERS.includes(profile.id) && CONVO_PATTERNS.length > 0) {
+        const p = CONVO_PATTERNS[seed % CONVO_PATTERNS.length];
+        // 代表の例文を 1 つ (同じ日に同じものが出るよう seed で選ぶ)
+        let ex = null;
+        if (Array.isArray(p.items) && p.items.length > 0) {
+          ex = p.items[seed % p.items.length];
+        } else if (Array.isArray(p.qa) && p.qa.length > 0) {
+          const s = p.qa[seed % p.qa.length];
+          ex = s && s.question ? s.question : null;
+        }
+        return {
+          pattern: p.pattern,
+          jaPattern: p.ja_pattern || '',
+          en: ex && ex.en ? ex.en : '',
+          ja: ex && ex.ja ? ex.ja : '',
+        };
+      }
+      if (!DAILY_PHRASES.length) return null;
+      return DAILY_PHRASES[seed % DAILY_PHRASES.length];
     }, [profile.id]);
 
     return e('div', {
@@ -16522,25 +16517,34 @@
           padding: '14px 16px', borderRadius: 14, marginBottom: 18,
         }
       },
-        todayPhrase.pattern && e('div', {
-          style: {
-            display: 'inline-block', marginBottom: 8,
-            padding: '3px 10px', borderRadius: 999,
-            background: profile.color + '14', color: profile.color,
-            fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 700,
-            letterSpacing: '0.03em',
-          }
-        }, todayPhrase.pattern),
+        // ---- 主役: 定型表現そのもの (構文モードのみ) ----
         e('div', {
           style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
                    display: 'flex', alignItems: 'center', gap: 10 }
         },
-          e('span', { style: { flex: 1 } }, todayPhrase.en),
-          e(SpeakerBtn, { onClick: () => speak(todayPhrase.en), color: profile.color, size: 32 }),
+          e('span', { style: { flex: 1 } },
+            todayPhrase.pattern ? todayPhrase.pattern : todayPhrase.en),
+          e(SpeakerBtn, {
+            onClick: () => speak(todayPhrase.pattern
+              ? (todayPhrase.en || todayPhrase.pattern)
+              : todayPhrase.en),
+            color: profile.color, size: 32,
+          }),
         ),
         e('div', {
-          style: { fontSize: 12, color: C.sub, marginTop: 6, lineHeight: 1.5 }
-        }, todayPhrase.ja),
+          style: { fontSize: 12.5, color: C.sub, marginTop: 6, lineHeight: 1.5 }
+        }, todayPhrase.pattern ? (todayPhrase.jaPattern || '') : todayPhrase.ja),
+        // ---- 例文 (構文モードのみ、下に 1 つ) ----
+        todayPhrase.pattern && todayPhrase.en && e('div', {
+          style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + C.line }
+        },
+          e('div', {
+            style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 }
+          }, todayPhrase.en),
+          e('div', {
+            style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
+          }, todayPhrase.ja),
+        ),
       ),
 
       // Today's guided path — a small banner above the feature tiles.
