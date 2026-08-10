@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 379;
+  const APP_VERSION = 380;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14679,13 +14679,20 @@
   }
   const HQ_TTS_CACHE  = 'hfe-tts-v1';
   const HQ_TTS_VOICE  = 'nova';   // 温かみのある女性ボイス
+  // 読み方のスタイル指示 — 「朗読」ではなく自然な会話の抑揚にする。
+  // これを変えたら下の keyStr の世代タグ (v2) も上げてキャッシュを無効化する。
+  const HQ_TTS_STYLE =
+    'Speak as a warm, friendly native English speaker in natural conversation: ' +
+    'expressive intonation, natural rhythm, smooth linking between words, and light ' +
+    'emphasis on the important words. Sound like you are talking to a friend, ' +
+    'not reading a script aloud.';
   let _hqAudio = null;
   function hqStop() {
     if (_hqAudio) { try { _hqAudio.pause(); } catch {} _hqAudio = null; }
   }
   async function hqFetchAudio(text, speed) {
     const spd = Math.max(0.5, Math.min(2, speed || 1));
-    const keyStr = HQ_TTS_VOICE + '|' + spd + '|' + text;
+    const keyStr = HQ_TTS_VOICE + '|v2|' + spd + '|' + text;
     let h = 0;
     for (let i = 0; i < keyStr.length; i++) h = (h * 31 + keyStr.charCodeAt(i)) | 0;
     const cacheUrl = 'https://hfe-tts.cache/' + Math.abs(h) + '-' + keyStr.length + '-' + spd;
@@ -14703,6 +14710,7 @@
       body: JSON.stringify({
         model: 'gpt-4o-mini-tts', voice: HQ_TTS_VOICE,
         input: text, speed: spd, response_format: 'mp3',
+        instructions: HQ_TTS_STYLE,
       }),
     });
     if (!res.ok) throw new Error('tts-' + res.status);
@@ -21934,21 +21942,15 @@
       const cancel = () => {
         cancelled = true;
         timeouts.forEach(clearTimeout);
+        try { hqStop(); } catch {}
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
       const speakOnce = (text, then) => {
         if (cancelled || seq !== playSeq.current) return;
-        if (!window.speechSynthesis) { then(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-GB';
-        u.rate = 0.95;
-        u.pitch = 1.0;
-        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) then(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) then(); };
-        try { window.speechSynthesis.speak(u); } catch { then(); }
+        // 高品質音声 (OpenAI) があれば自然な抑揚で、なければ端末 TTS。
+        speakSmart(text, { lang: 'en-GB', deviceRate: 0.95 })
+          .then(() => { if (!cancelled && seq === playSeq.current) then(); })
+          .catch(() => { if (!cancelled && seq === playSeq.current) then(); });
       };
       // 1.3s 待ち → EN → 1.5s (口を動かす時間) → EN → 0.8s → 次へ
       timeouts.push(setTimeout(() => {
@@ -22562,22 +22564,13 @@
       let cancelled = false;
       const timeouts = [];
       const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
-      const speakOnce = (text, lang) => new Promise(resolve => {
-        if (cancelled || seq !== playSeq.current) { resolve(); return; }
-        if (!window.speechSynthesis) { resolve(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang;
-        u.rate = lang === 'ja-JP' ? 1.05 : 0.95;
-        u.pitch = 1.0;
-        const v = lang === 'ja-JP'
-          ? getBestVoice('ja-JP')
-          : (getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en'));
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        try { window.speechSynthesis.speak(u); } catch { resolve(); }
-      });
+      const speakOnce = (text, lang) => {
+        if (cancelled || seq !== playSeq.current) return Promise.resolve();
+        // 英語は高品質音声 (あれば)、日本語は端末 TTS (speakSmart が自動で振り分け)
+        return speakSmart(text, {
+          lang, deviceRate: lang === 'ja-JP' ? 1.05 : 0.95,
+        }).catch(() => {});
+      };
       (async () => {
         // 日本語は「・」区切りの多義語を最初の意味だけ読む (テンポ重視)
         const jaText = (w.ja || '').split('・')[0];
@@ -22624,6 +22617,7 @@
       return () => {
         cancelled = true;
         timeouts.forEach(clearTimeout);
+        try { hqStop(); } catch {}
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
     }, [screen, playing, wIdx, direction]);
@@ -23905,20 +23899,10 @@
       let cancelled = false;
       const timeouts = [];
       const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
-      const speakEn = (text) => new Promise(resolve => {
-        if (cancelled || seq !== playSeq.current) { resolve(); return; }
-        if (!window.speechSynthesis) { resolve(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-GB';
-        u.rate = 0.95;
-        u.pitch = 1.0;
-        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        try { window.speechSynthesis.speak(u); } catch { resolve(); }
-      });
+      const speakEn = (text) => {
+        if (cancelled || seq !== playSeq.current) return Promise.resolve();
+        return speakSmart(text, { lang: 'en-GB', deviceRate: 0.95 }).catch(() => {});
+      };
 
       (async () => {
         // 0.8 秒待つ → 質問 → 1.2 秒 → 回答 0,1,2,3 を順に → 完了
@@ -23956,6 +23940,7 @@
       return () => {
         cancelled = true;
         timeouts.forEach(clearTimeout);
+        try { hqStop(); } catch {}
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
     }, [playing, qIdx]);
@@ -28162,35 +28147,14 @@
       const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
 
       // JA 用 utterance
-      const speakJa = () => new Promise(resolve => {
-        if (cancelled || seq !== playSeq.current) { resolve(); return; }
-        if (!window.speechSynthesis) { resolve(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(cur.ja);
-        u.lang = 'ja-JP';
-        u.rate = 1.0;
-        u.pitch = 1.0;
-        // getBestVoice('ja-JP') があれば使う、なければ system default。
-        const v = getBestVoice('ja-JP');
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        try { window.speechSynthesis.speak(u); } catch { resolve(); }
-      });
-      const speakEn = () => new Promise(resolve => {
-        if (cancelled || seq !== playSeq.current) { resolve(); return; }
-        if (!window.speechSynthesis) { resolve(); return; }
-        try { window.speechSynthesis.cancel(); } catch {}
-        const u = new SpeechSynthesisUtterance(cur.en);
-        u.lang = 'en-GB';
-        u.rate = 0.95;
-        u.pitch = 1.0;
-        const v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (v) u.voice = v;
-        u.onend   = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        u.onerror = () => { if (!cancelled && seq === playSeq.current) resolve(); };
-        try { window.speechSynthesis.speak(u); } catch { resolve(); }
-      });
+      const speakJa = () => {
+        if (cancelled || seq !== playSeq.current) return Promise.resolve();
+        return speakSmart(cur.ja, { lang: 'ja-JP', deviceRate: 1.0 }).catch(() => {});
+      };
+      const speakEn = () => {
+        if (cancelled || seq !== playSeq.current) return Promise.resolve();
+        return speakSmart(cur.en, { lang: 'en-GB', deviceRate: 0.95 }).catch(() => {});
+      };
 
       (async () => {
         // JA → 1.5 秒 → EN ×3 (各回後に短いポーズ) → 0.6 秒 → 次
@@ -28229,6 +28193,7 @@
       return () => {
         cancelled = true;
         timeouts.forEach(clearTimeout);
+        try { hqStop(); } catch {}
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       };
     }, [playing, idx, showChunkPrompt]);
@@ -32252,20 +32217,14 @@
           if (!cancelled) setPhase('question');
           return;
         }
-        const u = new SpeechSynthesisUtterance(cur.audio[i].en);
-        u.lang = 'en-GB';
-        u.rate = 0.95;
-        u.pitch = 1.0;
-        const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (_v) u.voice = _v;
-        u.onend = () => { i++; setTimeout(playNext, 350); };
-        u.onerror = () => { i++; setTimeout(playNext, 350); };
-        try { window.speechSynthesis.cancel(); } catch {}
-        try { window.speechSynthesis.speak(u); } catch {}
+        speakSmart(cur.audio[i].en, { lang: 'en-GB', deviceRate: 0.95 })
+          .catch(() => {})
+          .then(() => { if (!cancelled) { i++; setTimeout(playNext, 350); } });
       };
       playNext();
       return () => {
         cancelled = true;
+        try { hqStop(); } catch {}
         try { window.speechSynthesis.cancel(); } catch {}
         setIsPlaying(false);
       };
@@ -32273,6 +32232,7 @@
 
     function replayAudio() {
       // Re-trigger by bumping phase to 'listen' (effect re-runs on entry)
+      try { hqStop(); } catch {}
       try { window.speechSynthesis.cancel(); } catch {}
       setPhase('listen');
     }
@@ -32961,6 +32921,7 @@
     const [stageResults, setStageResults] = useState([]);
     const [played, setPlayed]             = useState(false);
     const [speaking, setSpeaking]         = useState(false);
+    const stopFlagRef = useRef(null);   // 再生中シーケンスを止めるためのフラグ
     const sessionStartRef = useRef(null);
     // セッション中に既に出題した問題 ID — ステージをまたいで重複させないため。
     // 直近セッションで出した ID も読み込んでおき、初回の抽選から外す
@@ -33028,26 +32989,26 @@
 
     // ----- TTS for listening questions -----
     function playConversation(lines) {
-      if (!window.speechSynthesis || !lines || lines.length === 0) return;
-      try { window.speechSynthesis.cancel(); } catch {}
+      if (!lines || lines.length === 0) return;
+      try { hqStop(); } catch {}
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
       setSpeaking(true);
       setPlayed(true);
       let i = 0;
+      let stopped = false;
+      stopFlagRef.current = () => { stopped = true; };
       const speakNext = () => {
+        if (stopped) return;
         if (i >= lines.length) { setSpeaking(false); return; }
-        const u = new SpeechSynthesisUtterance(lines[i].text);
-        u.lang  = 'en-GB';
-        u.rate  = 1.0;
-        u.pitch = 1.0;
-        const _v = getBestVoice('en-GB') || getBestVoice('en-US') || getBestVoice('en');
-        if (_v) u.voice = _v;
-        u.onend   = () => { i++; setTimeout(speakNext, 400); };
-        u.onerror = () => { i++; setTimeout(speakNext, 400); };
-        try { window.speechSynthesis.speak(u); } catch {}
+        speakSmart(lines[i].text, { lang: 'en-GB', deviceRate: 1.0 })
+          .catch(() => {})
+          .then(() => { if (!stopped) { i++; setTimeout(speakNext, 400); } });
       };
       speakNext();
     }
     function stopSpeech() {
+      try { if (stopFlagRef.current) stopFlagRef.current(); } catch {}
+      try { hqStop(); } catch {}
       if (window.speechSynthesis) {
         try { window.speechSynthesis.cancel(); } catch {}
       }
