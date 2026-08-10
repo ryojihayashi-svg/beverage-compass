@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 377;
+  const APP_VERSION = 378;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -23322,6 +23322,47 @@
   }
 
   // 話し言葉として自然な英訳 (1 行目) + 別の言い方 (2 行目) を取得
+  // 英語 → 自然な日本語訳 (1 行目)。英文に不自然な点があれば、
+  // より自然な英語の言い換えを 2 行目に返す (なければ SAME)。
+  async function fetchNaturalJapanese(en) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const prompt =
+      '次の英文について答えてください。\n' +
+      '「' + en + '」\n\n' +
+      '1 行目: この英文の自然な日本語訳。\n' +
+      '2 行目: この英文が文法的に不自然な場合のみ、会話で自然な英語への修正版。' +
+      '十分自然な場合は SAME とだけ書く。\n' +
+      '番号・記号・説明は書かない。2 行だけを返す。';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    const lines = text.split('\n')
+      .map(l => l.replace(/^[\s\-•*\d.)]+/, '').trim()).filter(Boolean);
+    if (lines.length === 0) throw new Error('翻訳が取得できませんでした');
+    const fixed = (lines[1] && lines[1].toUpperCase() !== 'SAME') ? lines[1] : '';
+    return { ja: lines[0], fixedEn: fixed };
+  }
+
   async function fetchSpokenEnglish(ja) {
     const apiKey = loadApiKey();
     if (!apiKey) throw new Error('API キーが設定されていません');
@@ -23399,6 +23440,20 @@
         const r = await fetchSpokenEnglish(ja);
         setEnDraft(r.en); setAltDraft(r.alt || '');
         speakSmart(r.en, { lang: 'en-GB' }).catch(() => {});
+      } catch (err) {
+        setError((err && err.message) || 'AI 翻訳に失敗しました');
+      }
+      setBusy(false);
+    };
+    // 英語 → 日本語。訳を日本語欄へ。英文が不自然なら修正案を altDraft に。
+    const runAIJa = async () => {
+      const en = enDraft.trim();
+      if (!en) { setError('まず英語の文を入力してください'); return; }
+      setBusy(true); setError('');
+      try {
+        const r = await fetchNaturalJapanese(en);
+        setJaDraft(r.ja);
+        setAltDraft(r.fixedEn || '');
       } catch (err) {
         setError((err && err.message) || 'AI 翻訳に失敗しました');
       }
@@ -23503,7 +23558,7 @@
         }, editId ? '文を編集' : '言えなかった文を追加'),
         e('div', {
           style: { fontSize: 13.5, color: C.sub, padding: '0 4px 16px', lineHeight: 1.7 }
-        }, '会話で言えなかったことを日本語のまま書いてください。AI が「会話でそのまま使える英語」にします。'),
+        }, '日本語を書けば AI が英語に、英語を書けば AI が日本語にします。両方そろったら「ノートに追加」で保存できます。'),
         e('div', { style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, letterSpacing: '0.1em', padding: '0 4px 6px' } }, '言いたかったこと (日本語)'),
         e('textarea', {
           value: jaDraft,
@@ -23530,6 +23585,9 @@
           placeholder: 'Could you push the reservation back by 30 minutes?',
           style: { ...inputStyle, fontFamily: SERIF_READ, fontSize: 16.5 },
         }),
+        hasKey && e('div', { style: { marginTop: 12 } },
+          primaryBtn(busy ? 'AI が日本語にしています…' : '✨ AI で日本語にする', runAIJa, busy || !enDraft.trim()),
+        ),
         altDraft && e('button', {
           onClick: () => { setEnDraft(altDraft); setAltDraft(enDraft); speakSmart(altDraft, { lang: 'en-GB' }).catch(() => {}); },
           style: {
@@ -23538,7 +23596,7 @@
             cursor: 'pointer', fontFamily: 'inherit',
           }
         },
-          e('div', { style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 3 } }, '別の言い方 (タップで入れ替え)'),
+          e('div', { style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 3 } }, 'より自然な言い方 (タップで英語欄に入れ替え)'),
           e('div', { style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 } }, altDraft),
         ),
         error && e('div', {
