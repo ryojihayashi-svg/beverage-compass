@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 378;
+  const APP_VERSION = 379;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -16231,13 +16231,41 @@
     // Pick one phrase per day so the same phrase appears all day for one
     // member. Mix profile.id into the seed so different members can see
     // different phrases on the same day.
+    // 定型構文タイルを持つプロフィール (父) は CONVO_PATTERNS の全例文
+    // (Part A の items + Part B の質問・回答) から日替わりで 1 文。
+    // 構文名は .pattern に入れてカードに小さく表示する。
+    // それ以外の家族は従来どおり DAILY_PHRASES から。
     const todayPhrase = useMemo(() => {
-      if (!DAILY_PHRASES.length) return null;
+      const convoFeat = FEATURE_BY_ID['convo_patterns'];
+      const hasConvo = !!(convoFeat && Array.isArray(convoFeat.forProfileIds) &&
+                          convoFeat.forProfileIds.includes(profile.id));
+      let pool = DAILY_PHRASES;
+      if (hasConvo) {
+        const out = [];
+        for (const p of CONVO_PATTERNS) {
+          const label = p.pattern + (p.ja_pattern ? ' — ' + p.ja_pattern : '');
+          if (Array.isArray(p.items)) {
+            for (const it of p.items) {
+              if (it && it.en && it.ja) out.push({ en: it.en, ja: it.ja, pattern: label });
+            }
+          }
+          if (Array.isArray(p.qa)) {
+            for (const s of p.qa) {
+              for (const k of ['question', 'positive', 'neutral', 'negative']) {
+                const v = s && s[k];
+                if (v && v.en && v.ja) out.push({ en: v.en, ja: v.ja, pattern: label });
+              }
+            }
+          }
+        }
+        if (out.length > 0) pool = out;
+      }
+      if (!pool.length) return null;
       const day = new Date();
       const seedStr = day.getFullYear() + '-' + day.getMonth() + '-' + day.getDate() + '-' + profile.id;
       let h = 0;
       for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) | 0;
-      return DAILY_PHRASES[Math.abs(h) % DAILY_PHRASES.length];
+      return pool[Math.abs(h) % pool.length];
     }, [profile.id]);
 
     return e('div', {
@@ -16479,13 +16507,22 @@
           letterSpacing: '0.18em', textTransform: 'uppercase',
           color: C.sub, marginBottom: 10, paddingLeft: 4,
         }
-      }, '今日の一言英語'),
+      }, todayPhrase && todayPhrase.pattern ? '今日の定型構文' : '今日の一言英語'),
       todayPhrase && e('div', {
         style: {
           background: C.card, border: '1px solid ' + C.line,
           padding: '14px 16px', borderRadius: 14, marginBottom: 18,
         }
       },
+        todayPhrase.pattern && e('div', {
+          style: {
+            display: 'inline-block', marginBottom: 8,
+            padding: '3px 10px', borderRadius: 999,
+            background: profile.color + '14', color: profile.color,
+            fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 700,
+            letterSpacing: '0.03em',
+          }
+        }, todayPhrase.pattern),
         e('div', {
           style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
                    display: 'flex', alignItems: 'center', gap: 10 }
