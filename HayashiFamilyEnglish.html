@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 386;
+  const APP_VERSION = 387;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14716,6 +14716,16 @@
   function hqStop() {
     if (_hqAudio) { try { _hqAudio.pause(); } catch {} _hqAudio = null; }
   }
+  // 先読み: これから話す英文の音声を裏で取り寄せてキャッシュに入れておく。
+  // 初回再生時の「取り寄せ待ち (1〜2 秒)」でテンポが崩れるのを防ぐ。
+  // fire-and-forget — 失敗しても実際の再生時にフォールバックが効く。
+  function hqPrefetch(text, rate) {
+    try {
+      if (!text || !loadOpenAIKey()) return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      hqFetchAudio(text, rate || 1.0).catch(() => {});
+    } catch {}
+  }
   async function hqFetchAudio(text, speed) {
     const spd = Math.max(0.5, Math.min(2, speed || 1));
     const keyStr = HQ_TTS_VOICE + '|v2|' + spd + '|' + text;
@@ -22134,6 +22144,10 @@
       if (currentIdx >= phrases.length) return;
       const seq = ++playSeq.current;
       const cur = phrases[currentIdx];
+      // 先読み: 今の文と次の文の音声を裏で取り寄せてテンポを保つ
+      if (cur && cur.en) hqPrefetch(cur.en);
+      const nxtPhrase = phrases[currentIdx + 1];
+      if (nxtPhrase && nxtPhrase.en) hqPrefetch(nxtPhrase.en);
       let cancelled = false;
       const timeouts = [];
       const cancel = () => {
@@ -22757,6 +22771,10 @@
       if (screen !== 'chant' || !playing) return;
       const w = words[wIdx];
       if (!w) return;
+      // 先読み: 今の語と次の語の EN 音声を裏で取り寄せてテンポを保つ
+      hqPrefetch(w.en);
+      const nw = words[wIdx + 1];
+      if (nw && nw.en) hqPrefetch(nw.en);
       const seq = ++playSeq.current;
       let cancelled = false;
       const timeouts = [];
@@ -24503,6 +24521,9 @@
 
       (async () => {
         // 無音ウォームアップ → 0.8 秒待つ → 質問 → 1.2 秒 → 回答 → 完了
+        // 先読み: ウォームアップ中に質問と回答 4 文の音声を取り寄せておく
+        hqPrefetch(item.question);
+        try { item.items.forEach(it => hqPrefetch(it.en)); } catch {}
         setPhase('q');
         await primeAudioChannel(450);
         if (cancelled || seq !== playSeq.current) return;
@@ -28740,6 +28761,11 @@
     // 1 カードの再生シーケンス
     useEffect(() => {
       if (!playing || !cur || showChunkPrompt) return;
+      // テンポ対策: JA を読んでいる間に EN の音声を裏で取り寄せておく。
+      // ついでに次のカードの EN も先読みして、カード間の待ちもなくす。
+      hqPrefetch(cur.en);
+      const nxt = queue[idx + 1];
+      if (nxt && nxt.en) hqPrefetch(nxt.en);
       const seq = ++playSeq.current;
       let cancelled = false;
       const timeouts = [];
@@ -32810,6 +32836,8 @@
       let cancelled = false;
       let i = 0;
       setIsPlaying(true);
+      // 全セリフを先読み — ウォームアップの間に取り寄せが終わる
+      try { cur.audio.forEach(a => hqPrefetch(a.en)); } catch {}
       const playNext = () => {
         if (cancelled || i >= cur.audio.length) {
           setIsPlaying(false);
