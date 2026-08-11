@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 383;
+  const APP_VERSION = 384;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -152,8 +152,8 @@
     { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢', forLearner: true, forViewer: false },
     { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false, hidden: true },
     { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true, hidden: true },
-    { id: 'convo_patterns',     label: '定型構文',       desc: '200 構文 · 投資 / 不動産 / ホスピタリティの実戦英語',
-                                                                                          fullWidth: true, forLearner: true, forViewer: false,
+    { id: 'convo_patterns',     label: '定型構文',       desc: '200 構文 · 実戦ビジネス英語',
+                                                                                          forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
     { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true,  hidden: true },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
