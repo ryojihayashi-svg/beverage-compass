@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 385;
+  const APP_VERSION = 386;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14688,6 +14688,31 @@
     'emphasis on the important words. Sound like you are talking to a friend, ' +
     'not reading a script aloud.';
   let _hqAudio = null;
+  // 音声ウォームアップ: 本編の前に短い無音を流してスピーカー / Bluetooth の
+  // 出力経路を起こす。起動直後に話し始めると最初の単語の頭が飲み込まれて
+  // 「わんわわ…」のように聞こえる (iOS / Bluetooth の癖) ための対策。
+  let _primeCtx = null;
+  function primeAudioChannel(ms) {
+    const dur = Math.max(100, ms || 400);
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) { setTimeout(finish, dur); return; }
+        if (!_primeCtx) _primeCtx = new Ctx();
+        const ctx = _primeCtx;
+        if (ctx.state === 'suspended') { try { ctx.resume(); } catch {} }
+        const buf = ctx.createBuffer(1, Math.max(1, Math.floor(ctx.sampleRate * dur / 1000)), ctx.sampleRate);
+        const srcNode = ctx.createBufferSource();
+        srcNode.buffer = buf;
+        srcNode.connect(ctx.destination);
+        srcNode.onended = finish;
+        srcNode.start();
+      } catch { /* fall through to timer */ }
+      setTimeout(finish, dur + 250);   // onended が来ない環境の保険
+    });
+  }
   function hqStop() {
     if (_hqAudio) { try { _hqAudio.pause(); } catch {} _hqAudio = null; }
   }
@@ -24477,8 +24502,10 @@
       };
 
       (async () => {
-        // 0.8 秒待つ → 質問 → 1.2 秒 → 回答 0,1,2,3 を順に → 完了
+        // 無音ウォームアップ → 0.8 秒待つ → 質問 → 1.2 秒 → 回答 → 完了
         setPhase('q');
+        await primeAudioChannel(450);
+        if (cancelled || seq !== playSeq.current) return;
         await sleep(800);
         if (cancelled || seq !== playSeq.current) return;
         await speakEn(item.question);
@@ -32793,7 +32820,13 @@
           .catch(() => {})
           .then(() => { if (!cancelled) { i++; setTimeout(playNext, 350); } });
       };
-      playNext();
+      // 無音でスピーカーを起こしてから、ひと呼吸 (0.55 秒) おいて開始。
+      // 急に始まって最初の単語が欠ける問題への対策。
+      (async () => {
+        await primeAudioChannel(450);
+        await new Promise(r => setTimeout(r, 550));
+        if (!cancelled) playNext();
+      })();
       return () => {
         cancelled = true;
         try { hqStop(); } catch {}
@@ -33576,7 +33609,11 @@
           .catch(() => {})
           .then(() => { if (!stopped) { i++; setTimeout(speakNext, 400); } });
       };
-      speakNext();
+      (async () => {
+        await primeAudioChannel(450);
+        await new Promise(r => setTimeout(r, 400));
+        if (!stopped) speakNext();
+      })();
     }
     function stopSpeech() {
       try { if (stopFlagRef.current) stopFlagRef.current(); } catch {}
