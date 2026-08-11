@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 382;
+  const APP_VERSION = 383;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -17287,10 +17287,21 @@
   // all 10. The short cap matches kids' attention span and gives a clear
   // finish line every few minutes.
   const VOCAB_SESSION_COUNT = 10;
+  // 単語学習のユニット分割: レベル内の語を 10 語ずつのユニットに切る。
+  // 配列順は VOCAB の定義順で安定しているので、ユニット番号は不変。
+  function vocabUnitsForLevel(lv) {
+    const list = VOCAB.filter(v => v.level === lv);
+    const units = [];
+    for (let i = 0; i < list.length; i += 10) units.push(list.slice(i, i + 10));
+    return units;
+  }
+
   function VocabBrowse({ profile, onBack, forcedDirection }) {
     const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' (話す方向・既定) | 'en2ja'
-    const [selectedLevel, setSelectedLevel] = useState('auto');  // 'auto' | 1..5
-    const [phase, setPhase]   = useState('intro');               // 'intro' | 'study' | 'done'
+    const [level, setLevel]   = useState(() => Math.min(5, Math.max(1, profile.level || 1)));
+    const [mode, setMode]     = useState('auto');                // いま走っているセッションの種類 'auto' | 'unit'
+    const [unitIdx, setUnitIdx] = useState(-1);                  // unit モードのユニット番号
+    const [phase, setPhase]   = useState('intro');               // 'intro' (ユニット一覧) | 'study' | 'done'
     const [queue, setQueue]   = useState([]);
     const [index, setIndex]   = useState(0);
     const [revealed, setRevealed] = useState(false);
@@ -17301,39 +17312,58 @@
     // 12-sec/q estimate).
     const sessionStartRef = useRef(null);
 
-    function buildQueue() {
-      // Two retention loops:
-      //   - yesterdayIds: 短期 (前日学習の即時定着)
-      //   - dueIds:       長期 (SRS の復習デュー = 覚えた語の忘却防止)
-      // 配分: due 40% + yesterday 30% + 新規/弱点 30%
+    const units = useMemo(() => vocabUnitsForLevel(level), [level]);
+
+    function buildAutoQueue() {
+      // おまかせ: 復習デュー 40% + 前日分 30% + 新規/弱点 30% の適応出題
       const yesterdayIds = getYesterdayPracticedIds(profile.id, 'vocab');
       const dueIds       = getDueReviewIds(profile.id, 'vocab');
-      if (selectedLevel === 'auto') {
-        return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, {
-          track: 'vocab',
-          yesterdayIds,
-          dueIds,
-        });
-      }
-      const pool = VOCAB.filter(v => v.level === selectedLevel);
-      return pickWeightedQueue(pool, profile, VOCAB_SESSION_COUNT, {
+      return pickWeightedQueue(VOCAB, profile, VOCAB_SESSION_COUNT, {
         track: 'vocab',
         yesterdayIds,
         dueIds,
       });
     }
-    function startSession() {
-      setQueue(buildQueue());
+    function shuffled(list) {
+      const a = list.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+    // iOS PWA: タップハンドラ内の空発話で TTS を解錠 (テンポ単語と同じ)
+    function unlockTTS() {
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(' ');
+          u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+          window.speechSynthesis.speak(u);
+        }
+      } catch {}
+    }
+    function startAutoSession() {
+      unlockTTS();
+      setMode('auto'); setUnitIdx(-1);
+      setQueue(buildAutoQueue());
+      setIndex(0); setRevealed(false); setCorrectCount(0);
+      sessionStartRef.current = Date.now();
+      setPhase('study');
+    }
+    function startUnitSession(i) {
+      const words = units[i];
+      if (!words || words.length === 0) return;
+      unlockTTS();
+      setMode('unit'); setUnitIdx(i);
+      setQueue(shuffled(words));   // ユニット内はランダム順で出題
       setIndex(0); setRevealed(false); setCorrectCount(0);
       sessionStartRef.current = Date.now();
       setPhase('study');
     }
     function restart() {
-      // Same level / direction, fresh shuffled queue.
-      setQueue(buildQueue());
-      setIndex(0); setRevealed(false); setCorrectCount(0);
-      sessionStartRef.current = Date.now();
-      setPhase('study');
+      if (mode === 'unit') { startUnitSession(unitIdx); return; }
+      startAutoSession();
     }
 
     const total   = queue.length;
@@ -17359,7 +17389,8 @@
           sessionStartRef.current = null;
           db.pushEvent(profile.id, {
             kind: 'vocab', total, correct: nextCorrect,
-            level: selectedLevel === 'auto' ? 'auto' : selectedLevel,
+            level: mode === 'auto' ? 'auto' : level,
+            unit: mode === 'unit' ? unitIdx + 1 : undefined,
             direction, durationMs,
           });
           // Float vocab-comfort once per session based on rolling mastery.
@@ -17389,34 +17420,66 @@
     // shared finish-screen body — random family photo, bilingual cheer,
     // plain score. 'もう10問やる' restarts with a fresh shuffled deck.
     if (phase === 'done') {
+      const hasNextUnit = mode === 'unit' && unitIdx + 1 < units.length;
       return e(SessionDoneCard, {
         profile, correct: correctCount, total, onBack,
-        extra: e('button', {
-          onClick: restart,
-          style: {
-            width: '100%', padding: '14px 0', borderRadius: 12,
-            background: C.softer, color: profile.color,
-            border: '1px solid ' + profile.color + '33',
-            fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
-            marginBottom: 12, cursor: 'pointer',
-          }
-        }, 'もう10問やる'),
+        extra: e('div', null,
+          e('button', {
+            onClick: restart,
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 12,
+              background: C.softer, color: profile.color,
+              border: '1px solid ' + profile.color + '33',
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+              marginBottom: 10, cursor: 'pointer',
+            }
+          }, mode === 'unit' ? 'もう一回 このユニット' : 'もう10問やる'),
+          hasNextUnit && e('button', {
+            onClick: () => startUnitSession(unitIdx + 1),
+            style: {
+              width: '100%', padding: '14px 0', borderRadius: 12,
+              background: profile.color, color: '#fff', border: 'none',
+              fontSize: 14, fontWeight: 700, fontFamily: SANS_UI,
+              marginBottom: 12, cursor: 'pointer',
+            }
+          }, '次のユニット (' + (unitIdx + 2) + ') ›'),
+          mode === 'unit' && e('button', {
+            onClick: () => setPhase('intro'),
+            style: {
+              width: '100%', padding: '12px 0', borderRadius: 12,
+              background: 'transparent', color: C.sub,
+              border: '1px solid ' + C.line,
+              fontSize: 13.5, fontWeight: 700, fontFamily: SANS_UI,
+              marginBottom: 12, cursor: 'pointer',
+            }
+          }, 'ユニット一覧へ'),
+        ),
       });
     }
 
-    // ============ INTRO ============
-    // Mirrors SprintComposition's intro: pick a level (or 'おまかせ'),
-    // optionally a direction, then start a 10-question session.
+    // ============ INTRO (ユニット一覧) ============
+    // レベルタブ → 10 語ずつのユニットを 5 ユニットごとの区切りで一覧。
+    // 各ユニットに「覚えた n / 10」を表示し、全部覚えたら ✓ (合格)。
+    // 上部の「おまかせ 10 問」は従来の適応出題 (復習デュー優先)。
     if (phase === 'intro') {
-      const memberName = getDisplayName(profile);
-      const levelOpts = [
-        { value: 'auto', label: 'おまかせ',   desc: memberName + 'に合わせて選びます' },
-        { value: 1,      label: 'レベル 1',  desc: '超基礎・英検5/4級' },
-        { value: 2,      label: 'レベル 2',  desc: '中学基礎・英検4/3級' },
-        { value: 3,      label: 'レベル 3',  desc: '中3完了・英検3/準2級' },
-        { value: 4,      label: 'レベル 4',  desc: '高校標準・英検2級' },
-        { value: 5,      label: 'レベル 5',  desc: '高校発展・英検準1級' },
-      ];
+      const vocabState = (db.load(profile.id).vocab) || {};
+      const isWordMastered = (id) => {
+        const p = vocabState[id];
+        return !!(p && p.status === 'mastered');
+      };
+      const LEVEL_DESC = {
+        1: '超基礎・英検5/4級', 2: '中学基礎・英検4/3級', 3: '中3完了・英検3/準2級',
+        4: '高校標準・英検2級', 5: '高校発展・英検準1級',
+      };
+      const levelTotal    = units.reduce((n, u) => n + u.length, 0);
+      const levelMastered = units.reduce((n, u) => n + u.filter(w => isWordMastered(w.id)).length, 0);
+
+      // 5 ユニットごとのブロックに分ける
+      const blocks = [];
+      for (let i = 0; i < units.length; i += 5) {
+        blocks.push({ start: i, list: units.slice(i, i + 5) });
+      }
+
       return e('div', {
         style: { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' }
       },
@@ -17428,15 +17491,14 @@
           e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '単語学習'),
         ),
         // Header
-        e('div', { style: { padding: '4px 4px 18px' } },
+        e('div', { style: { padding: '4px 4px 14px' } },
           e('div', {
             style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.2 }
           }, '単語学習'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 6, lineHeight: 1.6 } },
-            'レベルを選んで 10 問チャレンジしよう。'),
+            'ユニットを選んで 10 語ずつ。単語はランダムな順番で出ます。'),
         ),
-        // レベルタブ — テンポ単語 / サイクル英作文と同じセグメント型に統一
-        // (v366)。以前は縦並びのカード 6 枚で、他の練習と操作感が違った。
+        // レベルタブ (LV1-5)
         e('div', {
           style: {
             display: 'flex', gap: 6, marginBottom: 8,
@@ -17444,33 +17506,135 @@
             borderRadius: 12, padding: 4,
           }
         },
-          levelOpts.map(opt => e('button', {
-            key: 'lv_' + opt.value,
-            onClick: () => setSelectedLevel(opt.value),
+          [1, 2, 3, 4, 5].map(lv => e('button', {
+            key: 'lv' + lv,
+            onClick: () => setLevel(lv),
             style: {
-              flex: opt.value === 'auto' ? 1.6 : 1, padding: '8px 0', borderRadius: 9,
-              background: selectedLevel === opt.value ? profile.color : 'transparent',
-              color: selectedLevel === opt.value ? '#fff' : C.sub,
+              flex: 1, padding: '8px 0', borderRadius: 9,
+              background: level === lv ? profile.color : 'transparent',
+              color: level === lv ? '#fff' : C.sub,
               border: 'none', cursor: 'pointer',
-              fontFamily: SANS_UI, fontSize: 12.5, fontWeight: 700,
+              fontFamily: SANS_UI, fontSize: 13, fontWeight: 700,
             }
-          }, opt.value === 'auto' ? 'おまかせ' : 'LV' + opt.value)),
+          }, 'LV' + lv)),
         ),
-        // 選択中レベルの説明
-        e('div', {
-          style: { fontSize: 12.5, color: C.sub, marginBottom: 16, paddingLeft: 4, lineHeight: 1.6 }
-        }, (levelOpts.find(o => o.value === selectedLevel) || levelOpts[0]).desc),
-        // 方向トグル — 共有コンポーネント (テンポ単語 / サイクル英作文と同一)
+        // レベル全体の進捗バー
+        e('div', { style: { padding: '0 4px', marginBottom: 14 } },
+          e('div', {
+            style: {
+              display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+              fontSize: 12.5, color: C.sub, fontFamily: SANS_UI, marginBottom: 6,
+              fontVariantNumeric: 'tabular-nums',
+            }
+          },
+            e('span', null, LEVEL_DESC[level] || ''),
+            e('span', { style: { fontWeight: 800, color: levelMastered > 0 ? profile.color : C.sub } },
+              '覚えた ' + levelMastered + ' / ' + levelTotal + ' 語'),
+          ),
+          e('div', {
+            style: { height: 6, borderRadius: 999, background: C.softer, overflow: 'hidden' }
+          },
+            e('div', {
+              style: {
+                height: '100%',
+                width: Math.round(levelMastered / Math.max(1, levelTotal) * 100) + '%',
+                background: profile.color, transition: 'width 0.4s ease',
+              }
+            }),
+          ),
+        ),
+        // 方向トグル
         !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection }),
-        // Start
+        // おまかせ 10 問 (適応出題)
         e('button', {
-          onClick: startSession,
+          onClick: startAutoSession,
           style: {
-            width: '100%', padding: '16px 0', borderRadius: 16,
-            background: profile.color, color: '#fff',
-            fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
+            width: '100%', padding: '14px 16px', borderRadius: 14, marginBottom: 18,
+            background: profile.color, color: '#fff', border: 'none',
+            cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', gap: 12,
           }
-        }, '10 問 始める'),
+        },
+          e('div', { style: { flex: 1 } },
+            e('div', { style: { fontSize: 15, fontWeight: 800, fontFamily: SANS_UI } }, 'おまかせ 10 問'),
+            e('div', { style: { fontSize: 12, opacity: 0.85, marginTop: 3 } },
+              '復習デューを優先した自動ミックス (毎日の基本はこれ)'),
+          ),
+          e('span', { style: { fontSize: 18, opacity: 0.8 } }, '›'),
+        ),
+        // ユニット一覧 (5 ユニットごとの区切り)
+        units.length === 0
+          ? e('div', {
+              style: {
+                padding: '40px 20px', textAlign: 'center', color: C.sub,
+                background: C.softer, borderRadius: 12, fontSize: 14,
+              }
+            }, 'このレベルには単語がありません。')
+          : blocks.map((blk) => {
+              const blkTotal    = blk.list.reduce((n, u) => n + u.length, 0);
+              const blkMastered = blk.list.reduce((n, u) => n + u.filter(w => isWordMastered(w.id)).length, 0);
+              return e('div', { key: 'blk' + blk.start, style: { marginBottom: 18 } },
+                e('div', {
+                  style: {
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                    fontFamily: SANS_UI, fontSize: 11.5, fontWeight: 800,
+                    letterSpacing: '0.12em', color: C.sub,
+                    margin: '0 4px 8px', textTransform: 'uppercase',
+                    fontVariantNumeric: 'tabular-nums',
+                  }
+                },
+                  e('span', null, 'ユニット ' + (blk.start + 1) + '〜' + (blk.start + blk.list.length)),
+                  e('span', { style: { color: blkMastered === blkTotal && blkTotal > 0 ? C.success : C.sub } },
+                    blkMastered + ' / ' + blkTotal + ' 語'),
+                ),
+                e('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  blk.list.map((words, j) => {
+                    const i = blk.start + j;
+                    const masteredN = words.filter(w => isWordMastered(w.id)).length;
+                    const full = masteredN === words.length && words.length > 0;
+                    return e('button', {
+                      key: 'unit' + i,
+                      onClick: () => startUnitSession(i),
+                      style: {
+                        width: '100%', padding: '13px 16px', borderRadius: 14,
+                        background: C.card,
+                        border: '1px solid ' + (full ? C.success + '66' : C.line),
+                        cursor: 'pointer', textAlign: 'left',
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        fontFamily: 'inherit',
+                      }
+                    },
+                      e('div', {
+                        style: {
+                          flex: '0 0 auto', width: 40, height: 40, borderRadius: 11,
+                          background: (full ? C.success : profile.color) + '14',
+                          color: full ? C.success : profile.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
+                        }
+                      }, full ? '✓' : (i + 1)),
+                      e('div', { style: { flex: 1, minWidth: 0 } },
+                        e('div', {
+                          style: { fontSize: 15, fontWeight: 700, color: C.text, fontFamily: SANS_UI }
+                        }, 'ユニット ' + (i + 1)),
+                        e('div', {
+                          style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5,
+                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+                        }, words.slice(0, 3).map(w => w.en).join(' · ') + (words.length > 3 ? ' …' : '')),
+                        e('div', {
+                          style: {
+                            fontSize: 11.5, marginTop: 4, fontFamily: SANS_UI, fontWeight: 700,
+                            color: full ? C.success : (masteredN > 0 ? profile.color : C.sub),
+                            fontVariantNumeric: 'tabular-nums',
+                          }
+                        }, full ? '合格 ✓ 全部覚えた' : '覚えた ' + masteredN + ' / ' + words.length),
+                      ),
+                      e('span', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
+                    );
+                  }),
+                ),
+              );
+            }),
       );
     }
 
@@ -17485,7 +17649,8 @@
         e('button', { onClick: () => setPhase('intro'),
           style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', lineHeight: 1 }
         }, '‹'),
-        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, '単語学習'),
+        e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+          mode === 'unit' ? '単語学習 · LV' + level + ' ユニット ' + (unitIdx + 1) : '単語学習 · おまかせ'),
         e('div', {
           style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums' }
         }, total > 0 ? (Math.min(index, total - 1) + 1) + ' / ' + total : '0 / 0'),
