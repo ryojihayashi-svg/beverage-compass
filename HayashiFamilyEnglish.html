@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 387;
+  const APP_VERSION = 388;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14762,14 +14762,32 @@
         const url = URL.createObjectURL(blob);
         const a = new Audio(url);
         _hqAudio = a;
-        const done = (fn) => () => {
-          URL.revokeObjectURL(url);
+        let settled = false;
+        let safetyTimer = null;
+        const finish = (fn) => {
+          if (settled) return;
+          settled = true;
+          if (safetyTimer) clearTimeout(safetyTimer);
+          try { URL.revokeObjectURL(url); } catch {}
           if (_hqAudio === a) _hqAudio = null;
           fn();
         };
-        a.onended = done(resolve);
-        a.onerror = done(() => reject(new Error('play')));
-        a.play().catch(err => { URL.revokeObjectURL(url); reject(err); });
+        a.onended = () => finish(resolve);
+        a.onerror = () => finish(() => reject(new Error('play')));
+        // 外部から止められた (hqStop / 割り込み) ときは ended が来ないので、
+        // pause を合図に resolve して待ちっぱなしを防ぐ。
+        a.onpause = () => { if (!a.ended) finish(resolve); };
+        // 保険: iOS では ended がまれに発火しないことがあり、そうなると
+        // 自動再生シーケンス全体が黙り込む (「3 回流れるはずが 1 回で
+        // 止まる」の正体)。音声の長さ + 4 秒で強制的に先へ進める。
+        const armSafety = () => {
+          const durMs = (isFinite(a.duration) && a.duration > 0) ? a.duration * 1000 : 15000;
+          if (safetyTimer) clearTimeout(safetyTimer);
+          safetyTimer = setTimeout(() => finish(resolve), durMs + 4000);
+        };
+        a.onloadedmetadata = armSafety;
+        armSafety();
+        a.play().catch(err => finish(() => reject(err)));
       } catch (err) { reject(err); }
     });
   }
