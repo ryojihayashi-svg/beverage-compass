@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 384;
+  const APP_VERSION = 385;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -145,6 +145,7 @@
     { id: 'cycle_composition',  label: 'サイクル英作文', desc: '10 文をスラスラ言えるまで回す · 日→英 / 英→日', forLearner: true, forViewer: false },
     { id: 'composition_en2ja',  label: '瞬間英作文',     desc: '英語 → 日本語',             forLearner: true, forViewer: false, hidden: true },
     { id: 'mysent',             label: '言えなかったノート', desc: '言えなかった文を英語にして練習', forLearner: true, forViewer: false },
+    { id: 'myword',             label: '分からなかった単語', desc: '出会った単語をためて復習', forLearner: true, forViewer: false },
     { id: 'mistakes',           label: '間違い復習',     desc: '間違い克服数',              forLearner: true, forViewer: false },
     { id: 'mastered',           label: '覚えた一覧',     desc: '一語一文',                  forLearner: true, forViewer: true  },
     { id: 'english_lessons',    label: '1分英語解説',     desc: '解説 + 5問クイズ',         forLearner: true, forViewer: true  },
@@ -15907,6 +15908,7 @@
       else if (route.feature === 'tempo_vocab')       body = e(TempoVocab,        { profile, onBack: back });
       else if (route.feature === 'cycle_composition') body = e(CycleComposition,  { profile, onBack: back });
       else if (route.feature === 'mysent')            body = e(MySentenceNote,    { profile, onBack: back });
+      else if (route.feature === 'myword')            body = e(MyWordNote,        { profile, onBack: back });
       else if (route.feature === 'records')           body = e(RecordsScreen,     { profile, onBack: back });
       else if (route.feature === 'convo_patterns')    body = e(ConvoPatterns,     { profile, onBack: back });
       else                                             body = e(ComingSoon, { profile, feature: feat, onBack: back });
@@ -23937,6 +23939,406 @@
                 (it.streak || 0) > 0 && e('span', {
                   style: { fontSize: 11.5, fontFamily: SANS_UI, fontWeight: 800, color: (it.streak || 0) >= 3 ? C.success : C.sub }
                 }, 'スラスラ ×' + it.streak),
+                e('span', { style: { flex: 1 } }),
+                e('button', {
+                  onClick: () => openEdit(it),
+                  style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12.5, color: C.sub, fontFamily: SANS_UI, fontWeight: 700, padding: '4px 6px' }
+                }, '編集'),
+                e('button', {
+                  onClick: () => removeItem(it),
+                  style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 12.5, color: C.danger, fontFamily: SANS_UI, fontWeight: 700, padding: '4px 6px' }
+                }, '削除'),
+              ),
+            )),
+          ),
+    );
+  }
+
+  // ---------- 分からなかった単語ノート (単語版・言えなかったノート) ----------
+  // 会話や読み物で出会った「分からなかった単語」を英語でも日本語でも登録。
+  // AI が反対側の言語と例文 1 つを埋め、あとで周回復習できる。
+  const MYWORD_KEY = (memberId) => 'hfe_myword_v1_' + memberId;
+  function loadMyWords(memberId) {
+    try { return JSON.parse(localStorage.getItem(MYWORD_KEY(memberId)) || '[]'); }
+    catch { return []; }
+  }
+  function saveMyWords(memberId, items) {
+    try { localStorage.setItem(MYWORD_KEY(memberId), JSON.stringify(items)); }
+    catch (err) { console.warn('saveMyWords failed', err); }
+  }
+
+  // 単語 (日英どちらでも) → { en, ja, exEn, exJa }
+  async function fetchWordInfo(word) {
+    const apiKey = loadApiKey();
+    if (!apiKey) throw new Error('API キーが設定されていません');
+    const prompt =
+      '次の単語について答えてください: 「' + word + '」\n' +
+      'それが日本語なら対応する英単語を、英語なら日本語の意味を答え、\n' +
+      '次の 4 行だけで返してください。\n' +
+      '1 行目: 英単語 (原形)\n' +
+      '2 行目: 日本語の意味 (簡潔に)\n' +
+      '3 行目: その単語を使った自然で短い英語の例文\n' +
+      '4 行目: その例文の日本語訳\n' +
+      '番号・記号・説明は書かない。';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!res.ok) {
+      let detail = '';
+      try { const j = await res.json(); detail = (j.error && j.error.message) || ''; } catch {}
+      throw new Error('API エラー (' + res.status + ')' + (detail ? ': ' + detail : ''));
+    }
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    const lines = text.split('\n')
+      .map(l => l.replace(/^[\s\-•*\d.)]+/, '').trim()).filter(Boolean);
+    if (lines.length < 2) throw new Error('取得できませんでした');
+    return { en: lines[0], ja: lines[1], exEn: lines[2] || '', exJa: lines[3] || '' };
+  }
+
+  function MyWordNote({ profile, onBack }) {
+    const [items, setItems]   = useState(() => loadMyWords(profile.id));
+    const [screen, setScreen] = useState('list'); // 'list' | 'add' | 'practice'
+
+    // ----- 追加 / 編集 -----
+    const [editId, setEditId]     = useState(null);
+    const [wordDraft, setWordDraft] = useState('');   // AI 入力用 (日英どちらでも)
+    const [enDraft, setEnDraft]   = useState('');
+    const [jaDraft, setJaDraft]   = useState('');
+    const [exEnDraft, setExEnDraft] = useState('');
+    const [exJaDraft, setExJaDraft] = useState('');
+    const [busy, setBusy]         = useState(false);
+    const [error, setError]       = useState('');
+
+    // ----- 練習 -----
+    const [cycle, setCycle]       = useState(1);
+    const [pIdx, setPIdx]         = useState(0);
+    const [revealed, setRevealed] = useState(false);
+    const [okCount, setOkCount]   = useState(0);
+    const [pDone, setPDone]       = useState(false);
+    const sessionStartRef = useRef(Date.now());
+
+    const persist = (next) => { setItems(next); saveMyWords(profile.id, next); };
+
+    const openAdd = () => {
+      setEditId(null); setWordDraft(''); setEnDraft(''); setJaDraft('');
+      setExEnDraft(''); setExJaDraft(''); setError(''); setScreen('add');
+    };
+    const openEdit = (it) => {
+      setEditId(it.id); setWordDraft(''); setEnDraft(it.en); setJaDraft(it.ja);
+      setExEnDraft(it.exEn || ''); setExJaDraft(it.exJa || '');
+      setError(''); setScreen('add');
+    };
+    const runAI = async () => {
+      const w = (wordDraft || enDraft || jaDraft).trim();
+      if (!w) { setError('まず単語を入力してください (日本語でも英語でも OK)'); return; }
+      setBusy(true); setError('');
+      try {
+        const r = await fetchWordInfo(w);
+        setEnDraft(r.en); setJaDraft(r.ja);
+        setExEnDraft(r.exEn); setExJaDraft(r.exJa);
+        speakSmart(r.en, { lang: 'en-GB' }).catch(() => {});
+      } catch (err) {
+        setError((err && err.message) || 'AI に失敗しました');
+      }
+      setBusy(false);
+    };
+    const saveDraft = () => {
+      const en = enDraft.trim(), ja = jaDraft.trim();
+      if (!en || !ja) { setError('英語と日本語の両方を入れてください'); return; }
+      if (editId) {
+        persist(items.map(it => it.id === editId
+          ? { ...it, en, ja, exEn: exEnDraft.trim(), exJa: exJaDraft.trim() } : it));
+      } else {
+        const id = 'mw' + Date.now().toString(36) + Math.floor(Math.random() * 1000);
+        persist([{
+          id, en, ja, exEn: exEnDraft.trim(), exJa: exJaDraft.trim(),
+          streak: 0, createdAt: Date.now(),
+        }].concat(items));
+      }
+      setScreen('list');
+    };
+    const removeItem = (it) => {
+      if (!window.confirm('「' + it.en + '」を削除しますか？')) return;
+      persist(items.filter(x => x.id !== it.id));
+    };
+
+    const startPractice = () => {
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(' ');
+          u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+          window.speechSynthesis.speak(u);
+        }
+      } catch {}
+      setCycle(1); setPIdx(0); setRevealed(false); setOkCount(0); setPDone(false);
+      sessionStartRef.current = Date.now();
+      setScreen('practice');
+    };
+    const cur = items[pIdx];
+    const revealAnswer = () => {
+      setRevealed(true);
+      if (cur) speakSmart(cur.en, { lang: 'en-GB' }).catch(() => {});
+    };
+    const markPractice = (ok) => {
+      if (!cur) return;
+      persist(items.map(it => it.id === cur.id
+        ? { ...it, streak: ok ? (it.streak || 0) + 1 : 0 } : it));
+      const nextOk = okCount + (ok ? 1 : 0);
+      setOkCount(nextOk);
+      setRevealed(false);
+      if (pIdx + 1 >= items.length) {
+        setPDone(true);
+        try {
+          db.recordTurn(profile.id, 'vocab');
+          db.pushEvent(profile.id, {
+            kind: 'vocab',
+            total: items.length,
+            correct: nextOk,
+            durationMs: Date.now() - sessionStartRef.current,
+            label: '分からなかった単語 (' + cycle + ' 周目)',
+          });
+        } catch {}
+      } else {
+        setPIdx(pIdx + 1);
+      }
+    };
+    const nextCycle = () => {
+      setCycle(cycle + 1); setPIdx(0); setRevealed(false); setOkCount(0); setPDone(false);
+      sessionStartRef.current = Date.now();
+    };
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = (label, backFn) => e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 16 }
+    },
+      e('button', { onClick: backFn,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } }, label),
+    );
+    const primaryBtn = (label, onClick, disabled) => e('button', {
+      onClick, disabled: !!disabled,
+      style: {
+        width: '100%', padding: '16px 0', borderRadius: 12,
+        background: disabled ? C.softer : profile.color,
+        color: disabled ? C.sub : '#fff',
+        border: 'none', cursor: disabled ? 'default' : 'pointer',
+        fontFamily: 'inherit', fontSize: 15.5, fontWeight: 700,
+      }
+    }, label);
+
+    // ===== 追加 / 編集 =====
+    if (screen === 'add') {
+      const hasKey = !!loadApiKey();
+      const inputStyle = {
+        width: '100%', boxSizing: 'border-box', padding: '13px 14px',
+        borderRadius: 12, border: '1px solid ' + C.line, background: C.card,
+        fontFamily: 'inherit', fontSize: 15.5, color: C.text, lineHeight: 1.6,
+        outline: 'none', resize: 'none',
+      };
+      return e('div', { style: pageStyle },
+        topBar('分からなかった単語', () => setScreen('list')),
+        e('div', {
+          style: { fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: C.text, padding: '0 4px 4px' }
+        }, editId ? '単語を編集' : '分からなかった単語を追加'),
+        e('div', {
+          style: { fontSize: 13.5, color: C.sub, padding: '0 4px 16px', lineHeight: 1.7 }
+        }, '日本語でも英語でも OK。AI が反対側の言語と例文を埋めます。'),
+        !editId && e('div', { style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, letterSpacing: '0.1em', padding: '0 4px 6px' } }, '単語 (日本語 / 英語 どちらでも)'),
+        !editId && e('input', {
+          value: wordDraft,
+          onChange: (ev) => setWordDraft(ev.target.value),
+          placeholder: '例: 内税  /  gratuity',
+          style: inputStyle,
+        }),
+        !editId && hasKey && e('div', { style: { marginTop: 12 } },
+          primaryBtn(busy ? 'AI が調べています…' : '✨ AI で意味と例文を埋める', runAI, busy || !wordDraft.trim()),
+        ),
+        !editId && !hasKey && e('div', {
+          style: {
+            marginTop: 12, padding: '12px 14px', borderRadius: 12, background: C.softer,
+            border: '1px dashed ' + C.line, fontSize: 13, color: C.sub, lineHeight: 1.7,
+          }
+        }, '設定画面で AI キーを入れると自動で埋まります。今は下に自分で入力してください。'),
+        e('div', { style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, letterSpacing: '0.1em', padding: '18px 4px 6px' } }, '英語 (編集できます)'),
+        e('input', {
+          value: enDraft,
+          onChange: (ev) => setEnDraft(ev.target.value),
+          placeholder: 'gratuity',
+          style: { ...inputStyle, fontFamily: SERIF_READ, fontSize: 16.5 },
+        }),
+        e('div', { style: { fontFamily: SANS_UI, fontSize: 12, fontWeight: 700, color: C.sub, letterSpacing: '0.1em', padding: '14px 4px 6px' } }, '日本語の意味 (編集できます)'),
+        e('input', {
+          value: jaDraft,
+          onChange: (ev) => setJaDraft(ev.target.value),
+          placeholder: 'チップ・心づけ',
+          style: inputStyle,
+        }),
+        (exEnDraft || exJaDraft) && e('div', {
+          style: {
+            marginTop: 14, padding: '11px 14px', borderRadius: 12,
+            background: C.softer, border: '1px solid ' + C.line,
+          }
+        },
+          e('div', { style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 4 } }, '例文 (いっしょに保存されます)'),
+          exEnDraft && e('div', { style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 } }, exEnDraft),
+          exJaDraft && e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 3, lineHeight: 1.6 } }, exJaDraft),
+        ),
+        error && e('div', {
+          style: { marginTop: 12, padding: '10px 14px', borderRadius: 10, background: C.danger + '12', color: C.danger, fontSize: 13.5, lineHeight: 1.6 }
+        }, error),
+        e('div', { style: { marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 } },
+          e('button', {
+            onClick: () => setScreen('list'),
+            style: {
+              padding: '15px 0', borderRadius: 12, background: C.softer, color: C.sub,
+              border: '1px solid ' + C.line, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+            }
+          }, 'やめる'),
+          primaryBtn(editId ? '保存する' : 'ノートに追加', saveDraft, !enDraft.trim() || !jaDraft.trim()),
+        ),
+      );
+    }
+
+    // ===== 練習 =====
+    if (screen === 'practice') {
+      if (pDone) {
+        const perfect = okCount === items.length;
+        return e('div', { style: pageStyle },
+          perfect && e(Confetti, null),
+          topBar('分からなかった単語', () => setScreen('list')),
+          e('div', {
+            style: { background: C.card, border: '1px solid ' + C.line, borderRadius: 18, padding: '44px 22px', textAlign: 'center' }
+          },
+            e('div', { style: { fontSize: 40, marginBottom: 10 } }, perfect ? '🎉' : '💪'),
+            e('div', { style: { fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: C.text } }, cycle + ' 周目 完了！'),
+            e('div', { style: { fontSize: 15, color: C.sub, marginTop: 10, lineHeight: 1.7 } },
+              '言えた ' + okCount + ' / ' + items.length + ' 語',
+              e('br'),
+              perfect ? pickPraise() + ' 全部あなたが出会った単語です。' : 'もう 1 周で定着します。'),
+          ),
+          e('div', { style: { marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            e('button', {
+              onClick: () => setScreen('list'),
+              style: { padding: '16px 0', borderRadius: 12, background: C.softer, color: C.sub, border: '1px solid ' + C.line, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700 }
+            }, '一覧へ'),
+            e('button', {
+              onClick: nextCycle,
+              style: { padding: '16px 0', borderRadius: 12, background: profile.color, color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700 }
+            }, 'もう 1 周 ›'),
+          ),
+        );
+      }
+      if (!cur) { setScreen('list'); return null; }
+      return e('div', { style: pageStyle },
+        e('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 } },
+          e('button', { onClick: () => setScreen('list'),
+            style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+          }, '‹'),
+          e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+            '分からなかった単語 · ' + (pIdx + 1) + ' / ' + items.length),
+          e('div', {
+            style: { fontSize: 11.5, fontWeight: 800, fontFamily: SANS_UI, padding: '3px 9px', borderRadius: 999, background: profile.color + '14', color: profile.color }
+          }, cycle + ' 周目'),
+        ),
+        e('div', {
+          style: { background: C.card, border: '1px solid ' + C.line, borderRadius: 18, padding: '36px 22px', textAlign: 'center', minHeight: 190, display: 'flex', flexDirection: 'column', justifyContent: 'center' }
+        },
+          e('div', { style: { fontSize: 12, fontFamily: SANS_UI, fontWeight: 700, color: C.sub, letterSpacing: '0.14em', marginBottom: 14 } }, '英語で言ってみる'),
+          e('div', { style: { fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.6 } }, cur.ja),
+          revealed && e('div', { style: { marginTop: 20, paddingTop: 18, borderTop: '1px dashed ' + C.line } },
+            e('div', { style: { fontFamily: SERIF_READ, fontSize: 26, color: profile.color, lineHeight: 1.5, fontWeight: 600 } }, cur.en),
+            cur.exEn && e('div', { style: { marginTop: 12 } },
+              e('div', { style: { fontFamily: SERIF_READ, fontSize: 14.5, color: C.text, lineHeight: 1.6 } }, cur.exEn),
+              cur.exJa && e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 } }, cur.exJa),
+            ),
+            e('button', {
+              onClick: () => speakSmart(cur.exEn ? cur.en + '. ' + cur.exEn : cur.en, { lang: 'en-GB' }).catch(() => {}),
+              style: { marginTop: 12, padding: '8px 18px', borderRadius: 999, background: C.softer, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', color: C.text }
+            }, '🔊 もう一度'),
+          ),
+        ),
+        e('div', { style: { marginTop: 18 } },
+          !revealed
+            ? primaryBtn('答えを表示 + 発音', revealAnswer)
+            : e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                e('button', {
+                  onClick: () => markPractice(false),
+                  style: { padding: '16px 0', borderRadius: 12, background: C.softer, color: C.danger, border: '1px solid ' + C.line, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700 }
+                }, 'まだ 出なかった'),
+                e('button', {
+                  onClick: () => markPractice(true),
+                  style: { padding: '16px 0', borderRadius: 12, background: C.success, color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 700 }
+                }, '言えた ○'),
+              ),
+        ),
+      );
+    }
+
+    // ===== 一覧 =====
+    return e('div', { style: pageStyle },
+      topBar('分からなかった単語', onBack),
+      e('div', { style: { padding: '0 4px 14px' } },
+        e('div', { style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 } }, '分からなかった単語'),
+        e('div', { style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 } },
+          '会話や読み物で出会った単語をためて、あとでまとめて復習。あなた専用の単語帳です。'),
+      ),
+      primaryBtn('＋ 単語を追加', openAdd),
+      items.length > 0 && e('div', { style: { marginTop: 10 } },
+        e('button', {
+          onClick: startPractice,
+          style: {
+            width: '100%', padding: '16px 0', borderRadius: 12,
+            background: profile.color + '14', color: profile.color,
+            border: '1px solid ' + profile.color + '44', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 15.5, fontWeight: 700,
+          }
+        }, '▶ この ' + items.length + ' 語を復習する'),
+      ),
+      items.length === 0
+        ? e('div', {
+            style: { marginTop: 22, padding: '36px 20px', textAlign: 'center', background: C.softer, borderRadius: 14, color: C.sub, fontSize: 14, lineHeight: 1.9 }
+          },
+            e('div', { style: { fontSize: 34, marginBottom: 8 } }, '📒'),
+            'レッスンや接客、映画や記事で',
+            e('br'), '「この単語なんだっけ？」と思ったら',
+            e('br'), 'その場で追加しておきましょう。')
+        : e('div', { style: { marginTop: 22, display: 'flex', flexDirection: 'column', gap: 8 } },
+            items.map((it) => e('div', {
+              key: it.id,
+              style: {
+                padding: '13px 16px', borderRadius: 14, background: C.card,
+                border: '1px solid ' + ((it.streak || 0) >= 3 ? C.success + '66' : C.line),
+              }
+            },
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                e('div', { style: { flex: 1, minWidth: 0 } },
+                  e('div', { style: { fontFamily: SERIF_READ, fontSize: 17, fontWeight: 600, color: C.text, lineHeight: 1.4 } }, it.en),
+                  e('div', { style: { fontSize: 13, color: C.sub, marginTop: 3, lineHeight: 1.5 } }, it.ja),
+                ),
+                e('button', {
+                  onClick: () => speakSmart(it.en, { lang: 'en-GB' }).catch(() => {}),
+                  style: { flex: '0 0 auto', padding: '6px 10px', borderRadius: 999, background: C.softer, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 14 }
+                }, '🔊'),
+              ),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 } },
+                (it.streak || 0) > 0 && e('span', {
+                  style: { fontSize: 11.5, fontFamily: SANS_UI, fontWeight: 800, color: (it.streak || 0) >= 3 ? C.success : C.sub }
+                }, '連続 ×' + it.streak),
                 e('span', { style: { flex: 1 } }),
                 e('button', {
                   onClick: () => openEdit(it),
