@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 392;
+  const APP_VERSION = 393;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -23887,7 +23887,8 @@
         width: '100%', padding: '16px 0', borderRadius: 12,
         background: disabled ? C.softer : profile.color,
         color: disabled ? C.sub : '#fff',
-        border: 'none', cursor: disabled ? 'default' : 'pointer',
+        border: disabled ? '1px solid ' + C.line : 'none',
+        cursor: disabled ? 'default' : 'pointer',
         fontFamily: 'inherit', fontSize: 15.5, fontWeight: 700,
       }
     }, label);
@@ -24282,7 +24283,8 @@
         width: '100%', padding: '16px 0', borderRadius: 12,
         background: disabled ? C.softer : profile.color,
         color: disabled ? C.sub : '#fff',
-        border: 'none', cursor: disabled ? 'default' : 'pointer',
+        border: disabled ? '1px solid ' + C.line : 'none',
+        cursor: disabled ? 'default' : 'pointer',
         fontFamily: 'inherit', fontSize: 15.5, fontWeight: 700,
       }
     }, label);
@@ -24312,7 +24314,8 @@
           style: inputStyle,
         }),
         !editId && hasKey && e('div', { style: { marginTop: 12 } },
-          primaryBtn(busy ? 'AI が調べています…' : '✨ AI で意味と例文を埋める', runAI, busy || !wordDraft.trim()),
+          primaryBtn(busy ? 'AI が調べています…' : '✨ AI で意味と例文を埋める', runAI,
+            busy || (!wordDraft.trim() && !enDraft.trim() && !jaDraft.trim())),
         ),
         !editId && !hasKey && e('div', {
           style: {
