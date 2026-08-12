@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 390;
+  const APP_VERSION = 391;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -16613,6 +16613,8 @@
         }
       },
         // ---- 主役: 定型表現そのもの (構文モードのみ) ----
+        // 上の 🔊 は構文そのものを読む ("I'd rather …" → "I'd rather")。
+        // 例文には例文用の 🔊 を下に付ける。
         e('div', {
           style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.4,
                    display: 'flex', alignItems: 'center', gap: 10 }
@@ -16620,25 +16622,35 @@
           e('span', { style: { flex: 1 } },
             todayPhrase.pattern ? todayPhrase.pattern : todayPhrase.en),
           e(SpeakerBtn, {
-            onClick: () => speak(todayPhrase.pattern
-              ? (todayPhrase.en || todayPhrase.pattern)
-              : todayPhrase.en),
+            onClick: () => {
+              const text = todayPhrase.pattern
+                ? todayPhrase.pattern.replace(/…/g, ' ').replace(/\s+/g, ' ').trim()
+                : todayPhrase.en;
+              if (text) speak(text);
+            },
             color: profile.color, size: 32,
           }),
         ),
         e('div', {
           style: { fontSize: 12.5, color: C.sub, marginTop: 6, lineHeight: 1.5 }
         }, todayPhrase.pattern ? (todayPhrase.jaPattern || '') : todayPhrase.ja),
-        // ---- 例文 (構文モードのみ、下に 1 つ) ----
+        // ---- 例文 (構文モードのみ、下に 1 つ・専用の 🔊 つき) ----
         todayPhrase.pattern && todayPhrase.en && e('div', {
-          style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + C.line }
+          style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + C.line,
+                   display: 'flex', alignItems: 'flex-start', gap: 10 }
         },
-          e('div', {
-            style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 }
-          }, todayPhrase.en),
-          e('div', {
-            style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
-          }, todayPhrase.ja),
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            e('div', {
+              style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 }
+            }, todayPhrase.en),
+            e('div', {
+              style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 }
+            }, todayPhrase.ja),
+          ),
+          e(SpeakerBtn, {
+            onClick: () => speak(todayPhrase.en),
+            color: profile.color, size: 26,
+          }),
         ),
       ),
 
