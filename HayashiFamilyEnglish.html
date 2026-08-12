@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 389;
+  const APP_VERSION = 390;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -13822,8 +13822,11 @@
     const mistakes = Array.isArray(state.mistakes) ? state.mistakes.length : 0;
     const sentences = state.sentences ? Object.keys(state.sentences).length : 0;
     const phrases   = state.phrases   ? Object.keys(state.phrases).length   : 0;
+    const mysent    = Array.isArray(state.mysent) ? state.mysent.length : 0;
+    const myword    = Array.isArray(state.myword) ? state.myword.length : 0;
     return events === 0 && vocab === 0 && turns === 0 && daily === 0
-        && mistakes === 0 && sentences === 0 && phrases === 0;
+        && mistakes === 0 && sentences === 0 && phrases === 0
+        && mysent === 0 && myword === 0;
   }
 
   // ---------- Per-member state merge ----------
@@ -13907,6 +13910,23 @@
     }
     return out;
   }
+  // 言えなかったノート / 分からなかった単語の端末間マージ。
+  // id ごとに updatedAt (なければ createdAt) が新しい方を採用。
+  // 削除は tombstone ({id, deleted:true}) として 1 レコード扱いなので、
+  // 片方の端末で消したものがもう片方から復活しない。
+  function mergePersonalLists(a, b) {
+    const pick = new Map();
+    for (const it of [...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])]) {
+      if (!it || !it.id) continue;
+      const prev = pick.get(it.id);
+      if (!prev) { pick.set(it.id, it); continue; }
+      const tPrev = prev.updatedAt || prev.createdAt || 0;
+      const tCur  = it.updatedAt  || it.createdAt  || 0;
+      if (tCur > tPrev) pick.set(it.id, it);
+    }
+    return Array.from(pick.values())
+      .sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+  }
   function mergeMistakesArrays(a, b) {
     const out = [];
     const seen = new Set();
@@ -13934,6 +13954,8 @@
       turns:       mergeTurnsMaps(a.turns,         b.turns),
       events:      mergeEventsArrays(a.events,     b.events),
       mistakes:    mergeMistakesArrays(a.mistakes, b.mistakes),
+      mysent:      mergePersonalLists(a.mysent, b.mysent),
+      myword:      mergePersonalLists(a.myword, b.myword),
       turnsBackfilled: !!(a.turnsBackfilled || b.turnsBackfilled),
       _localUpdatedAt: new Date().toISOString(),
     };
@@ -23598,14 +23620,42 @@
   // レッスンや実際の会話で「言えなかった日本語」をメモしておき、AI が
   // 話し言葉として自然な英語に変換 → サイクル英作文と同じ要領で
   // スラスラ言えるまで回す。実際に必要だった文だけが集まる自分専用教材。
+  // v390: member state (hfe_v1_*) に同居させてクラウド同期に載せる。
+  // iPhone で登録したものが iPad にも出るように。旧・独立キーは移行元。
   const MYSENT_KEY = (memberId) => 'hfe_mysent_v1_' + memberId;
+  function _loadPersonalList(memberId, field, legacyKey) {
+    try {
+      const st = db.load(memberId);
+      if (Array.isArray(st[field])) return st[field].filter(x => x && !x.deleted);
+      // 旧・独立キーからの一回きり移行
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || '[]');
+      if (Array.isArray(legacy) && legacy.length > 0) {
+        st[field] = legacy;
+        db.save(memberId, st);
+        return legacy.filter(x => x && !x.deleted);
+      }
+      return [];
+    } catch { return []; }
+  }
+  function _savePersonalList(memberId, field, visible) {
+    try {
+      const st = db.load(memberId);
+      const prev = Array.isArray(st[field]) ? st[field] : [];
+      const keep = new Set(visible.map(x => x.id));
+      const now = Date.now();
+      // 消えた項目は tombstone として残す (同期でよみがえらないように)
+      const tombstones = prev
+        .filter(x => x && x.id && !keep.has(x.id))
+        .map(x => (x.deleted ? x : { id: x.id, deleted: true, updatedAt: now }));
+      st[field] = visible.map(x => ({ ...x, updatedAt: now })).concat(tombstones);
+      db.save(memberId, st);   // wrapDbSave 経由でクラウドへも push される
+    } catch (err) { console.warn('savePersonalList failed', err); }
+  }
   function loadMySentences(memberId) {
-    try { return JSON.parse(localStorage.getItem(MYSENT_KEY(memberId)) || '[]'); }
-    catch { return []; }
+    return _loadPersonalList(memberId, 'mysent', MYSENT_KEY(memberId));
   }
   function saveMySentences(memberId, items) {
-    try { localStorage.setItem(MYSENT_KEY(memberId), JSON.stringify(items)); }
-    catch (err) { console.warn('saveMySentences failed', err); }
+    _savePersonalList(memberId, 'mysent', items);
   }
 
   // 話し言葉として自然な英訳 (1 行目) + 別の言い方 (2 行目) を取得
@@ -24044,12 +24094,10 @@
   // AI が反対側の言語と例文 1 つを埋め、あとで周回復習できる。
   const MYWORD_KEY = (memberId) => 'hfe_myword_v1_' + memberId;
   function loadMyWords(memberId) {
-    try { return JSON.parse(localStorage.getItem(MYWORD_KEY(memberId)) || '[]'); }
-    catch { return []; }
+    return _loadPersonalList(memberId, 'myword', MYWORD_KEY(memberId));
   }
   function saveMyWords(memberId, items) {
-    try { localStorage.setItem(MYWORD_KEY(memberId), JSON.stringify(items)); }
-    catch (err) { console.warn('saveMyWords failed', err); }
+    _savePersonalList(memberId, 'myword', items);
   }
 
   // 単語 (日英どちらでも) → { en, ja, exEn, exJa }
