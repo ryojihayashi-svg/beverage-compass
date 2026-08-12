@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 391;
+  const APP_VERSION = 392;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -31132,8 +31132,9 @@
   // Speed selector (① / ② / ③) — slow / native / quick. Each has its own
   // TTS rate AND inter-rep pause so the rhythm stays right (slower
   // speech naturally needs more breathing room).
-  const SHADOW_SESSION_COUNT = 10;
-  const SHADOW_REPS          = 3;
+  // v392: 「たくさんの文を浅く」より「少ない文を深く」— 4 文 × 5 回。
+  const SHADOW_SESSION_COUNT = 4;
+  const SHADOW_REPS          = 5;
   const SHADOW_SPEEDS = {
     1: { rate: 0.85, pauseMs: 2000 },  // ゆっくり
     2: { rate: 1.00, pauseMs: 1500 },  // ふつう
