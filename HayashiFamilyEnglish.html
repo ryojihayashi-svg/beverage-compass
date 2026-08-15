@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 404;
+  const APP_VERSION = 405;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -155,11 +155,9 @@
     { id: 'comp_test',          label: 'AI英作文テスト', desc: '週1回 · 3問だけ · AI採点',  forLearner: true, forViewer: false },
     { id: 'listening',          label: 'リスニング理解', desc: '聞いて 4 択 · LV1-2 は日本語選択肢', forLearner: true, forViewer: false },
     { id: 'reading',            label: 'リーディング理解', desc: '長文を読んで 4 択 3 問',  forLearner: true, forViewer: false, hidden: true },
-    { id: 'ai_translate',       label: 'AI翻訳',         desc: '日本語 ⇄ 英語、写真の文字も', forLearner: true, forViewer: true, hidden: true },
     { id: 'convo_patterns',     label: '定型構文',       desc: '200 構文 · 実戦ビジネス英語',
                                                                                           forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
-    { id: 'saved_translate',    label: '翻訳ノート',     desc: '保存した翻訳で復習',        forLearner: true, forViewer: true,  hidden: true },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
     { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false, hidden: true },
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: '15 セットの定型フレーズ',
@@ -16072,14 +16070,11 @@
       else if (route.feature === 'composition_en2ja') body = e(SprintComposition, { profile, onBack: back, forcedDirection: 'en2ja' });
       else if (route.feature === 'mistakes')          body = e(MistakeReview,     { profile, onBack: back });
       else if (route.feature === 'mastered')          body = e(CombinedMastered,  { profile, onBack: back });
-      else if (route.feature === 'ai_translate')      body = e(AITranslate,       { profile, onBack: back });
-      else if (route.feature === 'ai_chat')           body = e(AITranslate,       { profile, onBack: back });
       else if (route.feature === 'english_lessons')   body = e(EnglishLessons,    { profile, onBack: back });
       else if (route.feature === 'shadowing')         body = e(ShadowingPractice, { profile, onBack: back });
       else if (route.feature === 'listening')         body = e(ListeningQuiz,     { profile, onBack: back });
       else if (route.feature === 'reading')           body = e(ReadingComprehension, { profile, onBack: back });
       else if (route.feature === 'comp_test')         body = e(CompositionTest,   { profile, onBack: back });
-      else if (route.feature === 'saved_translate')   body = e(SavedTranslations, { profile, onBack: back });
       else if (route.feature === 'diagnostic')        body = e(DiagnosticTest,    { profile, onBack: back });
       else if (route.feature === 'useful_phrases')    body = e(UsefulPhrases,     { profile, onBack: back });
       else if (route.feature === 'nativecamp_qa')     body = e(NativeCampQA,      { profile, onBack: back });
@@ -16896,10 +16891,6 @@
             const v = getMasteredVocab(profile.id).length;
             const s = getMasteredSentences(profile.id).length;
             subtitle = '一語一文 · ' + v + '語 / ' + s + '文';
-          } else if (f.id === 'ai_translate') {
-            subtitle = loadApiKey()
-              ? '日本語 ⇄ 英語 / 写真の文字も翻訳できる'
-              : '設定で API キーを登録してください';
           } else if (f.id === 'english_lessons') {
             const total = ENGLISH_LESSONS.length;
             const progress = loadLessonProgress(profile.id);
@@ -16908,9 +16899,6 @@
           } else if (f.id === 'shadowing') {
             const t = today.shadowing || 0;
             subtitle = '聞いて即真似する音読練習 · ' + dateLabel + ' ' + t + '回';
-          } else if (f.id === 'saved_translate') {
-            const n = loadSavedTranslations(profile.id).length;
-            subtitle = n > 0 ? '保存した翻訳 ' + n + ' 件 · タップで復習' : 'AI翻訳の★で保存した文をここで復習';
           }
           return e(FeatureTile, {
             key: f.id, feature: f,
@@ -16940,9 +16928,7 @@
         }, 'その他のツール'),
         e('div', { style: { display: 'flex', flexDirection: 'column', gap: 0 } },
           [
-            { id: 'ai_translate',    label: 'AI翻訳',             desc: '日本語 ⇄ 英語、写真の文字も翻訳' },
             { id: 'records',         label: '学習の記録',         desc: '7 日間の活動表とセッションログ' },
-            { id: 'saved_translate', label: '翻訳ノート',         desc: 'AI翻訳で★保存した文を復習' },
             { id: 'reading',         label: 'リーディング理解',   desc: '長文を読んで 4 択 3 問' },
             { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜2 級・段階式' },
           ].map((row, i, arr) => e('button', {
