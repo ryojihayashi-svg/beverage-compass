@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 400;
+  const APP_VERSION = 401;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -17365,7 +17365,8 @@
                 }
                 if (ev.direction) {
                   const dirJa = ev.direction === 'ja2en' ? '日本語 → 英語'
-                              : ev.direction === 'en2ja' ? '英語 → 日本語' : ev.direction;
+                              : ev.direction === 'en2ja' ? '英語 → 日本語'
+                              : ev.direction === 'mix'   ? 'ミックス' : ev.direction;
                   detail = (detail ? detail + ' · ' : '') + dirJa;
                 }
                 if (ev.level && ev.level !== 'auto') {
@@ -17486,7 +17487,9 @@
   }
 
   function VocabBrowse({ profile, onBack, forcedDirection }) {
-    const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' (話す方向・既定) | 'en2ja'
+    const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' (話す方向・既定) | 'en2ja' | 'mix'
+    // mix モード用: 1 問ごとの方向 (セッション開始時に 50/50 で決める)
+    const [dirs, setDirs] = useState([]);
     const [level, setLevel]   = useState(() => Math.min(5, Math.max(1, profile.level || 1)));
     const [mode, setMode]     = useState('auto');                // いま走っているセッションの種類 'auto' | 'unit'
     const [unitIdx, setUnitIdx] = useState(-1);                  // unit モードのユニット番号
@@ -17533,10 +17536,17 @@
         }
       } catch {}
     }
+    function makeDirs(n) {
+      return direction === 'mix'
+        ? Array.from({ length: n }, () => Math.random() < 0.5 ? 'ja2en' : 'en2ja')
+        : [];
+    }
     function startAutoSession() {
       unlockTTS();
       setMode('auto'); setUnitIdx(-1);
-      setQueue(buildAutoQueue());
+      const q = buildAutoQueue();
+      setQueue(q);
+      setDirs(makeDirs(q.length));
       setIndex(0); setRevealed(false); setCorrectCount(0);
       sessionStartRef.current = Date.now();
       setPhase('study');
@@ -17546,7 +17556,9 @@
       if (!words || words.length === 0) return;
       unlockTTS();
       setMode('unit'); setUnitIdx(i);
-      setQueue(shuffled(words));   // ユニット内はランダム順で出題
+      const q = shuffled(words);   // ユニット内はランダム順で出題
+      setQueue(q);
+      setDirs(makeDirs(q.length));
       setIndex(0); setRevealed(false); setCorrectCount(0);
       sessionStartRef.current = Date.now();
       setPhase('study');
@@ -17562,7 +17574,7 @@
 
     function mark(isKnown) {
       if (!current || phase !== 'study') return;
-      db.recordAnswer(profile.id, current.id, isKnown, { direction });
+      db.recordAnswer(profile.id, current.id, isKnown, { direction: cardDir });
       if (typeof current.level === 'number') {
         db.recordLevelAnswer(profile.id, 'vocab', current.level, isKnown);
       }
@@ -17587,7 +17599,7 @@
           adjustComfortFromMastery(profile.id, 'vocab');
           // Mark the matching step on today's guided path so the home
           // screen advances the glow to the next recommended activity.
-          markPathStepDone(profile, direction === 'ja2en' ? 'vocab_ja2en' : 'vocab_en2ja');
+          markPathStepDone(profile, cardDir === 'en2ja' ? 'vocab_en2ja' : 'vocab_ja2en');
           // ユニット周回を記録 — 一覧の「次はこれ」推薦 (新規3:復習1) に使う
           if (mode === 'unit' && unitIdx >= 0) {
             try { db.recordSetRun(profile.id, 'vocab_units', 'lv' + level + 'u' + unitIdx); } catch {}
@@ -17607,7 +17619,11 @@
       mastered: { label: '習得',   color: C.success  },
     };
     const stInfo = statusInfo[(progress && progress.status) || 'new'];
-    const isJa2En = direction === 'ja2en';
+    // mix モードでは 1 問ごとに方向が切り替わる
+    const cardDir = direction === 'mix'
+      ? (dirs[Math.min(index, Math.max(0, total - 1))] || 'ja2en')
+      : direction;
+    const isJa2En = cardDir === 'ja2en';
 
     // ============ DONE ============
     // Once the learner has worked through all 10 cards, hand off to the
@@ -17742,7 +17758,7 @@
           ),
         ),
         // 方向トグル
-        !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection }),
+        !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection, allowMix: true }),
         // 「次はこれ」おすすめカード — タップでそのユニットが始まる
         rec && (() => {
           const recWords = units[rec.idx] || [];
@@ -22663,7 +22679,7 @@
   // ----- 共通: 出題方向トグル (日→英 / 英→日) -----
   // 「話せる」ためには日→英 (自分で英語を作る方向) が核心。
   // テンポ単語・サイクル英作文・定型構文の練習で共用する。
-  function DirectionToggle({ profile, direction, onChange }) {
+  function DirectionToggle({ profile, direction, onChange, allowMix }) {
     const cell = (id, label) => e('button', {
       key: id,
       onClick: () => onChange(id),
@@ -22685,6 +22701,7 @@
     },
       cell('ja2en', '日 → 英'),
       cell('en2ja', '英 → 日'),
+      allowMix && cell('mix', 'ミックス'),
     );
   }
 
@@ -23516,18 +23533,25 @@
   // ----- サイクル練習 (10 文 × n 周) -----
   function CycleCompositionPractice({ profile, level, setIdx, sentences, onBackToList, onNextSet }) {
     const [cycle, setCycle]       = useState(1);
-    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja'
+    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja' | 'mix'
     const [idx, setIdx2]          = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);   // このサイクルの ○×
     const [screen, setScreen]     = useState('practice'); // 'practice' | 'summary'
     const sessionStartRef = useRef(Date.now());
+    // mix モード: 1 文ごとの方向。周回のたびに引き直す
+    const [dirs, setDirs] = useState([]);
+    const makeDirs = () => sentences.map(() => Math.random() < 0.5 ? 'ja2en' : 'en2ja');
+    useEffect(() => {
+      if (direction === 'mix') setDirs(makeDirs());
+    }, [direction, sentences]);
 
     const cur = sentences[idx];
+    const cardDir = direction === 'mix' ? (dirs[idx] || 'ja2en') : direction;
 
     const reveal = () => {
       setRevealed(true);
-      if (direction === 'ja2en') { try { speak(cur.en); } catch {} }
+      if (cardDir === 'ja2en') { try { speak(cur.en); } catch {} }
     };
     const mark = (ok) => {
       if (!cur) return;
@@ -23559,6 +23583,7 @@
       setIdx2(0);
       setRevealed(false);
       setResults([]);
+      if (direction === 'mix') setDirs(makeDirs());
       setScreen('practice');
       sessionStartRef.current = Date.now();
     };
@@ -23651,7 +23676,7 @@
     if (!cur) return null;
     return e('div', { style: pageStyle },
       topBar,
-      e(DirectionToggle, {
+      e(DirectionToggle, { allowMix: true,
         profile, direction,
         onChange: (d) => { setDirection(d); setRevealed(false); },
       }),
@@ -23678,7 +23703,7 @@
           alignItems: 'center', justifyContent: 'center',
         }
       },
-        direction === 'ja2en'
+        cardDir === 'ja2en'
           ? e('div', {
               style: { fontFamily: SERIF, fontSize: 22, color: C.text, lineHeight: 1.55 }
             }, cur.ja)
@@ -23699,15 +23724,15 @@
       },
         e('div', { style: { flex: 1, minWidth: 0 } },
           e('div', {
-            style: direction === 'ja2en'
+            style: cardDir === 'ja2en'
               ? { fontFamily: SERIF_READ, fontSize: 19, color: C.text, lineHeight: 1.5 }
               : { fontFamily: SERIF, fontSize: 19, color: C.text, lineHeight: 1.6 }
-          }, direction === 'ja2en' ? cur.en : cur.ja),
+          }, cardDir === 'ja2en' ? cur.en : cur.ja),
           cur.grammar && e('div', {
             style: { fontSize: 11.5, color: C.sub, marginTop: 6, fontFamily: SANS_UI }
           }, cur.grammar),
         ),
-        direction === 'ja2en' && e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 38 }),
+        cardDir === 'ja2en' && e(SpeakerBtn, { onClick: () => speak(cur.en), color: profile.color, size: 38 }),
       ),
       // ボタン
       !revealed
@@ -23719,7 +23744,7 @@
               background: profile.color, color: '#fff', border: 'none', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
             }
-          }, direction === 'ja2en' ? '答えを表示 + 発音' : '意味を表示')
+          }, cardDir === 'ja2en' ? '答えを表示 + 発音' : '意味を表示')
         : e('div', {
             style: { marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }
           },
