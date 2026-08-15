@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 405;
+  const APP_VERSION = 406;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -132,7 +132,6 @@
   //   random_test       … 単語・瞬間英作文・シャドーイングの寄せ集めで重複。デイリーパス内では存続。
   //
   // 設定画面に格下げした旧タイル (hidden: true で grid から外し、ホーム下部のフッターからのみ到達):
-  //   saved_translate (翻訳ノート)
   //   diagnostic       (レベル診断テスト)
   //
   // forProfileIds — このプロフィールでだけタイルを出す。useful_phrases は
@@ -2269,50 +2268,33 @@
     // ============ 句動詞 (Phrasal verbs) 60 ============
     // pos:'idiom' で IRREGULAR_VERBS の活用 (head + ' ' + tail) も働く
     { id:'pv_look_up',        en:'look up',        ja:'調べる・見上げる',     pos:'idiom', level:2, cat:'general', exEn:'I looked up the word in a dictionary.',     exJa:'辞書で単語を調べた。', exEn2:'Things are looking up.', exJa2:'事態は好転している。' },
-    { id:'pv_look_for',       en:'look for',       ja:'探す（口語）',                  pos:'idiom', level:2, cat:'general', exEn:'I am looking for my keys.',                 exJa:'鍵を探している。', exEn2:'What are you looking for?', exJa2:'何を探しているの？' },
     { id:'pv_look_after',     en:'look after',     ja:'世話をする（面倒を見る・英）',            pos:'idiom', level:2, cat:'general', exEn:'Could you look after my dog?',              exJa:'犬の世話をお願いできますか？', exEn2:'My grandmother looked after me.', exJa2:'祖母が私の面倒を見てくれた。' },
-    { id:'pv_look_forward',   en:'look forward to',ja:'楽しみにする',          pos:'idiom', level:3, cat:'general', exEn:'I look forward to seeing you.',             exJa:'お会いするのを楽しみにしています。', exEn2:'I\'m looking forward to the weekend.', exJa2:'週末が楽しみだ。' },
     { id:'pv_look_down_on',   en:'look down on',   ja:'見下す',                pos:'idiom', level:4, cat:'general', exEn:"Don't look down on others.",                exJa:'他人を見下してはいけない。', exEn2:'Never look down on simple dishes.', exJa2:'シンプルな料理を決して見下してはいけない。' },
     { id:'pv_look_up_to',     en:'look up to',     ja:'尊敬する（慕って見上げる）',              pos:'idiom', level:3, cat:'general', exEn:'I look up to my grandfather.',              exJa:'祖父を尊敬している。', exEn2:'Many young players look up to him.', exJa2:'多くの若手選手が彼を尊敬している。' },
-    { id:'pv_give_up',        en:'give up',        ja:'あきらめる',            pos:'idiom', level:2, cat:'general', exEn:"Don't give up on your dreams.",             exJa:'夢をあきらめないで。', exEn2:'I gave up smoking last year.', exJa2:'去年タバコをやめた。' },
     { id:'pv_give_in',        en:'give in',        ja:'屈する（降参する）',      pos:'idiom', level:3, cat:'general', exEn:'He finally gave in to pressure.',           exJa:'彼はついに圧力に屈した。', exEn2:'I won\'t give in to peer pressure.', exJa2:'同調圧力には屈しない。' },
     { id:'pv_give_back',      en:'give back',      ja:'返す',                  pos:'idiom', level:2, cat:'general', exEn:'Please give back my book.',                 exJa:'私の本を返してください。', exEn2:'Could you give it back later?', exJa2:'あとで返してくれる？' },
     { id:'pv_give_away',      en:'give away',      ja:'譲る・無料で配る',      pos:'idiom', level:3, cat:'general', exEn:'They gave away free samples.',              exJa:'彼らは無料サンプルを配った。', exEn2:'Don\'t give away the ending.', exJa2:'結末をバラさないで。' },
-    { id:'pv_take_off',       en:'take off',       ja:'脱ぐ・離陸する',        pos:'idiom', level:2, cat:'general', exEn:'The plane took off on time.',               exJa:'飛行機は時間通りに離陸した。', exEn2:'Take off your shoes at the door.', exJa2:'玄関で靴を脱いでください。' },
     { id:'pv_take_over',      en:'take over',      ja:'引き継ぐ',              pos:'idiom', level:3, cat:'work',    exEn:'She took over the family business.',        exJa:'彼女は家業を引き継いだ。', exEn2:'New management took over last month.', exJa2:'先月新しい経営陣が引き継いだ。' },
-    { id:'pv_take_care_of',   en:'take care of',   ja:'世話をする',            pos:'idiom', level:2, cat:'general', exEn:'Please take care of yourself.',             exJa:'お体に気をつけて。', exEn2:'I will take care of the bill.', exJa2:'会計は私が持ちます。' },
-    { id:'pv_take_part_in',   en:'take part in',   ja:'参加する（〜に加わる）',              pos:'idiom', level:2, cat:'general', exEn:'I took part in the marathon.',              exJa:'マラソンに参加した。', exEn2:'Will you take part in the meeting?', exJa2:'会議に参加しますか？' },
     { id:'pv_take_after',     en:'take after',     ja:'(親などに) 似ている',   pos:'idiom', level:3, cat:'family',  exEn:'She takes after her mother.',               exJa:'彼女は母親に似ている。', exEn2:'My son takes after his grandfather.', exJa2:'息子は祖父似だ。' },
-    { id:'pv_put_off',        en:'put off',        ja:'延期する（先送り・口語）',              pos:'idiom', level:2, cat:'general', exEn:"Don't put off your homework.",              exJa:'宿題を後回しにしないで。', exEn2:'The meeting was put off until next week.', exJa2:'会議は来週まで延期になった。' },
-    { id:'pv_put_on',         en:'put on',         ja:'身につける',            pos:'idiom', level:2, cat:'general', exEn:'Put on your coat.',                         exJa:'コートを着なさい。', exEn2:'She put on a smile and walked in.', exJa2:'彼女は笑顔を作って入ってきた。' },
     { id:'pv_put_up_with',    en:'put up with',    ja:'我慢する',              pos:'idiom', level:3, cat:'general', exEn:'I cannot put up with the noise.',           exJa:'この騒音には我慢できない。', exEn2:'How do you put up with him?', exJa2:'彼によく我慢できるね。' },
     { id:'pv_put_away',       en:'put away',       ja:'片付ける',              pos:'idiom', level:2, cat:'general', exEn:'Please put away your toys.',                exJa:'おもちゃを片付けて。', exEn2:'I put away the dishes after dinner.', exJa2:'夕食後にお皿を片付けた。' },
-    { id:'pv_get_up',         en:'get up',         ja:'起きる',                pos:'idiom', level:1, cat:'daily',   exEn:'I get up at six every morning.',            exJa:'毎朝6時に起きる。', exEn2:'I had to get up early today.', exJa2:'今日は早起きしなきゃいけなかった。' },
-    { id:'pv_get_along',      en:'get along with', ja:'仲良くやる',            pos:'idiom', level:3, cat:'general', exEn:'He gets along with everyone.',              exJa:'彼は誰とでも仲良くする。', exEn2:'My kids get along well together.', exJa2:'うちの子たちは仲良くやっている。' },
     { id:'pv_get_over',       en:'get over',       ja:'克服する（立ち直る・口語）',              pos:'idiom', level:3, cat:'general', exEn:'It took time to get over the loss.',        exJa:'喪失から立ち直るのに時間がかかった。', exEn2:'I can\'t get over how cold it is.', exJa2:'この寒さには参った。' },
     { id:'pv_get_on',         en:'get on',         ja:'(乗り物に) 乗る',       pos:'idiom', level:1, cat:'daily',   exEn:'Let\'s get on the bus.',                    exJa:'バスに乗ろう。', exEn2:'Get on the train at platform 3.', exJa2:'3 番線で電車に乗って。' },
     { id:'pv_get_off',        en:'get off',        ja:'(乗り物から) 降りる',   pos:'idiom', level:1, cat:'daily',   exEn:'Get off at the next stop.',                 exJa:'次の停留所で降りて。', exEn2:'I got off the bus at the wrong stop.', exJa2:'間違ったバス停で降りてしまった。' },
     { id:'pv_get_rid_of',     en:'get rid of',     ja:'取り除く（厄介払い・口語）',              pos:'idiom', level:3, cat:'general', exEn:'I want to get rid of these old books.',     exJa:'この古い本を処分したい。', exEn2:'How do I get rid of this stain?', exJa2:'このシミ、どうやって落とすの？' },
     { id:'pv_get_away',       en:'get away',       ja:'逃げる（口語・逃れる）',                pos:'idiom', level:3, cat:'general', exEn:'The thief got away.',                       exJa:'泥棒は逃げた。', exEn2:'I need to get away for a weekend.', exJa2:'週末ちょっと旅に出たい。' },
-    { id:'pv_carry_out',      en:'carry out',      ja:'実行する（やり遂げる）',              pos:'idiom', level:3, cat:'work',    exEn:'They carried out a big plan.',              exJa:'彼らは大きな計画を実行した。', exEn2:'They will carry out the order.', exJa2:'彼らはその命令を実行する。' },
     { id:'pv_carry_on',       en:'carry on',       ja:'続ける（口語）',                pos:'idiom', level:3, cat:'general', exEn:'Carry on with your work.',                  exJa:'仕事を続けて。', exEn2:'Just carry on as if nothing happened.', exJa2:'何事もなかったかのように続けて。' },
     { id:'pv_break_down',     en:'break down',     ja:'故障する・崩れる',      pos:'idiom', level:3, cat:'general', exEn:'My car broke down.',                        exJa:'車が故障した。', exEn2:'She broke down in tears.', exJa2:'彼女は泣き崩れた。' },
     { id:'pv_break_up',       en:'break up',       ja:'別れる・解散する',      pos:'idiom', level:3, cat:'general', exEn:'They broke up last year.',                  exJa:'彼らは去年別れた。', exEn2:'The meeting broke up at noon.', exJa2:'会議は正午に解散した。' },
     { id:'pv_break_out',      en:'break out',      ja:'突発する',              pos:'idiom', level:4, cat:'general', exEn:'A fire broke out at midnight.',             exJa:'真夜中に火事が起きた。', exEn2:'A small fire broke out, but no one was hurt.', exJa2:'小さな火事が起きたが、誰も無事だった。' },
-    { id:'pv_bring_up',       en:'bring up',       ja:'育てる（話題にする）',    pos:'idiom', level:3, cat:'family',  exEn:'They brought up three children.',           exJa:'彼らは3人の子を育てた。', exEn2:'Don\'t bring up that topic again.', exJa2:'その話題、もう持ち出さないで。' },
     { id:'pv_bring_about',    en:'bring about',    ja:'引き起こす（もたらす）',            pos:'idiom', level:4, cat:'general', exEn:'The invention brought about big changes.',  exJa:'その発明は大きな変化をもたらした。', exEn2:'The new chef brought about a big change.', exJa2:'新しいシェフが大きな変化をもたらした。' },
-    { id:'pv_come_up_with',   en:'come up with',   ja:'思いつく',              pos:'idiom', level:3, cat:'general', exEn:'She came up with a clever idea.',           exJa:'彼女は名案を思いついた。', exEn2:'I came up with a new idea last night.', exJa2:'昨夜、新しいアイデアを思いついた。' },
     { id:'pv_come_across',    en:'come across',    ja:'偶然出会う（物や情報にも）',            pos:'idiom', level:3, cat:'general', exEn:'I came across an old friend yesterday.',    exJa:'昨日昔の友人と偶然会った。', exEn2:'I came across this book at a used shop.', exJa2:'古本屋でこの本に偶然出会った。' },
-    { id:'pv_come_back',      en:'come back',      ja:'戻る',                  pos:'idiom', level:1, cat:'daily',   exEn:'Please come back soon.',                    exJa:'すぐ戻ってきて。', exEn2:'I will come back next year.', exJa2:'来年また戻ってきます。' },
     { id:'pv_come_true',      en:'come true',      ja:'実現する',              pos:'idiom', level:2, cat:'general', exEn:'My dream came true.',                       exJa:'夢が叶った。', exEn2:'Hard work makes dreams come true.', exJa2:'努力が夢を実現させる。' },
     { id:'pv_set_up',         en:'set up',         ja:'設立する（設置する）',    pos:'idiom', level:3, cat:'work',    exEn:'They set up a new company.',                exJa:'彼らは新しい会社を設立した。', exEn2:'Let me set up the projector first.', exJa2:'まずプロジェクターをセットしますね。' },
     { id:'pv_set_off',        en:'set off',        ja:'出発する（旅に出る・口語）',              pos:'idiom', level:3, cat:'general', exEn:'We set off at dawn.',                       exJa:'夜明けに出発した。', exEn2:'The fireworks set off the alarm.', exJa2:'花火が警報を鳴らした。' },
-    { id:'pv_turn_on',        en:'turn on',        ja:'(電源を) つける',       pos:'idiom', level:1, cat:'daily',   exEn:'Please turn on the TV.',                    exJa:'テレビをつけて。', exEn2:'Could you turn on the air conditioner?', exJa2:'エアコンをつけてもらえる？' },
-    { id:'pv_turn_off',       en:'turn off',       ja:'(電源を) 消す',         pos:'idiom', level:1, cat:'daily',   exEn:'Turn off the lights, please.',              exJa:'電気を消してください。', exEn2:'Don\'t forget to turn off the gas.', exJa2:'ガスを消し忘れないで。' },
     { id:'pv_turn_up',        en:'turn up',        ja:'現れる（音量を上げる）',  pos:'idiom', level:3, cat:'general', exEn:'He turned up at the party late.',           exJa:'彼はパーティーに遅れて現れた。', exEn2:'Could you turn up the volume?', exJa2:'音量を上げてもらえる？' },
     { id:'pv_turn_down',      en:'turn down',      ja:'断る・音量を下げる',    pos:'idiom', level:3, cat:'general', exEn:'She turned down the offer.',                exJa:'彼女はその申し出を断った。', exEn2:'I had to turn down their invitation.', exJa2:'招待を断らざるを得なかった。' },
     { id:'pv_turn_into',      en:'turn into',      ja:'〜に変わる',            pos:'idiom', level:3, cat:'general', exEn:'The frog turned into a prince.',            exJa:'カエルは王子様に変わった。', exEn2:'Water turns into ice when it\'s cold.', exJa2:'水は冷えると氷になる。' },
-    { id:'pv_find_out',       en:'find out',       ja:'知る（発見する）',        pos:'idiom', level:2, cat:'general', exEn:'I want to find out the truth.',             exJa:'真実を知りたい。', exEn2:'How did you find out about it?', exJa2:'どうやってそれを知ったの？' },
     { id:'pv_figure_out',     en:'figure out',     ja:'理解する（解決する）',    pos:'idiom', level:3, cat:'general', exEn:"I can't figure out this problem.",          exJa:'この問題が解けない。', exEn2:'It took me a while to figure out how it works.', exJa2:'仕組みを理解するのに少し時間がかかった。' },
     { id:'pv_fill_in',        en:'fill in',        ja:'記入する（空欄に・英）',              pos:'idiom', level:2, cat:'work',    exEn:'Please fill in this form.',                 exJa:'この用紙に記入してください。', exEn2:'Could you fill in for me tomorrow?', exJa2:'明日、私の代わりに入ってもらえますか？' },
     { id:'pv_fill_out',       en:'fill out',       ja:'記入する（書類全体に・米）',              pos:'idiom', level:3, cat:'work',    exEn:'Fill out the application carefully.',       exJa:'申込書を慎重に記入して。', exEn2:'Could you fill out this form, please?', exJa2:'この用紙に記入していただけますか？' },
@@ -2324,7 +2306,6 @@
     { id:'pv_hold_on',        en:'hold on',        ja:'(電話で) 待つ',         pos:'idiom', level:2, cat:'general', exEn:'Hold on a moment, please.',                 exJa:'少々お待ちください。', exEn2:'Hold on tight to the rail.', exJa2:'手すりにしっかりつかまって。' },
     { id:'pv_hand_over',      en:'hand over',      ja:'引き渡す',              pos:'idiom', level:3, cat:'general', exEn:'He handed over the keys.',                  exJa:'彼は鍵を引き渡した。', exEn2:'Hand over your phone, please.', exJa2:'電話を渡してください。' },
     { id:'pv_point_out',      en:'point out',      ja:'指摘する',              pos:'idiom', level:3, cat:'general', exEn:'She pointed out my mistake.',               exJa:'彼女は私の間違いを指摘した。', exEn2:'I\'d like to point out one thing.', exJa2:'一つだけ指摘させてください。' },
-    { id:'pv_show_up',        en:'show up',        ja:'現れる',                pos:'idiom', level:2, cat:'general', exEn:'He did not show up at the meeting.',        exJa:'彼は会議に現れなかった。', exEn2:'New problems keep showing up.', exJa2:'新しい問題が次々と出てくる。' },
     { id:'pv_run_into',       en:'run into',       ja:'偶然出会う（人にばったり）',            pos:'idiom', level:3, cat:'general', exEn:'I ran into my old teacher today.',          exJa:'今日昔の先生と偶然会った。', exEn2:'I ran into trouble at work.', exJa2:'仕事で問題に出くわした。' },
     { id:'pv_run_out_of',     en:'run out of',     ja:'切らす',                pos:'idiom', level:3, cat:'general', exEn:'We ran out of milk.',                       exJa:'牛乳を切らしてしまった。', exEn2:'We\'re running out of time.', exJa2:'時間が足りなくなってきた。' },
     { id:'pv_make_up',        en:'make up',        ja:'作り上げる・仲直りする',pos:'idiom', level:3, cat:'general', exEn:'They made up after the fight.',             exJa:'彼らは喧嘩のあと仲直りした。', exEn2:'She made up an excuse.', exJa2:'彼女は言い訳をでっち上げた。' },
@@ -7060,6 +7041,9 @@
   (function pushCompositionIntoShadowing() {
     for (const s of SENTENCES) {
       if (!s || !s.ja || !s.en) continue;
+      // sh_* はシャドーイング→英作文のミラー。ここで再ミラーすると
+      // シャドーイングに全文が二重登録されてしまうので除外する。
+      if (String(s.id).indexOf('sh_') === 0) continue;
       const n = parseInt((s.id || '').replace('s', ''), 10);
       if (n >= 860 && n <= 895) continue;                       // fd_ ミラー済み
       if ((s.grammar || '').indexOf('名言') === 0) continue;     // 名言は除外
@@ -13182,7 +13166,9 @@
     let comfort = 2.0;
     try { comfort = loadComfort(memberId, 'vocab'); } catch {}
     const isAdvanced = comfort >= 3.0;     // 英検3級〜
-    const dayOfWeek  = new Date().getDay();  // 0=日 .. 6=土
+    // 曜日はメンバーの「今日」(吉成はロンドン時間) から求める。
+    // 端末のタイムゾーンだと、東京の親端末が見た時に日付がズレる。
+    const dayOfWeek  = new Date(today + 'T12:00:00Z').getUTCDay();  // 0=日 .. 6=土
 
     // 1. Shadowing warm-up (70% of the time). Mouth + ear before
     // anything visual. Yoshinari can skip with 'あとでやる' on the
@@ -13203,12 +13189,13 @@
     out.push({ id: 'listening' });
     // 8. AI 英作文テスト — 上のレベルは 週2 (火/金)、下のレベルは 週1 (水)
     const compTestDays = isAdvanced ? [2, 5] : [3];
-    if (compTestDays.includes(dayOfWeek)) out.push({ id: 'comp_test' });
+    // AI キーが無い端末では開始できない画面になるため、キーがある時だけ載せる
+    if (compTestDays.includes(dayOfWeek) && loadApiKey()) out.push({ id: 'comp_test' });
     // 9. 1分英語解説 (50% if there's an unfinished lesson)
     if (undoneLessons > 0 && rand() < 0.5) out.push({ id: 'english_lessons' });
     // 10. ボーナスラウンド — テンポ単語 (キクタン式) で締める。
     out.push({ id: 'tempo_vocab' });
-    if (rand() < 0.5 && !main.includes('shadowing')) out.push({ id: 'shadowing' });
+    if (rand() < 0.5 && !out.some(s => s.id === 'shadowing')) out.push({ id: 'shadowing' });
     return out.map((s, i) => ({ ...s, idx: i, doneAt: null }));
   }
   function loadTodaysPath(profile) {
@@ -13268,6 +13255,10 @@
       if (s.id === 'mistakes') {
         const has = db.getMistakesNormalized && db.getMistakesNormalized(profile.id).length > 0;
         if (!has) { s.doneAt = Date.now(); s.skipped = true; changed = true; }
+      }
+      // AI キーが無い端末では comp_test は始められない → 自動スキップ
+      if (s.id === 'comp_test' && !loadApiKey()) {
+        s.doneAt = Date.now(); s.skipped = true; changed = true;
       }
     }
     if (changed) saveTodaysPath(profile, p);
@@ -13594,7 +13585,7 @@
     // Generic mistakes (kind: 'vocab' | 'sentence' | 'phrase').
     // Backward-compatible with older entries that only carried { vocabId, at };
     // those are normalised to { kind: 'vocab', id: vocabId, at } at read time.
-    pushMistakeEx(memberId, kind, id) {
+    pushMistakeEx(memberId, kind, id, dir) {
       const s = this.load(memberId);
       if (!s.mistakes) s.mistakes = [];
       // Strip any existing entry for the same (kind, id)
@@ -13603,7 +13594,8 @@
         const i = m.id  || m.vocabId;
         return !(k === kind && i === id);
       });
-      s.mistakes.unshift({ kind, id, at: new Date().toISOString() });
+      // dir: 間違えた方向 (将来の「同じ方向で復習」用に保存)
+      s.mistakes.unshift({ kind, id, dir: dir || undefined, at: new Date().toISOString() });
       s.mistakes = s.mistakes.slice(0, 80);
       this.save(memberId, s);
     },
@@ -13669,7 +13661,7 @@
       const direction = (opts && opts.direction) || 'ja2en';
       const next = srs.apply(prev, isCorrect, direction);
       this.setVocabProgress(memberId, vocabId, next);
-      if (!isCorrect) this.pushMistake(memberId, vocabId);
+      if (!isCorrect) this.pushMistakeEx(memberId, 'vocab', vocabId, direction);
       else            this.removeMistake(memberId, vocabId);
       this.recordDaily(memberId, isCorrect);
       return next;
@@ -14884,7 +14876,8 @@
         let settled = false;
         let safetyTimer = null;
         const clearHandlers = () => {
-          a.onended = null; a.onerror = null; a.onpause = null; a.onloadedmetadata = null;
+          a.onended = null; a.onerror = null; a.onpause = null;
+          a.onplaying = null; a.onloadedmetadata = null;
         };
         const finish = (fn) => {
           if (settled) return;
@@ -14898,8 +14891,12 @@
         a.onended = () => finish(resolve);
         a.onerror = () => finish(() => reject(new Error('play')));
         // 外部から止められた (hqStop / 割り込み) ときは ended が来ないので、
-        // pause を合図に resolve して待ちっぱなしを防ぐ。
-        a.onpause = () => { if (!a.ended) finish(resolve); };
+        // pause を合図に resolve して待ちっぱなしを防ぐ。ただし「この
+        // クリップが実際に再生を始めてから」に限定 — 直前クリップ停止時の
+        // pause イベントが新クリップを即終了させる競合を防ぐ。
+        let startedPlaying = false;
+        a.onplaying = () => { startedPlaying = true; };
+        a.onpause = () => { if (startedPlaying && !a.ended) finish(resolve); };
         // 保険: iOS では ended がまれに発火しないことがあり、そうなると
         // 自動再生シーケンス全体が黙り込む。長さ + 4 秒で強制的に先へ。
         const armSafety = () => {
@@ -16374,7 +16371,7 @@
         // 日付に応じて巡回 (vocab → composition → listening → reading → shadowing)
         const rotation = ['vocab_ja2en', 'cycle_composition',
                           'listening',   'tempo_vocab',      'shadowing'];
-        const dayNum = new Date().getDate();
+        const dayNum = parseInt(db.todayKey(profile.id).slice(-2), 10) || new Date().getDate();
         perpetualCurrentId = rotation[dayNum % rotation.length];
       }
     }
@@ -16879,9 +16876,13 @@
           } else if (f.id === 'vocab_ja2en' || f.id === 'vocab_en2ja') {
             // Both directions share the same counter — turning over 10
             // questions in either direction counts as one vocab turn.
-            subtitle = (f.desc ? f.desc + ' · ' : '') + dateLabel + ' ' + (today.vocab || 0) + '回';
+            const vdesc = AUTO_DIRECTION_MEMBERS.includes(profile.id)
+              ? 'ミックス出題で 10 問' : f.desc;
+            subtitle = (vdesc ? vdesc + ' · ' : '') + dateLabel + ' ' + (today.vocab || 0) + '回';
           } else if (f.id === 'composition_ja2en' || f.id === 'composition_en2ja') {
             subtitle = (f.desc ? f.desc + ' · ' : '') + dateLabel + ' ' + (today.composition || 0) + '回';
+          } else if (f.id === 'cycle_composition' && AUTO_DIRECTION_MEMBERS.includes(profile.id)) {
+            subtitle = '10 文をスラスラ言えるまで回す · ミックス';
           } else if (f.id === 'mistakes') {
             // Total mistakes overcome (lifetime) instead of pending count
             // per the new spec — '何個の間違いを克服したか'.
@@ -19962,7 +19963,7 @@
               durationMs,
             });
             adjustComfortFromMastery(profile.id, 'composition');
-            markPathStepDone(profile, 'composition_ja2en');
+            markPathStepDone(profile, 'comp_test');
           } catch {}
           setPhase('done');
         } else {
@@ -20003,7 +20004,7 @@
             durationMs,
           });
           adjustComfortFromMastery(profile.id, 'composition');
-          markPathStepDone(profile, 'composition_ja2en');
+          markPathStepDone(profile, 'comp_test');
         } catch {}
         setPhase('done');
         return;
@@ -23089,7 +23090,7 @@
       if (!w) return null;
       return e('div', { style: pageStyle },
         topBar,
-        e(DirectionToggle, {
+        !AUTO_DIRECTION_MEMBERS.includes(profile.id) && e(DirectionToggle, {
           profile, direction,
           onChange: (d) => { setDirection(d); setChantPhase(d === 'ja2en' ? 'ja' : 'en1'); setPlaying(true); },
         }),
@@ -23198,7 +23199,7 @@
             }
           }),
         ),
-        e(DirectionToggle, {
+        !AUTO_DIRECTION_MEMBERS.includes(profile.id) && e(DirectionToggle, {
           profile, direction,
           onChange: (d) => { setDirection(d); setRevealed(false); },
         }),
@@ -23530,9 +23531,11 @@
     const [results, setResults]   = useState([]);   // このサイクルの ○×
     const [screen, setScreen]     = useState('practice'); // 'practice' | 'summary'
     const sessionStartRef = useRef(Date.now());
-    // mix モード: 1 文ごとの方向。周回のたびに引き直す
-    const [dirs, setDirs] = useState([]);
+    // mix モード: 1 文ごとの方向。周回のたびに引き直す。
+    // 初期値も即時に引いておく (useEffect 待ちだと初回カードが一瞬
+    // ja2en で描画されてから切り替わってチラつくため)
     const makeDirs = () => sentences.map(() => Math.random() < 0.5 ? 'ja2en' : 'en2ja');
+    const [dirs, setDirs] = useState(() => makeDirs());
     useEffect(() => {
       if (direction === 'mix') setDirs(makeDirs());
     }, [direction, sentences]);
@@ -23792,7 +23795,18 @@
       const tombstones = prev
         .filter(x => x && x.id && !keep.has(x.id))
         .map(x => (x.deleted ? x : { id: x.id, deleted: true, updatedAt: now }));
-      st[field] = visible.map(x => ({ ...x, updatedAt: now })).concat(tombstones);
+      // 変更があった項目だけ updatedAt を更新する。全項目を毎回リスタンプ
+      // すると、別端末の削除 (tombstone) や編集が「新しい」扱いで負けて
+      // 復活してしまうため。
+      const prevById = new Map(prev.filter(p => p && p.id).map(p => [p.id, p]));
+      const FIELDS = ['ja', 'en', 'streak', 'exEn', 'exJa', 'exEn2', 'exJa2'];
+      st[field] = visible.map(x => {
+        const before = prevById.get(x.id);
+        const unchanged = before && !before.deleted &&
+          FIELDS.every(k => (before[k] || '') === (x[k] || '') ||
+                            (k === 'streak' && (before[k] || 0) === (x[k] || 0)));
+        return unchanged ? before : { ...x, updatedAt: now };
+      }).concat(tombstones);
       db.save(memberId, st);   // wrapDbSave 経由でクラウドへも push される
     } catch (err) { console.warn('savePersonalList failed', err); }
   }
@@ -28925,7 +28939,7 @@
                   : e(ConvoKindChip, { kind: cur.kind }),
               ),
               // 方向トグル (日→英 / 英→日)
-              e(DirectionToggle, {
+              !AUTO_DIRECTION_MEMBERS.includes(profile.id) && e(DirectionToggle, {
                 profile, direction,
                 onChange: (d) => { setDirection(d); setRevealed(false); },
               }),
@@ -31433,7 +31447,11 @@
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (Ctx) {
-        const ctx = new Ctx();
+        // 毎回 new すると iOS の AudioContext 上限 (4-6 個) を食い潰して
+        // 解錠が効かなくなる。primeAudioChannel と共有の 1 個を使い回す。
+        if (!_primeCtx) _primeCtx = new Ctx();
+        const ctx = _primeCtx;
+        if (ctx.state === 'suspended' && ctx.resume) { try { ctx.resume(); } catch {} }
         const buf = ctx.createBuffer(1, 1, 22050);
         const src = ctx.createBufferSource();
         src.buffer = buf;
@@ -33101,6 +33119,14 @@
       let pool = LISTENING_QUIZ.slice();
       if (selectedLevel !== 'auto') {
         pool = pool.filter(q => q.level === selectedLevel);
+      } else {
+        // おまかせ: 学習者の comfort に合わせて上限レベルを絞る
+        // (レベル 2 の子に LV4-5 の英語選択肢問題が半分出るのを防ぐ)
+        let comfort = 2.0;
+        try { comfort = loadComfort(profile.id, 'vocab'); } catch {}
+        const maxLv = Math.min(5, Math.max(2, Math.round(comfort) + 1));
+        const capped = pool.filter(q => q.level <= maxLv);
+        if (capped.length >= LISTENING_SESSION_COUNT) pool = capped;
       }
       // 一度正解した問題は除外する (間違いはまた出る)。すべて正解済みなら
       // フォールバックで全問から出題 (= 復習扱い)。
