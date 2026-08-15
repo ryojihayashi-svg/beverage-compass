@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 401;
+  const APP_VERSION = 402;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -112,6 +112,9 @@
     { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '', color: C.brand, role: 'learner', level: 2 },
     { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '', color: C.brand, role: 'learner', level: 1 },
   ];
+  // 方向 (日→英 / 英→日 / ミックス) の選択すら考えさせないメンバー。
+  // トグルを隠し、学習効果が最も高い「ミックス」で自動的に練習させる。
+  const AUTO_DIRECTION_MEMBERS = ['son2'];
 
   // ---------- Feature tiles for English Learning Home ----------
   // 6 行 × 2 列 のハーフ幅タイル + 大人向けタイル + その他ツール。
@@ -17487,7 +17490,8 @@
   }
 
   function VocabBrowse({ profile, onBack, forcedDirection }) {
-    const [direction, setDirection] = useState(forcedDirection || 'ja2en'); // 'ja2en' (話す方向・既定) | 'en2ja' | 'mix'
+    const autoDir = AUTO_DIRECTION_MEMBERS.includes(profile.id);
+    const [direction, setDirection] = useState(forcedDirection || (autoDir ? 'mix' : 'ja2en')); // 'ja2en' | 'en2ja' | 'mix'
     // mix モード用: 1 問ごとの方向 (セッション開始時に 50/50 で決める)
     const [dirs, setDirs] = useState([]);
     const [level, setLevel]   = useState(() => Math.min(5, Math.max(1, profile.level || 1)));
@@ -17758,7 +17762,7 @@
           ),
         ),
         // 方向トグル
-        !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection, allowMix: true }),
+        !forcedDirection && !autoDir && e(DirectionToggle, { profile, direction, onChange: setDirection, allowMix: true }),
         // 「次はこれ」おすすめカード — タップでそのユニットが始まる
         rec && (() => {
           const recWords = units[rec.idx] || [];
@@ -23533,7 +23537,8 @@
   // ----- サイクル練習 (10 文 × n 周) -----
   function CycleCompositionPractice({ profile, level, setIdx, sentences, onBackToList, onNextSet }) {
     const [cycle, setCycle]       = useState(1);
-    const [direction, setDirection] = useState('ja2en'); // 'ja2en' (話す方向) | 'en2ja' | 'mix'
+    const autoDir = AUTO_DIRECTION_MEMBERS.includes(profile.id);
+    const [direction, setDirection] = useState(autoDir ? 'mix' : 'ja2en'); // 'ja2en' | 'en2ja' | 'mix'
     const [idx, setIdx2]          = useState(0);
     const [revealed, setRevealed] = useState(false);
     const [results, setResults]   = useState([]);   // このサイクルの ○×
@@ -23676,7 +23681,7 @@
     if (!cur) return null;
     return e('div', { style: pageStyle },
       topBar,
-      e(DirectionToggle, { allowMix: true,
+      !autoDir && e(DirectionToggle, { allowMix: true,
         profile, direction,
         onChange: (d) => { setDirection(d); setRevealed(false); },
       }),
