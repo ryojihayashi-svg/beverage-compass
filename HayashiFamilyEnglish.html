@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 406;
+  const APP_VERSION = 407;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -7083,6 +7083,93 @@
   // Each entry has a title (for the picker), level, en (the passage),
   // and ja (the translation, shown on the practice card and review).
   const SHADOWING_PASSAGES = [
+    // ===== LV1-2 · やさしい長文 (吉成・吉平の帯) =====
+    {
+      id: 'pas_easy_morning',
+      level: 1,
+      title: 'やさしい長文 ① 寮の朝',
+      summary: 'イギリスの寮の朝 ― 現在形だけで読める',
+      icon: '',
+      en:
+        "I get up at seven every morning. " +
+        "I wash my face and put on my school uniform. " +
+        "Breakfast is at half past seven. " +
+        "I usually have toast and eggs. " +
+        "My first lesson starts at nine. " +
+        "I like Mondays because we have football in the afternoon.",
+      ja:
+        '私は毎朝 7 時に起きます。' +
+        '顔を洗って、制服を着ます。' +
+        '朝食は 7 時半です。' +
+        'いつもはトーストと卵を食べます。' +
+        '最初の授業は 9 時に始まります。' +
+        '午後にサッカーがあるので、月曜日が好きです。',
+    },
+    {
+      id: 'pas_easy_family',
+      level: 1,
+      title: 'やさしい長文 ② ぼくの家族',
+      summary: '家族の紹介 ― be動詞と一般動詞',
+      icon: '',
+      en:
+        "There are five people in my family. " +
+        "My father runs restaurants in Tokyo. " +
+        "My mother takes care of our pigs. " +
+        "I have two brothers. " +
+        "One of them studies in the UK. " +
+        "We often eat dinner together at the weekend.",
+      ja:
+        '私の家族は 5 人家族です。' +
+        '父は東京でレストランを経営しています。' +
+        '母は家の豚の世話をしています。' +
+        '私には兄弟が 2 人います。' +
+        'そのうちの 1 人はイギリスで勉強しています。' +
+        '週末はよく一緒に夕食を食べます。',
+    },
+    {
+      id: 'pas_easy_afterschool',
+      level: 2,
+      title: 'やさしい長文 ③ 放課後',
+      summary: '放課後の予定 ― 過去形と未来形',
+      icon: '',
+      en:
+        "Yesterday I had a maths test. " +
+        "It was hard, but I did my best. " +
+        "After school, I played football with my friends. " +
+        "We won the game two to one. " +
+        "Tomorrow I am going to call my family in Japan. " +
+        "I want to tell them about the game.",
+      ja:
+        '昨日、数学のテストがありました。' +
+        '難しかったけれど、ベストを尽くしました。' +
+        '放課後は友達とサッカーをしました。' +
+        '2 対 1 で試合に勝ちました。' +
+        '明日は日本の家族に電話するつもりです。' +
+        '試合のことを話したいです。',
+    },
+    {
+      id: 'pas_easy_london',
+      level: 2,
+      title: 'やさしい長文 ④ ロンドンへ',
+      summary: '週末の外出 ― 過去形で読む小さな旅行記',
+      icon: '',
+      en:
+        "Last Saturday, I went to London with two friends. " +
+        "We took the train and it took about an hour. " +
+        "First, we visited the British Museum. " +
+        "It was free and really interesting. " +
+        "Then we ate fish and chips by the river. " +
+        "It was a little expensive, but delicious. " +
+        "We came back to the dorm before dinner.",
+      ja:
+        '先週の土曜日、友達 2 人とロンドンに行きました。' +
+        '電車で 1 時間くらいかかりました。' +
+        'まず大英博物館に行きました。' +
+        '無料で、とても面白かったです。' +
+        'それから川のそばでフィッシュ・アンド・チップスを食べました。' +
+        '少し高かったけれど、おいしかったです。' +
+        '夕食の前に寮に戻りました。',
+    },
     // ===== Steve Jobs · Stanford 2005 commencement =====
     // Spliced into chunks of similar length to the rest of the passages
     // (~50–60 words each). ① 開幕 → ⑤ 締めくくり.
@@ -8720,7 +8807,7 @@
     },
     {
       id: 'lq74', level: 1,
-      audio: [{ speaker: null, en: 'My favorite season is summer.' }],
+      audio: [{ speaker: null, en: 'My favourite season is summer.' }],
       q: '好きな季節は？',
       choices: ['春', '夏', '秋', '冬'],
       answer: 1,
@@ -9022,6 +9109,75 @@
   // LV3 までは選択肢を日本語、LV4+ は英語にしている。
   // 出題は ReadingComprehension コンポーネントが処理。
   const READING_QUESTIONS = {
+    // ========== やさしい長文 (LV1-2) ==========
+    pas_easy_morning: [
+      {
+        q: 'この人は何時に起きますか？',
+        choices: ['7 時', '7 時半', '9 時', '6 時'],
+        answer: 0,
+      },
+      {
+        q: '朝食にいつも食べるものは？',
+        choices: ['トーストと卵', 'ごはんとみそ汁', 'シリアル', 'パンケーキ'],
+        answer: 0,
+      },
+      {
+        q: 'なぜ月曜日が好きなのですか？',
+        choices: ['午後にサッカーがあるから', '授業が少ないから', '寮の食事が良いから', '早く帰れるから'],
+        answer: 0,
+      },
+    ],
+    pas_easy_family: [
+      {
+        q: '家族は何人ですか？',
+        choices: ['5 人', '4 人', '6 人', '3 人'],
+        answer: 0,
+      },
+      {
+        q: 'お母さんは何の世話をしていますか？',
+        choices: ['豚', '犬', '猫', '鶏'],
+        answer: 0,
+      },
+      {
+        q: '家族はいつ一緒に夕食を食べますか？',
+        choices: ['週末', '毎日', '月曜日', '祝日だけ'],
+        answer: 0,
+      },
+    ],
+    pas_easy_afterschool: [
+      {
+        q: '昨日あったテストは何の教科？',
+        choices: ['数学', '英語', '理科', '歴史'],
+        answer: 0,
+      },
+      {
+        q: 'サッカーの試合の結果は？',
+        choices: ['2 対 1 で勝った', '2 対 1 で負けた', '引き分けだった', '中止になった'],
+        answer: 0,
+      },
+      {
+        q: '明日する予定のことは？',
+        choices: ['日本の家族に電話する', 'また試合をする', 'テストを受ける', 'ロンドンに行く'],
+        answer: 0,
+      },
+    ],
+    pas_easy_london: [
+      {
+        q: 'ロンドンまで何で行きましたか？',
+        choices: ['電車', 'バス', '車', '飛行機'],
+        answer: 0,
+      },
+      {
+        q: '大英博物館はどうでしたか？',
+        choices: ['無料でとても面白かった', '高かったが面白かった', '休館だった', '混んでいて入れなかった'],
+        answer: 0,
+      },
+      {
+        q: 'フィッシュ・アンド・チップスはどこで食べましたか？',
+        choices: ['川のそば', '博物館の中', '駅の前', '寮の食堂'],
+        answer: 0,
+      },
+    ],
     // ========== Steve Jobs Stanford (LV3) ==========
     pas_jobs_stanford_01: [
       {
@@ -9841,7 +9997,7 @@
     { id:'dq3_12', level:3, type:'grammar', q:'I went to bed early ___ I was tired.',           choices:['so','because','but','that'],  answer:1, explain:'because + 文 = 〜なので。理由を表す。so は結果。' },
     { id:'dq3_13', level:3, type:'grammar', q:'This door ___ be locked at night.',              choices:['has','must','can','will'],    answer:1, explain:'must = 〜しなければならない / 〜に違いない。must be locked = 鍵がかかってなければならない (受動態の助動詞)。' },
     { id:'dq3_14', level:3, type:'grammar', q:'I stopped ___ a phone call from my mother.',     choices:['take','to take','taking','taken'], answer:1, explain:'stop to V = (それまでしていたことを止めて) V するため止まる。stop -ing は「-ing をやめる」で意味が異なる。' },
-    { id:'dq3_15', level:3, type:'grammar', q:'The window was broken ___ a baseball.',          choices:['by','with','of','from'],      answer:0, explain:'受動態の動作主は by。by + 行為者 (a baseball は人ではないが、ここでは原因 → by が使われる)。' },
+    { id:'dq3_15', level:3, type:'grammar', q:'The window was broken ___ Tom.',                 choices:['by','with','of','from'],      answer:0, explain:'受動態の動作主 (〜によって) は by。' },
     { id:'dq3_16', level:3, type:'grammar', q:'Could you tell me ___ to get to the station?',   choices:['where','how','what','which'], answer:1, explain:'how to V = 〜の方法。「駅への行き方を教えてください」。' },
     { id:'dq3_17', level:3, type:'vocab',   q:'"although" の意味は？',                            choices:['それゆえ','〜だけれども','〜の間','〜のおかげで'], answer:1, explain:'although + 文 = 〜だけれども (譲歩)。though も同じ意味。' },
     { id:'dq3_18', level:3, type:'grammar', q:'I am looking forward ___ seeing you again.',     choices:['to','for','at','of'],         answer:0, explain:'look forward to + 動名詞。to は前置詞なので後ろは -ing。' },
@@ -10508,22 +10664,22 @@
           explain: '「中」だから in だね。箱に囲まれているイメージ。',
         },
         {
-          q:   'The ball is ___ the box.',
-          qJa: 'ボールは箱の上にのっています。',
+          q:   'The cup is ___ the table.',
+          qJa: 'カップはテーブルの上にのっています。',
           choices: ['in', 'on', 'under'],
           answer: 1,
           explain: '「上にのっている」だから on。面にくっついているイメージ。',
         },
         {
-          q:   'The ball is ___ the box.',
-          qJa: 'ボールは箱の下にあります。',
+          q:   'The cat is ___ the chair.',
+          qJa: '猫はいすの下にいます。',
           choices: ['in', 'on', 'under'],
           answer: 2,
           explain: '「下」だから under。箱の真下にあるイメージ。',
         },
         {
-          q:   'The ball is ___ the box.',
-          qJa: 'ボールは箱の「中」(語順を変えてみました)',
+          q:   'The keys are ___ the bag.',
+          qJa: '鍵はかばんの中にあります。',
           choices: ['on', 'in', 'under'],
           answer: 1,
           explain: '「中」は in。順番が変わっても答えは変わらないよ。',
@@ -11458,8 +11614,8 @@
           explain: '1 台かを聞くので Is there ~?。',
         },
         {
-          q:   'There ___ a sun in the sky.',
-          qJa: '空に太陽があります。',
+          q:   'There ___ a cloud in the sky.',
+          qJa: '空に雲が 1 つあります。',
           choices: ['is', 'are', 'have'],
           answer: 0,
           explain: '太陽は 1 つ → there is。',
@@ -11690,8 +11846,8 @@
           explain: '「歩いて入る」動きだから into。',
         },
         {
-          q:   'Put the milk ___ the fridge.',
-          qJa: '牛乳を冷蔵庫に入れて。',
+          q:   'He got ___ the car.',
+          qJa: '彼は車に乗り込みました。',
           choices: ['in', 'into', 'on'],
           answer: 1,
           explain: '「入れる」動きだから into。put X into Y のパターン。',
@@ -12794,7 +12950,7 @@
         },
         {
           q:   'I was happy ___ I met you.',
-          qJa: 'あなたに会う前から私は幸せでした。',
+          qJa: 'あなたに会う前、私は幸せでした。',
           choices: ['ago', 'before', 'after'],
           answer: 1,
           explain: '出来事 (I met you) の前 → before。文に「節 (主語+動詞)」が続くときは before。',
@@ -12930,7 +13086,7 @@
       rule: 'many + 数えられる名詞 (本・人) / much + 数えられない名詞 (水・時間) / a lot of = 両方OK',
       examples: [
         { en: 'I have many books.',                     ja: '本をたくさん持っている。' },
-        { en: 'There is much water in the river.',      ja: '川には水がたくさんある。' },
+        { en: 'There is a lot of water in the river.',  ja: '川には水がたくさんある。' },
         { en: 'I have a lot of friends.',               ja: '友達がたくさんいる。' },
       ],
       points: [
