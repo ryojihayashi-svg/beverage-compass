@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 408;
+  const APP_VERSION = 409;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14226,6 +14226,15 @@
     const localRaw = localStorage.getItem(STORAGE_KEY(memberId));
     let local = null;
     try { local = localRaw ? JSON.parse(localRaw) : null; } catch {}
+    // 学習リセット: マーカーより古いクラウド行は「存在しない」扱いにして
+    // ローカル (リセット済み) をクラウドへ押し出す。これで古いデータが
+    // マージで復活しない。
+    const resetMarker = LEARNING_RESET_MARKERS[memberId];
+    if (resetMarker && !((remote.data && remote.data._resetStamp) >= resetMarker)) {
+      memberHydrationDone[memberId] = true;
+      if (local) cloud.schedulePush(memberId, local);
+      return false;
+    }
     const localEmptyish  = isMemberStateEmptyish(local);
     const remoteEmptyish = isMemberStateEmptyish(remote.data);
 
@@ -14273,6 +14282,38 @@
   // when that member's data was last written from a different device
   // (e.g. Yoshinari studying overnight in his UK dorm and the parents
   // checking from Tokyo the next morning).
+  // ---------- 学習ログの一括リセット (指示式) ----------
+  // 指定メンバーの学習データを「マーカー日時」を境に全端末で消す仕組み。
+  // クラウドを消すだけだと各端末の古いローカルが同期で書き戻してしまう
+  // ため、アプリ自身が起動時にローカルを消し、マーカー未満の古いクラウド
+  // 行は「無いもの」として扱う (hydrateFromCloud 側にガードあり)。
+  // 言えなかったノート / 分からなかった単語は学習ログではないので残す。
+  const LEARNING_RESET_MARKERS = {
+    son1: '2026-08-15T00:00:00Z',
+    son2: '2026-08-15T00:00:00Z',
+    son3: '2026-08-15T00:00:00Z',
+  };
+  function applyLearningResets() {
+    for (const mid of Object.keys(LEARNING_RESET_MARKERS)) {
+      const marker = LEARNING_RESET_MARKERS[mid];
+      const doneKey = 'hfe_reset_done_v1_' + mid;
+      try {
+        if ((localStorage.getItem(doneKey) || '') >= marker) continue;
+        const st = db.load(mid);
+        const fresh = { _resetStamp: marker };
+        if (Array.isArray(st.mysent) && st.mysent.length) fresh.mysent = st.mysent;
+        if (Array.isArray(st.myword) && st.myword.length) fresh.myword = st.myword;
+        localStorage.setItem(STORAGE_KEY(mid), JSON.stringify(fresh));
+        // メンバー別の補助キーも削除 (ノートの旧キーは残す)
+        ['hfe_lesson_progress_v1_', 'hfe_lesson_mistakes_v1_', 'hfe_daily_path_v1_',
+         'hfe_chat_v1_', 'hfe_others_cursor_', 'hfe_saved_translate_v1_'].forEach(p => {
+          try { localStorage.removeItem(p + mid); } catch {}
+        });
+        localStorage.setItem(doneKey, marker);
+      } catch {}
+    }
+  }
+
   async function hydrateAllProfilesFromCloud() {
     if (!cloud.status.enabled || !cloud.status.online) return;
     let anyChanged = false;
@@ -34967,6 +35008,7 @@
     // most recently been opened on this device. This is what makes
     // 'Yoshinari studied overnight in the UK' visible to Dad's iPad
     // the next morning.
+    applyLearningResets();
     hydrateAllProfilesFromCloud().catch(() => {});
   }
   // When the device comes back online, also re-pull everyone's progress
