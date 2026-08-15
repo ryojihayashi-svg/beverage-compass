@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 394;
+  const APP_VERSION = 395;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -24119,11 +24119,13 @@
     const prompt =
       '次の単語について答えてください: 「' + word + '」\n' +
       'それが日本語なら対応する英単語を、英語なら日本語の意味を答え、\n' +
-      '次の 4 行だけで返してください。\n' +
+      '次の 6 行だけで返してください。\n' +
       '1 行目: 英単語 (原形)\n' +
       '2 行目: 日本語の意味 (簡潔に)\n' +
-      '3 行目: その単語を使った自然で短い英語の例文\n' +
-      '4 行目: その例文の日本語訳\n' +
+      '3 行目: その単語を使った自然で短い英語の例文 1\n' +
+      '4 行目: 例文 1 の日本語訳\n' +
+      '5 行目: 別の場面での短い英語の例文 2\n' +
+      '6 行目: 例文 2 の日本語訳\n' +
       '番号・記号・説明は書かない。';
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -24150,7 +24152,11 @@
     const lines = text.split('\n')
       .map(l => l.replace(/^[\s\-•*\d.)]+/, '').trim()).filter(Boolean);
     if (lines.length < 2) throw new Error('取得できませんでした');
-    return { en: lines[0], ja: lines[1], exEn: lines[2] || '', exJa: lines[3] || '' };
+    return {
+      en: lines[0], ja: lines[1],
+      exEn: lines[2] || '', exJa: lines[3] || '',
+      exEn2: lines[4] || '', exJa2: lines[5] || '',
+    };
   }
 
   function MyWordNote({ profile, onBack }) {
@@ -24164,6 +24170,8 @@
     const [jaDraft, setJaDraft]   = useState('');
     const [exEnDraft, setExEnDraft] = useState('');
     const [exJaDraft, setExJaDraft] = useState('');
+    const [exEn2Draft, setExEn2Draft] = useState('');
+    const [exJa2Draft, setExJa2Draft] = useState('');
     const [busy, setBusy]         = useState(false);
     const [error, setError]       = useState('');
 
@@ -24179,11 +24187,13 @@
 
     const openAdd = () => {
       setEditId(null); setWordDraft(''); setEnDraft(''); setJaDraft('');
-      setExEnDraft(''); setExJaDraft(''); setError(''); setScreen('add');
+      setExEnDraft(''); setExJaDraft(''); setExEn2Draft(''); setExJa2Draft('');
+      setError(''); setScreen('add');
     };
     const openEdit = (it) => {
       setEditId(it.id); setWordDraft(''); setEnDraft(it.en); setJaDraft(it.ja);
       setExEnDraft(it.exEn || ''); setExJaDraft(it.exJa || '');
+      setExEn2Draft(it.exEn2 || ''); setExJa2Draft(it.exJa2 || '');
       setError(''); setScreen('add');
     };
     const runAI = async () => {
@@ -24194,6 +24204,7 @@
         const r = await fetchWordInfo(w);
         setEnDraft(r.en); setJaDraft(r.ja);
         setExEnDraft(r.exEn); setExJaDraft(r.exJa);
+        setExEn2Draft(r.exEn2); setExJa2Draft(r.exJa2);
         speakSmart(r.en, { lang: 'en-GB' }).catch(() => {});
       } catch (err) {
         setError((err && err.message) || 'AI に失敗しました');
@@ -24203,15 +24214,15 @@
     const saveDraft = () => {
       const en = enDraft.trim(), ja = jaDraft.trim();
       if (!en || !ja) { setError('英語と日本語の両方を入れてください'); return; }
+      const exFields = {
+        exEn: exEnDraft.trim(), exJa: exJaDraft.trim(),
+        exEn2: exEn2Draft.trim(), exJa2: exJa2Draft.trim(),
+      };
       if (editId) {
-        persist(items.map(it => it.id === editId
-          ? { ...it, en, ja, exEn: exEnDraft.trim(), exJa: exJaDraft.trim() } : it));
+        persist(items.map(it => it.id === editId ? { ...it, en, ja, ...exFields } : it));
       } else {
         const id = 'mw' + Date.now().toString(36) + Math.floor(Math.random() * 1000);
-        persist([{
-          id, en, ja, exEn: exEnDraft.trim(), exJa: exJaDraft.trim(),
-          streak: 0, createdAt: Date.now(),
-        }].concat(items));
+        persist([{ id, en, ja, ...exFields, streak: 0, createdAt: Date.now() }].concat(items));
       }
       setScreen('list');
     };
@@ -24312,8 +24323,11 @@
           placeholder: '例: 内税  /  gratuity',
           style: inputStyle,
         }),
-        !editId && hasKey && e('div', { style: { marginTop: 12 } },
-          primaryBtn(busy ? 'AI が調べています…' : '✨ AI で意味と例文を埋める', runAI,
+        hasKey && e('div', { style: { marginTop: 12 } },
+          primaryBtn(
+            busy ? 'AI が調べています…'
+                 : (editId ? '✨ AI で意味と例文を作り直す' : '✨ AI で意味と例文を埋める'),
+            runAI,
             busy || (!wordDraft.trim() && !enDraft.trim() && !jaDraft.trim())),
         ),
         !editId && !hasKey && e('div', {
@@ -24336,15 +24350,33 @@
           placeholder: 'チップ・心づけ',
           style: inputStyle,
         }),
-        (exEnDraft || exJaDraft) && e('div', {
+        (exEnDraft || exEn2Draft) && e('div', {
           style: {
             marginTop: 14, padding: '11px 14px', borderRadius: 12,
             background: C.softer, border: '1px solid ' + C.line,
           }
         },
-          e('div', { style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 4 } }, '例文 (いっしょに保存されます)'),
-          exEnDraft && e('div', { style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 } }, exEnDraft),
-          exJaDraft && e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 3, lineHeight: 1.6 } }, exJaDraft),
+          e('div', { style: { fontFamily: SANS_UI, fontSize: 11, fontWeight: 700, color: C.sub, marginBottom: 6 } }, '例文 (いっしょに保存されます)'),
+          [[exEnDraft, exJaDraft], [exEn2Draft, exJa2Draft]]
+            .filter(p => p[0])
+            .map((p, i) => e('div', {
+              key: 'ex' + i,
+              style: {
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                marginTop: i === 0 ? 0 : 10,
+                paddingTop: i === 0 ? 0 : 10,
+                borderTop: i === 0 ? 'none' : '1px dashed ' + C.line,
+              }
+            },
+              e('div', { style: { flex: 1, minWidth: 0 } },
+                e('div', { style: { fontFamily: SERIF_READ, fontSize: 15, color: C.text, lineHeight: 1.6 } }, p[0]),
+                p[1] && e('div', { style: { fontSize: 12.5, color: C.sub, marginTop: 3, lineHeight: 1.6 } }, p[1]),
+              ),
+              e('button', {
+                onClick: () => speakSmart(p[0], { lang: 'en-GB' }).catch(() => {}),
+                style: { flex: '0 0 auto', padding: '5px 9px', borderRadius: 999, background: C.card, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 13 }
+              }, '🔊'),
+            )),
         ),
         error && e('div', {
           style: { marginTop: 12, padding: '10px 14px', borderRadius: 10, background: C.danger + '12', color: C.danger, fontSize: 13.5, lineHeight: 1.6 }
@@ -24410,10 +24442,11 @@
           e('div', { style: { fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.6 } }, cur.ja),
           revealed && e('div', { style: { marginTop: 20, paddingTop: 18, borderTop: '1px dashed ' + C.line } },
             e('div', { style: { fontFamily: SERIF_READ, fontSize: 26, color: profile.color, lineHeight: 1.5, fontWeight: 600 } }, cur.en),
-            cur.exEn && e('div', { style: { marginTop: 12 } },
-              e('div', { style: { fontFamily: SERIF_READ, fontSize: 14.5, color: C.text, lineHeight: 1.6 } }, cur.exEn),
-              cur.exJa && e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 } }, cur.exJa),
-            ),
+            [[cur.exEn, cur.exJa], [cur.exEn2, cur.exJa2]].filter(p => p[0]).map((p, i) =>
+              e('div', { key: 'ex' + i, style: { marginTop: i === 0 ? 12 : 8 } },
+                e('div', { style: { fontFamily: SERIF_READ, fontSize: 14.5, color: C.text, lineHeight: 1.6 } }, p[0]),
+                p[1] && e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 } }, p[1]),
+              )),
             e('button', {
               onClick: () => speakSmart(cur.exEn ? cur.en + '. ' + cur.exEn : cur.en, { lang: 'en-GB' }).catch(() => {}),
               style: { marginTop: 12, padding: '8px 18px', borderRadius: 999, background: C.softer, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', color: C.text }
@@ -24483,6 +24516,25 @@
                   style: { flex: '0 0 auto', padding: '6px 10px', borderRadius: 999, background: C.softer, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 14 }
                 }, '🔊'),
               ),
+              // 例文 (最大 2 つ・それぞれ音声ボタン付き)
+              [[it.exEn, it.exJa], [it.exEn2, it.exJa2]].filter(p => p[0]).length > 0 &&
+                e('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed ' + C.line } },
+                  [[it.exEn, it.exJa], [it.exEn2, it.exJa2]]
+                    .filter(p => p[0])
+                    .map((p, i) => e('div', {
+                      key: 'ex' + i,
+                      style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: i === 0 ? 0 : 7 }
+                    },
+                      e('div', { style: { flex: 1, minWidth: 0 } },
+                        e('div', { style: { fontFamily: SERIF_READ, fontSize: 13.5, color: C.text, lineHeight: 1.55 } }, p[0]),
+                        p[1] && e('div', { style: { fontSize: 11.5, color: C.sub, marginTop: 2, lineHeight: 1.5 } }, p[1]),
+                      ),
+                      e('button', {
+                        onClick: () => speakSmart(p[0], { lang: 'en-GB' }).catch(() => {}),
+                        style: { flex: '0 0 auto', padding: '4px 8px', borderRadius: 999, background: C.softer, border: '1px solid ' + C.line, cursor: 'pointer', fontSize: 12 }
+                      }, '🔊'),
+                    )),
+                ),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 } },
                 (it.streak || 0) > 0 && e('span', {
                   style: { fontSize: 11.5, fontFamily: SANS_UI, fontWeight: 800, color: (it.streak || 0) >= 3 ? C.success : C.sub }
