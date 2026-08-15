@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 407;
+  const APP_VERSION = 408;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -20028,8 +20028,44 @@
       return picked;
     }
 
+    // サイクル英作文 / 瞬間英作文で練習した文を「復習枠」として出す。
+    // 未マスター (まだスラスラでない) を優先し、無ければ練習済み全体から。
+    function pickReviewSentences(lv, count) {
+      try {
+        const comp = db.load(profile.id).composition || {};
+        const practiced = Object.keys(comp)
+          .map(id => SENTENCE_BY_ID[id])
+          .filter(s => s && s.level === lv && s.ja && s.en &&
+                       !isItemHidden('comp_test', s.id) &&
+                       !usedIdsRef.current.has(s.id));
+        if (practiced.length === 0) return [];
+        const notMastered = practiced.filter(s => !isSentenceMastered(comp[s.id]));
+        const pool = notMastered.length > 0 ? notMastered : practiced;
+        const arr = pool.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+        }
+        const picked = arr.slice(0, count)
+          .map(s => ({ id: s.id, level: s.level, ja: s.ja, en: s.en, review: true }));
+        for (const p of picked) usedIdsRef.current.add(p.id);
+        return picked;
+      } catch { return []; }
+    }
+    // 1 バッチ = 復習 1 問 (あれば) + 新規。合わせて COMP_TEST_BATCH 問。
+    function buildBatch(lv) {
+      const review = pickReviewSentences(lv, 1);
+      const fresh = pickBatch(lv, COMP_TEST_BATCH - review.length);
+      const items = [...fresh, ...review];
+      for (let i = items.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = items[i]; items[i] = items[j]; items[j] = t;
+      }
+      return items;
+    }
+
     function startTest() {
-      const items = pickBatch(level, COMP_TEST_BATCH);
+      const items = buildBatch(level);
       if (items.length === 0) return;
       setQueue(items);
       setIndex(0);
@@ -20042,7 +20078,7 @@
     }
     function continueWithMore() {
       // Add 3 more questions at the same level. Past results are kept.
-      const items = pickBatch(level, COMP_TEST_BATCH);
+      const items = buildBatch(level);
       if (items.length === 0) return;
       setQueue(items);
       setIndex(0);
@@ -31637,7 +31673,8 @@
     // are still available via the picker.
     const [selectedLevel, setSelectedLevel] = useState('auto');
     // Speed: 1 (slow) / 2 (native) / 3 (quick). Default is 2.
-    const [speed, setSpeed] = useState(2);
+    // 亮治は既定で「早口」(本人の希望)。他は「ふつう」から。
+    const [speed, setSpeed] = useState(() => (profile.id === 'father' ? 3 : 2));
     const speedConfig = SHADOW_SPEEDS[speed] || SHADOW_SPEEDS[2];
 
     const current = queue[index] || null;
@@ -31726,6 +31763,9 @@
           // Shadowing reuses the vocab comfort track since both measure
           // recognition / passive understanding.
           let lv = pickLevelForProfile(profile, { track: 'vocab' });
+          // 亮治: シャドーイングは意味理解より「口の運動」なので、
+          // おまかせは 1 段上げて出す (本人の要望)。下限 LV3。
+          if (profile.id === 'father') lv = Math.max(3, Math.min(5, lv + 1));
           // Find candidates at this level; if empty, walk down then up.
           let candidates = activeGroups.map((g, idx) => ({ g, idx }))
             .filter(x => x.g.level === lv && !used.has(x.idx));
