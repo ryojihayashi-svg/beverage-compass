@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 395;
+  const APP_VERSION = 396;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -6981,6 +6981,27 @@
       if (!(n >= 860 && n <= 895)) continue;
       SHADOWING_QA.push({
         id: 'fd_' + s.id,
+        level: s.level,
+        ja: s.ja,
+        en: s.en,
+      });
+    }
+  })();
+
+  // ---------- サイクル英作文 (SENTENCES) をシャドーイングにも ----------
+  // 「作れるようになった文を、口が覚えるまで影読みする」ための内容リンク。
+  // 特に低レベル帯は、意味を知っている文を影読みするほうが学習効果が高い。
+  //   - s860-895 (ファインダイニング) は fd_ で既にミラー済みなので除外
+  //   - 名言 (grammar が 名言・) はスキップ (量重視の通常文だけを混ぜる)
+  //   - ID は 'cs_<元ID>' で衝突を避ける
+  (function pushCompositionIntoShadowing() {
+    for (const s of SENTENCES) {
+      if (!s || !s.ja || !s.en) continue;
+      const n = parseInt((s.id || '').replace('s', ''), 10);
+      if (n >= 860 && n <= 895) continue;                       // fd_ ミラー済み
+      if ((s.grammar || '').indexOf('名言') === 0) continue;     // 名言は除外
+      SHADOWING_QA.push({
+        id: 'cs_' + s.id,
         level: s.level,
         ja: s.ja,
         en: s.en,
