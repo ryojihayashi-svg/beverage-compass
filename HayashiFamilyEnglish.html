@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 398;
+  const APP_VERSION = 399;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -17580,6 +17580,10 @@
           // Mark the matching step on today's guided path so the home
           // screen advances the glow to the next recommended activity.
           markPathStepDone(profile, direction === 'ja2en' ? 'vocab_ja2en' : 'vocab_en2ja');
+          // ユニット周回を記録 — 一覧の「次はこれ」推薦 (新規3:復習1) に使う
+          if (mode === 'unit' && unitIdx >= 0) {
+            try { db.recordSetRun(profile.id, 'vocab_units', 'lv' + level + 'u' + unitIdx); } catch {}
+          }
           setPhase('done');
         } else {
           setRevealed(false);
@@ -17649,6 +17653,10 @@
         const p = vocabState[id];
         return !!(p && p.status === 'mastered');
       };
+      // 「次はこれ」— テンポ単語 / サイクル英作文と同じ 新規3:復習1 サイクル。
+      // どのユニットをやるか考えずに、毎日この 1 つを押せば進む。
+      const unitRuns = db.getSetRuns(profile.id, 'vocab_units');
+      const rec = pickNextRun(units.length, (i) => 'lv' + level + 'u' + i, unitRuns);
       const LEVEL_DESC = {
         1: '超基礎・英検5/4級', 2: '中学基礎・英検4/3級', 3: '中3完了・英検3/準2級',
         4: '高校標準・英検2級', 5: '高校発展・英検準1級',
@@ -17727,6 +17735,19 @@
         ),
         // 方向トグル
         !forcedDirection && e(DirectionToggle, { profile, direction, onChange: setDirection }),
+        // 「次はこれ」おすすめカード — タップでそのユニットが始まる
+        rec && (() => {
+          const recWords = units[rec.idx] || [];
+          const recMastered = recWords.filter(w => isWordMastered(w.id)).length;
+          return e(NextRecCard, {
+            profile,
+            rec: { why: rec.why, noun: 'ユニット', label: 'ユニット ' + (rec.idx + 1) },
+            subText: rec.why === 'new'
+              ? '新しい 10 語に挑戦。3 ユニット進んだら復習に戻るよ。'
+              : '覚えた ' + recMastered + ' / ' + recWords.length + ' — 忘れる前にもう一周。',
+            onStart: () => startUnitSession(rec.idx),
+          });
+        })(),
         // おまかせ 10 問 (適応出題)
         e('button', {
           onClick: startAutoSession,
@@ -17774,13 +17795,16 @@
                     const i = blk.start + j;
                     const masteredN = words.filter(w => isWordMastered(w.id)).length;
                     const full = masteredN === words.length && words.length > 0;
+                    const isRec = rec && rec.idx === i;
                     return e('button', {
                       key: 'unit' + i,
                       onClick: () => startUnitSession(i),
                       style: {
                         width: '100%', padding: '13px 16px', borderRadius: 14,
-                        background: C.card,
-                        border: '1px solid ' + (full ? C.success + '66' : C.line),
+                        background: isRec ? profile.color + '0C' : C.card,
+                        border: isRec
+                          ? '1.5px solid ' + profile.color + '88'
+                          : '1px solid ' + (full ? C.success + '66' : C.line),
                         cursor: 'pointer', textAlign: 'left',
                         display: 'flex', alignItems: 'center', gap: 12,
                         fontFamily: 'inherit',
@@ -17797,8 +17821,19 @@
                       }, full ? '✓' : (i + 1)),
                       e('div', { style: { flex: 1, minWidth: 0 } },
                         e('div', {
-                          style: { fontSize: 15, fontWeight: 700, color: C.text, fontFamily: SANS_UI }
-                        }, 'ユニット ' + (i + 1)),
+                          style: { fontSize: 15, fontWeight: 700, color: C.text, fontFamily: SANS_UI,
+                                   display: 'flex', alignItems: 'center', gap: 8 }
+                        },
+                          'ユニット ' + (i + 1),
+                          isRec && e('span', {
+                            style: {
+                              fontSize: 10, fontWeight: 800, fontFamily: SANS_UI,
+                              padding: '2px 8px', borderRadius: 999,
+                              background: profile.color, color: '#fff',
+                              letterSpacing: '0.06em',
+                            }
+                          }, rec.why === 'new' ? 'きょうはここ' : 'きょうは復習'),
+                        ),
                         e('div', {
                           style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5,
                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
