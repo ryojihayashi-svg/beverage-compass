@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 396;
+  const APP_VERSION = 397;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -2378,6 +2378,60 @@
     { id:'penalty',      en:'penalty',      ja:'罰',               pos:'noun', level:4, cat:'general', exEn:'There is a penalty for late payment.',      exJa:'遅延には罰金があります。', exEn2:'There is a penalty for late cancellations.', exJa2:'直前キャンセルにはペナルティがある。' },
 
 
+
+    // ===== v397: 当たり前に使う日常必須語の補充 (抜けチェックで発見された 52 語) =====
+    { id:'time2', en:'time', ja:'時間', pos:'noun', level:1, cat:'daily', exEn:'What time is it now?', exJa:'今、何時ですか？', exEn2:'I don’t have much time today.', exJa2:'今日はあまり時間がない。' },
+    { id:'home', en:'home', ja:'家・自宅', pos:'noun', level:1, cat:'daily', exEn:'I want to go home.', exJa:'家に帰りたい。', exEn2:'She works from home on Fridays.', exJa2:'彼女は金曜は在宅で働く。' },
+    { id:'lunch', en:'lunch', ja:'昼ごはん', pos:'noun', level:1, cat:'food', exEn:'Let’s have lunch together.', exJa:'一緒に昼ごはんを食べよう。', exEn2:'What did you have for lunch?', exJa2:'お昼に何を食べた？' },
+    { id:'meal', en:'meal', ja:'食事', pos:'noun', level:2, cat:'food', exEn:'Enjoy your meal!', exJa:'お食事をお楽しみください！', exEn2:'This is the best meal I’ve had this year.', exJa2:'今年一番の食事だ。' },
+    { id:'talk', en:'talk', ja:'話す', pos:'verb', level:1, cat:'daily', exEn:'Can we talk for a minute?', exJa:'ちょっと話せる？', exEn2:'We talked about the trip all night.', exJa2:'一晩中、旅行の話をした。' },
+    { id:'teach', en:'teach', ja:'教える', pos:'verb', level:2, cat:'school', exEn:'She teaches English at school.', exJa:'彼女は学校で英語を教えている。', exEn2:'Could you teach me how to make this?', exJa2:'これの作り方を教えてくれませんか？' },
+    { id:'together', en:'together', ja:'一緒に', pos:'adv', level:1, cat:'daily', exEn:'Let’s study together.', exJa:'一緒に勉強しよう。', exEn2:'The whole family had dinner together.', exJa2:'家族みんなで一緒に夕食を食べた。' },
+    { id:'again', en:'again', ja:'もう一度・また', pos:'adv', level:1, cat:'daily', exEn:'Please say that again.', exJa:'もう一度言ってください。', exEn2:'I want to visit Kyoto again.', exJa2:'また京都に行きたい。' },
+    { id:'very', en:'very', ja:'とても', pos:'adv', level:1, cat:'daily', exEn:'This soup is very hot.', exJa:'このスープはとても熱い。', exEn2:'Thank you very much.', exJa2:'どうもありがとうございます。' },
+    { id:'really', en:'really', ja:'本当に', pos:'adv', level:2, cat:'daily', exEn:'I really like this song.', exJa:'この歌が本当に好きだ。', exEn2:'Is that really true?', exJa2:'それ、本当に本当？' },
+    { id:'just', en:'just', ja:'ちょうど・〜だけ', pos:'adv', level:2, cat:'daily', exEn:'I just arrived home.', exJa:'ちょうど家に着いたところだ。', exEn2:'It’s just a small gift.', exJa2:'ほんの小さな贈り物です。' },
+    { id:'only', en:'only', ja:'〜だけ', pos:'adv', level:2, cat:'daily', exEn:'I have only one question.', exJa:'質問は 1 つだけあります。', exEn2:'She was the only person there.', exJa2:'そこにいたのは彼女だけだった。' },
+    { id:'also', en:'also', ja:'〜もまた', pos:'adv', level:1, cat:'daily', exEn:'I also like sushi.', exJa:'私も寿司が好きだ。', exEn2:'He speaks English and also French.', exJa2:'彼は英語も話すし、フランス語も話す。' },
+    { id:'even', en:'even', ja:'〜でさえ', pos:'adv', level:2, cat:'general', exEn:'Even a child can do it.', exJa:'子供でさえできる。', exEn2:'He works even on Sundays.', exJa2:'彼は日曜でさえ働く。' },
+    { id:'almost', en:'almost', ja:'ほとんど・もう少しで', pos:'adv', level:2, cat:'daily', exEn:'It’s almost noon.', exJa:'もうすぐ正午だ。', exEn2:'I almost missed the train.', exJa2:'もう少しで電車に乗り遅れるところだった。' },
+    { id:'quite', en:'quite', ja:'かなり', pos:'adv', level:2, cat:'general', exEn:'The test was quite difficult.', exJa:'テストはかなり難しかった。', exEn2:'I’m quite sure about it.', exJa2:'それにはかなり自信がある。' },
+    { id:'perhaps', en:'perhaps', ja:'もしかすると', pos:'adv', level:3, cat:'general', exEn:'Perhaps he forgot our meeting.', exJa:'もしかすると彼は会議を忘れたのかもしれない。', exEn2:'Perhaps we should try another way.', exJa2:'別の方法を試すべきかもしれない。' },
+    { id:'everyone', en:'everyone', ja:'みんな・全員', pos:'pron', level:1, cat:'daily', exEn:'Everyone is here.', exJa:'全員そろっています。', exEn2:'Everyone enjoyed the party.', exJa2:'みんなパーティーを楽しんだ。' },
+    { id:'someone', en:'someone', ja:'誰か', pos:'pron', level:1, cat:'daily', exEn:'Someone is at the door.', exJa:'誰かがドアのところにいる。', exEn2:'I need someone to help me.', exJa2:'誰か手伝ってくれる人が必要だ。' },
+    { id:'anyone', en:'anyone', ja:'誰か・誰でも', pos:'pron', level:2, cat:'daily', exEn:'Is anyone home?', exJa:'誰か家にいますか？', exEn2:'Anyone can join the club.', exJa2:'誰でもクラブに入れます。' },
+    { id:'nobody', en:'nobody', ja:'誰も〜ない', pos:'pron', level:2, cat:'daily', exEn:'Nobody knows the answer.', exJa:'誰も答えを知らない。', exEn2:'There was nobody in the room.', exJa2:'部屋には誰もいなかった。' },
+    { id:'something', en:'something', ja:'何か', pos:'pron', level:1, cat:'daily', exEn:'I want something to drink.', exJa:'何か飲み物が欲しい。', exEn2:'Something smells good!', exJa2:'何かいいにおいがする！' },
+    { id:'anything', en:'anything', ja:'何か・何でも', pos:'pron', level:2, cat:'daily', exEn:'Is there anything I can do?', exJa:'私にできることは何かありますか？', exEn2:'You can order anything you like.', exJa2:'好きなものを何でも注文していいよ。' },
+    { id:'nothing', en:'nothing', ja:'何も〜ない', pos:'pron', level:1, cat:'daily', exEn:'There is nothing in the box.', exJa:'箱の中には何もない。', exEn2:'Nothing is impossible.', exJa2:'不可能なことは何もない。' },
+    { id:'everything', en:'everything', ja:'すべて', pos:'pron', level:2, cat:'daily', exEn:'Everything is ready.', exJa:'すべて準備できています。', exEn2:'Thank you for everything.', exJa2:'いろいろとありがとう。' },
+    { id:'first', en:'first', ja:'最初の・1 番目の', pos:'adj', level:1, cat:'daily', exEn:'This is my first visit to Japan.', exJa:'日本に来るのは初めてです。', exEn2:'First, wash your hands.', exJa2:'まず、手を洗いなさい。' },
+    { id:'last2', en:'last', ja:'最後の・この前の', pos:'adj', level:1, cat:'daily', exEn:'This is the last question.', exJa:'これが最後の問題です。', exEn2:'I saw him last week.', exJa2:'先週彼に会った。' },
+    { id:'next', en:'next', ja:'次の', pos:'adj', level:1, cat:'daily', exEn:'The next train comes at ten.', exJa:'次の電車は 10 時に来る。', exEn2:'See you next week!', exJa2:'また来週！' },
+    { id:'late', en:'late', ja:'遅い・遅れた', pos:'adj', level:1, cat:'daily', exEn:'I was late for school.', exJa:'学校に遅刻した。', exEn2:'It’s getting late. Let’s go home.', exJa2:'遅くなってきた。帰ろう。' },
+    { id:'near', en:'near', ja:'近い・近くに', pos:'prep', level:1, cat:'daily', exEn:'My house is near the station.', exJa:'私の家は駅の近くだ。', exEn2:'Is there a bank near here?', exJa2:'この近くに銀行はありますか？' },
+    { id:'far', en:'far', ja:'遠い', pos:'adj', level:1, cat:'daily', exEn:'The airport is far from here.', exJa:'空港はここから遠い。', exEn2:'How far is it to the beach?', exJa2:'ビーチまでどのくらいの距離ですか？' },
+    { id:'up', en:'up', ja:'上へ', pos:'adv', level:1, cat:'daily', exEn:'Look up at the sky.', exJa:'空を見上げて。', exEn2:'Prices are going up.', exJa2:'物価が上がっている。' },
+    { id:'down', en:'down', ja:'下へ', pos:'adv', level:1, cat:'daily', exEn:'Sit down, please.', exJa:'座ってください。', exEn2:'Walk down this street.', exJa2:'この道を下って歩いて。' },
+    { id:'during', en:'during', ja:'〜の間ずっと', pos:'prep', level:2, cat:'general', exEn:'Please be quiet during the movie.', exJa:'映画の間は静かにしてください。', exEn2:'I read three books during the holidays.', exJa2:'休みの間に本を 3 冊読んだ。' },
+    { id:'get', en:'get', ja:'手に入れる・〜になる', pos:'verb', level:1, cat:'daily', exEn:'Where did you get that bag?', exJa:'そのかばん、どこで手に入れたの？', exEn2:'It’s getting cold outside.', exJa2:'外は寒くなってきた。' },
+    { id:'turn', en:'turn', ja:'曲がる・回す・順番', pos:'verb', level:2, cat:'daily', exEn:'Turn right at the corner.', exJa:'角を右に曲がって。', exEn2:'It’s your turn now.', exJa2:'次はあなたの番だよ。' },
+    { id:'cost', en:'cost', ja:'費用がかかる', pos:'verb', level:2, cat:'work', exEn:'How much does it cost?', exJa:'いくらかかりますか？', exEn2:'The dinner cost about five thousand yen.', exJa2:'夕食は 5 千円ほどかかった。' },
+    { id:'hate', en:'hate', ja:'大嫌いだ', pos:'verb', level:2, cat:'daily', exEn:'I hate carrots.', exJa:'ニンジンが大嫌いだ。', exEn2:'She hates being late.', exJa2:'彼女は遅刻するのが大嫌いだ。' },
+    { id:'hungry', en:'hungry', ja:'おなかがすいた', pos:'adj', level:1, cat:'daily', exEn:'I’m so hungry!', exJa:'おなかがぺこぺこだ！', exEn2:'Are you hungry yet?', exJa2:'もうおなかすいた？' },
+    { id:'thirsty', en:'thirsty', ja:'のどが渇いた', pos:'adj', level:2, cat:'daily', exEn:'I’m thirsty. Can I have some water?', exJa:'のどが渇いた。水をもらえる？', exEn2:'Running makes me thirsty.', exJa2:'走るとのどが渇く。' },
+    { id:'sleepy', en:'sleepy', ja:'眠い', pos:'adj', level:1, cat:'daily', exEn:'I’m sleepy today.', exJa:'今日は眠い。', exEn2:'The baby looks sleepy.', exJa2:'赤ちゃんは眠そうだ。' },
+    { id:'ready', en:'ready', ja:'準備ができた', pos:'adj', level:1, cat:'daily', exEn:'Are you ready to go?', exJa:'出かける準備はできた？', exEn2:'Dinner is ready!', exJa2:'夕食ができたよ！' },
+    { id:'alone', en:'alone', ja:'ひとりで', pos:'adv', level:1, cat:'daily', exEn:'I live alone.', exJa:'私はひとり暮らしだ。', exEn2:'Leave me alone for a while.', exJa2:'しばらくひとりにして。' },
+    { id:'body', en:'body', ja:'体', pos:'noun', level:1, cat:'body', exEn:'Exercise is good for your body.', exJa:'運動は体に良い。', exEn2:'My whole body is tired.', exJa2:'体じゅうが疲れている。' },
+    { id:'chair', en:'chair', ja:'いす', pos:'noun', level:1, cat:'daily', exEn:'Please sit on this chair.', exJa:'このいすに座ってください。', exEn2:'The chair is by the window.', exJa2:'いすは窓のそばにある。' },
+    { id:'desk', en:'desk', ja:'机', pos:'noun', level:1, cat:'school', exEn:'My desk is always clean.', exJa:'私の机はいつもきれいだ。', exEn2:'The keys are on the desk.', exJa2:'鍵は机の上にある。' },
+    { id:'color', en:'color', ja:'色', pos:'noun', level:1, cat:'daily', exEn:'What color do you like?', exJa:'何色が好き？', exEn2:'I love the color of the sky.', exJa2:'空の色が大好きだ。' },
+    { id:'number', en:'number', ja:'数・番号', pos:'noun', level:1, cat:'school', exEn:'What’s your phone number?', exJa:'電話番号は何番ですか？', exEn2:'Seven is my lucky number.', exJa2:'7 は私のラッキーナンバーだ。' },
+    { id:'word', en:'word', ja:'単語・言葉', pos:'noun', level:1, cat:'school', exEn:'What does this word mean?', exJa:'この単語はどういう意味？', exEn2:'I learn ten new words every day.', exJa2:'毎日新しい単語を 10 個覚える。' },
+    { id:'sentence2', en:'sentence', ja:'文', pos:'noun', level:2, cat:'school', exEn:'Please read this sentence aloud.', exJa:'この文を声に出して読んでください。', exEn2:'Can you make a sentence with this word?', exJa2:'この単語で文を作れますか？' },
+    { id:'story', en:'story', ja:'物語・話', pos:'noun', level:1, cat:'school', exEn:'Tell me a story!', exJa:'お話をして！', exEn2:'This movie is based on a true story.', exJa2:'この映画は実話に基づいている。' },
+    { id:'whisper', en:'whisper', ja:'ささやく', pos:'verb', level:3, cat:'general', exEn:'She whispered the answer to me.', exJa:'彼女は私に答えをささやいた。', exEn2:'Please whisper in the library.', exJa2:'図書館では小声で話してください。' },
     // ===== 追加語彙 2 (料理・ホスピタリティ・経営) =====
     { id:'garnish', en:'garnish', ja:'付け合わせ・飾る', pos:'noun', level:4, cat:'food', exEn:'The dish had a herb garnish.', exJa:'その料理にはハーブの飾りがあった。', exEn2:'A simple garnish can lift the whole plate.', exJa2:'ちょっとした飾りが皿全体を引き立てる。' },
     { id:'seasoning', en:'seasoning', ja:'味付け', pos:'noun', level:3, cat:'food', exEn:'The seasoning was perfect.', exJa:'味付けは完璧だった。', exEn2:'We adjust the seasoning to each guest.', exJa2:'お客様ごとに味付けを調整する。' },
