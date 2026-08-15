@@ -13,7 +13,7 @@
 // behaviour needs to invalidate previously-cached files.
 // ============================================================================
 
-const CACHE_VERSION = 'hfe-v397-2026-07-13';
+const CACHE_VERSION = 'hfe-v398-2026-07-13';
 
 // Files to proactively cache on install. Everything else is cached lazily
 // the first time it's requested while online.
