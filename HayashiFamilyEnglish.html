@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 402;
+  const APP_VERSION = 403;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -34075,7 +34075,10 @@
     function continueToNextStage() {
       const next = stageIdx + 1;
       const stage = DIAG_STAGES[next];
-      const qs = buildStageQuestions(stage, usedIdsRef.current);
+      // startFromStage と同じく表示時シャッフルを通す。ここを通さないと
+      // テスト中の並びと結果画面の並びがズレて、選んでいない選択肢に
+      // 「あなた」が付く (v361 の入れ忘れバグ)。
+      const qs = buildStageQuestions(stage, usedIdsRef.current).map(shuffledQuizChoices);
       for (const q of qs) usedIdsRef.current.add(q.id);
       setStageIdx(next);
       setQuestions(qs);
