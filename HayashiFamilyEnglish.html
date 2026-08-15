@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 411;
+  const APP_VERSION = 412;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -33431,6 +33431,27 @@
       try { window.speechSynthesis.cancel(); } catch {}
       setPhase('listen');
     }
+    // 質問画面に留まったまま、その場で会話を再生し直す。
+    // (以前は「聞く画面」に戻ってから再生していて画面がバタついた)
+    const replaySeqRef = useRef(0);
+    const [replaying, setReplaying] = useState(false);
+    function replayInPlace() {
+      const cur = queue[index];
+      if (!cur || !cur.audio || cur.audio.length === 0) return;
+      const seq = ++replaySeqRef.current;
+      try { hqStop(); } catch {}
+      try { window.speechSynthesis.cancel(); } catch {}
+      setReplaying(true);
+      (async () => {
+        for (const a of cur.audio) {
+          if (seq !== replaySeqRef.current) return;
+          await speakSmart(a.en, { lang: 'en-GB', deviceRate: 0.95 }).catch(() => {});
+          if (seq !== replaySeqRef.current) return;
+          await new Promise(r => setTimeout(r, 350));
+        }
+        if (seq === replaySeqRef.current) setReplaying(false);
+      })();
+    }
 
     function pickAnswer(idx) {
       if (chosen !== null) return;
@@ -33585,17 +33606,19 @@
     if (phase === 'question' || phase === 'feedback') {
       return e('div', { style: pageStyle },
         topBar,
-        // Replay button (always available)
+        // その場再生ボタン — 画面はこのまま、音声だけもう一度流れる
         e('button', {
-          onClick: replayAudio,
+          onClick: replayInPlace,
           style: {
-            background: 'transparent', color: profile.color,
-            border: '1px dashed ' + profile.color + '66',
-            padding: '8px 14px', borderRadius: 999,
-            fontSize: 12, fontWeight: 700, fontFamily: SANS_UI,
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: replaying ? profile.color + '14' : 'transparent',
+            color: profile.color,
+            border: '1px solid ' + profile.color + '66',
+            padding: '8px 16px', borderRadius: 999,
+            fontSize: 13, fontWeight: 700, fontFamily: SANS_UI,
             cursor: 'pointer', marginBottom: 14,
           }
-        }, 'もう一度聞く'),
+        }, '🔊 ' + (replaying ? '再生中…' : 'もう一度聞く')),
         e('div', {
           style: {
             fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: C.text,
