@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 415;
+  const APP_VERSION = 416;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -158,7 +158,7 @@
                                                                                           forLearner: true, forViewer: false,
                                                                                           forProfileIds: ['father'] },
     { id: 'random_test',        label: 'ランダムテスト',  desc: '',                          forLearner: true, forViewer: false, hidden: true },
-    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜2 級・段階式',  forLearner: true, forViewer: false, hidden: true },
+    { id: 'diagnostic',         label: 'レベル診断テスト', desc: '英検 5 級〜準 1 級・段階式',  forLearner: true, forViewer: false, hidden: true },
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: '15 セットの定型フレーズ',
                                                                                           forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
@@ -8096,9 +8096,9 @@
     {
       id: 'lq05', level: 1,
       audio: [{ speaker: null, en: 'I eat breakfast at seven every morning.' }],
-      q: 'この人はいつ朝食を食べますか？',
-      choices: ['毎朝 7 時', '毎晩 7 時', '時々 7 時', '8 時'],
-      answer: 0,
+      q: 'この人は何時に朝食を食べますか？',
+      choices: ['6 時', '7 時', '7 時半', '8 時'],
+      answer: 1,
       explain: '"every morning at seven" = 毎朝 7 時。',
     },
     {
@@ -8131,6 +8131,7 @@
       q: '好きな食べ物は何？',
       choices: ['寿司', 'パスタ', 'ピザ', 'ラーメン'],
       answer: 0,
+      explain: '"My favorite food is sushi." = 好きな食べ物は寿司。',
     },
     {
       id: 'lq10', level: 1,
@@ -8139,7 +8140,7 @@
         { speaker: 'B', en: "I'm tired today." },
       ],
       q: 'B さんの今日の様子は？',
-      choices: ['疲れている', '元気', '眠い', '怒っている'],
+      choices: ['疲れている', '元気', '忙しい', '怒っている'],
       answer: 0,
       explain: 'tired = 疲れている。',
     },
@@ -8154,6 +8155,7 @@
       q: 'B さんは何を注文しましたか？',
       choices: ['チキンカレー', 'ビーフステーキ', 'パスタ', 'ラーメン'],
       answer: 0,
+      explain: '"I\'d like the chicken curry" = チキンカレーをください。I\'d like 〜 = 注文の定番表現。',
     },
     {
       id: 'lq12', level: 2,
@@ -8164,6 +8166,7 @@
       q: '駅への行き方は？',
       choices: ['まっすぐ進んで 2 つ目の角を左', 'まっすぐ進んで右に曲がる', '右に曲がってまっすぐ', '左に曲がって 2 つ目を右'],
       answer: 0,
+      explain: '"Go straight and turn left at the second corner" = まっすぐ進んで 2 つ目の角を左。',
     },
     {
       id: 'lq13', level: 2,
@@ -8182,6 +8185,7 @@
       q: 'この人について正しいのは？',
       choices: ['歴史が好きで数学が苦手', '数学が好きで歴史が苦手', '両方好き', '両方苦手'],
       answer: 0,
+      explain: 'like history / not good at math = 歴史が好き・数学が苦手。',
     },
     {
       id: 'lq15', level: 2,
@@ -8192,6 +8196,7 @@
       q: 'B さんの週末の予定は？',
       choices: ['友達と海に行く', '一人で山に行く', '家にいる', '勉強する'],
       answer: 0,
+      explain: '"going to the beach with my friends" = 友達とビーチ (海) へ行く。',
     },
     {
       id: 'lq16', level: 2,
@@ -8199,6 +8204,7 @@
       q: 'この人の趣味と練習時間は？',
       choices: ['ピアノ・毎日 1 時間', 'ギター・毎日 30 分', 'バイオリン・週 1 回', 'ピアノ・週末のみ'],
       answer: 0,
+      explain: 'piano + "practice for an hour every day" = ピアノを毎日 1 時間練習。',
     },
     {
       id: 'lq17', level: 2,
@@ -8206,6 +8212,7 @@
       q: '先週末の旅行内容は？',
       choices: ['家族と京都・寺を見た', '友達と京都・寺を見た', '一人で東京・公園に行った', '家族と大阪・買い物'],
       answer: 0,
+      explain: '"Kyoto last weekend with my family" + "saw the temples" = 家族と京都で寺を見た。',
     },
     {
       id: 'lq18', level: 2,
@@ -8216,6 +8223,7 @@
       q: '明日の待ち合わせ時間は？',
       choices: ['午後 3 時', '午前 3 時', '午後 2 時', '午後 4 時'],
       answer: 0,
+      explain: '"three in the afternoon" = 午後 3 時。',
     },
     {
       id: 'lq19', level: 2,
@@ -8226,6 +8234,7 @@
       q: 'B さんは何を頼みましたか？',
       choices: ['氷なしの水', '氷入りの水', 'コーヒー', '紅茶'],
       answer: 0,
+      explain: '"Just water, please. No ice." = 水だけ・氷なし。',
     },
     {
       id: 'lq20', level: 2,
@@ -8233,6 +8242,7 @@
       q: '読み終わった本のジャンルと感想は？',
       choices: ['ミステリー・面白かった', '恋愛・退屈だった', '歴史・難しかった', 'SF・難しかった'],
       answer: 0,
+      explain: 'mystery novel + "really exciting" = ミステリー小説で面白かった。',
     },
 
     // ===== LV3 (5) — choices in English =====
@@ -8250,6 +8260,7 @@
         'Pizza — fastest to serve',
       ],
       answer: 0,
+      explain: '"The seafood pasta is excellent. Many of our regulars order it." regulars = 常連客。',
     },
     {
       id: 'lq22', level: 3,
@@ -8265,6 +8276,7 @@
         'Wants to move there permanently',
       ],
       answer: 0,
+      explain: '"I love it there. The beaches are amazing." = 大好き・ビーチが最高。',
     },
     {
       id: 'lq23', level: 3,
@@ -8280,6 +8292,7 @@
         'Designer at a Tokyo agency',
       ],
       answer: 0,
+      explain: '"software engineer at a small tech startup in Tokyo" = 東京のスタートアップのエンジニア。',
     },
     {
       id: 'lq24', level: 3,
@@ -8292,6 +8305,7 @@
         'Surprised by the ending',
       ],
       answer: 0,
+      explain: 'disappointing + weak story + poor acting = がっかりした。',
     },
     {
       id: 'lq25', level: 3,
@@ -8307,6 +8321,7 @@
         'Not free at all',
       ],
       answer: 0,
+      explain: '"I\'m free after lunch" = 昼食後 (= 金曜の午後) が空いている。',
     },
 
     // ===== LV4 (3) =====
@@ -8321,6 +8336,7 @@
         'Has always lived in Tokyo',
       ],
       answer: 0,
+      explain: '"used to live in London for five years" = 以前ロンドンに 5 年住んでいた。used to = 以前は〜だった。',
     },
     {
       id: 'lq27', level: 4,
@@ -8336,6 +8352,7 @@
         'Time costs money',
       ],
       answer: 0,
+      explain: '"You can earn money back, but not time." = お金は取り戻せるが時間は戻らない。',
     },
     {
       id: 'lq28', level: 4,
@@ -8348,6 +8365,7 @@
         'Is still ongoing',
       ],
       answer: 0,
+      explain: '"finished it two weeks ahead of schedule" = 予定より 2 週間早く完了。ahead of schedule = 前倒しで。',
     },
 
     // ===== LV5 (2) =====
@@ -8401,7 +8419,7 @@
         { speaker: 'A', en: 'What time is it now?' },
         { speaker: 'B', en: "It's three thirty." },
       ],
-      q: '今何時？',
+      q: '今の時刻は？',
       choices: ['2:30', '3:00', '3:30', '4:30'],
       answer: 2,
       explain: 'three thirty = 3:30。',
@@ -8509,7 +8527,7 @@
         { speaker: 'A', en: 'Excuse me, where is the nearest train station?' },
         { speaker: 'B', en: "Go straight for two blocks, then turn left." },
       ],
-      q: '駅への行き方は？',
+      q: '最寄り駅への行き方は？',
       choices: ['右に曲がる', '2 ブロック直進して左', '2 ブロック直進して右', '次の角を左'],
       answer: 1,
       explain: 'straight for two blocks, then turn left。',
@@ -8650,7 +8668,7 @@
         { speaker: 'A', en: "Excuse me, is this train going to Oxford?" },
         { speaker: 'B', en: "No, this one terminates at Reading. The next platform has the Oxford service." },
       ],
-      q: "What should the speaker do?",
+      q: "What should A do?",
       choices: ['Stay on this train', 'Go to the next platform', 'Wait until Reading', 'Take a taxi'],
       answer: 1,
       explain: 'next platform に Oxford 行きがある。',
@@ -8723,8 +8741,8 @@
         { speaker: 'A', en: "What did you think of last night's lecture?" },
         { speaker: 'B', en: "Honestly, I found the second half a bit hard to follow, but the opening was brilliant." },
       ],
-      q: "What is B's overall view of the lecture?",
-      choices: ['Boring throughout', 'Strong opening but lost focus later', 'Excellent end-to-end', 'Did not attend'],
+      q: "What does B say about the lecture?",
+      choices: ['Boring throughout', 'Brilliant opening, but the second half was hard to follow', 'Excellent end-to-end', 'Did not attend'],
       answer: 1,
       explain: 'opening was brilliant but second half hard to follow。',
     },
@@ -8745,7 +8763,7 @@
       id: 'lq67', level: 5,
       audio: [{ speaker: null, en: "Although the survey results were inconclusive, they hint at a broader shift in consumer attitudes." }],
       q: 'What is the speaker suggesting about the survey?',
-      choices: ['It clearly proved a trend', 'It was a waste of time', 'Despite being inconclusive, it suggests a deeper shift', 'It contradicted earlier research'],
+      choices: ['It clearly proved a change in attitudes', 'It was inconclusive and therefore worthless', 'Despite being inconclusive, it suggests a deeper shift', 'Although conclusive, it revealed nothing new'],
       answer: 2,
       explain: 'inconclusive + hint at a broader shift = 結論は出ていないが大きな変化を示唆。',
     },
@@ -8815,11 +8833,11 @@
     },
     {
       id: 'lq75', level: 1,
-      audio: [{ speaker: 'A', en: 'Do you like dogs?' }, { speaker: 'B', en: 'No, I like cats better.' }],
+      audio: [{ speaker: 'A', en: 'Do you like dogs?' }, { speaker: 'B', en: 'No, not really. I prefer cats.' }],
       q: 'B さんが好きなのは？',
       choices: ['犬', '猫', '鳥', '魚'],
       answer: 1,
-      explain: 'I like cats better = 猫のほうが好き。',
+      explain: 'I prefer cats = 猫のほうが好き。',
     },
     {
       id: 'lq76', level: 1,
@@ -8913,7 +8931,7 @@
       id: 'lq87', level: 3,
       audio: [{ speaker: 'A', en: 'Have you tried the new cafe?' }, { speaker: 'B', en: 'Not yet, but I\'ve heard the coffee is excellent.' }],
       q: 'What does B say about the new cafe?',
-      choices: ['She goes there often', 'She heard the coffee is great', 'She dislikes coffee', 'She works there'],
+      choices: ['B tried it last week', 'B heard the coffee is great', 'B dislikes coffee', 'B works there'],
       answer: 1,
       explain: 'heard the coffee is excellent。',
     },
@@ -8936,7 +8954,7 @@
     {
       id: 'lq90', level: 3,
       audio: [{ speaker: null, en: 'The delivery has been delayed until next Tuesday.' }],
-      q: 'When will the delivery arrive?',
+      q: 'What is the new delivery date?',
       choices: ['This Friday', 'Next Monday', 'Next Tuesday', 'It was cancelled'],
       answer: 2,
       explain: 'delayed until next Tuesday。',
@@ -8976,7 +8994,7 @@
     {
       id: 'lq95', level: 4,
       audio: [{ speaker: 'A', en: 'Our costs have risen sharply this quarter.' }, { speaker: 'B', en: 'Then we may need to revise our pricing strategy.' }],
-      q: 'What does B suggest?',
+      q: 'What is B\'s suggestion?',
       choices: ['Cutting all staff', 'Revising the pricing strategy', 'Closing the business', 'Ignoring the costs'],
       answer: 1,
       explain: 'revise our pricing strategy。',
@@ -8985,7 +9003,7 @@
       id: 'lq96', level: 4,
       audio: [{ speaker: null, en: 'Although the launch was delayed, the response has been overwhelmingly positive.' }],
       q: 'What is the speaker emphasizing?',
-      choices: ['The launch failed', 'Despite the delay, the response is very positive', 'Nobody noticed the product', 'The delay caused losses'],
+      choices: ['Despite the strong response, the delay hurt sales', 'Despite the delay, the response is very positive', 'Although the launch was on time, the response was weak', 'The delay caused the launch to be cancelled'],
       answer: 1,
       explain: 'delayed, but response overwhelmingly positive。',
     },
@@ -9017,7 +9035,7 @@
       id: 'lq100', level: 4,
       audio: [{ speaker: null, en: 'Sustainability isn\'t a cost for us; it\'s an investment in the future.' }],
       q: 'How does the speaker view sustainability?',
-      choices: ['As an unnecessary cost', 'As an investment in the future', 'As a passing trend', 'As a legal burden'],
+      choices: ['As a cost that must be cut', 'As an investment in the future', 'As a trend that will soon pass', 'As a burden imposed by regulators'],
       answer: 1,
       explain: 'not a cost; an investment。',
     },
@@ -9033,7 +9051,7 @@
       id: 'lq102', level: 4,
       audio: [{ speaker: null, en: 'We take feedback seriously, even when it\'s difficult to hear.' }],
       q: 'What is the speaker\'s attitude to feedback?',
-      choices: ['They ignore negative feedback', 'They value all feedback, even hard criticism', 'They only accept praise', 'They rarely ask for it'],
+      choices: ['They listen to praise but ignore criticism', 'They value all feedback, even hard criticism', 'They take feedback seriously only from experts', 'They rarely ask for it, even from regulars'],
       answer: 1,
       explain: 'take feedback seriously, even when difficult。',
     },
@@ -9065,7 +9083,7 @@
       id: 'lq106', level: 5,
       audio: [{ speaker: null, en: 'His argument was persuasive on the surface, yet it rested on shaky assumptions.' }],
       q: 'What does the speaker imply about the argument?',
-      choices: ['It was flawless', 'It sounded convincing but had weak foundations', 'It was too short', 'Everyone rejected it'],
+      choices: ['It was flawless and utterly convincing', 'It sounded convincing but had weak foundations', 'It seemed weak at first yet proved deeply sound', 'It was rejected by everyone who heard it'],
       answer: 1,
       explain: 'persuasive on the surface but shaky assumptions。',
     },
@@ -9097,7 +9115,7 @@
       id: 'lq110', level: 5,
       audio: [{ speaker: null, en: 'The report is inconclusive, but reading between the lines, sentiment is shifting.' }],
       q: 'What does the speaker suggest?',
-      choices: ['The report proves nothing is changing', 'Despite being inconclusive, it hints sentiment is shifting', 'The report is fabricated', 'Sentiment is completely stable'],
+      choices: ['The report proves nothing is changing', 'Despite being inconclusive, it hints sentiment is shifting', 'Although sentiment is stable, the report says otherwise', 'The report clearly confirms sentiment has shifted'],
       answer: 1,
       explain: 'inconclusive but sentiment shifting。',
     },
@@ -9196,8 +9214,8 @@
         answer: 0,
       },
       {
-        q: '"No big deal" の意味は？',
-        choices: ['大したことではない', 'とても大きな問題だ', '大規模な計画', '取引はない'],
+        q: '"That\'s it. No big deal." は何を指して言っているか？',
+        choices: ['3つの話をするだけ、という内容のこと', '大学の学位のこと', '自分の会社のこと', '卒業式の長さのこと'],
         answer: 0,
       },
     ],
@@ -9355,8 +9373,8 @@
         answer: 0,
       },
       {
-        q: 'What is required for true greatness?',
-        choices: ['Character', 'Money', 'Connections', 'Luck'],
+        q: 'What does Huang tell you not to be afraid of?',
+        choices: ['Doing something hard', 'Running too fast', 'Being watched by others', 'Making money'],
         answer: 0,
       },
     ],
@@ -9934,7 +9952,8 @@
   //
   // level の意味:
   //   1 = 英検5級 (中1)、 2 = 英検4級 (中2)、 3 = 英検3級 (中3)、
-  //   4 = 英検準2級 (高校基礎)、 5 = 英検2級 (高校卒業〜大学)
+  //   4 = 英検準2級 (高校基礎)、 5 = 英検2級 (高校卒業〜大学)、
+  //   6 = 英検準1級 (大学中級〜ビジネス)
   //
   // ※ 今は最小プール (各レベル数問ずつ)。今後 30 問/レベルまで増やしていく。
   // weights: 各 level から何問の文法を引くか (合計が問題数)。
@@ -9943,6 +9962,8 @@
     { id: 'stage1', label: '基礎',  levels: [1, 2],    weights: [4, 4],    passRate: 0.90, eiken: '英検4級' },
     { id: 'stage2', label: '中級',  levels: [2, 3],    weights: [3, 5],    passRate: 0.85, eiken: '英検3級' },
     { id: 'stage3', label: '上級',  levels: [3, 4, 5], weights: [3, 3, 3], passRate: 0.80, eiken: '英検準2級' },
+    { id: 'stage4', label: '発展',   levels: [4, 5], weights: [3, 5], passRate: 0.80, eiken: '英検2級' },
+    { id: 'stage5', label: '最上級', levels: [5, 6], weights: [3, 5], passRate: 0.75, eiken: '英検準1級' },
   ];
 
   // 文法・語彙の問題プール。q = 質問、choices = 選択肢、answer = 正解index、
@@ -9955,7 +9976,7 @@
     { id:'dq1_04', level:1, type:'grammar', q:'My brother ___ soccer on Sundays.',              choices:['play','plays','playing','to play'], answer:1, explain:'主語 my brother は三人称単数 → plays。(played も文としては成立するため選択肢から除外)' },
     { id:'dq1_05', level:1, type:'vocab',   q:'"Saturday" の意味は？',                            choices:['月曜日','水曜日','土曜日','日曜日'], answer:2, explain:'Saturday = 土曜日。Sunday と混同しやすい。' },
     { id:'dq1_06', level:1, type:'grammar', q:'___ are you from?',                               choices:['What','Where','When','Who'],  answer:1, explain:'出身を聞く → Where are you from? = どこ出身？' },
-    { id:'dq1_07', level:1, type:'grammar', q:'This is ___ apple.',                              choices:['a','an','the','no'],          answer:1, explain:'母音 (a/i/u/e/o) で始まる単語 → an。an apple。' },
+    { id:'dq1_07', level:1, type:'grammar', q:'This is ___ apple.',                              choices:['a','an','it','to'],          answer:1, explain:'母音 (a/i/u/e/o) で始まる単語 → an。an apple。' },
     { id:'dq1_08', level:1, type:'vocab',   q:'"book" の意味は？',                                choices:['机','椅子','本','鉛筆'],      answer:2, explain:'book = 本。' },
     { id:'dq1_09', level:1, type:'grammar', q:"Don't ___ noisy in class.",                       choices:['be','is','are','am'],         answer:0, explain:'否定命令文 Don\'t + 動詞の原形。be 動詞も原形は be。' },
     { id:'dq1_10', level:1, type:'vocab',   q:'"every day" の意味は？',                            choices:['毎日','時々','たまに','一度も〜ない'], answer:0, explain:'every day = 毎日。' },
@@ -9967,24 +9988,24 @@
     { id:'dq2_04', level:2, type:'grammar', q:'There ___ two cats on the sofa.',                choices:['is','am','are','be'],         answer:2, explain:'two cats と複数なので there are。' },
     { id:'dq2_05', level:2, type:'vocab',   q:'"because" の意味は？',                             choices:['しかし','〜なので','〜のとき','もし〜なら'], answer:1, explain:'because = なぜなら/〜なので。理由を表す接続詞。' },
     { id:'dq2_06', level:2, type:'grammar', q:'My brother is ___ TV in the living room now.',   choices:['watch','watches','watching','watched'], answer:2, explain:'now があるので現在進行形。be + -ing。is watching が正解。' },
-    { id:'dq2_07', level:2, type:'grammar', q:'You ___ run in the library.',                    choices:['must not','don\'t','aren\'t','isn\'t'], answer:0, explain:'禁止は must not (= mustn\'t)。must not + 動詞の原形。' },
+    { id:'dq2_07', level:2, type:'grammar', q:'You ___ run in the library.',                    choices:['must not','doesn\'t','aren\'t','isn\'t'], answer:0, explain:'禁止は must not (= mustn\'t)。must not + 動詞の原形。' },
     { id:'dq2_08', level:2, type:'grammar', q:'There ___ a lot of snow last winter.',           choices:['is','was','were','are'],      answer:1, explain:'last winter は過去 + snow は不可算なので was。' },
     { id:'dq2_09', level:2, type:'grammar', q:'What is the ___ mountain in Japan?',             choices:['high','higher','highest','more high'], answer:2, explain:'3 つ以上で最も高い → 最上級 the highest。' },
     { id:'dq2_10', level:2, type:'vocab',   q:'"breakfast" の意味は？',                            choices:['朝食','昼食','夕食','間食'], answer:0, explain:'breakfast = 朝食。lunch (昼食) / dinner (夕食) と区別。' },
-    { id:'dq2_11', level:2, type:'grammar', q:"We ___ going to visit our grandparents next Sunday.", choices:['is','are','were','was'],    answer:1, explain:'be going to + V = 〜する予定。主語が we なので are。' },
+    { id:'dq2_11', level:2, type:'grammar', q:"We ___ going to visit our grandparents next Sunday.", choices:['is','are','am','be'],    answer:1, explain:'be going to + V = 〜する予定。主語が we なので are。' },
     { id:'dq2_12', level:2, type:'grammar', q:'My father ___ to London ten years ago.',         choices:['go','goes','went','gone'],    answer:2, explain:'ten years ago は過去 → went。go の不規則変化 go-went-gone。' },
     { id:'dq2_13', level:2, type:'grammar', q:'Lucy ___ swim very well when she was five.',     choices:['can','could','must','should'], answer:1, explain:'when she was five (5 歳のとき) → 過去の能力 → could。' },
     { id:'dq2_14', level:2, type:'grammar', q:'I usually have lunch ___ noon.',                 choices:['in','on','at','to'],          answer:2, explain:'時刻のピンポイントは at。at noon = 正午に / at 7 o\'clock。' },
     { id:'dq2_15', level:2, type:'grammar', q:'My birthday is ___ March.',                      choices:['in','on','at','to'],          answer:0, explain:'月単位の前置詞は in。in March / in 2026。曜日・日付は on。' },
     { id:'dq2_16', level:2, type:'vocab',   q:'"weekend" の意味は？',                              choices:['平日','週末','月初め','月末'], answer:1, explain:'weekend = 週末 (土日)。weekday (平日) と区別。' },
     { id:'dq2_17', level:2, type:'grammar', q:"How ___ apples do you have?",                    choices:['much','many','some','any'],   answer:1, explain:'apples は数えられる名詞の複数形 → many。much は不可算 (water/time/money)。' },
-    { id:'dq2_18', level:2, type:'grammar', q:'I will call you ___ I get home.',                choices:['if','when','because','but'], answer:1, explain:'when + 主語 + 動詞 = 〜する時。「家に着いたら電話する」。' },
-    { id:'dq2_19', level:2, type:'grammar', q:'Do you have ___ time after school today?',       choices:['some','any','many','a'],     answer:1, explain:'疑問文では any を使うのが普通。「何か時間ある？」。' },
+    { id:'dq2_18', level:2, type:'grammar', q:'I will call you ___ I get home.',                choices:['during','when','because','but'], answer:1, explain:'when + 主語 + 動詞 = 〜する時。「家に着いたら電話する」。' },
+    { id:'dq2_19', level:2, type:'grammar', q:'I don\'t have ___ time after school today.',       choices:['some','any','many','a'],     answer:1, explain:'否定文では any。not 〜 any = 全く〜ない。「今日は放課後まったく時間がない」。' },
     { id:'dq2_20', level:2, type:'vocab',   q:'"borrow" の意味は？',                              choices:['貸す','借りる','売る','買う'], answer:1, explain:'borrow = (人から) 借りる。lend (貸す) と方向が逆。' },
 
     // ========== 英検3級 (中3) ==========
     { id:'dq3_01', level:3, type:'grammar', q:'I have ___ to Kyoto three times.',               choices:['go','went','been','going'],   answer:2, explain:'have been to = 〜に行ったことがある (現在完了の経験)。' },
-    { id:'dq3_02', level:3, type:'grammar', q:'This book ___ written by a famous author.',      choices:['is','was','has','does'],      answer:1, explain:'受動態 be + 過去分詞。書かれた = was written。' },
+    { id:'dq3_02', level:3, type:'grammar', q:'This book ___ written in 1885.',      choices:['is','was','has','does'],      answer:1, explain:'受動態 be + 過去分詞。in 1885 (過去) なので was written。' },
     { id:'dq3_03', level:3, type:'grammar', q:'The boy ___ is playing the piano is my brother.', choices:['who','which','what','whose'], answer:0, explain:'人を修飾する関係代名詞 → who。' },
     { id:'dq3_04', level:3, type:'grammar', q:"I'm too tired ___ go out tonight.",              choices:['to','for','of','in'],         answer:0, explain:'too 〜 to V = 〜すぎて V できない。' },
     { id:'dq3_05', level:3, type:'vocab',   q:'"experience" の意味は？',                          choices:['実験','経験','期待','専門家'], answer:1, explain:'experience = 経験。動詞でも「経験する」と使う。' },
@@ -9995,7 +10016,7 @@
     { id:'dq3_10', level:3, type:'vocab',   q:'"available" の意味は？',                            choices:['利用可能な','失敗した','深刻な','一般的な'], answer:0, explain:'available = 利用可能な、入手できる。お店や予約で頻出。' },
     { id:'dq3_11', level:3, type:'grammar', q:'It is important ___ practice English every day.', choices:['for','of','to','at'],        answer:2, explain:'It is + 形容詞 + to V (= 〜することは ... だ)。形式主語 it。' },
     { id:'dq3_12', level:3, type:'grammar', q:'I went to bed early ___ I was tired.',           choices:['so','because','but','that'],  answer:1, explain:'because + 文 = 〜なので。理由を表す。so は結果。' },
-    { id:'dq3_13', level:3, type:'grammar', q:'This door ___ be locked at night.',              choices:['has','must','can','will'],    answer:1, explain:'must = 〜しなければならない / 〜に違いない。must be locked = 鍵がかかってなければならない (受動態の助動詞)。' },
+    { id:'dq3_13', level:3, type:'grammar', q:'It is a rule: this door ___ be locked at night.',              choices:['has','must','does','is'],    answer:1, explain:'must = 〜しなければならない / 〜に違いない。must be locked = 鍵がかかってなければならない (受動態の助動詞)。' },
     { id:'dq3_14', level:3, type:'grammar', q:'I stopped ___ a phone call from my mother.',     choices:['take','to take','taking','taken'], answer:1, explain:'stop to V = (それまでしていたことを止めて) V するため止まる。stop -ing は「-ing をやめる」で意味が異なる。' },
     { id:'dq3_15', level:3, type:'grammar', q:'The window was broken ___ Tom.',                 choices:['by','with','of','from'],      answer:0, explain:'受動態の動作主 (〜によって) は by。' },
     { id:'dq3_16', level:3, type:'grammar', q:'Could you tell me ___ to get to the station?',   choices:['where','how','what','which'], answer:1, explain:'how to V = 〜の方法。「駅への行き方を教えてください」。' },
@@ -10010,23 +10031,65 @@
     { id:'dq4_03', level:4, type:'grammar', q:'The teacher suggested that he ___ harder.',      choices:['studies','studied','study','studying'], answer:2, explain:'suggest that S + 動詞の原形。仮定法現在。' },
     { id:'dq4_04', level:4, type:'vocab',   q:'"postpone" に最も近い意味は？',                    choices:['前倒しする','延期する','中止する','繰り返す'], answer:1, explain:'postpone = 延期する。put off と同義。' },
     { id:'dq4_05', level:4, type:'vocab',   q:'"submit" の意味は？',                              choices:['提出する','拒否する','編集する','保存する'], answer:0, explain:'submit a report = レポートを提出する。' },
-    { id:'dq4_06', level:4, type:'grammar', q:"I'll lend you my umbrella so that you ___ get wet.", choices:['didn\'t','don\'t','won\'t','wouldn\'t'], answer:2, explain:'so that S + 助動詞 = 〜するように / しないように。未来の話なので won\'t。' },
+    { id:'dq4_06', level:4, type:'grammar', q:"I'll lend you my umbrella so that you ___ get wet.", choices:['didn\'t','doesn\'t','won\'t','wouldn\'t'], answer:2, explain:'so that S + 助動詞 = 〜するように / しないように。未来の話なので won\'t。' },
     { id:'dq4_07', level:4, type:'grammar', q:'He is supposed ___ at the airport by 6 p.m.',    choices:['arrive','arriving','to arrive','arrived'], answer:2, explain:'be supposed to + V = 〜することになっている。to 不定詞。' },
     { id:'dq4_08', level:4, type:'grammar', q:'I had my hair ___ at a new salon yesterday.',    choices:['cut','to cut','cutting','cuts'], answer:0, explain:'have + O + 過去分詞 = 人に O を 〜してもらう。cut は不規則 (cut-cut-cut)。' },
     { id:'dq4_09', level:4, type:'grammar', q:'By the time we got to the cinema, the film ___ already started.', choices:['has','had','have','was'], answer:1, explain:'過去より前のことを言うときの過去完了 had + 過去分詞。「映画はもう始まってしまっていた」。' },
     { id:'dq4_10', level:4, type:'vocab',   q:'"reluctant" の意味は？',                          choices:['熱心な','気が進まない','率直な','頑固な'], answer:1, explain:'reluctant = (〜するのを) 嫌がる、気が進まない。be reluctant to V でよく使う。' },
 
+    { id:'dq4_11', level:4, type:'grammar', q:'This question is ___ difficult than the last one.', choices:['less','little','least','fewer'], answer:0, explain:'less + 形容詞 + than = 〜ほど…でない (劣等比較)。' },
+    { id:'dq4_12', level:4, type:'grammar', q:'I remember ___ the door before I left home.',      choices:['locking','to lock','lock','locked'], answer:0, explain:'remember -ing = 〜したことを覚えている。remember to V (忘れずに V する) と区別。ここは過去の行為の記憶。' },
+    { id:'dq4_13', level:4, type:'grammar', q:'The movie was so boring ___ I fell asleep.',       choices:['that','which','what','than'],  answer:0, explain:'so 〜 that ... = とても〜なので…。' },
+    { id:'dq4_14', level:4, type:'vocab',   q:'"decline" の意味は？',                              choices:['減少する・断る','増加する','受け入れる','維持する'], answer:0, explain:'decline = 減少する / (丁寧に) 断る。decline an offer = 申し出を断る。' },
+    { id:'dq4_15', level:4, type:'grammar', q:"You ___ have seen Tom yesterday \u2014 he was in Osaka all day.", choices:["can't",'must',"shouldn't",'may'], answer:0, explain:"can't have + 過去分詞 = 〜したはずがない (過去の強い否定の推量)。大阪にいたのだから会えたはずがない。" },
+    { id:'dq4_16', level:4, type:'grammar', q:'She is used to ___ up early.',                     choices:['getting','get','got','gotten'], answer:0, explain:'be used to + 動名詞 = 〜に慣れている。used to + 原形 (以前は〜だった) と区別。' },
+    { id:'dq4_17', level:4, type:'vocab',   q:'"appropriate" の意味は？',                          choices:['適切な','不十分な','高価な','偶然の'], answer:0, explain:'appropriate = 適切な、ふさわしい。' },
+    { id:'dq4_18', level:4, type:'grammar', q:'I wish I ___ speak French.',                       choices:['could','can','will','would have'], answer:0, explain:'I wish + 仮定法過去 = 〜できたらいいのに (現在の非現実の願望)。' },
+
     // ========== 英検2級 (高校卒業〜大学) ==========
     { id:'dq5_01', level:5, type:'grammar', q:'Had I known about the problem, I ___ have contacted you sooner.', choices:['will','shall','should','would'], answer:3, explain:'仮定法過去完了の倒置。Had I known = If I had known。帰結節は would have + 過去分詞。' },
     { id:'dq5_02', level:5, type:'grammar', q:'Not only ___ he handsome, but he is also smart.', choices:['is','was','does','did'],      answer:0, explain:'否定の副詞句 (Not only) を文頭に出すと倒置。is he 〜。' },
-    { id:'dq5_03', level:5, type:'grammar', q:'It is essential that every student ___ the form by Friday.', choices:['submits','submitted','submit','submitting'], answer:2, explain:'It is essential that S + 動詞の原形 (仮定法現在)。submit のまま。' },
+    { id:'dq5_03', level:5, type:'grammar', q:'It is essential that every student ___ the form by Friday.', choices:['to submit','submitted','submit','submitting'], answer:2, explain:'It is essential that S + 動詞の原形 (仮定法現在)。submit のまま。' },
     { id:'dq5_04', level:5, type:'vocab',   q:'"meticulous" の意味は？',                          choices:['几帳面な','大雑把な','悲観的な','楽観的な'], answer:0, explain:'meticulous = 細部まで気を配る、几帳面な。' },
     { id:'dq5_05', level:5, type:'vocab',   q:'"corroborate" の意味は？',                         choices:['反論する','裏付ける','想像する','破壊する'], answer:1, explain:'corroborate = (証拠などで) 裏付ける、確証する。' },
     { id:'dq5_06', level:5, type:'grammar', q:'No sooner had he sat down ___ the phone rang.',  choices:['when','than','as','that'],    answer:1, explain:'No sooner had + S + 過去分詞 + than + S + 過去形 = 〜するや否や。当ペアは when ではなく than。' },
     { id:'dq5_07', level:5, type:'grammar', q:'Were it not for your help, I ___ have failed.',  choices:['will','would','should','must'], answer:1, explain:'Were it not for = if it were not for の倒置。〜が無ければ。仮定法 → would have + 過去分詞。' },
-    { id:'dq5_08', level:5, type:'grammar', q:'Seldom ___ I seen such a beautiful sunset.',     choices:['have','has','had','do'],      answer:0, explain:'否定的副詞 Seldom を文頭に置くと倒置。現在完了の have I + 過去分詞 が正解。' },
+    { id:'dq5_08', level:5, type:'grammar', q:'Seldom ___ I seen such a beautiful sunset.',     choices:['have','has','was','do'],      answer:0, explain:'否定的副詞 Seldom を文頭に置くと倒置。現在完了の have I + 過去分詞 が正解。' },
     { id:'dq5_09', level:5, type:'vocab',   q:'"imperative" (形容詞) の意味は？',                 choices:['任意の','必須の','一時的な','疑わしい'], answer:1, explain:'imperative = 必須の、絶対に必要な。It is imperative that S + 動詞の原形。' },
     { id:'dq5_10', level:5, type:'vocab',   q:'"ephemeral" の意味は？',                          choices:['永続的な','つかの間の','透明な','重大な'], answer:1, explain:'ephemeral = はかない、つかの間の。文学的な高度語彙。' },
+
+    { id:'dq5_11', level:5, type:'grammar', q:'It was not until midnight ___ the chef finally sat down.', choices:['that','what','than','while'], answer:0, explain:'It was not until X that S V = X になって初めて〜した (強調構文)。' },
+    { id:'dq5_12', level:5, type:'vocab',   q:'"controversy" の意味は？',                         choices:['論争','合意','安定','娯楽'], answer:0, explain:'controversy = 論争、物議。controversial = 物議を醸す。' },
+    { id:'dq5_13', level:5, type:'grammar', q:'The restaurant, ___ opened last month, is already fully booked.', choices:['which','that','what','where'], answer:0, explain:'非制限用法 (コンマ付き) の関係代名詞は which。that はコンマの後では使えない。' },
+    { id:'dq5_14', level:5, type:'grammar', q:'Weather ___, the fireworks will be held on Saturday.', choices:['permitting','permitted','permits','to permit'], answer:0, explain:'独立分詞構文 weather permitting = 天気が許せば。' },
+    { id:'dq5_15', level:5, type:'vocab',   q:'"abundant" の意味は？',                            choices:['豊富な','不足した','平均的な','高価な'], answer:0, explain:'abundant = 豊富な。abundance = 豊富さ。' },
+    { id:'dq5_16', level:5, type:'grammar', q:'The bridge is ___ repaired, so we have to take a detour.', choices:['being','been','be','to be'], answer:0, explain:'進行形の受動態 is being + 過去分詞 = 今まさに修理されている最中。' },
+    { id:'dq5_17', level:5, type:'grammar', q:'___ he practised, he could not master the piece.', choices:['However much','How much','Whatever','No matter'], answer:0, explain:'however + 副詞 + S + V = どんなに〜しても。No matter how much と同義 (No matter 単独では不可)。' },
+    { id:'dq5_18', level:5, type:'vocab',   q:'"deliberately" の意味は？',                        choices:['故意に','偶然に','素早く','しぶしぶ'], answer:0, explain:'deliberately = 故意に、意図的に。on purpose と同義。' },
+    { id:'dq5_19', level:5, type:'grammar', q:'The documents ___ to the client by the time she arrives.', choices:['will have been sent','will send','have sent','are sending'], answer:0, explain:'by the time + 現在形 → 主節は未来完了。主語が documents (送られる側) なので受け身 will have been sent。' },
+    { id:'dq5_20', level:5, type:'vocab',   q:'"substantial" の意味は？',                         choices:['相当な・かなりの','わずかな','疑わしい','緊急の'], answer:0, explain:'substantial = 相当な、かなりの。a substantial amount = かなりの量。' },
+
+    // ========== 英検準1級 (大学中級〜ビジネス) ==========
+    { id:'dq6_01', level:6, type:'grammar', q:'Hardly ___ the meeting begun when the fire alarm went off.', choices:['had','has','did','was'], answer:0, explain:'Hardly had + S + 過去分詞 ... when 〜 = 〜するとすぐに。過去完了の倒置。' },
+    { id:'dq6_02', level:6, type:'vocab',   q:'"deteriorate" の意味は？',                         choices:['悪化する','回復する','維持する','変動する'], answer:0, explain:'deteriorate = 悪化する。The situation deteriorated = 状況が悪化した。' },
+    { id:'dq6_03', level:6, type:'grammar', q:'___ the bad weather, the outdoor event went ahead as planned.', choices:['Despite','Although','However','Because'], answer:0, explain:'Despite + 名詞 = 〜にもかかわらず。Although の後ろは文、Because の後ろも文 (名詞なら because of)。' },
+    { id:'dq6_04', level:6, type:'vocab',   q:'"feasible" の意味は？',                            choices:['実現可能な','無謀な','高価な','退屈な'], answer:0, explain:'feasible = 実現可能な。a feasible plan = 実行可能な計画。' },
+    { id:'dq6_05', level:6, type:'grammar', q:'The new policy will affect employees and employers ___.', choices:['alike','likewise','apiece','either'], answer:0, explain:'A and B alike = A も B も同様に。文末に置いて「どちらも等しく」。' },
+    { id:'dq6_06', level:6, type:'vocab',   q:'"scrutinise" の意味は？',                          choices:['精査する','無視する','称賛する','拡大する'], answer:0, explain:'scrutinise = 細部まで注意深く調べる、精査する。scrutiny = 精査。' },
+    { id:'dq6_07', level:6, type:'grammar', q:'Only after the audit was completed ___ the extent of the losses.', choices:['did we realise','we realised','we did realise','realised we'], answer:0, explain:'Only + 副詞句を文頭に置くと主節は倒置 → did we realise。' },
+    { id:'dq6_08', level:6, type:'vocab',   q:'"plausible" の意味は？',                           choices:['もっともらしい','不可能な','明白な','違法な'], answer:0, explain:'plausible = もっともらしい、一応筋が通っている。a plausible explanation。' },
+    { id:'dq6_09', level:6, type:'grammar', q:'The manager insisted on ___ informed of every development.', choices:['being kept','keeping','be kept','to be kept'], answer:0, explain:'insist on + 動名詞。受け身の動名詞は being + 過去分詞 → being kept informed。' },
+    { id:'dq6_10', level:6, type:'vocab',   q:'"discrepancy" の意味は？',                         choices:['食い違い','一致','割引','余剰'], answer:0, explain:'discrepancy = (数字や説明の) 食い違い、不一致。' },
+    { id:'dq6_11', level:6, type:'grammar', q:'___ as the task was, she completed it without complaint.', choices:['Demanding','Demanded','Being demanded','To demand'], answer:0, explain:'形容詞 + as + S + V = 〜ではあるが (譲歩)。Demanding as the task was = 大変な仕事ではあったが。' },
+    { id:'dq6_12', level:6, type:'vocab',   q:'"undermine" の意味は？',                           choices:['弱体化させる','支援する','掘り起こす','見落とす'], answer:0, explain:'undermine = (信頼・権威などを) 徐々に弱める、損なう。' },
+    { id:'dq6_13', level:6, type:'grammar', q:'By this time next year, we ___ the new branch in Osaka.', choices:['will have opened','had opened','have been opening','opened'], answer:0, explain:'by + 未来の時点 = 未来完了 will have + 過去分詞。「来年の今頃までには開店してしまっているだろう」。' },
+    { id:'dq6_14', level:6, type:'vocab',   q:'"compelling" の意味は？',                          choices:['説得力のある','強制的な','退屈な','一時的な'], answer:0, explain:'compelling = 説得力のある、目が離せない。a compelling argument = 説得力のある主張。' },
+    { id:'dq6_15', level:6, type:'grammar', q:'The figures need ___ before we submit the report.', choices:['checking','to check','check','being checked'], answer:0, explain:'need + 動名詞 = 〜される必要がある (need checking = need to be checked)。' },
+    { id:'dq6_16', level:6, type:'vocab',   q:'"inevitably" の意味は？',                          choices:['必然的に','偶然に','徐々に','即座に'], answer:0, explain:'inevitably = 必然的に、避けられずに。inevitable = 避けられない。' },
+    { id:'dq6_17', level:6, type:'grammar', q:'___ for the traffic jam, we would have arrived on time.', choices:['Had it not been','If it were not','Were it not','Should it not be'], answer:0, explain:'過去の仮定 → Had it not been for = if it had not been for (〜がなかったら)。Were it not for は現在の仮定。' },
+    { id:'dq6_18', level:6, type:'vocab',   q:'"tentative" の意味は？',                           choices:['仮の・暫定的な','最終的な','積極的な','否定的な'], answer:0, explain:'tentative = 仮の、暫定的な。a tentative schedule = 仮のスケジュール。' },
+    { id:'dq6_19', level:6, type:'grammar', q:'She talks ___ she knew everything about wine.',    choices:['as if','even if','so that','in case'], answer:0, explain:'as if + 仮定法過去 = まるで〜であるかのように。実際は知らないのに知っているかのように話す。' },
+    { id:'dq6_20', level:6, type:'vocab',   q:'"profound" の意味は？',                            choices:['深遠な・深い','浅い','平凡な','曖昧な'], answer:0, explain:'profound = (影響・考えなどが) 深い、深遠な。a profound impact = 甚大な影響。' },
   ];
 
   // リスニング診断プール。conversation の text を TTS で読み上げる。
@@ -10134,10 +10197,11 @@
       conversation:[
         { speaker:'A', text:'The seminar starts at four, but I think we should arrive by three thirty.' },
         { speaker:'B', text:'Sounds good. Shall we meet at the cafe across from the campus at three?' },
+        { speaker:'A', text:'Perfect, see you at three.' },
       ],
       q:'2人は何時にカフェで会いますか？',
       choices:['3:00','3:30','4:00','5:00'], answer:0,
-      explain:'最後に "at three" = 3時にカフェで会う。複数の時刻が出るので注意。',
+      explain:'"see you at three" と確認 → 3時にカフェで会う。複数の時刻が出るので注意。',
     },
     {
       id:'dl_diag_lv4_02', level:4,
@@ -10258,7 +10322,7 @@
         { speaker:'A', text:'I\'ve been having headaches for a few weeks. Could it be from staring at the screen too much?' },
         { speaker:'B', text:'Possibly. I\'d recommend taking a 10-minute break every hour and getting your eyes checked.' },
       ],
-      q:'医師は何を推奨しましたか？',
+      q:'B は何を勧めていますか？',
       choices:['すぐ薬を飲む','1 時間ごとに 10 分休憩 + 視力検査','寝不足を解消','運動を控える'], answer:1,
       explain:'"a 10-minute break every hour and getting your eyes checked" = 1 時間ごとの 10 分休憩と視力検査。',
     },
@@ -10283,6 +10347,109 @@
       q:'役員会が新興市場進出に慎重な主な懸念は何ですか？',
       choices:['人材不足','変動性と為替リスク','法律問題','技術力'], answer:1,
       explain:'"volatility and currency risk" = 変動性と為替リスク。emerging markets = 新興市場。',
+    },
+
+    {
+      id:'dl_diag_lv5_03', level:5,
+      conversation:[
+        { speaker:'A', text:'The critics praised the documentary for its balanced portrayal of both sides of the debate.' },
+        { speaker:'B', text:"That's rare these days. Most films just push one point of view." },
+      ],
+      q:'批評家はドキュメンタリーの何を称賛しましたか？',
+      choices:['両論をバランスよく描いた点','映像の美しさ','監督の知名度','音楽の使い方'], answer:0,
+      explain:'"balanced portrayal of both sides" = 両者の言い分をバランスよく描いたこと。portrayal = 描写。',
+    },
+    {
+      id:'dl_diag_lv5_04', level:5,
+      conversation:[
+        { speaker:'A', text:'Our overseas sales have plateaued, so we are shifting the budget toward the domestic market.' },
+        { speaker:'B', text:'Makes sense, given the exchange rate lately.' },
+      ],
+      q:'会社はなぜ予算を国内市場に移すのですか？',
+      choices:['海外売上が頭打ちになったから','国内の税率が下がったから','競合が撤退したから','社長が交代したから'], answer:0,
+      explain:'"overseas sales have plateaued" = 海外売上が頭打ちになった。plateau = 横ばいになる。',
+    },
+    {
+      id:'dl_diag_lv5_05', level:5,
+      conversation:[
+        { speaker:'A', text:'The keynote speaker argued that automation, far from destroying jobs, tends to redefine them over time.' },
+        { speaker:'B', text:'Interesting. So the real challenge is retraining, not unemployment itself.' },
+      ],
+      q:'講演者の主張はどれですか？',
+      choices:['自動化は仕事を奪うのではなく作り変えていく','自動化は雇用を破壊する','自動化はすぐに廃れる','自動化は賃金を下げる'], answer:0,
+      explain:'"far from destroying jobs, tends to redefine them" = 仕事を奪うどころか、時間とともに再定義していく。',
+    },
+    {
+      id:'dl_diag_lv5_06', level:5,
+      conversation:[
+        { speaker:'A', text:'I was sceptical about the tasting menu at first, but each course built on the last beautifully.' },
+        { speaker:'B', text:'So the sequence itself was part of the experience.' },
+      ],
+      q:'A のコース料理への評価は？',
+      choices:['最初は懐疑的だったが構成に感心した','最初から期待通りだった','最後まで不満だった','量が多すぎた'], answer:0,
+      explain:'"sceptical at first, but each course built on the last" = 最初は懐疑的だったが、皿を重ねるごとに良くなった。',
+    },
+
+    // ========== 英検準1級 (Lv6) ==========
+    {
+      id:'dl_diag_lv6_01', level:6,
+      conversation:[
+        { speaker:'A', text:'The ministry has pledged to phase out single-use plastics by 2030, though enforcement details remain vague.' },
+        { speaker:'B', text:'Without concrete penalties, I doubt the deadline will mean much.' },
+      ],
+      q:'B が懐疑的な理由は何ですか？',
+      choices:['具体的な罰則が示されていないから','期限が早すぎるから','費用が高すぎるから','世論が反対しているから'], answer:0,
+      explain:'"Without concrete penalties, I doubt..." = 具体的な罰則がなければ期限に意味はない、という懐疑。phase out = 段階的に廃止する。',
+    },
+    {
+      id:'dl_diag_lv6_02', level:6,
+      conversation:[
+        { speaker:'A', text:'Her latest novel subverts the conventions of the detective genre while still honouring them.' },
+        { speaker:'B', text:'That balance is precisely why the critics are divided.' },
+      ],
+      q:'批評家の意見が割れている理由は？',
+      choices:['型を壊しつつ型を尊重するバランスだから','文章が難解だから','結末が曖昧だから','宣伝が過剰だから'], answer:0,
+      explain:'"That balance is precisely why the critics are divided" = そのバランスこそが賛否の分かれ目。subvert = 覆す。',
+    },
+    {
+      id:'dl_diag_lv6_03', level:6,
+      conversation:[
+        { speaker:'A', text:'The board approved the merger in principle, subject to regulatory clearance and a final valuation.' },
+        { speaker:'B', text:'So it could still fall through at either hurdle.' },
+      ],
+      q:'合併がまだ成立しない可能性があるのはなぜ？',
+      choices:['当局の承認と最終評価という条件が残っているから','株主が反対しているから','資金が不足しているから','経営陣が交代したから'], answer:0,
+      explain:'"subject to regulatory clearance and a final valuation" = 規制当局の承認と最終評価を条件として。fall through = 破談になる。',
+    },
+    {
+      id:'dl_diag_lv6_04', level:6,
+      conversation:[
+        { speaker:'A', text:'I find his arguments compelling in isolation, yet they rarely hold up when you examine the underlying data.' },
+        { speaker:'B', text:'Style over substance, then.' },
+      ],
+      q:'A は彼の主張をどう評価していますか？',
+      choices:['一見説得力があるがデータで検証すると崩れる','データに裏付けられていて完璧だ','退屈で説得力がない','過激すぎて危険だ'], answer:0,
+      explain:'"compelling in isolation, yet rarely hold up" = 単体では説得力があるが、検証には耐えない。hold up = 持ちこたえる。',
+    },
+    {
+      id:'dl_diag_lv6_05', level:6,
+      conversation:[
+        { speaker:'A', text:'Rather than expanding aggressively, the chain is consolidating its existing sites to protect margins.' },
+        { speaker:'B', text:'A defensive move, but probably a wise one in this climate.' },
+      ],
+      q:'このチェーンの現在の戦略は？',
+      choices:['既存店舗を強化して利益率を守る','積極的に新規出店する','海外に進出する','価格を大幅に下げる'], answer:0,
+      explain:'"consolidating its existing sites to protect margins" = 既存店を固めて利益率を守る。consolidate = 統合・強化する。',
+    },
+    {
+      id:'dl_diag_lv6_06', level:6,
+      conversation:[
+        { speaker:'A', text:"The study's findings, while statistically significant, may not translate into meaningful clinical outcomes." },
+        { speaker:'B', text:'So the headlines are overstating it, as usual.' },
+      ],
+      q:'研究結果についての正しい理解はどれですか？',
+      choices:['統計的には有意だが臨床的な意義は不明','臨床的に画期的だと証明された','統計的に無意味だった','捏造の疑いがある'], answer:0,
+      explain:'"statistically significant... may not translate into meaningful clinical outcomes" = 統計的有意 = 臨床的に意味がある、とは限らない。',
     },
   ];
 
@@ -10433,6 +10600,51 @@
       q:'この文章の主要な論点として最も適切なのは？',
       choices:['歩きやすい街は健康と地域社会に資するが、既存都市の改修が課題','歩道の整備よりも自動車道の拡張が必要','歩行者と自動車は共存できない','都市計画は公衆衛生と無関係'], answer:0,
       explain:'歩行者中心の街は健康・社会につながる、と論じつつ、既存の車中心都市の改修 (retrofit) が難しい、と問題提起している。',
+    },
+
+    {
+      id:'dr_diag_lv5_03', level:5,
+      passage:'The shift to remote work, once considered a temporary response to the pandemic, has permanently altered expectations around office life. Employees increasingly value flexibility over traditional perks, and companies that insist on full-time attendance report higher turnover. Yet fully remote arrangements carry their own costs: weaker mentorship, blurred boundaries between work and home, and a gradual erosion of company culture.',
+      q:'この文章の主張として最も適切なのは？',
+      choices:['リモートワークは定着したが、利点と代償の両方がある','リモートワークは一時的な流行にすぎない','全員出社の企業ほど離職率が低い','リモートワークに欠点はない'], answer:0,
+      explain:'柔軟性への評価と、メンター不足・境界の曖昧化・文化の希薄化という代償の両面を論じている。turnover = 離職率。',
+    },
+    {
+      id:'dr_diag_lv5_04', level:5,
+      passage:'To our valued members: From 1 June, the gym will extend weekday opening hours to 11 p.m. in response to member feedback. However, the pool will close for renovation from 10 to 24 June. Members who use the pool at least three times a week may request a partial refund for June at the front desk by 15 June.',
+      q:'6 月のプール利用者への対応として正しいのは？',
+      choices:['条件を満たす会員は 6/15 までに申請すれば一部返金','全員に自動で全額返金される','7 月の会費が無料になる','補償は一切ない'], answer:0,
+      explain:'"may request a partial refund ... by 15 June" = 週 3 回以上プールを使う会員は 6/15 までに申請すれば一部返金。',
+    },
+
+    // ========== 英検準1級 (Lv6) ==========
+    {
+      id:'dr_diag_lv6_01', level:6,
+      passage:'The notion that creativity flourishes best without constraints is largely a myth. Studies of design teams show that moderate constraints - limited budgets, fixed deadlines, narrow briefs - often produce more original outcomes than unlimited freedom, which tends to overwhelm rather than liberate. The key appears to be the nature of the constraint: restrictions on resources stimulate inventive workarounds, whereas restrictions on goals stifle exploration altogether.',
+      q:'この文章によると、創造性を高めるのはどのような制約か？',
+      choices:['資源への制約 (予算・時間など)','目標への制約','制約が一切ない状態','あらゆる種類の厳しい制約'], answer:0,
+      explain:'"restrictions on resources stimulate inventive workarounds, whereas restrictions on goals stifle exploration" = 資源の制約は工夫を促し、目標の制約は探索を妨げる。',
+    },
+    {
+      id:'dr_diag_lv6_02', level:6,
+      passage:'When a language dies, more than words disappear. Each language encodes a distinct way of categorising the world - how its speakers describe colour, kinship, time, and landscape. Linguists estimate that of the roughly seven thousand languages spoken today, nearly half may vanish within a century. Digital archives can preserve recordings, but a language that is no longer passed to children survives only as a museum piece, not as a living system of thought.',
+      q:'筆者が最も伝えたいことは？',
+      choices:['言語の消滅は世界の捉え方そのものの喪失である','デジタル保存があれば言語は生き続ける','言語の半数はすでに消滅した','子供は多くの言語を学ぶべきだ'], answer:0,
+      explain:'言語は世界の分類の仕方を内包しており、録音は残せても子供に受け継がれなければ「生きた思考体系」としては失われる、が主旨。',
+    },
+    {
+      id:'dr_diag_lv6_03', level:6,
+      passage:"Loyalty programmes are often assumed to build genuine attachment, yet research suggests they mostly reward behaviour that would have occurred anyway. True loyalty - the kind that survives a price rise or a competitor's opening - is driven less by points than by identity: customers return to places that reflect how they wish to see themselves. Businesses that grasp this invest in atmosphere and staff rather than discounts.",
+      q:'本当の顧客ロイヤルティを生むものは何だと述べているか？',
+      choices:['自己イメージと重なる店の在り方','ポイント制度','値引きの頻度','立地の良さ'], answer:0,
+      explain:'"driven less by points than by identity" = ポイントではなく「自分をどう見たいか」と重なるかどうかが真のロイヤルティを生む。',
+    },
+    {
+      id:'dr_diag_lv6_04', level:6,
+      passage:'The editorial argues that while artificial intelligence will displace certain routine occupations, history suggests panic is premature. The mechanisation of agriculture eliminated most farming jobs, yet employment did not collapse; labour migrated to industries that were scarcely imaginable beforehand. The genuine risk, the author contends, is not mass unemployment but a widening gap between those equipped to work alongside new technologies and those left behind - a problem of distribution, not of scarcity.',
+      q:'筆者が考える本当のリスクは何か？',
+      choices:['技術を使いこなせる人とそうでない人の格差拡大','仕事の総量そのものの消滅','農業の衰退','AI の暴走'], answer:0,
+      explain:'"not mass unemployment but a widening gap" = 大量失業ではなく、新技術と共に働ける人と取り残される人の格差こそがリスク。',
     },
   ];
 
@@ -11013,9 +11225,9 @@
         {
           q:   'This is my ___, who works as a doctor.',
           qJa: '（先生に紹介して）こちらは私の父です。お医者さんをしています。',
-          choices: ['father', 'dad', 'granny'],
+          choices: ['father', 'uncle', 'granny'],
           answer: 0,
-          explain: '改まった場面では father。家では dad のほうが自然。',
+          explain: '「父」は father。uncle は「おじ」、granny は「おばあちゃん」なので合わない。',
         },
         {
           q:   'My ___ bakes the best cakes.',
@@ -11144,7 +11356,7 @@
         {
           q:   'The dog jumps ___ the pool.',
           qJa: '犬がプールに飛びこみます。',
-          choices: ['in', 'on', 'at', 'into'],
+          choices: ['under', 'on', 'at', 'into'],
           answer: 3,
           explain: '外から中へ「動く」イメージ。jump（飛びこむ）と一緒だから into。',
         },
@@ -11827,7 +12039,7 @@
         {
           q:   'He jumps ___ the pool.',
           qJa: '彼はプールに飛びこみます。',
-          choices: ['in', 'into', 'on'],
+          choices: ['under', 'into', 'on'],
           answer: 1,
           explain: '外から中へ「飛びこむ」動き → into。',
         },
@@ -11839,18 +12051,18 @@
           explain: '「いる」状態だから in。',
         },
         {
-          q:   'She walked ___ the room.',
-          qJa: '彼女は部屋に入りました。',
+          q:   'The rain changed ___ snow.',
+          qJa: '雨は雪に変わりました。',
           choices: ['in', 'into', 'on'],
           answer: 1,
-          explain: '「歩いて入る」動きだから into。',
+          explain: '「〜に変わる」は change into。into は変化にも使う。',
         },
         {
-          q:   'He got ___ the car.',
-          qJa: '彼は車に乗り込みました。',
+          q:   'Please translate this sentence ___ English.',
+          qJa: 'この文を英語に訳してください。',
           choices: ['in', 'into', 'on'],
           answer: 1,
-          explain: '「入れる」動きだから into。put X into Y のパターン。',
+          explain: '「〜語に訳す」は translate 〜 into。変化・変換を表すのも into。',
         },
       ],
     },
@@ -12050,15 +12262,15 @@
       ],
       quiz: [
         {
-          q:   'I ___ already finished my homework.',
-          qJa: '私はもう宿題を終わらせた。',
+          q:   "I ___ already finished my homework, so I'm free now.",
+          qJa: '私はもう宿題を終わらせた。だから今はひまです。',
           choices: ['have', 'has', 'had'],
           answer: 0,
           explain: '主語が I なので have。「もう」は完了の現在完了。',
         },
         {
-          q:   'He ___ been to Paris three times.',
-          qJa: '彼はパリに3回行ったことがある。',
+          q:   'He ___ been to Paris three times so far.',
+          qJa: '彼はこれまでにパリに3回行ったことがある。',
           choices: ['have', 'has', 'had'],
           answer: 1,
           explain: '主語が He なので has。「~回行ったことがある」は経験の現在完了。',
@@ -13046,11 +13258,11 @@
           explain: '肯定文 + 「いくつか・少し」は some。',
         },
         {
-          q:   'Do you have ___ questions?',
-          qJa: '質問はありますか？',
+          q:   "I don't have ___ questions.",
+          qJa: '質問は1つもありません。',
           choices: ['some', 'any', 'no'],
           answer: 1,
-          explain: '疑問文「あるかどうか」は any。',
+          explain: '否定文 + any = 1 つも〜ない。',
         },
         {
           q:   "I don't want ___ help.",
@@ -17128,7 +17340,7 @@
           [
             { id: 'records',         label: '学習の記録',         desc: '7 日間の活動表とセッションログ' },
             { id: 'reading',         label: 'リーディング理解',   desc: '長文を読んで 4 択 3 問' },
-            { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜2 級・段階式' },
+            { id: 'diagnostic',      label: 'レベル診断テスト',   desc: '英検 5 級〜準 1 級・段階式' },
           ].map((row, i, arr) => e('button', {
             key: row.id,
             onClick: () => onPickFeature(row.id),
@@ -34126,8 +34338,8 @@
   //      - 不合格                 → result
   //   4) result では comfort.vocab/composition と diagnosedLevel/Eiken を
   //      profile に保存 (次のセッションで反映される)
-  const DIAG_EIKEN_MAP   = { 0: '英検5級', 1: '英検4級', 2: '英検3級', 3: '英検準2級' };
-  const DIAG_COMFORT_MAP = { 0: 1.0,        1: 2.0,        2: 3.0,        3: 4.0 };
+  const DIAG_EIKEN_MAP   = { 0: '英検5級', 1: '英検4級', 2: '英検3級', 3: '英検準2級', 4: '英検2級', 5: '英検準1級' };
+  const DIAG_COMFORT_MAP = { 0: 1.0,        1: 2.0,        2: 3.0,        3: 4.0,        4: 4.5,      5: 5.0 };
 
   function DiagnosticTest({ profile, onBack }) {
     const [phase, setPhase]               = useState('intro');   // 'intro' | 'test' | 'stage_clear' | 'result'
@@ -34395,7 +34607,7 @@
           }, 'レベル診断テスト'),
           e('div', {
             style: { fontSize: 13, color: C.sub, marginTop: 8, lineHeight: 1.7 }
-          }, '段階式テストであなたの英語レベル (英検 5 級〜2 級) を判定します。各ステージで合格率を超えると次に進めます。やめた / 不合格になった時点で「ひとつ下」のレベルが判定です。'),
+          }, '段階式テストであなたの英語レベル (英検 5 級〜準 1 級) を判定します。各ステージで合格率を超えると次に進めます。やめた / 不合格になった時点で「ひとつ下」のレベルが判定です。'),
         ),
 
         // ステージ表
