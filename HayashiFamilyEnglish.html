@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 414;
+  const APP_VERSION = 415;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -35037,6 +35037,23 @@
   // When the device comes back online, also re-pull everyone's progress
   // so a parent who's been offline picks up the kids' overnight study
   // without having to relaunch the app.
+  // ---- 前面復帰時の再同期 ----
+  // iOS の PWA は一度開くと何日もバックグラウンドで生き続け、「開き直した」
+  // つもりでも完全起動 (= 同期) が走らないことがある。前面に戻ってきた
+  // タイミングでも家族全員分を取り直す (60 秒スロットル付き)。
+  let _lastForegroundSync = 0;
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) return;
+      const now = Date.now();
+      if (now - _lastForegroundSync < 60000) return;
+      _lastForegroundSync = now;
+      if (cloud.status.enabled) {
+        hydrateAllProfilesFromCloud().catch(() => {});
+        hydrateFamilySharedFromCloud().catch(() => {});
+      }
+    });
+  }
   if (typeof window !== 'undefined') {
     window.addEventListener('online', () => {
       if (cloud.status.enabled) {
