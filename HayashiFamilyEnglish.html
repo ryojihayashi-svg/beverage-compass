@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 413;
+  const APP_VERSION = 414;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -9952,7 +9952,7 @@
     { id:'dq1_01', level:1, type:'grammar', q:'I ___ a student.',                               choices:['am','is','are','be'],         answer:0, explain:'主語が I のとき be動詞は am。' },
     { id:'dq1_02', level:1, type:'grammar', q:'She ___ to school every day.',                   choices:['go','goes','going','gone'],   answer:1, explain:'三人称単数現在 (she/he/it) は動詞に s。go → goes。' },
     { id:'dq1_03', level:1, type:'vocab',   q:'"Thank you." の意味は？',                          choices:['さようなら','ありがとう','おはよう','すみません'], answer:1, explain:'Thank you = ありがとう。最も基本の感謝表現。' },
-    { id:'dq1_04', level:1, type:'grammar', q:'My brother ___ soccer on Sundays.',              choices:['play','plays','playing','played'], answer:1, explain:'主語 my brother は三人称単数 → plays。' },
+    { id:'dq1_04', level:1, type:'grammar', q:'My brother ___ soccer on Sundays.',              choices:['play','plays','playing','to play'], answer:1, explain:'主語 my brother は三人称単数 → plays。(played も文としては成立するため選択肢から除外)' },
     { id:'dq1_05', level:1, type:'vocab',   q:'"Saturday" の意味は？',                            choices:['月曜日','水曜日','土曜日','日曜日'], answer:2, explain:'Saturday = 土曜日。Sunday と混同しやすい。' },
     { id:'dq1_06', level:1, type:'grammar', q:'___ are you from?',                               choices:['What','Where','When','Who'],  answer:1, explain:'出身を聞く → Where are you from? = どこ出身？' },
     { id:'dq1_07', level:1, type:'grammar', q:'This is ___ apple.',                              choices:['a','an','the','no'],          answer:1, explain:'母音 (a/i/u/e/o) で始まる単語 → an。an apple。' },
