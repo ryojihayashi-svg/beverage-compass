@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 422;
+  const APP_VERSION = 423;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -4825,7 +4825,7 @@
     { id:'s034', level:3, grammar:'疑問詞 + to不定詞',ja:'私はスマートフォンの使い方を知っています。',en:'I know how to use a smartphone.' },
 
     // L4 — 高校標準
-    { id:'s035', level:4, grammar:'仮定法過去完了',   ja:'もし努力していれば、成功していただろうに。', en:'If you had worked harder, you would have succeeded.' },
+    { id:'s035', level:4, grammar:'仮定法過去完了',   ja:'もしあなたがもっと努力していれば、成功していただろうに。', en:'If you had worked harder, you would have succeeded.' },
     { id:'s036', level:4, grammar:'as soon as',       ja:'宿題を終えるやいなや、彼は出かけた。',      en:'As soon as he finished his homework, he went out.' },
     { id:'s037', level:4, grammar:'強調構文 it...that',ja:'彼が成功したのは努力したからだ。',          en:'It was because of his effort that he succeeded.' },
     { id:'s038', level:4, grammar:'間接疑問 whether', ja:'彼女が来るかどうかわからない。',            en:"I don't know whether she will come." },
@@ -4908,8 +4908,8 @@
 
     // L3 (continued) — middle school complete
     { id:'s099', level:3, grammar:'if + 命令',        ja:'もし忙しくなければ、来てください。',        en:'Please come if you are not busy.' },
-    { id:'s100', level:3, grammar:'現在完了 継続',    ja:'私は彼を3年間知っています。',               en:'I have known him for three years.' },
-    { id:'s101', level:3, grammar:'always + 進行形',  ja:'母はいつも夕食の準備をしています。',        en:'My mother is always preparing dinner.' },
+    { id:'s100', level:3, grammar:'現在完了 継続',    ja:'彼と知り合って3年になります。',               en:'I have known him for three years.' },
+    { id:'s101', level:3, grammar:'always + 進行形',  ja:'母はいつも夕食の準備ばかりしています。',        en:'My mother is always preparing dinner.' },
     { id:'s102', level:3, grammar:'現在完了 + 動名詞',ja:'彼女は本を読み終えました。',                en:'She has finished reading the book.' },
     { id:'s103', level:3, grammar:"don't have to",    ja:'あなたはそんなに早く起きる必要はない。',            en:"You don't have to get up so early." },
     { id:'s104', level:3, grammar:'after + 主節',     ja:'宿題を終えたあと、テレビゲームをします。',  en:'After I finish my homework, I play video games.' },
@@ -4921,7 +4921,7 @@
     { id:'s108', level:4, grammar:'the more ... the more',ja:'多く学べば学ぶほど、もっと知りたくなる。',en:'The more I learn, the more I want to know.' },
     { id:'s109', level:4, grammar:'関係詞 who + what',ja:'彼は言ったことを実行する人だ。',            en:'He is a man who does what he says.' },
     { id:'s110', level:4, grammar:'never + will',     ja:'私は決してイギリスでの最初の日を忘れない。',          en:'I will never forget my first day in the UK.' },
-    { id:'s111', level:4, grammar:'by all means',     ja:'あなたは何としてもこの試験に合格すべきだ。',en:'You should do whatever it takes to pass this exam.' },
+    { id:'s111', level:4, grammar:'whatever it takes',     ja:'あなたは何としてもこの試験に合格すべきだ。',en:'You should do whatever it takes to pass this exam.' },
     { id:'s112', level:4, grammar:'very well that',   ja:'彼女が忙しいことはとてもよく分かる。',      en:'I know very well that she is busy.' },
     { id:'s113', level:4, grammar:'as far as',        ja:'私の知る限り、彼は誠実だ。',                en:'As far as I know, he is honest.' },
     { id:'s114', level:4, grammar:'現在完了 just',    ja:'私はちょうど駅に着いたところだ。',          en:'I have just arrived at the station.' },
@@ -4963,17 +4963,17 @@
     { id:'s142', level:3, grammar:'How long + will',  ja:'あなたはいつまでそこにいますか？',          en:'How long will you stay there?' },
     { id:'s143', level:3, grammar:'間接疑問 who',     ja:'彼女が誰だか知っていますか？',              en:'Do you know who she is?' },
     { id:'s144', level:3, grammar:'have time to',     ja:'今は読書する時間がない。',                  en:"I don't have time to read now." },
-    { id:'s145', level:3, grammar:'比較級 the more',  ja:'彼が早く来るほど、より多くを学ぶ。',        en:'The earlier he comes, the more he learns.' },
-    { id:'s146', level:3, grammar:'should + 過去完了',ja:'私はもっと早く出発すべきだった。',              en:'I should have left earlier.' },
+    { id:'s145', level:3, grammar:'比較級 the more',  ja:'練習すればするほど、上手になります。',        en:'The more you practise, the better you get.' },
+    { id:'s146', level:3, grammar:'should have',ja:'彼に本当のことを言うべきだった。',              en:'I should have told him the truth.' },
 
     // L4 (continued) — high school
     { id:'s147', level:4, grammar:'far more + 過去完了',ja:'それは予想していたよりはるかに難しかった。',en:'It was far more difficult than I had expected.' },
     { id:'s148', level:4, grammar:'not the least',    ja:'彼の話には少しも興味がない。',              en:"I'm not the least bit interested in his story." },
     { id:'s149', level:4, grammar:"to one's surprise",ja:'驚いたことに、彼は来なかった。',            en:"To my surprise, he didn't come." },
     { id:'s150', level:4, grammar:"as far as I'm concerned",ja:'私としては、彼は誠実だ。',            en:"As far as I'm concerned, he is honest." },
-    { id:'s151', level:4, grammar:'even if + should have',ja:'雨だったにせよ、出かけるべきだった。',  en:'Even though it was raining, we should have gone out.' },
+    { id:'s151', level:4, grammar:'even if + should have',ja:'雨だったにせよ、出かけるべきだった。',  en:'Even if it was raining, we should have gone out.' },
     { id:'s152', level:4, grammar:'仮定法過去完了 疑問',ja:'もし彼が来ていなかったら、何が起きていただろう？',en:"What would have happened if he hadn't come?" },
-    { id:'s153', level:4, grammar:'so ... that',      ja:'彼が話すのが速すぎて、聞き取れなかった。',  en:"He spoke so fast that I couldn't catch it." },
+    { id:'s153', level:4, grammar:'so ... that',      ja:'彼はとても速く話したので、聞き取れなかった。',  en:"He spoke so fast that I couldn't catch it." },
     { id:'s154', level:4, grammar:'far from being',   ja:'彼女は信頼できるどころか、嘘つきだ。',      en:'Far from being trustworthy, she is a liar.' },
 
     // L5 (continued) — advanced
@@ -5015,7 +5015,7 @@
 
     // Schooling / goals
     { id:'s185', level:3, grammar:'過去形',           ja:'私は去年卒業しました。',                    en:'I graduated last year.' },
-    { id:'s186', level:3, grammar:'過去形',           ja:'私はイギリスの学校に入学しました。',        en:'I entered a school in the UK.' },
+    { id:'s186', level:3, grammar:'過去形',           ja:'私はイギリスの学校に入学しました。',        en:'I started at a school in the UK.' },
     { id:'s187', level:3, grammar:'have to + more',   ja:'私はもっと英語を勉強しなければいけません。',    en:'I have to study English more.' },
 
     // Pets / origin
@@ -5142,7 +5142,7 @@
 
     // ========== Friend / Toranomon / Aoyama FC / Yutenji / Pigs (s286-s291) ==========
     { id:'s286', level:1, grammar:'be動詞',                ja:'トッシーは親友です。',                      en:'Tosshi is my best friend.' },
-    { id:'s287', level:3, grammar:'used to + often',       ja:'僕はよく虎ノ門のパスタ屋さんに行ってました。', en:'I used to often go to the pasta restaurant in Toranomon.' },
+    { id:'s287', level:3, grammar:'used to + often',       ja:'僕はよく虎ノ門のパスタ屋さんに行ってました。', en:'I often used to go to the pasta restaurant in Toranomon.' },
     { id:'s288', level:3, grammar:'got better at',         ja:'僕は青山FCでサッカーをして上手になりました。', en:'I got better at football by playing at Aoyama FC.' },
     { id:'s289', level:2, grammar:'be + comfortable',      ja:'祐天寺の家は快適です。',                    en:'Our house in Yutenji is comfortable.' },
     { id:'s290', level:1, grammar:'be動詞 + 形容詞',       ja:'2匹の豚は可愛いです。',                     en:'The two pigs are cute.' },
@@ -5319,7 +5319,7 @@
     { id:'s430', level:2, grammar:'三単現 + look up to',      ja:'トッシーは吉成に憧れている。',                          en:'Tosshi looks up to Yoshinari.' },
     { id:'s431', level:2, grammar:'三単現 + at night',        ja:'今のイギリスの寮は、夜になるとWi-Fiが切れる。',         en:'At my UK dorm, the Wi-Fi cuts off at night.' },
     { id:'s432', level:1, grammar:'be動詞 + adj',             ja:'イギリスの寮のご飯はまあまあです。',                    en:'The food at the UK dorm is okay.' },
-    { id:'s433', level:3, grammar:'比較 + completely',        ja:'日本のご飯とイギリスのご飯は、特に白ごはんが、まったく違います。', en:'Japanese rice and British rice are completely different — especially the white rice.' },
+    { id:'s433', level:3, grammar:'比較 + completely',        ja:'日本のご飯とイギリスのご飯は、特に白ごはんが、まったく違います。', en:'Japanese food and British food are completely different — especially the rice.' },
 
     // ---- Super-easy "first English" tier (Kippei / starter learners) ----
     // Three-to-five word English sentences with explicit Japanese
@@ -5391,7 +5391,7 @@
     { id:'s483', level:3, grammar:'答え 完了形',             ja:'私はここに3年住んでいます。',              en:'I have lived here for three years.' },
     { id:'s484', level:3, grammar:'WH 疑問 think about',     ja:'あなたはそれについてどう思いますか？',     en:'What do you think about it?' },
     { id:'s485', level:3, grammar:'答え I think',            ja:'私はそれはすばらしい考えだと思います。',   en:'I think it is a great idea.' },
-    { id:'s486', level:3, grammar:'WH 疑問 完了形 ever',     ja:'あなたはロンドンに行ったことがありますか？', en:'Have you ever been to London?' },
+    { id:'s486', level:3, grammar:'WH 疑問 完了形 How many times',     ja:'ロンドンには何回行ったことがありますか？', en:'How many times have you been to London?' },
     { id:'s487', level:3, grammar:'答え 完了形 twice',       ja:'はい、私は2回行ったことがあります。',      en:'Yes, I have been there twice.' },
     { id:'s489', level:3, grammar:'答え 職業',               ja:'私はサッカー選手になりたいです。',         en:'I want to be a football player.' },
     { id:'s490', level:3, grammar:'WH 疑問 仮定法',          ja:'もし時間があったら、あなたは何をしますか？', en:'If you had time, what would you do?' },
@@ -5451,7 +5451,7 @@
     { id:'s534', level:3, grammar:'WH 疑問 最上級 miss',      ja:'あなたは何が一番恋しいですか？',                         en:'What do you miss the most?' },
     { id:'s535', level:3, grammar:'答え 強調 most',           ja:'私が一番恋しいのは母の手料理です。',                     en:"What I miss the most is my mum's cooking." },
     { id:'s536', level:3, grammar:'Yes/No 疑問 anything',     ja:'あなたは何か困っていることはありますか？',               en:'Is there anything you are struggling with?' },
-    { id:'s537', level:3, grammar:'答え 動名詞 主語',         ja:'寮のWi-Fiが夜になると切れるのが大変です。',              en:'It\'s tough that the dorm Wi-Fi cuts off at night.' },
+    { id:'s537', level:3, grammar:"答え It's ... that",         ja:'寮のWi-Fiが夜になると切れるのが大変です。',              en:'It\'s tough that the dorm Wi-Fi cuts out at night.' },
     { id:'s538', level:3, grammar:'Yes/No 疑問 anything from', ja:'あなたが恋しい日本の文化はありますか？',                en:'Is there anything from Japanese culture you miss?' },
     { id:'s539', level:3, grammar:'答え miss + 名詞',         ja:'私は温泉と銭湯が恋しいです。',                           en:'I miss onsen and sento.' },
     { id:'s540', level:3, grammar:'WH 疑問 favourite time',   ja:'あなたの好きな時間帯はいつですか？',                     en:'What is your favourite time of day?' },
@@ -5475,7 +5475,7 @@
     { id:'s555', level:4, grammar:'完了動名詞 後悔',          ja:'私はあのとき本当のことを話したことを後悔している。',     en:'I regret having told the truth at that time.' },
     { id:'s556', level:4, grammar:'強調 do',                  ja:'私は本当にあなたを愛しています。',                       en:'I do love you.' },
     { id:'s557', level:4, grammar:'強調 did',                 ja:'彼は先週、確かに私を訪ねてくれた。',                     en:'He did visit me last week.' },
-    { id:'s558', level:4, grammar:'強調構文 it ... that',     ja:'窓を割ったのはジョンだった。',                           en:'It was John who broke the window.' },
+    { id:'s558', level:4, grammar:'強調構文 it ... who',     ja:'窓を割ったのはジョンだった。',                           en:'It was John who broke the window.' },
     { id:'s559', level:4, grammar:'強調構文 場所',            ja:'会議が行われるのはこの部屋です。',                       en:'It is in this room that the meeting will be held.' },
     { id:'s560', level:4, grammar:'仮定法過去 wish',          ja:'もっと自由な時間があればいいのに。',                     en:'I wish I had more free time.' },
     { id:'s561', level:4, grammar:'仮定法過去 倒置',          ja:'もし私が彼の立場なら、別の選択をするだろう。',           en:'Were I in his shoes, I would make a different choice.' },
@@ -5520,7 +5520,7 @@
     { id:'s593', level:2, grammar:'接続詞 when',              ja:'私が家に着いた時、雨が降っていました。',                en:'When I got home, it was raining.' },
     { id:'s594', level:2, grammar:'接続詞 when 過去',          ja:'彼は若い時、スポーツが好きでした。',                    en:'When he was young, he liked sports.' },
     { id:'s595', level:3, grammar:'接続詞 while 過去進行',    ja:'私が料理している間、彼は宿題をしていました。',          en:'While I was cooking, he was doing his homework.' },
-    { id:'s596', level:3, grammar:'接続詞 although',          ja:'疲れていたが、彼は最後まで走りました。',                en:'Although he was tired, he ran to the end.' },
+    { id:'s596', level:3, grammar:'接続詞 although',          ja:'疲れていたが、彼は最後まで走りました。',                en:'Although he was tired, he kept running to the end.' },
     { id:'s597', level:2, grammar:'接続詞 if',                ja:'明日雨なら、私は家にいます。',                          en:'If it rains tomorrow, I will stay home.' },
     { id:'s598', level:3, grammar:'接続詞 if 仮定',           ja:'お金があれば、新しい車を買います。',                    en:'If I had money, I would buy a new car.' },
     { id:'s599', level:2, grammar:'接続詞 before',            ja:'寝る前に、私は本を読みます。',                          en:'I read a book before I go to bed.' },
@@ -5595,21 +5595,21 @@
 
     // ============ LV4 追加バッチ (s700-s729) ============
     // 関係詞・受動態・助動詞の完了形・分詞修飾・接続詞 をカバー
-    { id:'s700', level:4, grammar:'関係詞 who',               ja:'一生懸命勉強する生徒は、たいてい良い結果を出す。',                                     en:'The student who studies hard usually does well.' },
+    { id:'s700', level:4, grammar:'関係詞 who',               ja:'一生懸命勉強する生徒は、たいてい良い結果を出す。',                                     en:'Students who study hard usually do well.' },
     { id:'s701', level:4, grammar:'関係詞 which 過去完了',    ja:'私は何年も欲しかった本をついに買った。',                                               en:'I finally bought the book which I had wanted for years.' },
     { id:'s702', level:4, grammar:'関係詞 whose',             ja:'あの人は、犬が逃げ出した男の人です。',                                                 en:'That is the man whose dog ran away.' },
     { id:'s703', level:4, grammar:'関係詞 that 制限的',       ja:'これは彼女を有名にした歌だ。',                                                         en:'This is the song that made her famous.' },
     { id:'s704', level:4, grammar:'関係副詞 where',           ja:'東京は私が育った街です。',                                                             en:'Tokyo is the city where I grew up.' },
     { id:'s705', level:4, grammar:'関係副詞 when',            ja:'私たちが初めて会った日を覚えている。',                                                 en:'I remember the day when we first met.' },
-    { id:'s706', level:4, grammar:'関係副詞 why',             ja:'それが、彼が辞めた理由だ。',                                                           en:'That is the reason why he resigned.' },
-    { id:'s707', level:4, grammar:'受動態 + 完了',            ja:'その橋は去年から修理されている。',                                                     en:'The bridge has been under repair since last year.' },
+    { id:'s706', level:4, grammar:'関係副詞 why',             ja:'それが、彼女が有名な理由だ。',                                                           en:'That is the reason why she is famous.' },
+    { id:'s707', level:4, grammar:'現在完了 + under repair',            ja:'その橋は去年から修理されている。',                                                     en:'The bridge has been under repair since last year.' },
     { id:'s708', level:4, grammar:'受動態 + 進行',            ja:'通りは今朝、清掃されているところだ。',                                                 en:'The streets are being cleaned this morning.' },
     { id:'s709', level:4, grammar:'受動態 + 助動詞',          ja:'この問題は、すぐに解決されなければならない。',                                         en:'This problem must be solved immediately.' },
     { id:'s710', level:4, grammar:'must have + 過分',         ja:'彼はもう出発したに違いない。',                                                         en:'He must have left already.' },
-    { id:'s711', level:4, grammar:'should have + 過分',       ja:'もっと早く電話するべきだった。',                                                       en:'You should have called me earlier.' },
+    { id:'s711', level:4, grammar:'should have + 過分',       ja:'もっと早く電話するべきだった。',                                                       en:'I should have called earlier.' },
     { id:'s712', level:4, grammar:'might have + 過分',        ja:'彼女は会議のことを忘れたのかもしれない。',                                             en:'She might have forgotten about the meeting.' },
     { id:'s713', level:4, grammar:'could have + 過分',        ja:'もっと努力していたら、勝てたのに。',                                                   en:'We could have won if we had tried harder.' },
-    { id:'s714', level:4, grammar:'would rather',             ja:'今夜は家にいたい。',                                                                   en:'I would rather stay home tonight.' },
+    { id:'s714', level:4, grammar:'would rather',             ja:'今夜は出かけるより、むしろ家にいたい。',                                                                   en:'I would rather stay home tonight.' },
     { id:'s715', level:4, grammar:'had better',               ja:'医者に診てもらった方がいい。',                                                         en:'You had better see a doctor.' },
     { id:'s716', level:4, grammar:'be used to',               ja:'夜遅くまで働くことに慣れている。',                                                     en:'I am used to working late at night.' },
     { id:'s717', level:4, grammar:'used to',                  ja:'彼は以前ニューヨークに住んでいた。',                                                   en:'He used to live in New York.' },
@@ -5658,7 +5658,7 @@
     { id:'s801', level:3, grammar:'不定詞 × come up with',      ja:'新しいメニューのアイデアを思いつくのは簡単ではありません。', en:'It is not easy to come up with new menu ideas.' },
     { id:'s802', level:3, grammar:'動名詞 × give up',           ja:'彼は夢を諦めるつもりはありません。', en:'He has no intention of giving up his dream.' },
     { id:'s803', level:3, grammar:'現在完了 × take care of',    ja:'私は 10 年間このお店の面倒を見てきました。', en:'I have taken care of this restaurant for ten years.' },
-    { id:'s804', level:3, grammar:'比較 × in time',             ja:'早く出れば、開店に間に合います。', en:'If we leave earlier, we will be in time for the opening.' },
+    { id:'s804', level:3, grammar:'比較 × in time',             ja:'もっと早く出れば、開店に間に合います。', en:'If we leave earlier, we will be in time for the opening.' },
     { id:'s805', level:3, grammar:'受動態 × be known for',      ja:'この店はサービスの良さで知られています。', en:'This restaurant is known for its great service.' },
     { id:'s806', level:3, grammar:'接続詞 × run out of',        ja:'ワインを切らしたので、追加で注文しました。', en:'Because we ran out of wine, we ordered more.' },
     { id:'s807', level:3, grammar:'不定詞 × figure out',        ja:'原因を突き止めるのに時間がかかりました。', en:'It took time to figure out the cause.' },
@@ -5689,7 +5689,7 @@
     { id:'s831', level:4, grammar:'仮定法過去 × take over',     ja:'もし私が引退したら、誰がこの事業を引き継ぐでしょうか。', en:'If I retired, who would take over this business?' },
     { id:'s832', level:4, grammar:'分詞構文 × keep up with',    ja:'トレンドについていきながら、私たちは自分たちのスタイルを守っています。', en:'While keeping up with trends, we stay true to our own style.' },
     { id:'s833', level:4, grammar:'should have × look into',    ja:'契約前に、もっと詳しく調べておくべきでした。', en:'We should have looked into it more carefully before signing.' },
-    { id:'s834', level:4, grammar:'関係副詞 × turn out',        ja:'そこは、想像以上に素晴らしい場所だと分かりました。', en:'It turned out to be a place where everything exceeded our expectations.' },
+    { id:'s834', level:4, grammar:'関係副詞 × turn out',        ja:'そこは、すべてが期待を超える場所だと分かりました。', en:'It turned out to be a place where everything exceeded our expectations.' },
     { id:'s835', level:4, grammar:'not only × but also',        ja:'彼は料理だけでなく、経営も学びました。', en:'He learned not only cooking but also management.' },
     { id:'s836', level:4, grammar:'so that × in advance',       ja:'混乱を避けるため、事前にすべて準備しました。', en:'We prepared everything in advance so that we could avoid confusion.' },
     { id:'s837', level:4, grammar:'受動態完了 × carry out',     ja:'その調査はすでに実施されています。', en:'The survey has already been carried out.' },
@@ -5697,7 +5697,7 @@
     { id:'s839', level:4, grammar:'仮定法 × in the long run',   ja:'もし品質に投資すれば、長期的には報われるでしょう。', en:'If we invested in quality, it would pay off in the long run.' },
     { id:'s840', level:4, grammar:'分詞 × end up',              ja:'細部にこだわった結果、最高の店になりました。', en:'By focusing on the details, we ended up building our best restaurant.' },
     { id:'s841', level:4, grammar:'間接疑問 × take into account', ja:'コストをどう考慮すべきか、まだ検討中です。', en:'We are still discussing how we should take costs into account.' },
-    { id:'s842', level:4, grammar:'関係副詞 × make up for',     ja:'サービスが料理の遅れを補う場面を何度も見てきました。', en:'I have seen many moments where great service makes up for a slow kitchen.' },
+    { id:'s842', level:4, grammar:'関係副詞 × make up for',     ja:'サービスが料理の遅れを補う場面を何度も見てきました。', en:'I have seen many moments when great service makes up for a slow kitchen.' },
     { id:'s843', level:4, grammar:'現在完了進行 × work on',     ja:'私たちは半年間、新しいコンセプトに取り組み続けています。', en:'We have been working on the new concept for six months.' },
     { id:'s844', level:4, grammar:'仮定法過去完了 × turn down', ja:'あの提案を断っていなかったら、今ごろ後悔していたでしょう。', en:'If I had not turned down that offer, I would have regretted it by now.' },
     { id:'s845', level:4, grammar:'分詞構文 × take risks',      ja:'リスクを取りながらも、私たちは慎重に進みました。', en:'Even while taking risks, we moved forward carefully.' },
@@ -5730,7 +5730,7 @@
     { id:'s867', level:4, grammar:'仮定法 × tasting menu',      ja:'もし私が東京で店を開くなら、テイスティングメニューを軸にします。', en:'If I opened a restaurant in Tokyo, I would build it around a tasting menu.' },
     { id:'s868', level:3, grammar:'現在完了 × seasonality',     ja:'日本の季節感は、私の料理観を変えてきました。', en:'Japanese seasonality has changed the way I think about food.' },
     { id:'s869', level:4, grammar:'関係副詞 × atmosphere',      ja:'お客様が緊張しない空気こそ、私たちが一番大切にしているものです。', en:'An atmosphere where guests never feel tense is what we value most.' },
-    { id:'s870', level:3, grammar:'動名詞 × behind',            ja:'この皿の裏にある考え方を聞かせてください。', en:'I would love to hear the thinking behind this plate.' },
+    { id:'s870', level:3, grammar:'動名詞 × behind',            ja:'この一皿に込められた考え方を聞かせてください。', en:'I would love to hear the thinking behind this plate.' },
     { id:'s871', level:4, grammar:'not only × sourcing',        ja:'味だけでなく、仕入れの哲学にも感銘を受けました。', en:'I was impressed not only by the flavour but also by your sourcing philosophy.' },
     { id:'s872', level:3, grammar:'疑問文 × favourite',         ja:'東京で一番好きなレストランはどこですか？', en:'What is your favourite restaurant in Tokyo?' },
     { id:'s873', level:4, grammar:'現在完了進行 × refine',      ja:'私たちは 1 年かけてこの一皿を磨き続けています。', en:'We have been refining this dish for a year.' },
@@ -5747,7 +5747,7 @@
     { id:'s884', level:3, grammar:'不定詞 × recommend',         ja:'今夜のおすすめを教えていただけますか？', en:'Could you tell me what you recommend tonight?' },
     { id:'s885', level:4, grammar:'so that × memorable',        ja:'お客様の記憶に残るように、最後の一皿には物語を込めます。', en:'We put a story into the final dish so that guests remember the evening.' },
     { id:'s886', level:3, grammar:'比較 × ingredient',          ja:'日本の食材はフランスのものと同じくらい素晴らしいと思います。', en:'I think Japanese ingredients are as wonderful as French ones.' },
-    { id:'s887', level:4, grammar:'関係副詞 × silence',         ja:'サービスが静かに進む瞬間こそ、完璧が生まれる時です。', en:'Moments where the service flows in silence are when perfection happens.' },
+    { id:'s887', level:4, grammar:'関係副詞 × silence',         ja:'サービスが静かに進む瞬間こそ、完璧が生まれる時です。', en:'Moments when the service flows in silence are when perfection happens.' },
     { id:'s888', level:3, grammar:'現在完了 × respect',         ja:'あなたの仕事ぶりには、ずっと敬意を抱いてきました。', en:'I have always had great respect for the way you work.' },
     { id:'s889', level:4, grammar:'間接疑問 × next',            ja:'次にどんな挑戦を考えているのか、伺ってもいいですか？', en:'May I ask what challenge you are thinking about next?' },
     { id:'s890', level:3, grammar:'不定詞 × thank',             ja:'素晴らしい夜をありがとうございました。また必ず来ます。', en:'Thank you for a wonderful evening. I will definitely come back.' },
@@ -5759,7 +5759,7 @@
 
     // ===== v363: 上級増強 LV4 (s900-s929) — 頻出文法の総ざらい =====
     { id:'s900', level:4, grammar:'現在完了進行形',        ja:'この店を 10 年間ずっと経営しています。',                                en:"I've been running this restaurant for ten years." },
-    { id:'s901', level:4, grammar:'関係副詞 where',        ja:'ここが、私が育った町です。',                                                en:'This is the town where I grew up.' },
+    { id:'s901', level:4, grammar:'関係副詞 where',        ja:'ここが、私たちが泊まったホテルです。',                                                en:'This is the hotel where we stayed.' },
     { id:'s902', level:4, grammar:'関係副詞 why',          ja:'彼が遅れた理由を知っていますか？',                                          en:"Do you know the reason why he was late?" },
     { id:'s903', level:4, grammar:'間接疑問',              ja:'この単語がどういう意味か教えてもらえますか？',                              en:'Could you tell me what this word means?' },
     { id:'s904', level:4, grammar:'so that',               ja:'お客様がくつろげるように、照明を少し落としています。',                      en:'We dim the lights a little so that our guests can relax.' },
@@ -5779,7 +5779,7 @@
     { id:'s918', level:4, grammar:'間接疑問',              ja:'何時に伺えばいいか教えてください。',                                        en:'Please tell me what time I should come.' },
     { id:'s919', level:4, grammar:'as ... as',             ja:'思ったほど難しくありませんでした。',                                        en:"It wasn't as difficult as I expected." },
     { id:'s920', level:4, grammar:'最上級 + ever',         ja:'これは今まで飲んだ中で一番おいしいワインです。',                            en:'This is the best wine I have ever had.' },
-    { id:'s921', level:4, grammar:'現在完了 (経験)',       ja:'島根にはもう行かれましたか？',                                              en:'Have you ever been to Shimane?' },
+    { id:'s921', level:4, grammar:'現在完了 (経験)',       ja:'島根に行かれたことはありますか？',                                              en:'Have you ever been to Shimane?' },
     { id:'s922', level:4, grammar:'so ... that',           ja:'とても混んでいたので、30 分もお待たせしてしまいました。',                   en:'It was so crowded that we kept you waiting for thirty minutes.' },
     { id:'s923', level:4, grammar:'not only A but B',      ja:'彼は料理だけでなく、接客も上手です。',                                      en:'He is good at not only cooking but also serving guests.' },
     { id:'s924', level:4, grammar:'while (対比)',          ja:'兄は社交的ですが、私はどちらかというと内向的です。',                        en:'My brother is outgoing, while I am rather quiet.' },
