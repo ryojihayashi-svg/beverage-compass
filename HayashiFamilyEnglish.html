@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 425;
+  const APP_VERSION = 426;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -4527,16 +4527,22 @@
     // 各人の英検レベルに合わせて天井・床を変える:
     //   son3 (5級)         → ja2en≤1.2, en2ja≥1.5
     //   son2 / mother (4級) → ja2en≤2.2, en2ja≥2.5
-    //   father / son1 (3級) → ja2en≤3.2, en2ja≥3.5
+    //   son1 (3級)          → ja2en≤3.2, en2ja≥3.5
+    //   father (2級が目標)   → ja2en 3.5〜4.2, en2ja≥4.0
     if (id === 'son3') {
       if (direction === 'ja2en') comfort = Math.min(comfort, 1.2);
       else if (direction === 'en2ja') comfort = Math.max(comfort, 1.5);
     } else if (id === 'son2' || id === 'mother') {
       if (direction === 'ja2en') comfort = Math.min(comfort, 2.2);
       else if (direction === 'en2ja') comfort = Math.max(comfort, 2.5);
-    } else if (id === 'father' || id === 'son1') {
+    } else if (id === 'son1') {
       if (direction === 'ja2en') comfort = Math.min(comfort, 3.2);
       else if (direction === 'en2ja') comfort = Math.max(comfort, 3.5);
+    } else if (id === 'father') {
+      // 英検2級・TOEIC850 が目標 — 診断が 3 級でも訓練帯は 3〜4 級の
+      // 上寄りに固定し、成長に合わせて 2 級帯 (4.2) まで開く
+      if (direction === 'ja2en') comfort = Math.min(Math.max(comfort, 3.5), 4.2);
+      else if (direction === 'en2ja') comfort = Math.max(comfort, 4.0);
     }
     comfort = Math.max(1.0, Math.min(5.0, comfort));
     const lower = Math.floor(comfort);
@@ -11157,6 +11163,12 @@
     { id: 'ct3_08', level: 3, ja: '兄ほど速く走れません。',                          en: "I can't run as fast as my brother." },
     { id: 'ct3_09', level: 3, ja: '雨が降りそうです。',                              en: "It looks like it's going to rain." },
     { id: 'ct3_10', level: 3, ja: '母はいつもお米を炊いてくれます。',                en: 'My mother always cooks rice for me.' },
+    { id: 'ct3_11', level: 3, ja: '東京に住んで10年になります。',                    en: 'I have lived in Tokyo for ten years.' },
+    { id: 'ct3_12', level: 3, ja: '何か飲むものをいただけますか？',                  en: 'Could I have something to drink?' },
+    { id: 'ct3_13', level: 3, ja: '駅への行き方を教えてくれますか？',                en: 'Could you tell me how to get to the station?' },
+    { id: 'ct3_14', level: 3, ja: '彼は日本で一番有名なシェフの一人です。',          en: 'He is one of the most famous chefs in Japan.' },
+    { id: 'ct3_15', level: 3, ja: '忙しすぎて昼食を食べられませんでした。',          en: 'I was too busy to eat lunch.' },
+    { id: 'ct3_16', level: 3, ja: '英語を勉強するために毎朝早く起きています。',      en: 'I get up early every morning to study English.' },
 
     // ===== LV4 (英検準2級〜2級): 関係詞・分詞・仮定法・知覚動詞 =====
     { id: 'ct4_01', level: 4, ja: '私が昨日会った男の人は私の先生です。',            en: 'The man I met yesterday is my teacher.' },
@@ -11169,6 +11181,11 @@
     { id: 'ct4_08', level: 4, ja: '雨が降らなければ、ピクニックに行きます。',        en: "If it doesn't rain, we'll go for a picnic." },
     { id: 'ct4_09', level: 4, ja: '彼女は買い物に行くのが好きだと言いました。',      en: 'She said she likes going shopping.' },
     { id: 'ct4_10', level: 4, ja: '私は誰かが歌っているのを聞いた。',                en: 'I heard someone singing.' },
+    { id: 'ct4_11', level: 4, ja: 'そのニュースを聞いて驚きました。',                en: 'I was surprised to hear the news.' },
+    { id: 'ct4_12', level: 4, ja: '彼女は今、髪を切ってもらっています。',            en: 'She is having her hair cut now.' },
+    { id: 'ct4_13', level: 4, ja: '窓際の席をご用意しましょうか？',                  en: 'Would you like a table by the window?' },
+    { id: 'ct4_14', level: 4, ja: 'もし明日晴れたら、テラス席を開けます。',          en: "If it is sunny tomorrow, we will open the terrace." },
+    { id: 'ct4_15', level: 4, ja: 'この店は地元の人たちに愛されています。',          en: 'This restaurant is loved by the locals.' },
 
     // ===== LV5 (英検2級〜準1級): 仮定法過去完了・分詞構文・関係副詞 =====
     { id: 'ct5_01', level: 5, ja: 'もっと早く起きていたら、電車に乗り遅れなかったのに。',
@@ -20680,7 +20697,11 @@
       // Default to a level the user has been working on (composition comfort).
       try {
         const c = loadComfort(profile.id, 'composition');
-        return Math.max(1, Math.min(5, Math.floor(c)));
+        let lv = Math.max(1, Math.min(5, Math.floor(c)));
+        // 亮治さん: 英検2級・TOEIC850 が目標なので、判定レベルの 1 つ上
+        // (最低 LV4) をデフォルトにする。手動でレベル変更は今まで通り可能。
+        if (profile.id === 'father') lv = Math.min(5, Math.max(4, lv + 1));
+        return lv;
       } catch { return Math.max(1, Math.min(5, profile.level || 2)); }
     });
     const [queue, setQueue]         = useState([]);
