@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 418;
+  const APP_VERSION = 419;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -14390,6 +14390,20 @@
       this.recordDaily(memberId, isCorrect);
       return next;
     },
+
+    // 聞き流し復習の「×」用: 本人が「もう覚えている」と明示した単語を
+    // 2 連続正解ルールを経ずに即 mastered にして復習リストから外す。
+    markVocabKnown(memberId, vocabId, direction) {
+      const s = srs.apply(this.getVocabProgress(memberId, vocabId), true, direction);
+      const dir = direction === 'en2ja' ? 'en2ja' : 'ja2en';
+      if (dir === 'en2ja') { s.knownEn2Ja = true; s.streakEn2Ja = Math.max(2, s.streakEn2Ja || 0); }
+      else                 { s.knownJa2En = true; s.streakJa2En = Math.max(2, s.streakJa2En || 0); }
+      srs.deriveStatus(s);
+      this.setVocabProgress(memberId, vocabId, s);
+      this.removeMistake(memberId, vocabId);
+      this.recordDaily(memberId, true);
+      return s;
+    },
   };
 
   // ---------- Cloud sync (Supabase) ----------
@@ -23502,6 +23516,13 @@
     const [unitIdx, setUnitIdx] = useState(-1);   // -1 = ユニット一覧
     const units = useMemo(() => tempoUnitsForLevel(level), [level]);
 
+    if (unitIdx === -2) {
+      // 覚えていない単語の聞き流し (エンドレス周回)
+      return e(TempoReviewFlow, {
+        profile, level,
+        onBack: () => setUnitIdx(-1),
+      });
+    }
     if (unitIdx < 0) {
       return e(TempoVocabUnitList, {
         profile, onBack, level, units,
@@ -23518,6 +23539,19 @@
             }
           } catch {}
           setUnitIdx(idx);
+        },
+        onStartReview: () => {
+          // 同じく TTS を解錠してから聞き流しへ
+          try {
+            if (window.speechSynthesis) {
+              window.speechSynthesis.cancel();
+              try { unlockAudioForBluetooth(); } catch {}
+              const u = new SpeechSynthesisUtterance(' ');
+              u.lang = 'en-GB'; u.volume = 0; u.rate = 1.0;
+              window.speechSynthesis.speak(u);
+            }
+          } catch {}
+          setUnitIdx(-2);
         },
       });
     }
@@ -23623,7 +23657,7 @@
   }
 
   // ----- ユニット一覧 (レベルタブ + 10 語ずつのユニットカード) -----
-  function TempoVocabUnitList({ profile, onBack, level, units, onPickLevel, onPickUnit }) {
+  function TempoVocabUnitList({ profile, onBack, level, units, onPickLevel, onPickUnit, onStartReview }) {
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
@@ -23684,6 +23718,34 @@
             : '覚えた ' + recMastered + ' / ' + recWords.length + ' · これまで ' + recRuns + ' 回 — 忘れる前にもう 1 周。',
           onStart: () => onPickUnit(rec.idx),
         });
+      })(),
+      // 「覚えていない単語の聞き流し」への導線
+      (() => {
+        const notYetN = VOCAB.filter(v =>
+          v.level === level && vocabProg[v.id] && vocabProg[v.id].status !== 'mastered').length;
+        const enabled = notYetN > 0 && !!onStartReview;
+        return e('button', {
+          onClick: enabled ? onStartReview : undefined,
+          style: {
+            width: '100%', padding: '15px 18px', borderRadius: 16,
+            background: C.card,
+            border: '1.5px dashed ' + (enabled ? profile.color + '88' : C.line),
+            cursor: enabled ? 'pointer' : 'default', textAlign: 'left', marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'inherit',
+            opacity: enabled ? 1 : 0.65,
+          }
+        },
+          e('div', { style: { fontSize: 22, flex: '0 0 auto' } }, '🎧'),
+          e('div', { style: { flex: 1, minWidth: 0 } },
+            e('div', { style: { fontSize: 15, fontWeight: 800, color: C.text, fontFamily: SANS_UI } },
+              '覚えていない単語の聞き流し'),
+            e('div', { style: { fontSize: 12, color: C.sub, marginTop: 4, lineHeight: 1.5 } },
+              enabled
+                ? 'LV' + level + ' のまだ覚えていない ' + notYetN + ' 語をぐるぐる自動再生。× でリストから外せる。'
+                : 'テストで「まだ」にした単語がここに溜まります。まずはユニットをやってみよう。'),
+          ),
+          enabled && e('span', { style: { color: profile.color, fontSize: 18, opacity: 0.7 } }, '›'),
+        );
       })(),
       // ユニット一覧
       units.length === 0
@@ -23749,6 +23811,306 @@
               );
             }),
           ),
+    );
+  }
+
+
+  // ----- 覚えていない単語の聞き流し (エンドレス周回モード) -----
+  // レベル内で「まだ覚えていない」(進捗があり status !== 'mastered') 単語を
+  // チャンツ形式でぐるぐる流す。1 周ごとに「もう 1 周する?」確認を挟む。
+  // 再生中はカード右上の × で「覚えた」扱いにして即リストから除外できる。
+  function unmasteredTempoWords(profileId, lv) {
+    let vp = {};
+    try { vp = db.load(profileId).vocab || {}; } catch {}
+    return VOCAB.filter(w => w.level === lv && vp[w.id] && vp[w.id].status !== 'mastered');
+  }
+
+  function TempoReviewFlow({ profile, level, onBack }) {
+    const [words, setWords]           = useState(() => unmasteredTempoWords(profile.id, level));
+    const [wIdx, setWIdx]             = useState(0);
+    const [lap, setLap]               = useState(1);
+    const [screen, setScreen]         = useState('chant');  // 'chant' | 'lap_done'
+    const [direction, setDirection]   = useState('ja2en');
+    const [chantPhase, setChantPhase] = useState('ja');
+    const [playing, setPlaying]       = useState(true);
+    const [removedN, setRemovedN]     = useState(0);
+    const playSeq = useRef(0);
+
+    // チャンツ自動再生 (TempoVocabPractice と同じリズム)
+    useEffect(() => {
+      if (screen !== 'chant' || !playing) return;
+      const w = words[wIdx];
+      if (!w) return;
+      hqPrefetch(w.en);
+      const nw = words[(wIdx + 1) % words.length];
+      if (nw && nw.en && nw !== w) hqPrefetch(nw.en);
+      const seq = ++playSeq.current;
+      let cancelled = false;
+      const timeouts = [];
+      const sleep = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
+      const speakOnce = (text, lang) => {
+        if (cancelled || seq !== playSeq.current) return Promise.resolve();
+        return speakSmart(text, {
+          lang, deviceRate: lang === 'ja-JP' ? 1.05 : 0.95,
+        }).catch(() => {});
+      };
+      (async () => {
+        const jaText = (w.ja || '').split('・')[0];
+        if (direction === 'ja2en') {
+          setChantPhase('ja');
+          await sleep(350);
+          await speakOnce(jaText, 'ja-JP');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en1');
+          await sleep(650);
+          await speakOnce(w.en, 'en-GB');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en2');
+          await sleep(250);
+          await speakOnce(w.en, 'en-GB');
+        } else {
+          setChantPhase('en1');
+          await sleep(350);
+          await speakOnce(w.en, 'en-GB');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('ja');
+          await sleep(250);
+          await speakOnce(jaText, 'ja-JP');
+          if (cancelled || seq !== playSeq.current) return;
+          setChantPhase('en2');
+          await sleep(250);
+          await speakOnce(w.en, 'en-GB');
+        }
+        if (cancelled || seq !== playSeq.current) return;
+        await sleep(550);
+        if (cancelled || seq !== playSeq.current) return;
+        if (wIdx + 1 >= words.length) {
+          // 1 周おわり — 学習ターンとして記録して確認を挟む
+          try { db.recordTurn(profile.id, 'vocab'); } catch {}
+          setScreen('lap_done');
+          setPlaying(false);
+        } else {
+          setWIdx(wIdx + 1);
+        }
+      })();
+      return () => {
+        cancelled = true;
+        timeouts.forEach(clearTimeout);
+        try { hqStop(); } catch {}
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+      };
+    }, [screen, playing, wIdx, direction, words]);
+
+    useEffect(() => () => {
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, []);
+
+    // × — 「覚えた」扱いにして即リストから外す
+    const removeCurrent = () => {
+      const w = words[wIdx];
+      if (!w) return;
+      try { db.markVocabKnown(profile.id, w.id, direction); } catch {}
+      const next = words.filter((_, i) => i !== wIdx);
+      setRemovedN(removedN + 1);
+      setWords(next);
+      if (next.length === 0 || wIdx >= next.length) {
+        try { db.recordTurn(profile.id, 'vocab'); } catch {}
+        setScreen('lap_done');
+        setPlaying(false);
+        setWIdx(0);
+      } else {
+        setPlaying(true);
+      }
+    };
+
+    const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
+    const topBar = e('div', {
+      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 }
+    },
+      e('button', { onClick: onBack,
+        style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
+      }, '‹'),
+      e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
+        '聞き流し復習 · LV' + level),
+      e('div', {
+        style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI }
+      }, screen === 'chant' && words.length > 0 ? lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length : ''),
+    );
+
+    // ===== リストが空 (全部覚えた or まだ何もない) =====
+    if (words.length === 0) {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', {
+          style: { padding: '50px 20px', textAlign: 'center' }
+        },
+          e('div', { style: { fontSize: 44, marginBottom: 12 } }, removedN > 0 ? '🎉' : '🎧'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.5 } },
+            removedN > 0 ? '全部「覚えた」に移動しました！' : '覚えていない単語はありません'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 10, lineHeight: 1.7 } },
+            removedN > 0
+              ? 'このレベルの復習リストは空っぽです。素晴らしい！'
+              : 'ユニットの確認テストで「まだ」にした単語がここに溜まります。'),
+        ),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            border: 'none', cursor: 'pointer',
+          }
+        }, 'ユニット一覧に戻る'),
+      );
+    }
+
+    // ===== 1 周おわり — もう 1 周する? =====
+    if (screen === 'lap_done') {
+      return e('div', { style: pageStyle },
+        topBar,
+        e('div', { style: { padding: '36px 4px 28px', textAlign: 'center' } },
+          e('div', { style: { fontSize: 44, marginBottom: 10 } }, '🎧'),
+          e('div', { style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text } },
+            lap + ' 周 おわり！'),
+          e('div', { style: { fontSize: 13, color: C.sub, marginTop: 10, lineHeight: 1.8 } },
+            '残り ' + words.length + ' 語',
+            removedN > 0 ? ' · この時間で ' + removedN + ' 語を「覚えた」に移動' : ''),
+        ),
+        e('button', {
+          onClick: () => { setWIdx(0); setLap(lap + 1); setScreen('chant'); setPlaying(true); },
+          style: {
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            background: profile.color, color: '#fff',
+            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+            border: 'none', cursor: 'pointer', marginBottom: 10,
+          }
+        }, 'もう 1 周する (' + words.length + ' 語)'),
+        e('button', {
+          onClick: onBack,
+          style: {
+            width: '100%', padding: '12px 16px', borderRadius: 14,
+            background: 'transparent', color: C.sub,
+            fontFamily: SANS_UI, fontSize: 13, fontWeight: 600,
+            border: '1px solid ' + C.border, cursor: 'pointer',
+          }
+        }, '終わりにする'),
+      );
+    }
+
+    // ===== チャンツ画面 =====
+    const w = words[wIdx];
+    if (!w) return null;
+    return e('div', { style: pageStyle },
+      topBar,
+      !AUTO_DIRECTION_MEMBERS.includes(profile.id) && e(DirectionToggle, {
+        profile, direction,
+        onChange: (d) => { setDirection(d); setChantPhase(d === 'ja2en' ? 'ja' : 'en1'); setPlaying(true); },
+      }),
+      // 進捗バー (この周の進み)
+      e('div', {
+        style: { height: 4, background: C.line, borderRadius: 2, overflow: 'hidden', marginBottom: 22 }
+      },
+        e('div', {
+          style: {
+            height: '100%', width: Math.round(((wIdx + 1) / words.length) * 100) + '%',
+            background: profile.color, transition: 'width 0.3s ease',
+          }
+        }),
+      ),
+      // 単語カード (右上に ×)
+      e('div', {
+        style: {
+          position: 'relative',
+          background: C.card, border: '1px solid ' + C.line,
+          borderRadius: 18, padding: '38px 22px', textAlign: 'center',
+        }
+      },
+        e('button', {
+          onClick: removeCurrent,
+          title: '覚えたのでリストから外す',
+          style: {
+            position: 'absolute', top: 10, right: 10,
+            width: 36, height: 36, borderRadius: 999,
+            background: C.softer, color: C.sub,
+            border: '1px solid ' + C.line,
+            fontSize: 18, fontWeight: 700, cursor: 'pointer', lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }
+        }, '×'),
+        e('div', {
+          style: {
+            fontFamily: SERIF_READ, fontSize: 34, fontWeight: 700, color: C.text,
+            lineHeight: 1.3,
+            opacity: chantPhase !== 'ja' ? 1 : 0.4,
+            transition: 'opacity 0.2s ease',
+          }
+        }, w.en),
+        e('div', {
+          style: {
+            fontSize: 19, color: C.text, marginTop: 14, lineHeight: 1.5,
+            opacity: chantPhase === 'ja' ? 1 : 0.45,
+            transition: 'opacity 0.2s ease',
+          }
+        }, w.ja),
+        w.exEn && e('div', {
+          style: { fontSize: 13, color: C.sub, marginTop: 20, lineHeight: 1.6, fontFamily: SERIF_READ }
+        }, w.exEn),
+      ),
+      e('div', {
+        style: { fontSize: 11.5, color: C.sub, textAlign: 'center', marginTop: 8, lineHeight: 1.6 }
+      }, '× = もう覚えた単語を「覚えた」に移してリストから外す' +
+         (removedN > 0 ? ' (外した ' + removedN + ' 語)' : '')),
+      // リズムインジケータ
+      e('div', {
+        style: { display: 'flex', justifyContent: 'center', gap: 10, marginTop: 14 }
+      },
+        (direction === 'ja2en' ? ['ja', 'en1', 'en2'] : ['en1', 'ja', 'en2']).map(p => e('div', {
+          key: p,
+          style: {
+            width: 10, height: 10, borderRadius: 999,
+            background: chantPhase === p ? profile.color : C.line,
+            transition: 'background 0.2s ease',
+          }
+        })),
+      ),
+      // 操作
+      e('div', {
+        style: { marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 10 }
+      },
+        e('button', {
+          onClick: () => { if (wIdx > 0) { setWIdx(wIdx - 1); setPlaying(true); } },
+          disabled: wIdx === 0,
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub, border: '1px solid ' + C.line,
+            cursor: wIdx === 0 ? 'not-allowed' : 'pointer', opacity: wIdx === 0 ? 0.45 : 1,
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, '‹ 前'),
+        e('button', {
+          onClick: () => setPlaying(!playing),
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: profile.color, color: '#fff', border: 'none', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 15, fontWeight: 700,
+          }
+        }, playing ? '⏸ 一時停止' : '▶ 再生'),
+        e('button', {
+          onClick: () => {
+            if (wIdx + 1 < words.length) { setWIdx(wIdx + 1); setPlaying(true); }
+            else {
+              try { db.recordTurn(profile.id, 'vocab'); } catch {}
+              setScreen('lap_done'); setPlaying(false);
+            }
+          },
+          style: {
+            padding: '14px 0', borderRadius: 12,
+            background: C.softer, color: C.sub, border: '1px solid ' + C.line,
+            cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
+          }
+        }, wIdx + 1 < words.length ? '次 ›' : '周を終える ›'),
+      ),
     );
   }
 
