@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 423;
+  const APP_VERSION = 424;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -4871,7 +4871,7 @@
     { id:'s068', level:4, grammar:'although + 過去完了',ja:'風邪を引いていたにもかかわらず、彼は出席した。',en:'Although he had caught a cold, he attended.' },
     { id:'s069', level:4, grammar:'関係代名詞 what',  ja:'彼の言うことには一理ある。',                en:'There is some truth in what he says.' },
     { id:'s070', level:4, grammar:'not ... think',    ja:'私は彼女が嘘をついているとは思わない。',    en:"I don't think she is lying." },
-    { id:'s071', level:4, grammar:'not only ... but also',ja:'彼は走るのが速いだけでなく、跳ぶのも上手だ。',en:'He is not only a fast runner but also a good jumper.' },
+    { id:'s071', level:4, grammar:'not only ... but also',ja:'彼は走るのが速いだけでなく、跳ぶのも上手だ。',en:'He not only runs fast but also jumps well.' },
     { id:'s072', level:4, grammar:'比較 + 過去完了',  ja:'私たちが計画していたよりも時間がかかった。',en:'It took longer than we had planned.' },
     { id:'s073', level:4, grammar:'感情 + that',      ja:'彼が来てくれて嬉しいです。',                en:"I'm glad that he came." },
     { id:'s074', level:4, grammar:'in order to',      ja:'試合に勝つために、彼は最善を尽くした。',en:'He did his best in order to win the match.' },
@@ -4897,12 +4897,12 @@
     // L2 (continued) — middle school
     { id:'s089', level:2, grammar:'比較級 + 数',      ja:'彼は私より2歳年上です。',                   en:'He is two years older than me.' },
     { id:'s090', level:2, grammar:'one more',         ja:'私はもう一杯水が欲しい。',                  en:'I want one more glass of water.' },
-    { id:'s091', level:2, grammar:'have + 数',        ja:'今日は宿題が3つあります。',                 en:'I have three homework assignments today.' },
+    { id:'s091', level:2, grammar:'have + 数',        ja:'今日は宿題が3つあります。',                 en:'I have three pieces of homework today.' },
     { id:'s092', level:2, grammar:'usually 疑問',     ja:'あなたは普段何時に寝ますか？',              en:'What time do you usually go to bed?' },
     { id:'s093', level:2, grammar:'cannot 否定',      ja:'彼女はバイオリンを弾けません。',            en:'She cannot play the violin.' },
     { id:'s094', level:2, grammar:'because',          ja:'私は雨が降っているので家にいます。',            en:"I'm staying home because it's raining." },
     { id:'s095', level:2, grammar:'both ... and',     ja:'私は犬と猫の両方を飼っています。',          en:'I have both a dog and a cat.' },
-    { id:'s096', level:2, grammar:"Let's at",         ja:'公園で会いましょう。',                      en:"Let's meet at the park." },
+    { id:'s096', level:2, grammar:"Let's + 場所",         ja:'公園で会いましょう。',                      en:"Let's meet at the park." },
     { id:'s097', level:2, grammar:'should + more',    ja:'彼はもっと注意深くあるべきだ。',            en:'He should be more careful.' },
     { id:'s098', level:2, grammar:'be動詞 過去',      ja:'テストはとても難しかった。',                en:'The test was very difficult.' },
 
@@ -4959,7 +4959,7 @@
     // L3 (continued) — middle school complete
     { id:'s139', level:3, grammar:'過去 + miss',      ja:'私はバスに乗り遅れた。',                    en:'I missed the bus.' },
     { id:'s140', level:3, grammar:'過去 + ago',       ja:'彼は1時間前に出発しました。',               en:'He left an hour ago.' },
-    { id:'s141', level:3, grammar:'must + by',        ja:'私たちは今日中にこの宿題を終わらせなければならない。',  en:'We must finish this homework by today.' },
+    { id:'s141', level:3, grammar:'must + by',        ja:'私たちは今日中にこの宿題を終わらせなければならない。',  en:'We must finish this homework by the end of the day.' },
     { id:'s142', level:3, grammar:'How long + will',  ja:'あなたはいつまでそこにいますか？',          en:'How long will you stay there?' },
     { id:'s143', level:3, grammar:'間接疑問 who',     ja:'彼女が誰だか知っていますか？',              en:'Do you know who she is?' },
     { id:'s144', level:3, grammar:'have time to',     ja:'今は読書する時間がない。',                  en:"I don't have time to read now." },
@@ -5015,7 +5015,7 @@
 
     // Schooling / goals
     { id:'s185', level:3, grammar:'過去形',           ja:'私は去年卒業しました。',                    en:'I graduated last year.' },
-    { id:'s186', level:3, grammar:'過去形',           ja:'私はイギリスの学校に入学しました。',        en:'I started at a school in the UK.' },
+    { id:'s186', level:3, grammar:'過去形',           ja:'私はイギリスの学校に通い始めました。',        en:'I started at a school in the UK.' },
     { id:'s187', level:3, grammar:'have to + more',   ja:'私はもっと英語を勉強しなければいけません。',    en:'I have to study English more.' },
 
     // Pets / origin
@@ -5027,19 +5027,19 @@
     // Living history
     { id:'s192', level:3, grammar:'used to',          ja:'私は前は虎ノ門に住んでいました。',              en:'I used to live in Toranomon.' },
     { id:'s193', level:1, grammar:'現在形 + 場所',    ja:'今は祐天寺に住んでいます。',                en:'I live in Yutenji now.' },
-    { id:'s194', level:3, grammar:'過去形 + also',    ja:'その前も祐天寺に住んでいました。',          en:'Before that, we also lived in Yutenji.' },
+    { id:'s194', level:3, grammar:'過去形 + also',    ja:'その前は、私たちは祐天寺にも住んでいました。',          en:'Before that, we also lived in Yutenji.' },
 
     // Family composition
     { id:'s195', level:2, grammar:'be in family',     ja:'私は5人家族です。',                         en:'There are five people in my family.' },
 
     // Yoshinari support / messages from family
-    { id:'s197', level:3, grammar:'現在進行形',       ja:'家族はみんなあなたを応援しています。',      en:'Your whole family is cheering you on.' },
-    { id:'s198', level:2, grammar:'三単現',           ja:'家族はみんなあなたのことが大好きです。',    en:'Your whole family loves you.' },
-    { id:'s199', level:3, grammar:'think + that',     ja:'家族はみんなあなたが優しいと思っています。',en:'Your whole family thinks you are kind.' },
+    { id:'s197', level:3, grammar:'現在進行形',       ja:'あなたの家族はみんな、あなたを応援しています。',      en:'Your whole family is cheering you on.' },
+    { id:'s198', level:2, grammar:'三単現',           ja:'あなたの家族はみんな、あなたのことが大好きです。',    en:'Your whole family loves you.' },
+    { id:'s199', level:3, grammar:'think + that',     ja:'あなたの家族はみんな、あなたが優しいと思っています。',en:'Your whole family thinks you are kind.' },
     { id:'s200', level:2, grammar:'三単現',           ja:'吉平は吉成のことが大好きです。',            en:'Kippei loves Yoshinari.' },
     { id:'s201', level:2, grammar:'be close',         ja:'吉成と吉平はとても仲が良いです。',          en:'Yoshinari and Kippei are very close.' },
     { id:'s202', level:2, grammar:'have',             ja:'吉成は優しい心を持っています。',            en:'Yoshinari has a kind heart.' },
-    { id:'s203', level:2, grammar:'have',             ja:'吉成は運動神経が素晴らしいです。',          en:'Yoshinari is a natural athlete.' },
+    { id:'s203', level:2, grammar:'have',             ja:'吉成は運動神経が素晴らしいです。',          en:'Yoshinari has amazing athletic ability.' },
     { id:'s204', level:3, grammar:'but',              ja:'吉成は勉強は苦手だけど、運動は得意です。',  en:'Yoshinari is not good at studying, but he is good at sports.' },
     { id:'s205', level:3, grammar:'be full of',       ja:'吉成は才能にあふれた人間です。',            en:'Yoshinari is full of talent.' },
     { id:'s206', level:1, grammar:'比較級',           ja:'吉成は吉平より背が高いです。',              en:'Yoshinari is taller than Kippei.' },
@@ -5054,7 +5054,7 @@
     { id:'s213', level:2, grammar:'現在進行形',       ja:'今、私の彼女と話しています。',              en:'I am talking with my girlfriend now.' },
 
     // Parental notes
-    { id:'s214', level:3, grammar:'say + that',       ja:'お母さんは私がいなくて寂しいと言っています。',en:'Mum says she misses me.' },
+    { id:'s214', level:3, grammar:'say + that',       ja:'お母さんは、私のことが恋しいと言っています。',en:'Mum says she misses me.' },
     { id:'s215', level:2, grammar:'but',              ja:'お父さんは厳しいけど優しいです。',          en:'Dad is strict but kind.' },
 
     // Mixed varied tenses
@@ -5084,12 +5084,12 @@
     { id:'s234', level:2, grammar:'and + always',      ja:'私はフカヒレご飯が好きで、いつも食べています。', en:"I love shark fin rice and I'm always eating it." },
     { id:'s235', level:3, grammar:'when + 主節 want',  ja:'東京に帰ったら、まず桃仙閣に行きたいです。',en:'When I get back to Tokyo, I want to go to Tousenkaku first.' },
     { id:'s236', level:2, grammar:'be動詞',            ja:'桃仙閣はとても美味しい中華料理店です。',    en:'Tousenkaku is a Chinese restaurant with really delicious food.' },
-    { id:'s237', level:3, grammar:'三単現 + called',   ja:'私は桃仙閣というレストランを経営しています。', en:'I run a restaurant called Tousenkaku.' },
-    { id:'s238', level:3, grammar:'三単現 + many',     ja:'多くの人が桃仙閣の料理を気に入っています。',en:'Many people love the food at Tousenkaku.' },
+    { id:'s237', level:3, grammar:'現在形 + called',   ja:'私は桃仙閣というレストランを経営しています。', en:'I run a restaurant called Tousenkaku.' },
+    { id:'s238', level:3, grammar:'現在形 + many',     ja:'多くの人が桃仙閣の料理を気に入っています。',en:'Many people love the food at Tousenkaku.' },
     { id:'s239', level:2, grammar:'be + the best',     ja:'桃仙閣の麻婆豆腐は最高です。',              en:'The mapo tofu at Tousenkaku is the best.' },
 
     // Future dreams
-    { id:'s240', level:3, grammar:'will + or',         ja:'私はいつかサッカー選手か中華料理のシェフになります。',en:'Someday I will become a football player or a Chinese chef.' },
+    { id:'s240', level:3, grammar:'will + or',         ja:'私はいつかサッカー選手か中華料理のシェフになります。',en:'Someday I will become a football player or a chef at a Chinese restaurant.' },
     { id:'s241', level:2, grammar:'want to + work at', ja:'私は桃仙閣で働きたいです。',                en:'I want to work at Tousenkaku.' },
     { id:'s242', level:3, grammar:'My dream is to',    ja:'私の夢はトッシーと一緒に桃仙閣で働くことです。', en:'My dream is to work at Tousenkaku with Tosshi.' },
     { id:'s243', level:2, grammar:'want to be',        ja:'吉成は将来、サッカー選手になりたいです。',  en:'Yoshinari wants to be a football player in the future.' },
@@ -5120,7 +5120,7 @@
     { id:'s263', level:2, grammar:'疑問詞 What + 一般動詞',ja:'お父さんは何の仕事をしていますか？',        en:'What does your dad do?' },
     { id:'s264', level:2, grammar:'What time + 三単現',    ja:'吉平は何時にサッカーをしますか？',          en:'What time does Kippei play football?' },
     { id:'s265', level:2, grammar:'疑問詞 Where + 三単現', ja:'成道はどこの学校に通っていますか？',        en:'Where does Narumichi go to school?' },
-    { id:'s266', level:2, grammar:'When + 三単現',         ja:'お母さんはいつレストランに行きますか？',    en:'When does mum go to the restaurant?' },
+    { id:'s266', level:2, grammar:'When + 三単現',         ja:'お母さんはいつレストランに行きますか？',    en:'When does Mum go to the restaurant?' },
     { id:'s267', level:2, grammar:'How many + have',       ja:'あなたは豚を何匹飼っていますか？',          en:'How many pigs do you have?' },
     { id:'s268', level:2, grammar:'What + at',             ja:'桃仙閣で何の料理が好きですか？',            en:'What food do you like at Tousenkaku?' },
     { id:'s269', level:2, grammar:'What + be',             ja:'あなたの夢は何ですか？',                    en:'What is your dream?' },
@@ -5128,7 +5128,7 @@
     { id:'s272', level:2, grammar:'What + want to',        ja:'今夜は何が食べたいですか？',                en:'What do you want to eat tonight?' },
     { id:'s273', level:2, grammar:'How + spend',           ja:'週末はどう過ごしますか？',                  en:'How do you spend your weekends?' },
     { id:'s274', level:2, grammar:'When + 一般動詞',       ja:'いつ家に電話しますか？',                    en:'When do you call home?' },
-    { id:'s275', level:2, grammar:'Where + 三単現',        ja:'おばあさんはどこに住んでいますか？',        en:'Where does grandma live?' },
+    { id:'s275', level:2, grammar:'Where + 三単現',        ja:'おばあさんはどこに住んでいますか？',        en:'Where does Grandma live?' },
     { id:'s276', level:2, grammar:'How + be',              ja:'イギリスの学校はどうですか？',              en:'How is school in the UK?' },
     { id:'s277', level:2, grammar:'What + after',          ja:'放課後は何をしますか？',                    en:'What do you do after school?' },
     { id:'s278', level:3, grammar:'How long + 現在完了',   ja:'イギリスにどれくらいいますか？',            en:'How long have you been in the UK?' },
@@ -5154,15 +5154,15 @@
     { id:'s294', level:1, grammar:'be動詞 + 年齢',         ja:'私は16歳です。',                            en:'I am 16 years old.' },
     { id:'s295', level:1, grammar:'be動詞 + 国籍',         ja:'私は日本人です。',                          en:'I am Japanese.' },
     { id:'s296', level:1, grammar:'be動詞 + 趣味',         ja:'私の趣味はサッカーです。',                  en:'My hobby is football.' },
-    { id:'s297', level:2, grammar:'have + 家族',           ja:'私は5人家族で、兄一人と弟一人がいます。',       en:'There are five people in my family: my parents, my older brother, my younger brother and me.' },
+    { id:'s297', level:2, grammar:'have + 家族',           ja:'私は5人家族で、兄一人と弟一人がいます。',       en:'There are five people in my family, and I have an older brother and a younger brother.' },
     { id:'s298', level:2, grammar:'現在進行形 + 場所',     ja:'私は学校で英語を勉強しています。',              en:'I am studying English at school.' },
     { id:'s299', level:1, grammar:'be動詞 + favorite',     ja:'私の好きな食べ物は麻婆豆腐です。',          en:'My favourite food is mapo tofu.' },
-    { id:'s300', level:1, grammar:'三単現/like',           ja:'私は桃仙閣のフカヒレご飯が好きです。',          en:'I like the shark fin rice at Tousenkaku.' },
+    { id:'s300', level:1, grammar:'like',           ja:'私は桃仙閣のフカヒレご飯が好きです。',          en:'I like the shark fin rice at Tousenkaku.' },
     { id:'s301', level:2, grammar:'will + when',           ja:'日本に帰ったら桃仙閣に行きます。',          en:'I will go to Tousenkaku when I get back to Japan.' },
-    { id:'s302', level:2, grammar:'want to + good at',     ja:'私はサッカーが上手になりたいです。',            en:'I want to be good at football.' },
+    { id:'s302', level:2, grammar:'want to + good at',     ja:'私は料理が上手になりたいです。',            en:'I want to be good at cooking.' },
     { id:'s303', level:2, grammar:'動名詞 + with',         ja:'私は友達と遊ぶのが好きです。',                  en:'I like playing with my friends.' },
     { id:'s304', level:2, grammar:'be動詞 + 学年',         ja:'兄は高校生です。',                          en:'My older brother is a high school student.' },
-    { id:'s305', level:2, grammar:'be動詞 + 学年',         ja:'弟は小学生です。',                          en:'My younger brother is an elementary school student.' },
+    { id:'s305', level:2, grammar:'be動詞 + 学年',         ja:'弟は小学生です。',                          en:'My younger brother is a primary school student.' },
     { id:'s306', level:1, grammar:'be in + club',          ja:'私はサッカー部に入っています。',            en:'I am in the football club.' },
 
     // ========== More family / restaurant / dreams variations (s307-s331) — extra L1/L2 ==========
@@ -5177,7 +5177,7 @@
     { id:'s315', level:2, grammar:'want + new',            ja:'成道は新しい靴が欲しいです。',              en:'Narumichi wants new shoes.' },
     { id:'s316', level:1, grammar:'比較 + more than',      ja:'私はピザよりラーメンが好きです。',          en:'I like ramen more than pizza.' },
     { id:'s317', level:2, grammar:'be good at + ing',      ja:'お父さんは料理が上手です。',                en:'Dad is good at cooking.' },
-    { id:'s318', level:2, grammar:'be + 形容詞 + very',    ja:'桃仙閣のスープはとても温かいです。',        en:'The soup at Tousenkaku is very warm.' },
+    { id:'s318', level:2, grammar:'be + 形容詞 + very',    ja:'桃仙閣のスープはあつあつです。',        en:'The soup at Tousenkaku is nice and hot.' },
     { id:'s319', level:2, grammar:'want to be + at',       ja:'私は学校で英語が上手になりたいです。',          en:'I want to get better at English at school.' },
     { id:'s320', level:2, grammar:'三単現 + on',           ja:'私は土曜日にトッシーと会います。',          en:'I see Tosshi on Saturdays.' },
     { id:'s321', level:2, grammar:'want to + take to',     ja:'私は桃仙閣に友達を連れて行きたいです。',        en:'I want to take my friends to Tousenkaku.' },
@@ -5190,17 +5190,17 @@
     { id:'s328', level:2, grammar:'be + important',        ja:'家族と一緒の時間が大切です。',              en:'Time with family is important.' },
     { id:'s329', level:1, grammar:'現在形 + every day',    ja:'私は毎日歩きます。',                        en:'I walk every day.' },
     { id:'s330', level:2, grammar:'三単現 + like ing',     ja:'成道はおしゃれが好きです。',                en:'Narumichi likes being stylish.' },
-    { id:'s331', level:2, grammar:'be + still',            ja:'吉平はまだ小さいです。',                    en:'Kippei is still small.' },
+    { id:'s331', level:2, grammar:'be + still',            ja:'吉平はまだ小さいです。',                    en:'Kippei is still little.' },
 
     // ========== 父の名言 / regrets / encouragement (s332-s341) ==========
     { id:'s332', level:3, grammar:'should have',           ja:'イギリスに来る前にもっと英語を勉強しておけばよかったです。', en:'I should have studied English more before coming to the UK.' },
-    { id:'s333', level:3, grammar:'動名詞主語 + for',      ja:'若い頃に苦労した方が、将来のためになります。', en:'Going through hardship when you are young pays off in the future.' },
+    { id:'s333', level:3, grammar:'動名詞主語 + pay off',      ja:'若い頃に苦労することは、将来報われます。', en:'Going through hardship when you are young pays off in the future.' },
     { id:'s334', level:2, grammar:'when + 主節',           ja:'英語ができるようになると、世界が変わります。',en:'When you can speak English, your world changes.' },
     { id:'s335', level:1, grammar:'命令形',                ja:'女の子には優しくしなさい。',                en:'Be kind to girls.' },
     { id:'s336', level:2, grammar:'Let’s + learn to', ja:'人に気を遣えるようになりましょう。',        en:"Let's learn to be considerate of others." },
     { id:'s337', level:2, grammar:'even when + 命令',      ja:'怒りたいときでも、我慢しよう。',            en:'Hold back even when you want to get angry.' },
     { id:'s338', level:2, grammar:'even when + 命令',      ja:'疲れているときでも、ニコニコしよう。',      en:'Smile even when you are tired.' },
-    { id:'s339', level:2, grammar:'命令形 + if',           ja:'困っている人がいたら、助けてあげなさい。',  en:'Help people who are in trouble.' },
+    { id:'s339', level:2, grammar:'命令形 + if',           ja:'困っている人がいたら、助けてあげなさい。',  en:'If someone is in trouble, help them.' },
     { id:'s340', level:2, grammar:'三単現 + always',       ja:'父はいつも私に大切なことを教えてくれます。',en:'Dad always teaches me important things.' },
     { id:'s341', level:1, grammar:'be + in heart',         ja:'父の言葉はいつも心に残ります。',            en:"Dad's words always stay in my heart." },
 
@@ -5211,7 +5211,7 @@
     // Onarimon Junior High / Stamford Bridge.
 
     // L1 — feelings, places, family basics
-    { id:'s342', level:1, grammar:'be動詞',                  ja:'私は今日楽しいです。',                                en:'I am happy today.' },
+    { id:'s342', level:1, grammar:'be動詞',                  ja:'今日はうれしいです。',                                en:'I am happy today.' },
     { id:'s343', level:1, grammar:'be動詞',                  ja:'東京は都会です。',                                    en:'Tokyo is a big city.' },
     { id:'s344', level:1, grammar:'be動詞',                  ja:'日本の食事は美味しいです。',                          en:'Japanese food is delicious.' },
     { id:'s345', level:1, grammar:'have',                    ja:'うちの家は2階建てです。',                              en:'Our house has two floors.' },
@@ -5220,7 +5220,7 @@
     { id:'s348', level:1, grammar:'三単現',                  ja:'母はよく寝ます。',                                    en:'My mum sleeps a lot.' },
     { id:'s349', level:1, grammar:'三単現',                  ja:'母は豚の世話をします。',                              en:'My mum takes care of the pigs.' },
     { id:'s350', level:1, grammar:'be動詞',                  ja:'母の出身は島根県です。',                              en:'My mum is from Shimane.' },
-    { id:'s351', level:1, grammar:'三単現',                  ja:'僕は松江市が好きです。',                              en:'I love Matsue.' },
+    { id:'s351', level:1, grammar:'一般動詞 (like)',                  ja:'僕は松江市が好きです。',                              en:'I like Matsue.' },
     { id:'s352', level:1, grammar:'be動詞',                  ja:'なるみちは長男です。',                                en:'Narumichi is the eldest son.' },
     { id:'s353', level:1, grammar:'be動詞',                  ja:'吉平は家族で一番年下です。',                          en:'Kippei is the youngest in the family.' },
 
@@ -5228,7 +5228,7 @@
     { id:'s354', level:2, grammar:'want to',                 ja:'吉平はプロサッカー選手になりたいです。',              en:'Kippei wants to be a pro football player.' },
     { id:'s355', level:2, grammar:'疑問文 (what)',           ja:'吉平の好きな食べ物は何ですか？',                      en:"What's Kippei's favourite food?" },
     { id:'s356', level:2, grammar:'現在進行形',              ja:'ケン先生は吉成に英語を教えてくれています。',          en:'Mr. Ken is teaching English to Yoshinari.' },
-    { id:'s358', level:2, grammar:'be動詞 + adj',            ja:'イギリスの食事はまあまあです。',                      en:'UK food is okay.' },
+    { id:'s358', level:2, grammar:'be動詞 + adj',            ja:'イギリスの食事はまあまあです。',                      en:'British food is okay.' },
     { id:'s359', level:2, grammar:'比較級',                  ja:'日本の食事の方が美味しいです。',                      en:'Japanese food tastes better.' },
     { id:'s360', level:2, grammar:'現在進行形',              ja:'吉成はイギリスで英語を勉強しています。',              en:'Yoshinari is studying English in the UK.' },
     { id:'s361', level:2, grammar:'be動詞',                  ja:'吉成はサッカーファンです。',                          en:'Yoshinari is a football fan.' },
@@ -5256,8 +5256,8 @@
     // handful of Q&A pairs (paired by adjacent ids and the same grammar tag).
 
     // ===== Tokyo & soccer (10) =====
-    { id:'s378', level:1, grammar:'be動詞',                  ja:'僕は東京で生まれました。',                            en:'I was born in Tokyo.' },
-    { id:'s379', level:1, grammar:'三単現',                  ja:'吉平はチームでフォワードをやっています。',            en:'Kippei plays forward on his team.' },
+    { id:'s378', level:1, grammar:'過去形 (was born)',                  ja:'僕は東京で生まれました。',                            en:'I was born in Tokyo.' },
+    { id:'s379', level:1, grammar:'三単現',                  ja:'吉平はチームでフォワードをやっています。',            en:'Kippei plays forward for his team.' },
     { id:'s380', level:2, grammar:'be + always',              ja:'東京の電車はいつも混んでいます。',                    en:'The trains in Tokyo are always crowded.' },
     { id:'s381', level:2, grammar:'関係節 (where)',           ja:'東京は世界中から人が来る街です。',                    en:'Tokyo is a city where people come from all over the world.' },
     { id:'s382', level:2, grammar:'最上級',                   ja:'サッカーは世界で一番人気のあるスポーツです。',        en:'Football is the most popular sport in the world.' },
@@ -5269,7 +5269,7 @@
 
     // ===== UK study abroad (10) =====
     { id:'s388', level:2, grammar:'過去形 + when',            ja:'吉成は16歳のときに留学しました。',                    en:'Yoshinari studied abroad when he was 16.' },
-    { id:'s389', level:1, grammar:'be動詞 (受動態風)',         ja:'イギリスでは紅茶が有名です。',                        en:'Tea is famous in the UK.' },
+    { id:'s389', level:1, grammar:'be動詞 + 形容詞',         ja:'イギリスでは紅茶が人気です。',                        en:'Tea is popular in the UK.' },
     { id:'s390', level:1, grammar:'There is/are',             ja:'ロンドンには赤いバスがあります。',                    en:'There are red buses in London.' },
     { id:'s391', level:2, grammar:'現在進行形 + with',         ja:'吉成はホストファミリーと一緒に住んでいます。',        en:'Yoshinari is living with a host family.' },
     { id:'s392', level:2, grammar:'be + adj',                 ja:'イギリスの天気は変わりやすいです。',                  en:'The weather in the UK changes a lot.' },
@@ -5302,7 +5302,7 @@
     { id:'s417', level:3, grammar:'Q&A (現在進行形)',         ja:'私は英語の勉強をするためにイギリスに住んでいます。',      en:"I'm living in the UK to study English." },
 
     // ===== Daily conversation (10) =====
-    { id:'s418', level:1, grammar:'be動詞 + 天気',            ja:'今日はいい天気ですね。',                              en:"It's nice weather today." },
+    { id:'s418', level:1, grammar:'be動詞 + 天気',            ja:'今日はいい天気ですね。',                              en:"The weather is nice today." },
     { id:'s419', level:1, grammar:'現在進行形',               ja:'雨が降ってきました。',                                en:"It's starting to rain." },
     { id:'s420', level:1, grammar:'be動詞',                   ja:'私はお腹がすきました。',                                  en:"I'm hungry." },
     { id:'s421', level:1, grammar:'命令形',                   ja:'早く寝なさい。',                                       en:'Go to bed early.' },
@@ -5329,7 +5329,7 @@
     { id:'s434', level:1, grammar:'はじめて be動詞',          ja:'私の名前はきっぺいです。',     en:'My name is Kippei.' },
     { id:'s435', level:1, grammar:'はじめて be動詞 + 年齢',   ja:'私は12歳です。',               en:'I am twelve years old.' },
     { id:'s437', level:1, grammar:'はじめて be動詞 + 気持ち', ja:'私はうれしいです。',           en:'I am happy.' },
-    { id:'s438', level:1, grammar:'はじめて be動詞 + 状態',   ja:'私はおなかがすいた。',         en:'I am hungry.' },
+    { id:'s438', level:1, grammar:'はじめて be動詞 + 状態',   ja:'私はとてもおなかがすきました。',         en:'I\'m so hungry.' },
     { id:'s439', level:1, grammar:'はじめて be動詞 + 状態',   ja:'私はとてもつかれた。',         en:'I am very tired.' },
     { id:'s440', level:1, grammar:'はじめて be動詞 + 場所',   ja:'私は家にいます。',             en:'I am at home.' },
     { id:'s441', level:1, grammar:'はじめて be動詞 + 場所',   ja:'私は学校にいます。',           en:'I am at school.' },
@@ -5408,7 +5408,7 @@
     { id:'s495', level:1, grammar:'答え I like',       ja:'私はラーメンが好きです。',                     en:'I like ramen.' },
     { id:'s496', level:1, grammar:'WH 疑問 How',       ja:'学校はどう？',                                 en:'How is school?' },
     { id:'s497', level:1, grammar:'答え 感想',         ja:'学校はとても楽しいです。',                     en:'School is really fun.' },
-    { id:'s498', level:1, grammar:'Yes/No 疑問 兄弟',  ja:'あなたは兄弟がいますか？',                     en:'Do you have any siblings?' },
+    { id:'s498', level:1, grammar:'Yes/No 疑問 兄弟',  ja:'あなたは兄弟がいますか？',                     en:'Do you have any brothers or sisters?' },
     { id:'s499', level:1, grammar:'答え 家族',         ja:'私には兄が一人と弟が一人います。',             en:'I have one older brother and one younger brother.' },
     { id:'s500', level:1, grammar:'WH 疑問 What time', ja:'あなたは何時に寝ますか？',                     en:'What time do you go to bed?' },
     { id:'s501', level:1, grammar:'答え 時刻',         ja:'私はたいてい10時に寝ます。',                   en:'I usually go to bed at ten.' },
@@ -5420,7 +5420,7 @@
     { id:'s505', level:2, grammar:'答え 期間 plan',       ja:'私は2年間いるつもりです。',                            en:"I'm planning to stay for two years." },
     { id:'s506', level:2, grammar:'WH 疑問 What kind',    ja:'あなたは日本のどんな食べ物が好きですか？',             en:'What kind of Japanese food do you like?' },
     { id:'s507', level:2, grammar:'答え like but',        ja:'私は寿司も好きですが、ラーメンの方がもっと好きです。', en:'I like sushi, but I like ramen even more.' },
-    { id:'s508', level:2, grammar:'WH 疑問 How + life',   ja:'あなたはイギリスの生活はどうですか？',                 en:'How is life in the UK?' },
+    { id:'s508', level:2, grammar:'WH 疑問 How + life',   ja:'イギリスでの生活はどうですか？',                 en:'How is life in the UK?' },
     { id:'s509', level:2, grammar:'答え not used to',     ja:'楽しいですが、私はまだ慣れていません。',               en:"It's fun, but I'm not used to it yet." },
     { id:'s510', level:2, grammar:'WH 疑問 Where + 故郷', ja:'あなたの故郷はどこですか？',                           en:'Where is your hometown?' },
     { id:'s511', level:2, grammar:'答え 故郷',            ja:'私の故郷は東京です。',                                 en:'My hometown is Tokyo.' },
@@ -5437,7 +5437,7 @@
 
     // L3 (10 pairs) — nuanced expressions, Toshi-flavour
     { id:'s522', level:3, grammar:'WH 疑問 How are',           ja:'最近どうですか？',                                       en:'How are things?' },
-    { id:'s523', level:3, grammar:'答え so far',               ja:'私は今のところ順調です。',                               en:"I'm good so far." },
+    { id:'s523', level:3, grammar:'答え so far',               ja:'私は今のところ順調です。',                               en:"I'm doing well so far." },
     { id:'s524', level:3, grammar:'Yes/No 疑問 完了形 improve', ja:'あなたの英語はうまくなりましたか？',                    en:'Has your English improved?' },
     { id:'s525', level:3, grammar:'答え 進行形 little by little', ja:'少しずつですが、私の英語は上達してきています。',      en:"Little by little, my English is getting better." },
     { id:'s526', level:3, grammar:'WH 疑問 最上級 hardest',   ja:'あなたにとってイギリスで一番難しいことは何ですか？',   en:'What is the hardest thing about being in the UK?' },
@@ -5452,7 +5452,7 @@
     { id:'s535', level:3, grammar:'答え 強調 most',           ja:'私が一番恋しいのは母の手料理です。',                     en:"What I miss the most is my mum's cooking." },
     { id:'s536', level:3, grammar:'Yes/No 疑問 anything',     ja:'あなたは何か困っていることはありますか？',               en:'Is there anything you are struggling with?' },
     { id:'s537', level:3, grammar:"答え It's ... that",         ja:'寮のWi-Fiが夜になると切れるのが大変です。',              en:'It\'s tough that the dorm Wi-Fi cuts out at night.' },
-    { id:'s538', level:3, grammar:'Yes/No 疑問 anything from', ja:'あなたが恋しい日本の文化はありますか？',                en:'Is there anything from Japanese culture you miss?' },
+    { id:'s538', level:3, grammar:'Yes/No 疑問 anything from', ja:'あなたが恋しい日本の文化はありますか？',                en:'Is there anything you miss about Japanese culture?' },
     { id:'s539', level:3, grammar:'答え miss + 名詞',         ja:'私は温泉と銭湯が恋しいです。',                           en:'I miss onsen and sento.' },
     { id:'s540', level:3, grammar:'WH 疑問 favourite time',   ja:'あなたの好きな時間帯はいつですか？',                     en:'What is your favourite time of day?' },
     { id:'s541', level:3, grammar:'答え right before',        ja:'私の好きな時間は寝る前です。',                           en:'My favourite time is right before bed.' },
@@ -5468,7 +5468,7 @@
     { id:'s548', level:4, grammar:'分詞構文 受身',            ja:'1900年に建てられたので、その建物はとても古い。',         en:'Built in 1900, the building is very old.' },
     { id:'s549', level:4, grammar:'関係副詞 where',           ja:'これは私が生まれた家です。',                             en:'This is the house where I was born.' },
     { id:'s550', level:4, grammar:'関係副詞 when',            ja:'夏は人々が海に行く季節です。',                           en:'Summer is the season when people go to the beach.' },
-    { id:'s551', level:4, grammar:'関係副詞 why',             ja:'なぜ彼が辞めたのか、誰も知らない。',                     en:'No one knows the reason why he quit.' },
+    { id:'s551', level:4, grammar:'関係副詞 why',             ja:'彼が辞めた理由を、誰も知らない。',                     en:'No one knows the reason why he quit.' },
     { id:'s552', level:4, grammar:'完了不定詞 推測',          ja:'彼は若いころプロの選手だったらしい。',                   en:'He seems to have been a professional player when he was young.' },
     { id:'s553', level:4, grammar:'完了不定詞 感情',          ja:'長くお待たせして、本当に申し訳ありません。',             en:'I am really sorry to have kept you waiting so long.' },
     { id:'s554', level:4, grammar:'完了不定詞 said to',       ja:'彼女がその本を書いたと言われている。',                   en:'She is said to have written the book.' },
@@ -5522,11 +5522,11 @@
     { id:'s595', level:3, grammar:'接続詞 while 過去進行',    ja:'私が料理している間、彼は宿題をしていました。',          en:'While I was cooking, he was doing his homework.' },
     { id:'s596', level:3, grammar:'接続詞 although',          ja:'疲れていたが、彼は最後まで走りました。',                en:'Although he was tired, he kept running to the end.' },
     { id:'s597', level:2, grammar:'接続詞 if',                ja:'明日雨なら、私は家にいます。',                          en:'If it rains tomorrow, I will stay home.' },
-    { id:'s598', level:3, grammar:'接続詞 if 仮定',           ja:'お金があれば、新しい車を買います。',                    en:'If I had money, I would buy a new car.' },
+    { id:'s598', level:3, grammar:'接続詞 if 仮定',           ja:'お金があれば、新しい車を買うのに。',                    en:'If I had money, I would buy a new car.' },
     { id:'s599', level:2, grammar:'接続詞 before',            ja:'寝る前に、私は本を読みます。',                          en:'I read a book before I go to bed.' },
     { id:'s600', level:2, grammar:'接続詞 after',             ja:'宿題を終えたあと、私はテレビを見ました。',              en:'After I finished my homework, I watched TV.' },
     { id:'s601', level:3, grammar:'接続詞 since 期間',         ja:'ロンドンに来てから、私の英語は上達しました。',          en:'Since I came to London, my English has improved.' },
-    { id:'s602', level:3, grammar:'関係代名詞 + 接続詞',      ja:'私が読んだ本は、母がくれたものです。',                  en:'The book that I read is the one which my mother gave me.' },
+    { id:'s602', level:3, grammar:'関係代名詞 2つ',      ja:'私が読んだ本は、母がくれたものです。',                  en:'The book that I read is the one which my mother gave me.' },
     { id:'s603', level:3, grammar:'関係代名詞 who + 状態',    ja:'歌っている女の子は私の妹です。',                        en:'The girl who is singing is my sister.' },
     { id:'s604', level:3, grammar:'関係代名詞 that + 経験',   ja:'これは私が今まで読んだ中で一番面白い本です。',          en:'This is the most interesting book that I have ever read.' },
     { id:'s605', level:3, grammar:'関係代名詞 what 主語',     ja:'彼が言ったことが私を悲しませました。',                  en:'What he said made me sad.' },
@@ -5564,7 +5564,7 @@
     { id:'s637', level:1, grammar:'はじめて 命令文',          ja:'座ってください。',             en:'Sit down, please.' },
     { id:'s638', level:1, grammar:'はじめて 命令文',          ja:'本を開いて。',                 en:'Open the book.' },
     { id:'s639', level:1, grammar:'はじめて 命令文',          ja:'ドアを閉めて。',               en:'Close the door.' },
-    { id:'s640', level:1, grammar:'はじめて be動詞 + 形容詞', ja:'私はうれしいです。',           en:"I'm happy." },
+    { id:'s640', level:1, grammar:'はじめて be動詞 + 形容詞', ja:'私はとてもうれしいです。',           en:"I'm very happy." },
     { id:'s641', level:1, grammar:'はじめて be動詞 + 形容詞', ja:'私は悲しいです。',             en:"I'm sad." },
     { id:'s642', level:1, grammar:'はじめて be動詞 + 形容詞', ja:'私は元気です。',               en:"I'm fine." },
     { id:'s643', level:1, grammar:'はじめて 色',              ja:'空は青いです。',               en:'The sky is blue.' },
@@ -5615,7 +5615,7 @@
     { id:'s717', level:4, grammar:'used to',                  ja:'彼は以前ニューヨークに住んでいた。',                                                   en:'He used to live in New York.' },
     { id:'s718', level:4, grammar:'keep + ing',               ja:'彼は同じ間違いを繰り返している。',                                                     en:'He keeps making the same mistake.' },
     { id:'s719', level:4, grammar:'動名詞',                   ja:'仕事を変えることを考えている。',                                                       en:'I am thinking of changing jobs.' },
-    { id:'s720', level:4, grammar:'分詞修飾 過去',            ja:'パーティーで流れていた音楽は素晴らしかった。',                                         en:'The music played at the party was wonderful.' },
+    { id:'s720', level:4, grammar:'分詞修飾 過去',            ja:'パーティーで演奏された音楽は素晴らしかった。',                                         en:'The music played at the party was wonderful.' },
     { id:'s721', level:4, grammar:'分詞修飾 現在',            ja:'ステージで歌っている女の子は、私の妹です。',                                           en:'The girl singing on the stage is my sister.' },
     { id:'s722', level:4, grammar:'分詞修飾 受身',            ja:'彼が書いた本はベストセラーになった。',                                                 en:'The book written by him became a bestseller.' },
     { id:'s723', level:4, grammar:'so that',                  ja:'電車に間に合うように、私は早く出発した。',                                             en:'I left early so that I could catch the train.' },
@@ -5629,14 +5629,14 @@
     // 仮定法・倒置・分裂文・分詞構文・高度なイディオム
     { id:'s730', level:5, grammar:'仮定法現在 demand',         ja:'委員会は、彼が出席することを要求している。',                                          en:'The committee demands that he be present.' },
     { id:'s731', level:5, grammar:'倒置 should',              ja:'もし彼が遅れたら、会議は彼なしで始まります。',                                         en:'Should he arrive late, the meeting will start without him.' },
-    { id:'s732', level:5, grammar:'倒置 were it not for',     ja:'あなたの助けがなければ、私は成功しなかっただろう。',                                   en:'Had it not been for your help, I would not have succeeded.' },
+    { id:'s732', level:5, grammar:'倒置 had it not been for',     ja:'あなたの助けがなければ、私は成功しなかっただろう。',                                   en:'Had it not been for your help, I would not have succeeded.' },
     { id:'s733', level:5, grammar:'倒置 had it not been for', ja:'雨でなかったら、私たちはハイキングに行っていただろう。',                              en:'Had it not been for the rain, we would have gone hiking.' },
     { id:'s734', level:5, grammar:'idiom by and large',       ja:'全体として、その計画は成功だった。',                                                   en:'By and large, the project was a success.' },
     { id:'s735', level:5, grammar:'idiom in the long run',    ja:'長い目で見れば、それは報われる。',                                                     en:'It will pay off in the long run.' },
     { id:'s736', level:5, grammar:'idiom push comes to shove',ja:'いざというときには、私はあなたを支える。',                                            en:'When push comes to shove, I will support you.' },
     { id:'s737', level:5, grammar:'分裂文 not until',         ja:'夜中になって、ようやく彼は仕事を終えた。',                                            en:'It was not until midnight that he finished his work.' },
-    { id:'s738', level:5, grammar:'分裂文 what',              ja:'彼がしたことは、すべての期待を超えていた。',                                          en:'What he did was beyond all expectations.' },
-    { id:'s740', level:5, grammar:'be supposed to + 過分',    ja:'彼はもう着いているはずだ。',                                                          en:'He is supposed to have arrived by now.' },
+    { id:'s738', level:5, grammar:'関係代名詞 what',              ja:'彼がしたことは、すべての期待を超えていた。',                                          en:'What he did was beyond all expectations.' },
+    { id:'s740', level:5, grammar:'be supposed to + 過分',    ja:'彼は予定では、もう着いていることになっています。',                                                          en:'He is supposed to have arrived by now.' },
     { id:'s741', level:5, grammar:'no less than',             ja:'100人もの人が、その講義に参加した。',                                                en:'No less than 100 people attended the lecture.' },
     { id:'s742', level:5, grammar:'none other than',          ja:'勝者は、ほかならぬ彼女だった。',                                                       en:'The winner was none other than her.' },
     { id:'s744', level:5, grammar:'such ... that',            ja:'とても良い映画だったので、私は2回観た。',                                              en:'It was such a good film that I watched it twice.' },
@@ -5695,7 +5695,7 @@
     { id:'s837', level:4, grammar:'受動態完了 × carry out',     ja:'その調査はすでに実施されています。', en:'The survey has already been carried out.' },
     { id:'s838', level:4, grammar:'関係代名詞 × come across',   ja:'旅先で出会ったレストランが、私の考えを変えました。', en:'A restaurant that I came across while travelling changed my thinking.' },
     { id:'s839', level:4, grammar:'仮定法 × in the long run',   ja:'もし品質に投資すれば、長期的には報われるでしょう。', en:'If we invested in quality, it would pay off in the long run.' },
-    { id:'s840', level:4, grammar:'分詞 × end up',              ja:'細部にこだわった結果、最高の店になりました。', en:'By focusing on the details, we ended up building our best restaurant.' },
+    { id:'s840', level:4, grammar:'動名詞 × end up',              ja:'細部にこだわった結果、私たちは最高の店を作り上げることになりました。', en:'By focusing on the details, we ended up building our best restaurant.' },
     { id:'s841', level:4, grammar:'間接疑問 × take into account', ja:'コストをどう考慮すべきか、まだ検討中です。', en:'We are still discussing how we should take costs into account.' },
     { id:'s842', level:4, grammar:'関係副詞 × make up for',     ja:'サービスが料理の遅れを補う場面を何度も見てきました。', en:'I have seen many moments when great service makes up for a slow kitchen.' },
     { id:'s843', level:4, grammar:'現在完了進行 × work on',     ja:'私たちは半年間、新しいコンセプトに取り組み続けています。', en:'We have been working on the new concept for six months.' },
@@ -5734,7 +5734,7 @@
     { id:'s871', level:4, grammar:'not only × sourcing',        ja:'味だけでなく、仕入れの哲学にも感銘を受けました。', en:'I was impressed not only by the flavour but also by your sourcing philosophy.' },
     { id:'s872', level:3, grammar:'疑問文 × favourite',         ja:'東京で一番好きなレストランはどこですか？', en:'What is your favourite restaurant in Tokyo?' },
     { id:'s873', level:4, grammar:'現在完了進行 × refine',      ja:'私たちは 1 年かけてこの一皿を磨き続けています。', en:'We have been refining this dish for a year.' },
-    { id:'s874', level:3, grammar:'不定詞 × try',               ja:'ぜひ私の店にも食べに来てください。', en:'I would love for you to come and try my restaurant.' },
+    { id:'s874', level:3, grammar:'不定詞 × try',               ja:'あなたにもぜひ、私の店に食べに来てほしいです。', en:'I would love for you to come and try my restaurant.' },
     { id:'s875', level:4, grammar:'間接疑問 × consistency',     ja:'毎晩同じクオリティをどう保っているのか、ぜひ知りたいです。', en:'I would really like to know how you maintain the same quality every night.' },
     { id:'s876', level:3, grammar:'比較 × simple',              ja:'最高の料理は、意外なほどシンプルなことが多いですね。', en:'The best dishes are often surprisingly simple.' },
     { id:'s877', level:4, grammar:'関係代名詞 × trust',         ja:'長年信頼している魚屋から、毎朝直接仕入れています。', en:'We buy directly every morning from a fishmonger that we have trusted for years.' },
@@ -5752,7 +5752,7 @@
     { id:'s889', level:4, grammar:'間接疑問 × next',            ja:'次にどんな挑戦を考えているのか、伺ってもいいですか？', en:'May I ask what challenge you are thinking about next?' },
     { id:'s890', level:3, grammar:'不定詞 × thank',             ja:'素晴らしい夜をありがとうございました。また必ず来ます。', en:'Thank you for a wonderful evening. I will definitely come back.' },
     { id:'s891', level:4, grammar:'仮定法過去完了 × meet',      ja:'もっと早くあなたに出会っていたら、私の店は違うものになっていたでしょう。', en:'If I had met you earlier, my restaurants would have turned out differently.' },
-    { id:'s892', level:3, grammar:'動名詞 × look forward',      ja:'次の季節のメニューを楽しみにしています。', en:'I am looking forward to your next seasonal menu.' },
+    { id:'s892', level:3, grammar:'進行形 × look forward to',      ja:'次の季節のメニューを楽しみにしています。', en:'I am looking forward to your next seasonal menu.' },
     { id:'s893', level:4, grammar:'not until × understand',     ja:'自分で店を持って初めて、サービスの重みを理解しました。', en:'It was not until I owned a restaurant that I understood the weight of service.' },
     { id:'s894', level:3, grammar:'疑問文 × advice',            ja:'若い料理人に一つだけアドバイスするとしたら何ですか？', en:'If you could give young chefs one piece of advice, what would it be?' },
     { id:'s895', level:4, grammar:'関係代名詞 × dream',         ja:'世界中の人が訪れたくなる店を作るのが、私たちの夢です。', en:'Our dream is to build a restaurant that people around the world want to visit.' },
@@ -5764,7 +5764,7 @@
     { id:'s903', level:4, grammar:'間接疑問',              ja:'この単語がどういう意味か教えてもらえますか？',                              en:'Could you tell me what this word means?' },
     { id:'s904', level:4, grammar:'so that',               ja:'お客様がくつろげるように、照明を少し落としています。',                      en:'We dim the lights a little so that our guests can relax.' },
     { id:'s905', level:4, grammar:'too ... to',            ja:'忙しすぎて、昼食をとる時間がありませんでした。',                            en:'I was too busy to have lunch.' },
-    { id:'s906', level:4, grammar:'enough to',             ja:'彼は一人で店を任せられるくらい頼りになります。',                            en:'He is reliable enough to run the restaurant on his own.' },
+    { id:'s906', level:4, grammar:'enough to',             ja:'彼は一人で店を切り盛りできるくらい頼りになります。',                            en:'He is reliable enough to run the restaurant on his own.' },
     { id:'s907', level:4, grammar:'be used to -ing',       ja:'早起きには慣れています。',                                                  en:"I'm used to getting up early." },
     { id:'s908', level:4, grammar:'used to',               ja:'昔、ここには銀行がありました。',                                            en:'There used to be a bank here.' },
     { id:'s909', level:4, grammar:'would rather',          ja:'今夜は外食するより、家で食べたい気分です。',                                en:"I'd rather eat at home than eat out tonight." },
@@ -5781,7 +5781,7 @@
     { id:'s920', level:4, grammar:'最上級 + ever',         ja:'これは今まで飲んだ中で一番おいしいワインです。',                            en:'This is the best wine I have ever had.' },
     { id:'s921', level:4, grammar:'現在完了 (経験)',       ja:'島根に行かれたことはありますか？',                                              en:'Have you ever been to Shimane?' },
     { id:'s922', level:4, grammar:'so ... that',           ja:'とても混んでいたので、30 分もお待たせしてしまいました。',                   en:'It was so crowded that we kept you waiting for thirty minutes.' },
-    { id:'s923', level:4, grammar:'not only A but B',      ja:'彼は料理だけでなく、接客も上手です。',                                      en:'He is good at not only cooking but also serving guests.' },
+    { id:'s923', level:4, grammar:'not only A but B',      ja:'あのシェフは料理だけでなく、接客も上手です。',                                      en:'That chef is good at not only cooking but also serving guests.' },
     { id:'s924', level:4, grammar:'while (対比)',          ja:'兄は社交的ですが、私はどちらかというと内向的です。',                        en:'My brother is outgoing, while I am rather quiet.' },
     { id:'s925', level:4, grammar:'despite',               ja:'雨にもかかわらず、大勢のお客様が来てくださいました。',                      en:'Despite the rain, a lot of guests came.' },
     { id:'s926', level:4, grammar:'It is never too late',  ja:'新しいことを学ぶのに、遅すぎることはありません。',                          en:"It's never too late to learn something new." },
@@ -5789,7 +5789,7 @@
     { id:'s928', level:4, grammar:'stop -ing',             ja:'彼は健康のために、お酒をやめました。',                                      en:'He stopped drinking for his health.' },
     { id:'s929', level:4, grammar:'suggest (提案)',        ja:'彼女は、会議を金曜日に延期してはどうかと提案しました。',                    en:'She suggested putting off the meeting until Friday.' },
     // ===== v363: 上級増強 LV5 (s930-s1019) — 仮定法・倒置・分詞構文ほか =====
-    { id:'s930', level:5, grammar:'仮定法過去',            ja:'もし時間が無限にあったら、世界中のワイナリーを巡るのですが。',              en:'If I had unlimited time, I would travel around wineries all over the world.' },
+    { id:'s930', level:5, grammar:'仮定法過去',            ja:'もし時間が無限にあったら、世界中のワイナリーを巡るのですが。',              en:'If I had unlimited time, I would visit wineries all over the world.' },
     { id:'s931', level:5, grammar:'仮定法過去',            ja:'もっと英語が話せたら、海外のお客様ともっと深い話ができるのに。',            en:'If I could speak English better, I could have deeper conversations with guests from abroad.' },
     { id:'s932', level:5, grammar:'仮定法過去',            ja:'私があなたの立場なら、その物件は買いません。',                              en:"If I were in your position, I wouldn't buy that property." },
     { id:'s933', level:5, grammar:'仮定法過去',            ja:'もし彼がいなかったら、うちの厨房は回らないでしょう。',                      en:"If it weren't for him, our kitchen wouldn't function." },
@@ -5811,9 +5811,9 @@
     { id:'s949', level:5, grammar:'分詞構文 (否定)',       ja:'何を注文すべきか分からなかったので、シェフのおすすめをお願いしました。',    en:"Not knowing what to order, I asked for the chef's recommendation." },
     { id:'s950', level:5, grammar:'分詞構文 (独立)',       ja:'天気が良ければ、テラス席にご案内します。',                                  en:'Weather permitting, we will seat you on the terrace.' },
     { id:'s951', level:5, grammar:'分詞構文 (慣用)',       ja:'率直に言うと、その計画には賛成できません。',                                en:"Frankly speaking, I can't agree with that plan." },
-    { id:'s952', level:5, grammar:'分詞構文 (完了形)',     ja:'一度お会いしたことがあったので、すぐに彼だと分かりました。',                en:'Having met him once before, I recognized him immediately.' },
+    { id:'s952', level:5, grammar:'分詞構文 (完了形)',     ja:'一度お会いしたことがあったので、すぐに彼だと分かりました。',                en:'Having met him once before, I recognised him immediately.' },
     { id:'s953', level:5, grammar:'分詞構文',              ja:'通りを歩いていて、偶然昔の同僚に会いました。',                              en:'Walking down the street, I ran into an old colleague.' },
-    { id:'s954', level:5, grammar:'倒置 Never',            ja:'こんなに美しい夕日は見たことがありません。',                                en:'Never have I seen such a beautiful sunset.' },
+    { id:'s954', level:5, grammar:'倒置 Never',            ja:'こんなに素晴らしいワインは飲んだことがありません。',                                en:'Never have I tasted such a wonderful wine.' },
     { id:'s955', level:5, grammar:'倒置 Hardly',           ja:'ドアを開けた途端、電話が鳴りました。',                                      en:'Hardly had I opened the door when the phone rang.' },
     { id:'s956', level:5, grammar:'倒置 Not only',         ja:'彼は謝らなかっただけでなく、私のせいにしました。',                          en:'Not only did he not apologise, but he also blamed me.' },
     { id:'s957', level:5, grammar:'倒置 So + 形容詞',      ja:'その料理はあまりにおいしかったので、すぐに評判になりました。',              en:'So delicious was the dish that it quickly became famous.' },
@@ -5883,10 +5883,10 @@
     // ===== v400: 初心者向け追加 (s1020-) — 毎日の実用文 =====
     { id:'s1020', level:1, grammar:'be動詞', ja:'トイレはどこですか？', en:'Where is the toilet?' },
     { id:'s1021', level:1, grammar:'一般動詞 (依頼)', ja:'水をください。', en:'Can I have some water, please?' },
-    { id:'s1022', level:2, grammar:'現在進行形', ja:'今、そちらに向かっています。', en:'I\'m on my way now.' },
+    { id:'s1022', level:2, grammar:"be on one's way", ja:'今、そちらに向かっています。', en:'I\'m on my way now.' },
     { id:'s1023', level:1, grammar:'命令文', ja:'ゆっくり話してください。', en:'Please speak slowly.' },
     { id:'s1024', level:2, grammar:'一般動詞 (依頼)', ja:'写真を撮ってもらえますか？', en:'Could you take a photo for us?' },
-    { id:'s1025', level:1, grammar:'be動詞', ja:'大丈夫です、ありがとう。', en:'I\'m fine, thank you.' },
+    { id:'s1025', level:1, grammar:'be動詞', ja:'大丈夫です、ありがとう。', en:'I\'m OK, thank you.' },
     { id:'s1026', level:2, grammar:'現在完了', ja:'宿題はもう終わりました。', en:'I have already finished my homework.' },
     { id:'s1027', level:2, grammar:'未来 will', ja:'あとで電話するね。', en:'I\'ll call you later.' },
     { id:'s1028', level:2, grammar:'比較', ja:'こっちのほうが好きです。', en:'I like this one better.' },
