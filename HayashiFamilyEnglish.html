@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 424;
+  const APP_VERSION = 425;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -36327,15 +36327,23 @@
                         }
                       }, a.correct ? '○' : '✕'),
                     ),
-                    // リスニングは会話を表示 (TTS 不要、内容を文字で確認)
+                    // リスニングは会話を表示 + 音声ボタンでもう一度聞ける
                     a.section === 'listening' && q.conversation && e('div', {
                       style: {
                         background: C.softer, borderRadius: 10, padding: '10px 12px',
                         fontSize: 12, lineHeight: 1.7, color: C.text, marginBottom: 8,
+                        position: 'relative',
                       }
                     },
+                      e('div', { style: { position: 'absolute', top: 8, right: 8 } },
+                        e(SpeakerBtn, {
+                          onClick: () => { stopSpeech(); playConversation(q.conversation); },
+                          color: profile.color, size: 30,
+                        }),
+                      ),
                       q.conversation.map((line, li) => e('div', {
                         key: 'conv_' + li,
+                        style: { paddingRight: 34 },
                       },
                         e('strong', null, line.speaker + ': '),
                         line.text,
