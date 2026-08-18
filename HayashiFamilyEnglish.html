@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 421;
+  const APP_VERSION = 422;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -23529,9 +23529,16 @@
       } catch {}
     };
     if (unitIdx === -2) {
-      // 覚えていない単語の聞き流し (エンドレス周回)
+      // 覚えていない単語の聞き流し (10 語ずつの組制)
       return e(TempoReviewFlow, {
-        profile, level,
+        profile, level, full: false,
+        onBack: () => setUnitIdx(-1),
+      });
+    }
+    if (unitIdx === -4) {
+      // フル聞き流し (全語ノンストップ)
+      return e(TempoReviewFlow, {
+        profile, level, full: true,
         onBack: () => setUnitIdx(-1),
       });
     }
@@ -23549,6 +23556,7 @@
         onPickUnit: (idx) => { unlockTTS(); setUnitIdx(idx); },
         onStartReview: () => { unlockTTS(); setUnitIdx(-2); },
         onStartReviewTest: () => { unlockTTS(); setUnitIdx(-3); },
+        onStartReviewFull: () => { unlockTTS(); setUnitIdx(-4); },
       });
     }
     return e(TempoVocabPractice, {
@@ -23653,7 +23661,7 @@
   }
 
   // ----- ユニット一覧 (レベルタブ + 10 語ずつのユニットカード) -----
-  function TempoVocabUnitList({ profile, onBack, level, units, onPickLevel, onPickUnit, onStartReview, onStartReviewTest }) {
+  function TempoVocabUnitList({ profile, onBack, level, units, onPickLevel, onPickUnit, onStartReview, onStartReviewTest, onStartReviewFull }) {
     const pageStyle = { maxWidth: 480, margin: '0 auto', padding: '44px 22px 96px' };
     const topBar = e('div', {
       style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 18 }
@@ -23756,6 +23764,15 @@
             actionBtn('🎧 聞き流し', onStartReview, true),
             actionBtn('✍️ テスト', onStartReviewTest, false),
           ),
+          enabled && e('button', {
+            onClick: onStartReviewFull,
+            style: {
+              width: '100%', marginTop: 8, padding: '12px 0', borderRadius: 11,
+              background: C.softer, color: C.text, border: '1px solid ' + C.line,
+              cursor: 'pointer', fontFamily: SANS_UI, fontSize: 14, fontWeight: 800,
+              boxSizing: 'border-box',
+            }
+          }, '🔁 フル聞き流し — 全 ' + notYetN + ' 語ノンストップ'),
         );
       })(),
       // ユニット一覧
@@ -23836,7 +23853,7 @@
     return VOCAB.filter(w => w.level === lv && vp[w.id] && vp[w.id].status !== 'mastered');
   }
 
-  function TempoReviewFlow({ profile, level, onBack }) {
+  function TempoReviewFlow({ profile, level, onBack, full }) {
     const shuffleArr = (arr) => arr
       .map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
     // 開始時に全体をシャッフルして 10 語ずつの「組」に区切る
@@ -23844,8 +23861,8 @@
     if (allRef.current === null) {
       allRef.current = shuffleArr(unmasteredTempoWords(profile.id, level));
     }
-    const [words, setWords]           = useState(() => allRef.current.slice(0, 10)); // 今の組
-    const [rest, setRest]             = useState(() => allRef.current.slice(10));    // 残りの組
+    const [words, setWords]           = useState(() => full ? allRef.current : allRef.current.slice(0, 10)); // 今の組
+    const [rest, setRest]             = useState(() => full ? [] : allRef.current.slice(10));    // 残りの組
     const [batchNum, setBatchNum]     = useState(1);
     const [wIdx, setWIdx]             = useState(0);
     const [lap, setLap]               = useState(1);
@@ -23905,10 +23922,17 @@
         await sleep(550);
         if (cancelled || seq !== playSeq.current) return;
         if (wIdx + 1 >= words.length) {
-          // 1 周おわり — 学習ターンとして記録して確認を挟む
+          // 1 周おわり — 学習ターンとして記録
           try { db.recordTurn(profile.id, 'vocab'); } catch {}
-          setScreen('lap_done');
-          setPlaying(false);
+          if (full) {
+            // フル聞き流し: 確認を挟まず、再シャッフルしてそのまま次の周へ
+            setWords(shuffleArr(words));
+            setWIdx(0);
+            setLap(lap + 1);
+          } else {
+            setScreen('lap_done');
+            setPlaying(false);
+          }
         } else {
           setWIdx(wIdx + 1);
         }
@@ -23923,6 +23947,30 @@
 
     useEffect(() => () => {
       try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch {}
+    }, []);
+
+    // ながら聞き用: この画面の間は端末をスリープさせない (対応端末のみ)。
+    // 画面が消えると iOS では音声も止まるため。
+    useEffect(() => {
+      let lock = null;
+      let stopped = false;
+      const acquire = async () => {
+        try {
+          if (navigator.wakeLock && document.visibilityState === 'visible') {
+            lock = await navigator.wakeLock.request('screen');
+          }
+        } catch {}
+      };
+      const onVis = () => {
+        if (!stopped && document.visibilityState === 'visible') acquire();
+      };
+      acquire();
+      document.addEventListener('visibilitychange', onVis);
+      return () => {
+        stopped = true;
+        document.removeEventListener('visibilitychange', onVis);
+        try { lock && lock.release(); } catch {}
+      };
     }, []);
 
     // × — 「覚えた」扱いにして即リストから外す
@@ -23947,9 +23995,14 @@
         }
       } else if (wIdx >= next.length) {
         try { db.recordTurn(profile.id, 'vocab'); } catch {}
-        setScreen('lap_done');
-        setPlaying(false);
-        setWIdx(0);
+        if (full) {
+          setWords(shuffleArr(next));
+          setWIdx(0); setLap(lap + 1); setPlaying(true);
+        } else {
+          setScreen('lap_done');
+          setPlaying(false);
+          setWIdx(0);
+        }
       } else {
         setPlaying(true);
       }
@@ -23963,11 +24016,13 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        '聞き流し復習 · LV' + level),
+        (full ? 'フル聞き流し' : '聞き流し復習') + ' · LV' + level),
       e('div', {
         style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI }
       }, screen === 'chant' && words.length > 0
-           ? batchNum + ' 組目 ' + lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length
+           ? (full
+               ? lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length
+               : batchNum + ' 組目 ' + lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length)
            : ''),
     );
 
@@ -24129,6 +24184,9 @@
         style: { fontSize: 11.5, color: C.sub, textAlign: 'center', marginTop: 8, lineHeight: 1.6 }
       }, '× = もう覚えた単語を「覚えた」に移してリストから外す' +
          (removedN > 0 ? ' (外した ' + removedN + ' 語)' : '')),
+      full && e('div', {
+        style: { fontSize: 11, color: C.sub, textAlign: 'center', marginTop: 4, lineHeight: 1.6, opacity: 0.85 }
+      }, 'ノンストップ再生中 — 周が終わると自動でシャッフルして次の周へ。再生中は画面が消えないようにしています。'),
       // リズムインジケータ
       e('div', {
         style: { display: 'flex', justifyContent: 'center', gap: 10, marginTop: 14 }
@@ -24167,7 +24225,10 @@
         e('button', {
           onClick: () => {
             if (wIdx + 1 < words.length) { setWIdx(wIdx + 1); setPlaying(true); }
-            else {
+            else if (full) {
+              try { db.recordTurn(profile.id, 'vocab'); } catch {}
+              setWords(shuffleArr(words)); setWIdx(0); setLap(lap + 1); setPlaying(true);
+            } else {
               try { db.recordTurn(profile.id, 'vocab'); } catch {}
               setScreen('lap_done'); setPlaying(false);
             }
@@ -24178,7 +24239,7 @@
             cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 14, fontWeight: 700,
           }
-        }, wIdx + 1 < words.length ? '次 ›' : '周を終える ›'),
+        }, wIdx + 1 < words.length ? '次 ›' : (full ? '次の周へ ›' : '周を終える ›')),
       ),
     );
   }
