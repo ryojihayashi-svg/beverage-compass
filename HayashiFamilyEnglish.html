@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 420;
+  const APP_VERSION = 421;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -23746,7 +23746,7 @@
                 '覚えていない単語' + (enabled ? ' — ' + notYetN + ' 語' : '')),
               e('div', { style: { fontSize: 12, color: C.sub, marginTop: 3, lineHeight: 1.5 } },
                 enabled
-                  ? '聞き流しで耳に入れて、テストで定着チェック。'
+                  ? '10 語ずつランダムに出題。聞き流しで耳に入れて、テストで定着チェック。'
                   : 'テストで「まだ」にした単語がここに溜まります。まずはユニットをやってみよう。'),
             ),
           ),
@@ -23837,7 +23837,16 @@
   }
 
   function TempoReviewFlow({ profile, level, onBack }) {
-    const [words, setWords]           = useState(() => unmasteredTempoWords(profile.id, level));
+    const shuffleArr = (arr) => arr
+      .map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    // 開始時に全体をシャッフルして 10 語ずつの「組」に区切る
+    const allRef = useRef(null);
+    if (allRef.current === null) {
+      allRef.current = shuffleArr(unmasteredTempoWords(profile.id, level));
+    }
+    const [words, setWords]           = useState(() => allRef.current.slice(0, 10)); // 今の組
+    const [rest, setRest]             = useState(() => allRef.current.slice(10));    // 残りの組
+    const [batchNum, setBatchNum]     = useState(1);
     const [wIdx, setWIdx]             = useState(0);
     const [lap, setLap]               = useState(1);
     const [screen, setScreen]         = useState('chant');  // 'chant' | 'lap_done'
@@ -23924,7 +23933,19 @@
       const next = words.filter((_, i) => i !== wIdx);
       setRemovedN(removedN + 1);
       setWords(next);
-      if (next.length === 0 || wIdx >= next.length) {
+      if (next.length === 0) {
+        // この組が空になった — 残りがあれば次の組へ、なければ空画面へ
+        if (rest.length > 0) {
+          setWords(rest.slice(0, 10));
+          setRest(rest.slice(10));
+          setBatchNum(batchNum + 1);
+          setLap(1);
+          setWIdx(0);
+          setPlaying(true);
+        } else {
+          setPlaying(false);
+        }
+      } else if (wIdx >= next.length) {
         try { db.recordTurn(profile.id, 'vocab'); } catch {}
         setScreen('lap_done');
         setPlaying(false);
@@ -23945,11 +23966,13 @@
         '聞き流し復習 · LV' + level),
       e('div', {
         style: { fontSize: 12, color: C.sub, fontVariantNumeric: 'tabular-nums', fontFamily: SANS_UI }
-      }, screen === 'chant' && words.length > 0 ? lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length : ''),
+      }, screen === 'chant' && words.length > 0
+           ? batchNum + ' 組目 ' + lap + ' 周目 · ' + (wIdx + 1) + ' / ' + words.length
+           : ''),
     );
 
     // ===== リストが空 (全部覚えた or まだ何もない) =====
-    if (words.length === 0) {
+    if (words.length === 0 && rest.length === 0) {
       return e('div', { style: pageStyle },
         topBar,
         e('div', {
@@ -23975,27 +23998,62 @@
       );
     }
 
-    // ===== 1 周おわり — もう 1 周する? =====
+    // ===== 組おわり — もう 1 周 / 次の 10 語へ =====
     if (screen === 'lap_done') {
+      const primaryBtnStyle = {
+        width: '100%', padding: '14px 16px', borderRadius: 14,
+        background: profile.color, color: '#fff',
+        fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
+        border: 'none', cursor: 'pointer', marginBottom: 10,
+      };
+      const softBtnStyle = {
+        width: '100%', padding: '13px 16px', borderRadius: 14,
+        background: C.softer, color: C.text,
+        fontFamily: SANS_UI, fontSize: 14, fontWeight: 700,
+        border: '1px solid ' + C.line, cursor: 'pointer', marginBottom: 10,
+      };
       return e('div', { style: pageStyle },
         topBar,
         e('div', { style: { padding: '36px 4px 28px', textAlign: 'center' } },
           e('div', { style: { fontSize: 44, marginBottom: 10 } }, '🎧'),
           e('div', { style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text } },
-            lap + ' 周 おわり！'),
+            batchNum + ' 組目 (' + words.length + ' 語) — ' + lap + ' 周 おわり！'),
           e('div', { style: { fontSize: 13, color: C.sub, marginTop: 10, lineHeight: 1.8 } },
-            '残り ' + words.length + ' 語',
-            removedN > 0 ? ' · この時間で ' + removedN + ' 語を「覚えた」に移動' : ''),
+            rest.length > 0 ? 'このあとの組に 残り ' + rest.length + ' 語' : 'これで最後の組でした',
+            removedN > 0 ? ' · ×で ' + removedN + ' 語を「覚えた」に移動' : ''),
         ),
-        e('button', {
-          onClick: () => { setWIdx(0); setLap(lap + 1); setScreen('chant'); setPlaying(true); },
-          style: {
-            width: '100%', padding: '14px 16px', borderRadius: 14,
-            background: profile.color, color: '#fff',
-            fontFamily: SANS_UI, fontSize: 15, fontWeight: 700,
-            border: 'none', cursor: 'pointer', marginBottom: 10,
-          }
-        }, 'もう 1 周する (' + words.length + ' 語)'),
+        // この組をもう 1 周 (順番は再シャッフル)
+        words.length > 0 && e('button', {
+          onClick: () => {
+            setWords(shuffleArr(words));
+            setWIdx(0); setLap(lap + 1);
+            setScreen('chant'); setPlaying(true);
+          },
+          style: primaryBtnStyle,
+        }, 'この ' + words.length + ' 語をもう 1 周 (順番シャッフル)'),
+        // 次の 10 語へ
+        rest.length > 0 && e('button', {
+          onClick: () => {
+            setWords(rest.slice(0, 10));
+            setRest(rest.slice(10));
+            setBatchNum(batchNum + 1);
+            setLap(1); setWIdx(0);
+            setScreen('chant'); setPlaying(true);
+          },
+          style: softBtnStyle,
+        }, '次の ' + Math.min(10, rest.length) + ' 語へ ›'),
+        // 全組おわり → 最初から再シャッフル
+        rest.length === 0 && e('button', {
+          onClick: () => {
+            const all = shuffleArr(unmasteredTempoWords(profile.id, level));
+            allRef.current = all;
+            setWords(all.slice(0, 10));
+            setRest(all.slice(10));
+            setBatchNum(1); setLap(1); setWIdx(0);
+            setScreen('chant'); setPlaying(true);
+          },
+          style: softBtnStyle,
+        }, '最初からもう一度 (全体を再シャッフル)'),
         e('button', {
           onClick: onBack,
           style: {
