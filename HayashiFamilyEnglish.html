@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 427;
+  const APP_VERSION = 428;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -110,13 +110,15 @@
     { id: 'son1',   name: '鳴道',     subtitle: '高2・英検3級',             emoji: '', color: C.brand, role: 'learner', level: 3 },
     { id: 'son2',   name: '吉成',     subtitle: '高1・英検4級',             emoji: '', color: C.brand, role: 'learner', level: 2 },
     { id: 'son3',   name: '吉平',     subtitle: '小6・英検5級',             emoji: '', color: C.brand, role: 'learner', level: 1 },
-    // トッシー (旧 mother 枠) — 英語レベルは吉成と同じ設定 (レベル2・英検4級帯)
-    { id: 'mother', name: 'トッシー', subtitle: '英検4級',                  emoji: '', color: C.brand, role: 'learner', level: 2 },
+    // mother 枠 (旧 歩み → トッシー) は 2026-08-18 の指示で一覧から削除。
+    // 学習データ (localStorage / member_state) は残っているので、復活させる
+    // 場合はこの行を戻すだけでよい:
+    // { id: 'mother', name: 'トッシー', subtitle: '英検4級', emoji: '', color: C.brand, role: 'learner', level: 2 },
   ];
   // 方向 (日→英 / 英→日 / ミックス) の選択すら考えさせないメンバー。
   // トグルを隠し、学習効果が最も高い「ミックス」で自動的に練習させる。
   // mother (トッシー) は吉成と同じ設定にする指示により追加。
-  const AUTO_DIRECTION_MEMBERS = ['son2', 'son3', 'mother'];
+  const AUTO_DIRECTION_MEMBERS = ['son2', 'son3'];
 
   // ---------- Feature tiles for English Learning Home ----------
   // 6 行 × 2 列 のハーフ幅タイル + 大人向けタイル + その他ツール。
