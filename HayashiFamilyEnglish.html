@@ -65,7 +65,7 @@
   // CACHE_VERSION (sw.js) と必ず揃える。プロフィール画面の右下に
   // 「v226」のように表示されるので、新しいバージョンが入ったかを
   // 端末側で確認できる。
-  const APP_VERSION = 428;
+  const APP_VERSION = 429;
 
   // ---------- Design tokens ----------
   // Inspired by Beverage Compass: warm off-white background, very dark warm
@@ -166,7 +166,7 @@
     { id: 'useful_phrases',     label: 'NativeCamp用',   desc: '15 セットの定型フレーズ',
                                                                                           forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
-    { id: 'nativecamp_qa',      label: 'NativeCamp Q&A', desc: '質問 + OREO 4 文回答',
+    { id: 'nativecamp_qa',      label: 'About myself Q&A', desc: '自分について答える練習',
                                                                                           forLearner: true, forViewer: true,
                                                                                           forProfileIds: ['father'] },
   ];
@@ -6633,6 +6633,75 @@
         { role: 'R', en: 'As the population declines, economic growth becomes more difficult.' },
         { role: 'E', en: 'For example, in Shimane, some rural communities might not survive in the future.' },
         { role: 'O', en: "That's why the Japanese government is facing this issue of population decline." },
+      ],
+    },
+
+    // ===== Section 2 · 仕事について (2026-08-18 亮治さん本人提供の原稿。書き換え禁止) =====
+    {
+      id: 'nq2_01', no: 1, section: 2,
+      question: 'What do you do?',
+      questionJa: 'どんな仕事をしていますか？',
+      items: [
+        { en: "I'm in the restaurant and hospitality business.",
+          ja: '僕はレストランとホスピタリティの仕事をしています。' },
+        { en: 'I run several restaurants in Tokyo and Shimane, serving Chinese, Japanese, and French cuisine. Some of them have Michelin stars.',
+          ja: '東京と島根で、中華料理、日本料理、フランス料理など、さまざまなジャンルのレストランを経営しています。そのうち何軒かはミシュランの星を獲得しています。' },
+        { en: "I'm also the CEO of NOT A HOTEL MANAGEMENT, a hospitality management company. Across all of these businesses, I mainly oversee food and beverage, service, and team management.",
+          ja: 'また、ホスピタリティ・マネジメント会社であるNOT A HOTEL MANAGEMENTのCEOも務めています。すべての事業に共通して、主に飲食、サービス、チームマネジメントを統括しています。' },
+      ],
+    },
+    {
+      id: 'nq2_02', no: 2, section: 2,
+      question: 'How many restaurants do you run?',
+      questionJa: 'レストランを何軒経営していますか？',
+      items: [
+        { en: 'I currently run eight restaurants in total.',
+          ja: '現在、合計8軒のレストランを経営しています。' },
+        { en: 'My roots in the restaurant business are in Shimane, where I run two Chinese restaurants.',
+          ja: '僕のレストラン事業の原点は島根にあり、そこで中国料理店を2軒経営しています。' },
+        { en: 'In Tokyo, I currently run six restaurants: two Chinese, three Japanese, and one French.',
+          ja: '東京では現在、中国料理店2軒、日本料理店3軒、フランス料理店1軒の、合計6軒を経営しています。' },
+        { en: "Two more French restaurants are opening later this year, so by the end of the year, I'll be running eight restaurants in Tokyo and ten in total.",
+          ja: '今年中にフランス料理店がさらに2軒オープンするので、年末には東京で8軒、全体で10軒になります。' },
+      ],
+    },
+    {
+      id: 'nq2_03', no: 3, section: 2,
+      question: 'How did you get into the restaurant business?',
+      questionJa: 'どのようなきっかけで、レストランの仕事を始めたのですか？',
+      items: [
+        { en: 'My father ran a Chinese restaurant, and I grew up watching him work. When I graduated from high school at eighteen, it felt natural for me to enter the restaurant business.',
+          ja: '父親が中国料理店を経営していて、僕は父が働く姿を見て育ちました。高校を卒業した18歳のとき、自然な流れでレストラン業界に入りました。' },
+        { en: 'I later moved to Tokyo to study cooking and gain more experience. At twenty-four, I returned to Shimane, took over the family restaurant from my father, and began running it myself.',
+          ja: 'その後、東京に出て料理を学び、さらに経験を積みました。24歳のときに島根へ戻り、父から家族のレストランを引き継いで、自分で経営するようになりました。' },
+      ],
+    },
+    {
+      id: 'nq2_04', no: 4, section: 2,
+      question: 'What was it like to take over the restaurant when you were only twenty-four?',
+      questionJa: 'わずか24歳でレストランを引き継いだのは、どんな経験でしたか？',
+      items: [
+        { en: 'Looking back, I was still very immature at twenty-four. I had very little experience, but I thought I could do everything.',
+          ja: '今振り返ると、24歳の僕はまだとても未熟でした。経験がほとんどないのに、自分は何でもできると思っていました。' },
+        { en: "I didn't understand myself very well — my strengths, my weaknesses, or what my role should be. I was strict with others but too easy on myself, and sometimes I took my frustration out on the people around me. I probably wasn't easy to work with.",
+          ja: '自分の強みや弱み、果たすべき役割を客観的に理解できておらず、周囲には厳しい一方で、自分には甘かったと思います。苛立ちを周りの人にぶつけてしまうこともあり、おそらく一緒に働きやすい人間ではありませんでした。' },
+        { en: "However, I'm grateful that I had the opportunity to take on so much responsibility and make those mistakes while I was still young. Through that experience, I learned about the challenges of running a restaurant and building a team, as well as what truly matters in a restaurant.",
+          ja: 'ただ、若いうちに大きな責任を持ち、多くの失敗を経験できたことは、今ではとても貴重だったと思います。その経験から、レストランを経営する難しさ、チームを作る難しさ、そしてレストランにとって何が本当に大切なのかを学ぶことができました。' },
+      ],
+    },
+    {
+      id: 'nq2_05', no: 5, section: 2,
+      question: 'How did your restaurant business in Tokyo begin and grow?',
+      questionJa: '東京でのレストラン事業は、どのように始まり、広がっていったのですか？',
+      items: [
+        { en: 'About ten years ago, when I was thirty-eight, I opened Sazenka in Tokyo with Chef Kawada. He is five years younger than me, and we had worked together before at a restaurant called Azabu Choko.',
+          ja: '今から約10年前、僕が38歳の頃、東京で「茶禅華」を立ち上げました。シェフの川田は僕より5歳年下で、かつて「麻布長江」というレストランで一緒に働いていた後輩です。' },
+        { en: 'Five years after it opened, Sazenka earned three Michelin stars. When we reached that milestone, I sold the restaurant to Kawada and handed over the business to him.',
+          ja: '二人で始めた茶禅華は、開業から5年後にミシュラン三つ星を獲得しました。その節目に、僕はレストランを川田に売却し、経営を彼に引き継ぎました。' },
+        { en: 'After that, I was introduced to many new people through different connections. My team grew naturally, and little by little, we opened more restaurants.',
+          ja: 'その後、さまざまなご縁を通じて多くの人を紹介していただき、一緒に働く仲間も自然に増えていきました。それに伴って、少しずつレストランも増えていきました。' },
+        { en: 'I also became the CEO of NOT A HOTEL MANAGEMENT, so my work gradually expanded beyond the restaurant business. One opportunity led to another, and that is how I got to where I am today.',
+          ja: 'さらに、NOT A HOTEL MANAGEMENTのCEOを務めるようになり、仕事の領域もレストランの枠を超えて広がっていきました。一つの機会が次の機会につながり、そうした流れが今に至っています。' },
       ],
     },
   ];
@@ -26377,26 +26446,37 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        'NativeCamp Q&A'),
+        'About myself Q&A'),
     );
     return e('div', { style: pageStyle },
       topBar,
       e('div', { style: { padding: '4px 4px 18px' } },
         e('div', {
           style: { fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: C.text, lineHeight: 1.3 }
-        }, 'NativeCamp Q&A'),
+        }, 'About myself Q&A'),
         e('div', {
           style: { fontSize: 14, color: C.sub, marginTop: 8, lineHeight: 1.7 }
         },
-          '質問 1 つに対して、',
-          e('strong', null, 'Opinion → Reason → Example → Opinion'),
-          ' の 4 文で答える練習。タップで自動再生開始。'),
+          '自分についての質問に、自分の言葉で答える練習。タップで自動再生開始。',
+          e('br'),
+          e('span', { style: { fontSize: 12.5 } },
+            'Section 1 = OREO 4 文回答 / Section 2 = 仕事について'),
+        ),
       ),
       e('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         NATIVECAMP_QA.map((q, i) => {
           const sentN = q.items.length;
-          return e('button', {
-            key: q.id,
+          // セクション見出し (各セクションの最初の項目の前に挿入)
+          const sec = q.section || 1;
+          const prevSec = i > 0 ? (NATIVECAMP_QA[i - 1].section || 1) : 0;
+          const header = sec !== prevSec ? e('div', {
+            style: {
+              fontFamily: SANS_UI, fontSize: 12, fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase',
+              color: C.sub, margin: (i === 0 ? '0' : '16px') + ' 0 4px', paddingLeft: 4,
+            }
+          }, sec === 2 ? 'Section 2 — 仕事について' : 'Section 1 — OREO 4文回答') : null;
+          return e(React.Fragment, { key: q.id }, header, e('button', {
             onClick: () => onPickQA(i),
             style: {
               width: '100%', padding: '14px 16px', borderRadius: 14,
@@ -26429,7 +26509,7 @@
             e('span', {
               style: { fontSize: 18, color: profile.color, opacity: 0.7, flex: '0 0 auto', marginTop: 6 }
             }, '›'),
-          );
+          ));
         }),
       ),
     );
@@ -26530,7 +26610,7 @@
         style: { fontSize: 22, color: C.sub, padding: '8px 10px 8px 0', background: 'transparent', border: 'none', cursor: 'pointer' }
       }, '‹'),
       e('div', { style: { fontSize: 13, color: C.sub, letterSpacing: '0.06em', flex: 1 } },
-        'NativeCamp Q&A · #' + String(item.no).padStart(2, '0')),
+        'About myself Q&A · #' + String(item.no).padStart(2, '0')),
     );
 
     // EN / JP 表示切り替え
@@ -26608,7 +26688,7 @@
           transition: 'background 0.2s ease, border-color 0.2s ease',
         }
       },
-        e('div', {
+        roleLabel && e('div', {
           style: {
             flex: '0 0 auto', marginTop: 2,
             padding: '3px 8px', borderRadius: 6,
